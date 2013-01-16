@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+                                         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+ <session-factory name="sessionFactory">
+  <property name="hibernate.connection.driver_class">${hibernate.connection.driver}</property>
+  <property name="hibernate.connection.password">${hibernate.connection.password}</property>
+  <property name="hibernate.connection.url">${hibernate.connection.url}</property>
+  <property name="hibernate.connection.username">${hibernate.connection.username}</property>
+  <property name="hibernate.dialect">${hibernate.dialect}</property>
+  <property name="hibernate.connection.zeroDateTimeBehavior">convertToNull</property>
+
+  <!-- Hibernate Entity Mapping -->
+  <mapping class="com.ushahidi.swiftriver.model.River"/>
+  <mapping class="com.ushahidi.swiftriver.model.Bucket"/>
+  <mapping class="com.ushahidi.swiftriver.model.Account"/>
+  <mapping class="com.ushahidi.swiftriver.model.User"/>
+  <mapping class="com.ushahidi.swiftriver.model.Drop"/>
+  <mapping class="com.ushahidi.swiftriver.model.Place"/>
+  <mapping class="com.ushahidi.swiftriver.model.Media"/>
+  <mapping class="com.ushahidi.swiftriver.model.Link"/>
+  <mapping class="com.ushahidi.swiftriver.model.Tag"/>
+  <mapping class="com.ushahidi.swiftriver.model.Channel" />
+  <mapping class="com.ushahidi.swiftriver.model.ChannelOption" />
+ </session-factory>
+
+</hibernate-configuration>
