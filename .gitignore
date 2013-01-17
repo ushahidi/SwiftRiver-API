@@ -1,0 +1,15 @@
+target
+bin
+.settings
+.classpath
+.project
+.checkstyle
+.springBeans
+velocity.log
+*.bak
+*.iml
+*.ipr
+*.iws
+.*swp
+*~
+*.DS_Store

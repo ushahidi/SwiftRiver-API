@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+	<mvc:annotation-driven />
+
+	<context:property-placeholder location="classpath:db.properties" />
+
+	<!-- Connection Pool -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName">
+			<value>com.mysql.jdbc.Driver</value>
+		</property>
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+	</bean>
+
+	<!-- post-processors for all standard config annotations -->
+	<context:annotation-config />
+
+	<!-- JPA EntityManagerFactory -->
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="com.ushahidi.swiftriver.core.model" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="showSql" value="true" />
+				<property name="generateDdl" value="false" />
+				<property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Imports user-defined @Controller beans that process client requests -->
+	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
+
+	<!-- Repository Beans -->
+	<bean id="accountDao"
+		class="com.ushahidi.swiftriver.core.data.dao.impl.JpaAccountDao" />
+
+	<!-- Service Beans -->
+	<bean id="accountService"
+		class="com.ushahidi.swiftriver.core.service.AccountService" />
+
+</beans>
