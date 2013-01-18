@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.ushahidi.swiftriver.core.data.dao.AccountDao;
+import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.User;
 
 import static org.mockito.Mockito.*;
 
@@ -31,6 +33,9 @@ public class AccountServiceTest {
 	public void findById()
 	{
 		AccountDao mockAccountDao = mock(AccountDao.class);
+		Account account = new Account();
+		account.setOwner(new User());
+		when(mockAccountDao.findById(1)).thenReturn(account);
 		AccountService accountService = new AccountService();
 		
 		accountService.setAccountDao(mockAccountDao);
