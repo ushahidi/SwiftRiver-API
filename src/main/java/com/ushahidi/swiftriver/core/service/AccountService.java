@@ -14,15 +14,21 @@
  */
 package com.ushahidi.swiftriver.core.service;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.data.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
+@Transactional(readOnly = true)
 @Service
 public class AccountService {
-	
+
 	@Autowired
 	private AccountDao accountDao;
 
@@ -34,7 +40,22 @@ public class AccountService {
 		this.accountDao = accountDao;
 	}
 
-	public Account getAccount(long id) {
-		return accountDao.findById(id);
+	public Map<String, Object> getAccount(long id) {
+		Account account = accountDao.findById(id);
+
+		Object[][] accountData = { { "id", account.getId() },
+				{ "name", account.getOwner().getName() },
+				{ "account_path", account.getAccountPath() },
+				{ "email", account.getOwner().getName() },
+				{ "follower_count", 0 }, { "following_count", 0 },
+				{ "is_owner", false }, { "is_collaborator", false },
+				{ "is_following", false },
+				{ "public", !account.isAccountPrivate() },
+				{ "date_added", account.getDateAdded() },
+				{ "river_quota_remaining", account.getRiverQuotaRemaining() },
+				{ "active", account.isActive() },
+				{ "rivers", new ArrayList() }, { "buckets", new ArrayList() } };
+
+		return ArrayUtils.toMap(accountData);
 	}
 }

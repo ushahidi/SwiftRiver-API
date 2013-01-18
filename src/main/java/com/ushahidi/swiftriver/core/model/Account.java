@@ -20,36 +20,46 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name="accounts")
+@Table(name = "accounts")
 public class Account {
 
 	@Id
 	@GeneratedValue
 	private long id;
-	
-	@Column(name="account_path")
-	private String name;
-	
-	@Column(name="account_private")
-	private boolean isPublic;
-	
-	@Column(name="account_active")
+
+	@Column(name = "account_path")
+	private String accountPath;
+
+	@Column(name = "account_private")
+	private boolean accountPrivate;
+
+	@Column(name = "account_active")
 	private boolean active;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="account_date_add")
+	@Column(name = "account_date_add")
 	private Date dateAdded;
-	
-	@Column(name="river_quota_remaining")
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "account_date_modified")
+	private Date dateModified;
+
+	@Column(name = "river_quota_remaining")
 	private int riverQuotaRemaining;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User owner;
+
 	public Account() {
-		
+
 	}
 
 	public long getId() {
@@ -60,20 +70,20 @@ public class Account {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getAccountPath() {
+		return accountPath;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setAccountPath(String accountPath) {
+		this.accountPath = accountPath;
 	}
 
-	public boolean isPublic() {
-		return isPublic;
+	public boolean isAccountPrivate() {
+		return accountPrivate;
 	}
 
-	public void setPublic(boolean isPublic) {
-		this.isPublic = isPublic;
+	public void setAccountPrivate(boolean accountPrivate) {
+		this.accountPrivate = accountPrivate;
 	}
 
 	public boolean isActive() {
@@ -92,6 +102,14 @@ public class Account {
 		this.dateAdded = dateAdded;
 	}
 
+	public Date getDateModified() {
+		return dateModified;
+	}
+
+	public void setDateModified(Date dateModified) {
+		this.dateModified = dateModified;
+	}
+
 	public int getRiverQuotaRemaining() {
 		return riverQuotaRemaining;
 	}
@@ -99,6 +117,13 @@ public class Account {
 	public void setRiverQuotaRemaining(int riverQuotaRemaining) {
 		this.riverQuotaRemaining = riverQuotaRemaining;
 	}
-	
-	
+
+	public User getOwner() {
+		return owner;
+	}
+
+	public void setOwner(User owner) {
+		this.owner = owner;
+	}
+
 }
