@@ -5,6 +5,11 @@
 <web-app>
 	<display-name>SwiftRiver Core API</display-name>
 
+	<context-param>
+		<param-name>spring.profiles.default</param-name>
+		<param-value>prod</param-value>
+	</context-param>
+
 	<servlet>
 		<servlet-name>swiftriver</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
