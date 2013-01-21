@@ -1,8 +1,16 @@
 /**
- * The contents of this file are subject to the Affero General
- * Public License (AGPL) Version 3; you may not use this file 
- * except in compliance with the License. You may obtain a copy
- * of the License at http://www.gnu.org/licenses/agpl.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
@@ -11,6 +19,7 @@ package com.ushahidi.swiftriver.model;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.*;
 
@@ -32,9 +41,8 @@ public class Channel implements Serializable {
 	@Column(name = "channel")
 	private String channel;
 	
-	@ManyToOne(cascade  = CascadeType.ALL)
-	@JoinColumn(name = "river_id")
-	private River river;
+	@Column(name = "river_id")
+	private Long riverId;
 
 	@Column(name = "filter_date_add")
 	private Timestamp filterDateAdd;
@@ -53,6 +61,10 @@ public class Channel implements Serializable {
 	
 	@Column(name = "filter_runs")
 	private int filterRuns;
+	
+	@OneToMany
+	@JoinColumn(name="channel_filter_id")
+	private List<ChannelOption> channelOptions;
 
 	public Channel() {
 		
@@ -74,12 +86,12 @@ public class Channel implements Serializable {
 		this.channel = channel;
 	}
 
-	public River getRiver() {
-		return river;
+	public Long getRiver() {
+		return riverId;
 	}
 
-	public void setRiver(River river) {
-		this.river = river;
+	public void setRiver(Long river) {
+		this.riverId = river;
 	}
 
 	public Date getFilterDateAdd() {
@@ -128,6 +140,37 @@ public class Channel implements Serializable {
 
 	public void setFilterRuns(int filterRuns) {
 		this.filterRuns = filterRuns;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+		result = prime * result + ((riverId == null) ? 0 : riverId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Channel other = (Channel) obj;
+		if (channel == null) {
+			if (other.channel != null)
+				return false;
+		} else if (!channel.equals(other.channel))
+			return false;
+		if (riverId == null) {
+			if (other.riverId != null)
+				return false;
+		} else if (!riverId.equals(other.riverId))
+			return false;
+		return true;
 	}
 
 }

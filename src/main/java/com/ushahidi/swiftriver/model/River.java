@@ -1,17 +1,24 @@
 /**
- * The contents of this file are subject to the Affero General
- * Public License (AGPL) Version 3; you may not use this file 
- * except in compliance with the License. You may obtain a copy
- * of the License at http://www.gnu.org/licenses/agpl.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
- */
-package com.ushahidi.swiftriver.model;
+ */package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import javax.persistence.*;
 
 /**
@@ -82,12 +89,16 @@ public class River implements Serializable{
 	private boolean riverFull;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"))
-	private Set<Drop> drops = null;
+	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="droplet_id"))
+	private List<Drop> drops = null;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"))
-	private Set<User> collaborators = null;
+	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="user_id"))
+	private List<User> collaborators = null;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinColumn(name="river_id")
+	private List<Channel> channels = null;
 
 	public River() {
 		
@@ -213,11 +224,11 @@ public class River implements Serializable{
 		this.riverFull = riverFull;
 	}
 
-	public Set<Drop> getDrops() {
+	public List<Drop> getDrops() {
 		return drops;
 	}
 
-	public void setDrops(Set<Drop> drops) {
+	public void setDrops(List<Drop> drops) {
 		this.drops = drops;
 	}
 
@@ -229,11 +240,11 @@ public class River implements Serializable{
 		this.account = account;
 	}
 
-	public Set<User> getCollaborators() {
+	public List<User> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(Set<User> collaborators) {
+	public void setCollaborators(List<User> collaborators) {
 		this.collaborators = collaborators;
 	}
 
@@ -251,6 +262,46 @@ public class River implements Serializable{
 
 	public void setRiverDateExpiry(Timestamp riverDateExpiry) {
 		this.riverDateExpiry = riverDateExpiry;
+	}
+
+	public List<Channel> getChannels() {
+		return channels;
+	}
+
+	public void setChannels(List<Channel> channels) {
+		this.channels = channels;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((account == null) ? 0 : account.hashCode());
+		result = prime * result
+				+ ((riverName == null) ? 0 : riverName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		River other = (River) obj;
+		if (account == null) {
+			if (other.account != null)
+				return false;
+		} else if (!account.equals(other.account))
+			return false;
+		if (riverName == null) {
+			if (other.riverName != null)
+				return false;
+		} else if (!riverName.equals(other.riverName))
+			return false;
+		return true;
 	}
 	
 }

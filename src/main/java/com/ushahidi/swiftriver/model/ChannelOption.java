@@ -26,9 +26,8 @@ public class ChannelOption implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@ManyToOne
-	@JoinColumn(name = "channel_filter_id")
-	private Channel channel;
+	@Column(name = "channel_filter_id")
+	private int channelId;
 	
 	@Column(name = "key", nullable = false)
 	private String key;
@@ -40,12 +39,12 @@ public class ChannelOption implements Serializable {
 		
 	}
 
-	public Channel getChannel() {
-		return channel;
+	public int getChannel() {
+		return channelId;
 	}
 
-	public void setChannel(Channel channel) {
-		this.channel = channel;
+	public void setChannel(int channel) {
+		this.channelId = channel;
 	}
 
 	public String getKey() {

@@ -144,4 +144,30 @@ public class Account implements Serializable{
 		this.accountDateAdd = accountDateAdd;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((accountPath == null) ? 0 : accountPath.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Account other = (Account) obj;
+		if (accountPath == null) {
+			if (other.accountPath != null)
+				return false;
+		} else if (!accountPath.equals(other.accountPath))
+			return false;
+		return true;
+	}
+
 }

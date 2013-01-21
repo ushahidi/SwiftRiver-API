@@ -1,8 +1,16 @@
 /**
- * The contents of this file are subject to the Affero General
- * Public License (AGPL) Version 3; you may not use this file 
- * except in compliance with the License. You may obtain a copy
- * of the License at http://www.gnu.org/licenses/agpl.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
@@ -10,8 +18,7 @@ package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Set;
+import java.util.Collection;
 import javax.persistence.*;
 
 /**
@@ -33,7 +40,8 @@ public class Bucket implements Serializable {
 	@JoinColumn(name = "account_id")
 	private Account account;
 	
-	private User user;
+	@Column(name="user_id")
+	private int userId;
 	
 	@Column(name = "bucket_name", nullable=false)
 	private String bucketName;
@@ -62,7 +70,7 @@ public class Bucket implements Serializable {
 			joinColumns = @JoinColumn(name="bucket_id"),
 			inverseJoinColumns = @JoinColumn(name="droplet_id")
 	)
-	private Set<Drop> drops = null;
+	private Collection<Drop> drops = null;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
@@ -70,7 +78,7 @@ public class Bucket implements Serializable {
 			joinColumns = @JoinColumn(name = "bucket_id"),
 			inverseJoinColumns = @JoinColumn(name="user_id")
 	)
-	private Set<User> collaborators = null;
+	private Collection<User> collaborators = null;
 	
 	public Bucket() {
 		
@@ -84,12 +92,12 @@ public class Bucket implements Serializable {
 		this.account = account;
 	}
 
-	public User getUser() {
-		return user;
+	public int getUser() {
+		return userId;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUser(int userId) {
+		this.userId = userId;
 	}
 
 	public String getBucketName() {
@@ -132,7 +140,7 @@ public class Bucket implements Serializable {
 		this.defaultLayout = defaultLayout;
 	}
 
-	public Date getBucketDateAdd() {
+	public Timestamp getBucketDateAdd() {
 		return bucketDateAdd;
 	}
 
@@ -152,24 +160,56 @@ public class Bucket implements Serializable {
 		return id;
 	}
 
-	public Set<Drop> getDrops() {
+	public Collection<Drop> getDrops() {
 		return drops;
 	}
 
-	public void setDrops(Set<Drop> drops) {
+	public void setDrops(Collection<Drop> drops) {
 		this.drops = drops;
 	}
 
-	public Set<User> getCollaborators() {
+	public Collection<User> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(Set<User> collaborators) {
+	public void setCollaborators(Collection<User> collaborators) {
 		this.collaborators = collaborators;
 	}
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((account == null) ? 0 : account.hashCode());
+		result = prime * result
+				+ ((bucketName == null) ? 0 : bucketName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Bucket other = (Bucket) obj;
+		if (account == null) {
+			if (other.account != null)
+				return false;
+		} else if (!account.equals(other.account))
+			return false;
+		if (bucketName == null) {
+			if (other.bucketName != null)
+				return false;
+		} else if (!bucketName.equals(other.bucketName))
+			return false;
+		return true;
 	}
 
 }

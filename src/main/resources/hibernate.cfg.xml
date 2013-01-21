@@ -9,19 +9,7 @@
   <property name="hibernate.connection.username">${hibernate.connection.username}</property>
   <property name="hibernate.dialect">${hibernate.dialect}</property>
   <property name="hibernate.connection.zeroDateTimeBehavior">convertToNull</property>
-
-  <!-- Hibernate Entity Mapping -->
-  <mapping class="com.ushahidi.swiftriver.model.River"/>
-  <mapping class="com.ushahidi.swiftriver.model.Bucket"/>
-  <mapping class="com.ushahidi.swiftriver.model.Account"/>
-  <mapping class="com.ushahidi.swiftriver.model.User"/>
-  <mapping class="com.ushahidi.swiftriver.model.Drop"/>
-  <mapping class="com.ushahidi.swiftriver.model.Place"/>
-  <mapping class="com.ushahidi.swiftriver.model.Media"/>
-  <mapping class="com.ushahidi.swiftriver.model.Link"/>
-  <mapping class="com.ushahidi.swiftriver.model.Tag"/>
-  <mapping class="com.ushahidi.swiftriver.model.Channel" />
-  <mapping class="com.ushahidi.swiftriver.model.ChannelOption" />
+  <property name="hibernate.show_sql">${hibernate.show_sql}</property>
+  <property name="hibernate.format_sql">${hibernate.format_sql}</property>
  </session-factory>
-
 </hibernate-configuration>

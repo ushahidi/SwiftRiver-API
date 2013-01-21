@@ -1,8 +1,16 @@
 /**
- * The contents of this file are subject to the Affero General
- * Public License (AGPL) Version 3; you may not use this file 
- * except in compliance with the License. You may obtain a copy
- * of the License at http://www.gnu.org/licenses/agpl.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
@@ -45,12 +53,12 @@ public class Place implements Serializable{
 		
 	}
 
-	public String getHash() {
-		return hash;
+	public long getId() {
+		return id;
 	}
 
-	public void setHash(String hash) {
-		this.hash = hash;
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public String getPlaceName() {
@@ -69,6 +77,14 @@ public class Place implements Serializable{
 		this.placeNameCanonical = placeNameCanonical;
 	}
 
+	public String getHash() {
+		return hash;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
+
 	public double getLongitude() {
 		return longitude;
 	}
@@ -85,12 +101,28 @@ public class Place implements Serializable{
 		this.latitude = latitude;
 	}
 
-	public long getId() {
-		return id;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
+		return result;
 	}
 
-	public void setId(long id) {
-		this.id = id;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Place other = (Place) obj;
+		if (hash == null) {
+			if (other.hash != null)
+				return false;
+		} else if (!hash.equals(other.hash))
+			return false;
+		return true;
 	}
-
 }

@@ -1,99 +1,106 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
+ */
 package com.ushahidi.swiftriver.dao.hibernate;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.dao.BucketDAO;
 import com.ushahidi.swiftriver.model.Bucket;
 import com.ushahidi.swiftriver.model.Drop;
 import com.ushahidi.swiftriver.model.User;
 
-public class HibernateBucketDAO extends HibernateDaoSupport implements
-		BucketDAO {
+/**
+ * Hibernate class for buckets
+ * @author ekala
+ *
+ */
+@Repository("bucketDAO")
+@Transactional
+public class HibernateBucketDAO extends AbstractHibernateDAO<Bucket, Long> implements BucketDAO {
 
-	/**
-	 * @see BucketDAO#create(Bucket)
-	 */
-	@Override
-	public void create(Bucket bucket) {
-		getHibernateTemplate().save(bucket);
+	public HibernateBucketDAO() {
+		super(Bucket.class);
 	}
 
 	/**
-	 * @see BucketDAO#update(Bucket)
+	 * @see BucketDAO#getDrops(Long, Map...)
 	 */
-	@Override
-	public void update(Bucket bucket) {
-		getHibernateTemplate().update(bucket);
-	}
-	
-	/**
-	 * @see BucketDAO#delete(Bucket)
-	 */
-	@Override
-	public void delete(Bucket bucket) {
-		getHibernateTemplate().delete(bucket);
+	@SuppressWarnings("unchecked")
+	public Collection<Drop> getDrops(Long bucketId, Map<Object, Object>... params) {
+		String hql = "Select b.drops from Bucket b where b.id = ?";
+		return (List<Drop>) hibernateTemplate.find(hql, bucketId);
 	}
 
 	/**
-	 * @see BucketDAO#getBucket(long)
+	 * @see BucketDAO#addDrop(Long, Drop)
 	 */
-	@Override
-	public Bucket getBucket(long id) {
-		return (Bucket) getHibernateTemplate().get(Bucket.class, id);
+	public void addDrop(Long bucketId, Drop drop) {
+		getById(bucketId).getDrops().add(drop);
 	}
 
 	/**
-	 * @see BucketDAO#getDrops(long, Map...)
+	 * @see BucketDAO#addDrops(Long, Collection)
 	 */
-	@Override
-	public Set<Drop> getDrops(long id, Map<Object, Object>... params) {
-		// TODO Auto-generated method stub
-		return null;
+	public void addDrops(Long bucketId, Collection<Drop> drops) {
+		getById(bucketId).getDrops().addAll(drops);
 	}
 
-	@Override
-	public void addDrop(Bucket bucket, Drop drop) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * @see BucketDAO#removeDrop(Long, Drop)
+	 */
+	public void removeDrop(Long bucketId, Drop drop) {		
+		getById(bucketId).getDrops().remove(drop);
 	}
 
-	@Override
-	public void addDrops(Bucket bucket, Set<Drop> drops) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * @see BucketDAO#removeDrops(Long, Collection)
+	 */
+	public void removeDrops(Long bucketId, Collection<Drop> drops) {
+		getById(bucketId).getDrops().removeAll(drops);
 	}
 
-	@Override
-	public void removeDrop(Bucket bucket, Drop drop) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void removeDrops(Bucket bucket, Set<Drop> drops) {
+	/**
+	 * @see {@link BucketDAO#addCollaborator(Long, User, boolean)}
+	 */
+	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
-	public void addCollabotator(Bucket bucket, User user, boolean readOnly) {
+	/**
+	 * @see BucketDAO#getCollaborators(Bucket)
+	 */
+	@SuppressWarnings("unchecked")
+	public Collection<User> getCollaborators(Bucket bucket) {
 		// TODO Auto-generated method stub
-
+		String hql = "Select b.collaborators from Bucket b where b = ?";
+		return (List<User>)hibernateTemplate.find(hql, bucket);
 	}
 
-	@Override
-	public Set<User> getCollaborators(Bucket bucket) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void removeCollaborator(Bucket bucket, User user) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * @see BucketDAO#removeCollaborator(Long, User)
+	 */
+	public void removeCollaborator(Long bucketId, User user) {
+		getById(bucketId).getCollaborators().remove(user);
 	}
 
 }
