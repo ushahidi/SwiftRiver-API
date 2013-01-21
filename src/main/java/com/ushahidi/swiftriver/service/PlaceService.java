@@ -16,9 +16,12 @@
  */
 package com.ushahidi.swiftriver.service;
 
+import com.ushahidi.swiftriver.dao.PlaceDAO;
 import com.ushahidi.swiftriver.model.Place;
 
 public interface PlaceService extends SwiftRiverService<Place, Long> {
+
+	public void setPlaceDAO(PlaceDAO placeDAO);
 
 	public Place findByHash(String hash);
 }

@@ -40,8 +40,11 @@ public class BucketServiceImpl extends AbstractServiceImpl<Bucket, Long> impleme
 	@Autowired
 	private BucketDAO bucketDAO;
 	
-	@Override
-	public SwiftRiverDAO<Bucket, Long> getDAO() {
+	public void setBucketDAO(BucketDAO bucketDAO) {
+		this.bucketDAO = bucketDAO;
+	}
+
+	public SwiftRiverDAO<Bucket, Long> getServiceDAO() {
 		return bucketDAO;
 	}
 

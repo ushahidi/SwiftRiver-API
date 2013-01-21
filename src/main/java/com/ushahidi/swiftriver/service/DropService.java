@@ -18,6 +18,7 @@ package com.ushahidi.swiftriver.service;
 
 import java.util.Collection;
 
+import com.ushahidi.swiftriver.dao.DropDAO;
 import com.ushahidi.swiftriver.model.Drop;
 import com.ushahidi.swiftriver.model.Link;
 import com.ushahidi.swiftriver.model.Media;
@@ -26,6 +27,8 @@ import com.ushahidi.swiftriver.model.Tag;
 
 public interface DropService extends SwiftRiverService<Drop, Long> {
 	
+	public void setDropDAO(DropDAO dropDAO);
+
 	public void createDrops(Collection<Drop> drops);
 	
 	/**

@@ -16,9 +16,12 @@
  */
 package com.ushahidi.swiftriver.service;
 
+import com.ushahidi.swiftriver.dao.MediaDAO;
 import com.ushahidi.swiftriver.model.Media;
 
 public interface MediaService extends SwiftRiverService<Media, Long> {
+
+	public void setMediaDAO(MediaDAO mediaDAO);
 
 	public Media findByHash(String hash);
 }

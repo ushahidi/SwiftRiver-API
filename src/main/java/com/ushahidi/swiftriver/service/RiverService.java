@@ -19,12 +19,16 @@ package com.ushahidi.swiftriver.service;
 import java.util.Collection;
 import java.util.List;
 
+import com.ushahidi.swiftriver.dao.RiverDAO;
 import com.ushahidi.swiftriver.model.Channel;
 import com.ushahidi.swiftriver.model.Drop;
 import com.ushahidi.swiftriver.model.River;
 import com.ushahidi.swiftriver.model.User;
 
 public interface RiverService extends SwiftRiverService<River, Long> {
+
+	public void setRiverDAO(RiverDAO riverDAO);
+
 	/**
 	 * Gets the drops in a river using the specified id and parameters
 	 * 

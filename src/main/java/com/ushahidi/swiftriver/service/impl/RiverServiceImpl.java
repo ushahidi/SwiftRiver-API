@@ -41,8 +41,11 @@ public class RiverServiceImpl extends AbstractServiceImpl<River, Long> implement
 	@Autowired
 	private RiverDAO riverDAO;
 
-	@Override
-	public SwiftRiverDAO<River, Long> getDAO() {
+	public void setRiverDAO(RiverDAO riverDAO) {
+		this.riverDAO = riverDAO;
+	}
+
+	public SwiftRiverDAO<River, Long> getServiceDAO() {
 		return riverDAO;
 	}
 

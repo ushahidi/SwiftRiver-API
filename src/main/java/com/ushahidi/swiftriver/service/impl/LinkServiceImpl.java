@@ -35,13 +35,15 @@ public class LinkServiceImpl extends AbstractServiceImpl<Link, Long> implements 
 	@Autowired
 	private LinkDAO linkDAO;
 
-	@Override
+	public void setLinkDAO(LinkDAO linkDAO) {
+		this.linkDAO = linkDAO;
+	}
+
 	public Link findByHash(String hash) {
 		return linkDAO.findByHash(hash);
 	}
 
-	@Override
-	public SwiftRiverDAO<Link, Long> getDAO() {
+	public SwiftRiverDAO<Link, Long> getServiceDAO() {
 		return linkDAO;
 	}
 

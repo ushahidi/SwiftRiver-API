@@ -35,13 +35,15 @@ public class PlaceServiceImpl extends AbstractServiceImpl<Place, Long> implement
 	@Autowired
 	private PlaceDAO placeDAO;
 
-	@Override
+	public void setPlaceDAO(PlaceDAO placeDAO) {
+		this.placeDAO = placeDAO;
+	}
+
 	public Place findByHash(String hash) {
 		return placeDAO.findByHash(hash);
 	}
 
-	@Override
-	public SwiftRiverDAO<Place, Long> getDAO() {
+	public SwiftRiverDAO<Place, Long> getServiceDAO() {
 		return placeDAO;
 	}
 

@@ -35,12 +35,14 @@ public class TagServiceImpl extends AbstractServiceImpl<Tag, Long> implements Ta
 	@Autowired
 	private TagDAO tagDAO;
 
-	@Override
-	public SwiftRiverDAO<Tag, Long> getDAO() {
+	public void setTagDAO(TagDAO tagDAO) {
+		this.tagDAO = tagDAO;
+	}
+
+	public SwiftRiverDAO<Tag, Long> getServiceDAO() {
 		return tagDAO;
 	}
 
-	@Override
 	public Tag findByHash(String hash) {
 		return tagDAO.findByHash(hash);
 	}

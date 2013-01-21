@@ -41,8 +41,11 @@ public class DropServiceImpl extends AbstractServiceImpl<Drop, Long> implements 
 	@Autowired
 	private DropDAO dropDAO;
 
-	@Override
-	public SwiftRiverDAO<Drop, Long> getDAO() {
+	public void setDropDAO(DropDAO dropDAO) {
+		this.dropDAO = dropDAO;
+	}
+
+	public SwiftRiverDAO<Drop, Long> getServiceDAO() {
 		return dropDAO;
 	}
 

@@ -19,11 +19,20 @@ package com.ushahidi.swiftriver.service;
 import java.util.Collection;
 import java.util.Map;
 
+import com.ushahidi.swiftriver.dao.BucketDAO;
 import com.ushahidi.swiftriver.model.Bucket;
 import com.ushahidi.swiftriver.model.Drop;
 import com.ushahidi.swiftriver.model.User;
 
 public interface BucketService extends SwiftRiverService<Bucket, Long> {
+
+	/**
+	 * Sets the Bucket DAO to be used
+	 * 
+	 * @param bucketDAO
+	 */
+	public void setBucketDAO(BucketDAO bucketDAO);
+	
 	/**
 	 * Gets a collection of drops from a bucket using the specified parameters
 	 *  

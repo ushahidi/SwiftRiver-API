@@ -18,10 +18,13 @@ package com.ushahidi.swiftriver.service;
 
 import java.util.Collection;
 
+import com.ushahidi.swiftriver.dao.ChannelDAO;
 import com.ushahidi.swiftriver.model.Channel;
 import com.ushahidi.swiftriver.model.ChannelOption;
 
 public interface ChannelService extends SwiftRiverService<Channel, Integer> {
+
+	public void setChannelDAO(ChannelDAO channelDAO);
 
 	public Collection<ChannelOption> getChannelOptions(Integer channelId);
 }

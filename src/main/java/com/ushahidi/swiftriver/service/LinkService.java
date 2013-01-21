@@ -16,9 +16,12 @@
  */
 package com.ushahidi.swiftriver.service;
 
+import com.ushahidi.swiftriver.dao.LinkDAO;
 import com.ushahidi.swiftriver.model.Link;
 
 public interface LinkService extends SwiftRiverService<Link, Long> {
-	
+
+	public void setLinkDAO(LinkDAO linkDAO);
+
 	public Link findByHash(String hash);
 }

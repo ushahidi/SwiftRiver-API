@@ -34,40 +34,40 @@ public abstract class AbstractServiceImpl<T, ID extends Serializable> implements
 
 	/** Logger */
 	protected static Logger logger = Logger.getLogger("service");
-	
+
 	/**
-	 * Sets the DAO interface to be used for database operations. This
+	 * Gets the DAO interface to be used for database operations. This
 	 * method MUST be implemented by all classes that extend this class.
-	 * @return TODO
+	 * @return
 	 */
-	public abstract SwiftRiverDAO<T, ID> getDAO();
+	public abstract SwiftRiverDAO<T, ID> getServiceDAO();
 
 	/**
 	 * @see SwiftRiverDAO#create(Object)
 	 */
 	public void create(T entity) {
-		getDAO().create(entity);
+		getServiceDAO().create(entity);
 	}
 
 	/**
 	 * @see SwiftRiverDAO#update(Object)
 	 */
 	public void update(T entity) {
-		getDAO().update(entity);
+		getServiceDAO().update(entity);
 	}
 
 	/**
 	 * @see SwiftRiverDAO#delete(Object)
 	 */
 	public void delete(T entity) {
-		getDAO().delete(entity);
+		getServiceDAO().delete(entity);
 	}
 
 	/**
 	 * @see SwiftRiverDAO#findById(Serializable)
 	 */
 	public T findById(ID id) {
-		return getDAO().findById(id);
+		return getServiceDAO().findById(id);
 	}
 		
 	

@@ -35,13 +35,15 @@ public class MediaServiceImpl extends AbstractServiceImpl<Media, Long> implement
 	@Autowired
 	private MediaDAO mediaDAO;
 
-	@Override
+	public void setMediaDAO(MediaDAO mediaDAO) {
+		this.mediaDAO = mediaDAO;
+	}
+
 	public Media findByHash(String hash) {
 		return mediaDAO.findByHash(hash);
 	}
 
-	@Override
-	public SwiftRiverDAO<Media, Long> getDAO() {
+	public SwiftRiverDAO<Media, Long> getServiceDAO() {
 		return mediaDAO;
 	}
 

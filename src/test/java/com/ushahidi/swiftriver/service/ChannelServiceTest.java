@@ -14,40 +14,48 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service.impl;
+package com.ushahidi.swiftriver.service;
 
-import java.util.Collection;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.junit.Test;
 
 import com.ushahidi.swiftriver.dao.ChannelDAO;
-import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
 import com.ushahidi.swiftriver.model.Channel;
-import com.ushahidi.swiftriver.model.ChannelOption;
-import com.ushahidi.swiftriver.service.ChannelService;
+import com.ushahidi.swiftriver.service.impl.ChannelServiceImpl;
+import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
- * Service class for channels
+ * Integration tests for channels
  * @author ekala
  *
  */
-@Service
-public class ChannelServiceImpl extends AbstractServiceImpl<Channel, Integer> implements ChannelService {
-
-	@Autowired
+public class ChannelServiceTest extends AbstractSwiftRiverTest {
+	
+	private ChannelService channelService;
 	private ChannelDAO channelDAO;
 	
-	public void setChannelDAO(ChannelDAO channelDAO) {
-		this.channelDAO = channelDAO;
+	@Override
+	public void beforeTest() {
+		channelService = new ChannelServiceImpl();
+		channelDAO = mock(ChannelDAO.class);
+		
+		channelService.setChannelDAO(channelDAO);
 	}
 
-	public SwiftRiverDAO<Channel, Integer> getServiceDAO() {
-		return channelDAO;
-	}
+	/**
+	 * @verifies that a channel is successfully created
+	 */
+	@Test
+	public void testCreateChannel() {
+		Channel channel = new Channel();
+		channel.setChannel("instagram");
+		channel.setRiver(new Long(1));
+		
+		channelService.create(channel);
 
-	public Collection<ChannelOption> getChannelOptions(Integer channelId) {
-		return channelDAO.getChannelOptions(channelId);
+		verify(channelDAO).create(channel);
 	}
-
+	
 }

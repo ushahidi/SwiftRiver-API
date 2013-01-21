@@ -16,9 +16,12 @@
  */
 package com.ushahidi.swiftriver.service;
 
+import com.ushahidi.swiftriver.dao.TagDAO;
 import com.ushahidi.swiftriver.model.Tag;
 
 public interface TagService extends SwiftRiverService<Tag, Long> {
-	
+
+	public void setTagDAO(TagDAO tagDAO);
+
 	public Tag findByHash(String hash);
 }

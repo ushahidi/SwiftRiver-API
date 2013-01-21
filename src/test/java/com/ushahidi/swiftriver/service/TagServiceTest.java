@@ -18,12 +18,15 @@ package com.ushahidi.swiftriver.service;
 
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import com.ushahidi.swiftriver.dao.TagDAO;
 import com.ushahidi.swiftriver.model.Tag;
+import com.ushahidi.swiftriver.service.impl.TagServiceImpl;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
@@ -33,11 +36,16 @@ import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
  */
 public class TagServiceTest extends AbstractSwiftRiverTest {
 	
+	private TagDAO tagDAO;
+	
 	private TagService tagService;
 
 	@Before
 	public void beforeTest() {
-		tagService = mock(TagService.class);
+		tagDAO = mock(TagDAO.class);
+		
+		tagService = new TagServiceImpl();
+		tagService.setTagDAO(tagDAO);
 	}
 
 	/**
@@ -48,13 +56,23 @@ public class TagServiceTest extends AbstractSwiftRiverTest {
 		Tag sampleTag  = createSampleTag();
 		
 		// Verify that the tag doesn't exist
-		when(tagService.findById(sampleTag.getId())).thenReturn(null);
+		when(tagDAO.findById(sampleTag.getId())).thenReturn(null);
 		
 		// Create the tag
 		tagService.create(sampleTag);
 
-		// Verify that the tag has been saved
-		when(tagService.findByHash("DKL4947A3084JLMXCYUIABUX")).thenReturn(sampleTag);		
+		verify(tagDAO).create(sampleTag);
+	}
+	
+	/**
+	 * @verifies that a tag can be looked up using its hash
+	 */
+	@Test
+	public void testFindTagByHash() {
+		String hash = "DKL4947A3084JLMXCYUIABUX";
+
+		tagService.findByHash(hash);
+		verify(tagDAO).findByHash(hash);
 	}
 	
 	/**
@@ -83,7 +101,10 @@ public class TagServiceTest extends AbstractSwiftRiverTest {
 		Tag tag = tagService.findById(Long.MAX_VALUE);
 		tagService.delete(tag);
 
-		when(tagService.findById(Long.MAX_VALUE)).thenReturn(null);
+		// Verify that tagDAO.delete was called
+		verify(tagDAO).delete(tag);
+
+		when(tagDAO.findById(Long.MAX_VALUE)).thenReturn(null);
 	}
 
 }
