@@ -25,5 +25,5 @@ public interface MediaDAO extends SwiftRiverDAO<Media, Long> {
 	 * @param hash
 	 * @return
 	 */
-	public Media getByHash(String hash);
+	public Media findByHash(String hash);
 }

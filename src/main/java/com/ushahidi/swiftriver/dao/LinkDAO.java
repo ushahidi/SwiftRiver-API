@@ -25,5 +25,5 @@ public interface LinkDAO extends SwiftRiverDAO<Link, Long> {
 	 * 
 	 * @param hash
 	 */
-	public Link getByHash(String hash);
+	public Link findByHash(String hash);
 }

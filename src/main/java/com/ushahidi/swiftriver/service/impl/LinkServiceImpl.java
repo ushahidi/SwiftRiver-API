@@ -14,32 +14,35 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao.hibernate;
+package com.ushahidi.swiftriver.service.impl;
 
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
+import com.ushahidi.swiftriver.dao.LinkDAO;
+import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
+import com.ushahidi.swiftriver.model.Link;
+import com.ushahidi.swiftriver.service.LinkService;
 
 /**
- * Hibernate class for Media
+ * Service class for links
  * @author ekala
  *
  */
-@Repository("mediaDAO")
-@Transactional
-public class HibernateMediaDAO extends AbstractHibernateDAO<Media, Long> implements MediaDAO {
+@Service
+public class LinkServiceImpl extends AbstractServiceImpl<Link, Long> implements LinkService {
 
-	public HibernateMediaDAO() {
-		super(Media.class);
+	@Autowired
+	private LinkDAO linkDAO;
+
+	@Override
+	public Link findByHash(String hash) {
+		return linkDAO.findByHash(hash);
 	}
 
-	/**
-	 * @see MediaDAO#findByHash(String) 
-	 */
-	public Media findByHash(String hash) {
-		return (Media) hibernateTemplate.find("from Media where hash = ?", hash).get(0);
+	@Override
+	public SwiftRiverDAO<Link, Long> getDAO() {
+		return linkDAO;
 	}
 
 }

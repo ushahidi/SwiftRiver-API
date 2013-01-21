@@ -23,7 +23,7 @@ public class ChannelOption implements Serializable {
 	private static final long serialVersionUID = 2202984709505558045L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue
 	private int id;
 	
 	@Column(name = "channel_filter_id")

@@ -36,9 +36,9 @@ public class HibernateTagDAO extends AbstractHibernateDAO<Tag, Long> implements 
 	}
 
 	/**
-	 * @see TagDAO#getByHash(String)
+	 * @see TagDAO#findByHash(String)
 	 */
-	public Tag getByHash(String hash) {
+	public Tag findByHash(String hash) {
 		return (Tag) hibernateTemplate.find("from Tag where hash = ?", hash).get(0);
 	}
 

@@ -31,7 +31,6 @@ public class Place implements Serializable{
 	private static final long serialVersionUID = -8003953814633031845L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
 	@Column(name="hash", nullable = false)

@@ -35,7 +35,7 @@ public class Channel implements Serializable {
 	private static final long serialVersionUID = 3575711835255222818L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue
 	private int id;
 	
 	@Column(name = "channel")

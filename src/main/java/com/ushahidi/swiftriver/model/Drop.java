@@ -34,7 +34,7 @@ public class Drop implements Serializable{
 	private static final long serialVersionUID = 8626488270653399780L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue
 	private long id;
 	
 	@Column(name = "channel", nullable = false)
@@ -62,10 +62,10 @@ public class Drop implements Serializable{
 	private Long dropletImage;
 	
 	@Column(name = "droplet_date_pub", nullable = false)
-	private Timestamp dropletDatePub;
+	private Timestamp datePublished;
 	
 	@Column(name = "droplet_date_add")
-	private Timestamp dropletDateAdd;
+	private Timestamp dateAdded;
 	
 	@Column(name = "original_url")
 	private Long originalUrl;
@@ -178,19 +178,19 @@ public class Drop implements Serializable{
 	}
 
 	public Timestamp getDropletDatePub() {
-		return dropletDatePub;
+		return datePublished;
 	}
 
 	public void setDropletDatePub(Timestamp dropletDatePub) {
-		this.dropletDatePub = dropletDatePub;
+		this.datePublished = dropletDatePub;
 	}
 
 	public Date getDropletDateAdd() {
-		return dropletDateAdd;
+		return dateAdded;
 	}
 
 	public void setDropletDateAdd(Timestamp dropletDateAdd) {
-		this.dropletDateAdd = dropletDateAdd;
+		this.dateAdded = dropletDateAdd;
 	}
 
 	public Long getOriginalUrl() {

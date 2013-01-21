@@ -16,30 +16,38 @@
  */
 package com.ushahidi.swiftriver.dao.hibernate;
 
-import org.springframework.stereotype.Repository;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
+import org.springframework.stereotype.Repository;
+
+import com.ushahidi.swiftriver.dao.ChannelDAO;
+import com.ushahidi.swiftriver.model.Channel;
+import com.ushahidi.swiftriver.model.ChannelOption;
 
 /**
- * Hibernate class for Media
+ * Hibernate class for channels
  * @author ekala
  *
  */
-@Repository("mediaDAO")
-@Transactional
-public class HibernateMediaDAO extends AbstractHibernateDAO<Media, Long> implements MediaDAO {
 
-	public HibernateMediaDAO() {
-		super(Media.class);
+@Repository("channelDAO")
+@Transactional
+public class HibernateChannelDAO extends AbstractHibernateDAO<Channel, Integer> implements ChannelDAO {
+
+	public HibernateChannelDAO() {
+		super(Channel.class);
 	}
 
 	/**
-	 * @see MediaDAO#findByHash(String) 
+	 * @see ChannelDAO#getChannelOptions(Integer)
 	 */
-	public Media findByHash(String hash) {
-		return (Media) hibernateTemplate.find("from Media where hash = ?", hash).get(0);
+	@SuppressWarnings("unchecked")
+	public Collection<ChannelOption> getChannelOptions(Integer channelId) {
+		String hql = "Select c.channelOptions from Channel c where c.id = ?";
+		return (List<ChannelOption>) hibernateTemplate.find(hql, channelId);
 	}
 
 }

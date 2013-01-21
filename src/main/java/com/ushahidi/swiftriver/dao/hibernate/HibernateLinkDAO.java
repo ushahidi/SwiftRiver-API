@@ -16,9 +16,14 @@
  */
 package com.ushahidi.swiftriver.dao.hibernate;
 
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ushahidi.swiftriver.dao.LinkDAO;
 import com.ushahidi.swiftriver.model.Link;
 
+@Repository("linkDAO")
+@Transactional
 public class HibernateLinkDAO extends AbstractHibernateDAO<Link, Long> implements LinkDAO {
 
 	public HibernateLinkDAO() {
@@ -26,9 +31,9 @@ public class HibernateLinkDAO extends AbstractHibernateDAO<Link, Long> implement
 	}
 
 	/**
-	 * @see LinkDAO#getByHash(String)
+	 * @see LinkDAO#findByHash(String)
 	 */
-	public Link getByHash(String hash) {
+	public Link findByHash(String hash) {
 		return (Link) hibernateTemplate.find("from Link where hash = ?", hash).get(0);
 	}
 

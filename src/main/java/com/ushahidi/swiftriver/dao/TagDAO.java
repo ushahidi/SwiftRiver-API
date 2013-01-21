@@ -26,5 +26,5 @@ public interface TagDAO extends SwiftRiverDAO<Tag, Long> {
 	 * @param hash
 	 * @return
 	 */
-	public Tag getByHash(String hash);
+	public Tag findByHash(String hash);
 }

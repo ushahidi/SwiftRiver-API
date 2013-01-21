@@ -25,5 +25,5 @@ public interface PlaceDAO extends SwiftRiverDAO<Place, Long> {
 	 * @param hash
 	 * @return
 	 */
-	public Place getByHash(String hash);
+	public Place findByHash(String hash);
 }

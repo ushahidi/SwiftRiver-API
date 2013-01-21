@@ -33,7 +33,7 @@ public class River implements Serializable{
 	private static final long serialVersionUID = -7099235346765215176L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue
 	private long id;
 	
 	@ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
@@ -47,7 +47,7 @@ public class River implements Serializable{
 	private String riverNameUrl;
 	
 	@Column(name="river_active")
-	private boolean riverActive;
+	private boolean active;
 	
 	@Column(name="river_public", nullable=false)
 	private boolean riverPublic;
@@ -56,7 +56,7 @@ public class River implements Serializable{
 	private String defaultLayout;
 	
 	@Column(name="river_date_add")
-	private Timestamp riverDateAdd;
+	private Timestamp dateAdded;
 	
 	@Column(name="max_drop_id")
 	private long maxDropId;
@@ -65,10 +65,10 @@ public class River implements Serializable{
 	private long dropCount;
 	
 	@Column(name="river_date_expiry")
-	private Timestamp riverDateExpiry;
+	private Timestamp expiryDate;
 	
 	@Column(name="river_expired")
-	private boolean riverExpired;
+	private boolean expired;
 	
 	@Column(name="extension_count")
 	private int extensionCount;
@@ -128,12 +128,20 @@ public class River implements Serializable{
 		this.riverNameUrl = riverNameUrl;
 	}
 
-	public boolean isRiverActive() {
-		return riverActive;
+	public Timestamp getDateAdded() {
+		return dateAdded;
 	}
 
-	public void setRiverActive(boolean riverActive) {
-		this.riverActive = riverActive;
+	public void setDateAdded(Timestamp dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
 	public boolean isRiverPublic() {
@@ -166,14 +174,6 @@ public class River implements Serializable{
 
 	public void setDropCount(long dropCount) {
 		this.dropCount = dropCount;
-	}
-
-	public boolean isRiverExpired() {
-		return riverExpired;
-	}
-
-	public void setRiverExpired(boolean riverExpired) {
-		this.riverExpired = riverExpired;
 	}
 
 	public int getExtensionCount() {
@@ -249,19 +249,20 @@ public class River implements Serializable{
 	}
 
 	public Date getRiverDateAdd() {
-		return riverDateAdd;
+		return getDateAdded();
 	}
 
 	public void setRiverDateAdd(Timestamp riverDateAdd) {
-		this.riverDateAdd = riverDateAdd;
+		this.setDateAdded(riverDateAdd);
 	}
 
-	public Date getRiverDateExpiry() {
-		return riverDateExpiry;
+
+	public boolean isExpired() {
+		return expired;
 	}
 
-	public void setRiverDateExpiry(Timestamp riverDateExpiry) {
-		this.riverDateExpiry = riverDateExpiry;
+	public void setExpired(boolean expired) {
+		this.expired = expired;
 	}
 
 	public List<Channel> getChannels() {

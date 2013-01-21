@@ -36,12 +36,10 @@ public class HibernatePlaceDAO extends AbstractHibernateDAO<Place, Long> impleme
 	}
 
 	/**
-	 * @see PlaceDAO#getByHash(String)
+	 * @see PlaceDAO#findByHash(String)
 	 */
-	public Place getByHash(String hash) {
+	public Place findByHash(String hash) {
 		return (Place) hibernateTemplate.find("from Place where hash = ?", hash).get(0);
 	}
-	
-	
-	
+
 }

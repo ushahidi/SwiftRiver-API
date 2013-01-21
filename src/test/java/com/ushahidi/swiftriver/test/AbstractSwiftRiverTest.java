@@ -14,32 +14,21 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao.hibernate;
+package com.ushahidi.swiftriver.test;
 
-import org.springframework.stereotype.Repository;
+
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
-
-/**
- * Hibernate class for Media
- * @author ekala
- *
- */
-@Repository("mediaDAO")
+@ContextConfiguration(locations = {"classpath:applicationContext.xml"})
+@RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-public class HibernateMediaDAO extends AbstractHibernateDAO<Media, Long> implements MediaDAO {
-
-	public HibernateMediaDAO() {
-		super(Media.class);
-	}
-
-	/**
-	 * @see MediaDAO#findByHash(String) 
-	 */
-	public Media findByHash(String hash) {
-		return (Media) hibernateTemplate.find("from Media where hash = ?", hash).get(0);
-	}
-
+public abstract class AbstractSwiftRiverTest extends AbstractJUnit4SpringContextTests{
+	
+	@Before
+	public abstract void beforeTest();
 }

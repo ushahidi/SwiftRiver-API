@@ -14,32 +14,47 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao.hibernate;
+package com.ushahidi.swiftriver.service;
 
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
+import java.io.Serializable;
 
 /**
- * Hibernate class for Media
+ * Base interface for all SwiftRiver service interfaces. This interface
+ * defines the signatures for the methods used for CRUD operations
+ *  
  * @author ekala
  *
+ * @param <T>
+ * @param <ID>
  */
-@Repository("mediaDAO")
-@Transactional
-public class HibernateMediaDAO extends AbstractHibernateDAO<Media, Long> implements MediaDAO {
-
-	public HibernateMediaDAO() {
-		super(Media.class);
-	}
-
+public interface SwiftRiverService<T, ID extends Serializable> {
+	
 	/**
-	 * @see MediaDAO#findByHash(String) 
+	 * Creates a new entity in the database
+	 * 
+	 * @param entity
 	 */
-	public Media findByHash(String hash) {
-		return (Media) hibernateTemplate.find("from Media where hash = ?", hash).get(0);
-	}
-
+	public void create(T entity);
+	
+	/**
+	 * Updates an existing entity
+	 * 
+	 * @param entity
+	 */
+	public void update(T entity);
+	
+	/**
+	 * Deletes an entity from the database
+	 * 
+	 * @param entity
+	 */
+	public void delete(T entity);
+	
+	/**
+	 * Gets an entity using its unique database ID
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public T findById(ID id);
 }

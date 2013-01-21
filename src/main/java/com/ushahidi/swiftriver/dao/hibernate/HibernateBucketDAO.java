@@ -54,28 +54,28 @@ public class HibernateBucketDAO extends AbstractHibernateDAO<Bucket, Long> imple
 	 * @see BucketDAO#addDrop(Long, Drop)
 	 */
 	public void addDrop(Long bucketId, Drop drop) {
-		getById(bucketId).getDrops().add(drop);
+		findById(bucketId).getDrops().add(drop);
 	}
 
 	/**
 	 * @see BucketDAO#addDrops(Long, Collection)
 	 */
 	public void addDrops(Long bucketId, Collection<Drop> drops) {
-		getById(bucketId).getDrops().addAll(drops);
+		findById(bucketId).getDrops().addAll(drops);
 	}
 
 	/**
 	 * @see BucketDAO#removeDrop(Long, Drop)
 	 */
 	public void removeDrop(Long bucketId, Drop drop) {		
-		getById(bucketId).getDrops().remove(drop);
+		findById(bucketId).getDrops().remove(drop);
 	}
 
 	/**
 	 * @see BucketDAO#removeDrops(Long, Collection)
 	 */
 	public void removeDrops(Long bucketId, Collection<Drop> drops) {
-		getById(bucketId).getDrops().removeAll(drops);
+		findById(bucketId).getDrops().removeAll(drops);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class HibernateBucketDAO extends AbstractHibernateDAO<Bucket, Long> imple
 	 * @see BucketDAO#removeCollaborator(Long, User)
 	 */
 	public void removeCollaborator(Long bucketId, User user) {
-		getById(bucketId).getCollaborators().remove(user);
+		findById(bucketId).getCollaborators().remove(user);
 	}
 
 }

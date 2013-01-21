@@ -73,42 +73,42 @@ public class HibernateRiverDAO extends AbstractHibernateDAO<River, Long> impleme
 	 */
 	@Override
 	public void removeCollaborator(long riverId, User user) {
-		getById(riverId).getDrops().remove(user);
+		findById(riverId).getDrops().remove(user);
 	}
 
 	/**
 	 * @see RiverDAO#removeDrop(long, Drop)
 	 */
 	public void removeDrop(long riverId, Drop drop) {
-		getById(riverId).getDrops().remove(drop);
+		findById(riverId).getDrops().remove(drop);
 	}
 
 	/**
 	 * @see RiverDAO#addDrop(long, Drop)
 	 */
 	public void addDrop(long riverId, Drop drop) {
-		getById(riverId).getDrops().add(drop);
+		findById(riverId).getDrops().add(drop);
 	}
 
 	/**
 	 * @see RiverDAO#addDrops(long, Collection)
 	 */
 	public void addDrops(long riverId, Collection<Drop> drops) {
-		getById(riverId).getDrops().addAll(drops);
+		findById(riverId).getDrops().addAll(drops);
 	}
 
 	/**
 	 * @see RiverDAO#addChannel(long, Channel)
 	 */
 	public void addChannel(long riverId, Channel channel) {
-		getById(riverId).getChannels().add(channel);
+		findById(riverId).getChannels().add(channel);
 	}
 
 	/**
 	 * @see RiverDAO#removeChannel(long, Channel)
 	 */
 	public void removeChannel(long riverId, Channel channel) {
-		getById(riverId).getChannels().remove(channel);
+		findById(riverId).getChannels().remove(channel);
 	}
 
 	/**

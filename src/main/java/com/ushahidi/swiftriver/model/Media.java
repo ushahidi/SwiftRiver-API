@@ -31,7 +31,6 @@ public class Media implements Serializable {
 	private static final long serialVersionUID = -2163487250433744245L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
 	@Column(name = "hash", nullable = false)

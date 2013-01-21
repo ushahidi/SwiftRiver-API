@@ -14,56 +14,61 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao.hibernate;
+package com.ushahidi.swiftriver.service.impl;
 
 import java.io.Serializable;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.transaction.annotation.Transactional;
+import org.apache.log4j.Logger;
 
 import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
+import com.ushahidi.swiftriver.service.SwiftRiverService;
 
 /**
- * Base DAO implementation class for all DAO implementations
+ * Base class for all SwiftRiver service classes.
  * @author ekala
  *
  * @param <T>
  * @param <ID>
  */
-public abstract class AbstractHibernateDAO<T, ID extends Serializable> implements SwiftRiverDAO<T, ID> {
-	
-	protected HibernateTemplate hibernateTemplate;
-	
-	private Class<T> entityClass;
-	
-	public AbstractHibernateDAO(Class<T> clazz) {
-		this.entityClass = clazz;
-	}
+public abstract class AbstractServiceImpl<T, ID extends Serializable> implements SwiftRiverService<T, ID> {
 
-	@Autowired
-	public void setHibernateTemplate(HibernateTemplate hibernateTemplate) {
-		this.hibernateTemplate = hibernateTemplate;
-	}
+	/** Logger */
+	protected static Logger logger = Logger.getLogger("service");
+	
+	/**
+	 * Sets the DAO interface to be used for database operations. This
+	 * method MUST be implemented by all classes that extend this class.
+	 * @return TODO
+	 */
+	public abstract SwiftRiverDAO<T, ID> getDAO();
 
-	@Transactional(readOnly = false)
+	/**
+	 * @see SwiftRiverDAO#create(Object)
+	 */
 	public void create(T entity) {
-		hibernateTemplate.save(entity);
+		getDAO().create(entity);
 	}
 
-	@Transactional(readOnly = false)
+	/**
+	 * @see SwiftRiverDAO#update(Object)
+	 */
 	public void update(T entity) {
-		hibernateTemplate.update(entity);
+		getDAO().update(entity);
 	}
 
-	@Transactional(readOnly = false)
+	/**
+	 * @see SwiftRiverDAO#delete(Object)
+	 */
 	public void delete(T entity) {
-		hibernateTemplate.delete(entity);
+		getDAO().delete(entity);
 	}
-	
+
+	/**
+	 * @see SwiftRiverDAO#findById(Serializable)
+	 */
 	public T findById(ID id) {
-		return hibernateTemplate.get(entityClass, id);
+		return getDAO().findById(id);
 	}
+		
 	
-	 
 }

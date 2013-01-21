@@ -14,32 +14,14 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao.hibernate;
+package com.ushahidi.swiftriver.service;
 
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Collection;
 
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
+import com.ushahidi.swiftriver.model.Channel;
+import com.ushahidi.swiftriver.model.ChannelOption;
 
-/**
- * Hibernate class for Media
- * @author ekala
- *
- */
-@Repository("mediaDAO")
-@Transactional
-public class HibernateMediaDAO extends AbstractHibernateDAO<Media, Long> implements MediaDAO {
+public interface ChannelService extends SwiftRiverService<Channel, Integer> {
 
-	public HibernateMediaDAO() {
-		super(Media.class);
-	}
-
-	/**
-	 * @see MediaDAO#findByHash(String) 
-	 */
-	public Media findByHash(String hash) {
-		return (Media) hibernateTemplate.find("from Media where hash = ?", hash).get(0);
-	}
-
+	public Collection<ChannelOption> getChannelOptions(Integer channelId);
 }

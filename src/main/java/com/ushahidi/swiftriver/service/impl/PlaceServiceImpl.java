@@ -14,32 +14,35 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao.hibernate;
+package com.ushahidi.swiftriver.service.impl;
 
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
+import com.ushahidi.swiftriver.dao.PlaceDAO;
+import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
+import com.ushahidi.swiftriver.model.Place;
+import com.ushahidi.swiftriver.service.PlaceService;
 
 /**
- * Hibernate class for Media
+ * Service class for places
  * @author ekala
  *
  */
-@Repository("mediaDAO")
-@Transactional
-public class HibernateMediaDAO extends AbstractHibernateDAO<Media, Long> implements MediaDAO {
+@Service
+public class PlaceServiceImpl extends AbstractServiceImpl<Place, Long> implements PlaceService {
 
-	public HibernateMediaDAO() {
-		super(Media.class);
+	@Autowired
+	private PlaceDAO placeDAO;
+
+	@Override
+	public Place findByHash(String hash) {
+		return placeDAO.findByHash(hash);
 	}
 
-	/**
-	 * @see MediaDAO#findByHash(String) 
-	 */
-	public Media findByHash(String hash) {
-		return (Media) hibernateTemplate.find("from Media where hash = ?", hash).get(0);
+	@Override
+	public SwiftRiverDAO<Place, Long> getDAO() {
+		return placeDAO;
 	}
 
 }

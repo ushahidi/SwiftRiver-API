@@ -33,7 +33,7 @@ public class Bucket implements Serializable {
 	private static final long serialVersionUID = 1566257762453998371L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)	
+	@GeneratedValue	
 	private long id;
 	
 	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})

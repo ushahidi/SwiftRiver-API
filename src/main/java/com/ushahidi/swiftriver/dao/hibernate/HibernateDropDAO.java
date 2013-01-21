@@ -86,7 +86,7 @@ public class HibernateDropDAO extends AbstractHibernateDAO<Drop, Long> implement
 	 * @see DropDAO#addPlace(Long, Place)
 	 */
 	public void addPlace(Long dropId, Place place) {
-		getById(dropId).getPlaces().add(place);
+		findById(dropId).getPlaces().add(place);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class HibernateDropDAO extends AbstractHibernateDAO<Drop, Long> implement
 	 * @see DropDAO#removePlace(Long, Place)
 	 */
 	public void removePlace(Long dropId, Place place) {
-		getById(dropId).getPlaces().remove(place);
+		findById(dropId).getPlaces().remove(place);
 	}
 
 	/**
@@ -146,7 +146,7 @@ public class HibernateDropDAO extends AbstractHibernateDAO<Drop, Long> implement
 	 * @see DropDAO#addTag(Long, Tag)
 	 */
 	public void addTag(Long dropId, Tag tag) {
-		getById(dropId).getTags().add(tag);
+		findById(dropId).getTags().add(tag);
 	}
 
 	/**
@@ -160,7 +160,7 @@ public class HibernateDropDAO extends AbstractHibernateDAO<Drop, Long> implement
 	 * @see DropDAO#removeTag(Long, Tag)
 	 */
 	public void removeTag(Long dropId, Tag tag) {
-		getById(dropId).getTags().remove(tag);
+		findById(dropId).getTags().remove(tag);
 	}
 
 	/**

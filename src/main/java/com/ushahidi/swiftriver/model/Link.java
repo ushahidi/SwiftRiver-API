@@ -31,7 +31,6 @@ public class Link implements Serializable{
 	private static final long serialVersionUID = 5262017826384205040L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
 	@Column(name = "hash", nullable = false)

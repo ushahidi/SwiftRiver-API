@@ -48,5 +48,5 @@ public interface SwiftRiverDAO <T, ID extends Serializable> {
 	 * @param id
 	 * @return
 	 */
-	public T getById(ID id);
+	public T findById(ID id);
 }
