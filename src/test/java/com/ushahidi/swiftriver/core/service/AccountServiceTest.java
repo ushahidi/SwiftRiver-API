@@ -15,8 +15,6 @@
 package com.ushahidi.swiftriver.core.service;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 import com.ushahidi.swiftriver.core.data.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -26,9 +24,6 @@ import static org.mockito.Mockito.*;
 
 public class AccountServiceTest {
 	
-	@Autowired
-    private ApplicationContext applicationContext;
-
 	@Test
 	public void findById()
 	{

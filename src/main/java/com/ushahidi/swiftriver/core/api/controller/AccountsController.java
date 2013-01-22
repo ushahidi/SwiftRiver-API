@@ -14,6 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import java.security.Principal;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -59,6 +60,20 @@ public class AccountsController {
 	@ResponseBody
 	public Map<String, Object> getAccount(@PathVariable Long id) {
 		return accountService.getAccount(id);
+	}
+
+	/**
+	 * Get account details for the authenticating user.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping(value = "/me", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getAccount(Principal principal) {
+		String username = principal.getName();
+		logger.debug("username = " + username);
+		return accountService.getAccount(username);
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)

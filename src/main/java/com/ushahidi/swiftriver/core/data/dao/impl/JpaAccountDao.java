@@ -24,12 +24,39 @@ import com.ushahidi.swiftriver.core.model.Account;
 
 @Repository
 public class JpaAccountDao implements AccountDao {
-	
+
 	@PersistenceContext
 	private EntityManager em;
 
+	public EntityManager getEm() {
+		return em;
+	}
+
+	public void setEm(EntityManager em) {
+		this.em = em;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ushahidi.swiftriver.core.data.dao.AccountDao#findById(long)
+	 */
 	public Account findById(long id) {
 		Account account = em.find(Account.class, id);
 		return account;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.data.dao.AccountDao#findByUsername(java.
+	 * lang.String)
+	 */
+	public Account findByUsername(String username) {
+		String query = "SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username";
+		return (Account) em.createQuery(query)
+				.setParameter("username", username)
+				.getSingleResult();
 	}
 }

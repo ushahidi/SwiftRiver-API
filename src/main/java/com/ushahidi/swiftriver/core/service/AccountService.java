@@ -40,22 +40,50 @@ public class AccountService {
 		this.accountDao = accountDao;
 	}
 
+	/**
+	 * Get an account using its id
+	 * 
+	 * @param id
+	 * @return
+	 */
 	public Map<String, Object> getAccount(long id) {
 		Account account = accountDao.findById(id);
 
+		return getAccountMap(account);
+	}
+
+	/**
+	 * Get an account by username
+	 * 
+	 * @param username
+	 * @return
+	 */
+	public Map<String, Object> getAccount(String username) {
+		Account account = accountDao.findByUsername(username);
+		return getAccountMap(account);
+	}
+
+	public Map<String, Object> getAccountMap(Account account) {
 		Object[][] accountData = { { "id", account.getId() },
-				{ "name", account.getOwner().getName() },
 				{ "account_path", account.getAccountPath() },
-				{ "email", account.getOwner().getName() },
-				{ "follower_count", 0 }, { "following_count", 0 },
-				{ "is_owner", false }, { "is_collaborator", false },
-				{ "is_following", false },
+				{ "active", account.isActive() },
 				{ "public", !account.isAccountPrivate() },
 				{ "date_added", account.getDateAdded() },
 				{ "river_quota_remaining", account.getRiverQuotaRemaining() },
-				{ "active", account.isActive() },
-				{ "rivers", new ArrayList() }, { "buckets", new ArrayList() } };
+				{ "follower_count", 0 }, { "following_count", 0 },
+				{ "is_owner", false }, { "is_collaborator", false },
+				{ "is_following", false }, { "rivers", new ArrayList() },
+				{ "buckets", new ArrayList() } };
 
-		return ArrayUtils.toMap(accountData);
+		Object[][] ownerData = { { "name", account.getOwner().getName() },
+				{ "email", account.getOwner().getEmail() },
+				{ "username", account.getOwner().getUsername() },
+				{ "date_added", account.getOwner().getCreatedDate() }, };
+
+		Map<String, Object> accountMap = ArrayUtils.toMap(accountData);
+		Map<String, Object> ownerMap = ArrayUtils.toMap(ownerData);
+		accountMap.put("owner", ownerMap);
+
+		return accountMap;
 	}
 }

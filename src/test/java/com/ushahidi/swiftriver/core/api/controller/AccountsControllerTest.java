@@ -23,6 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -33,8 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-@ContextConfiguration("file:src/main/webapp/WEB-INF/spring/servlet-context.xml")
-@ActiveProfiles(profiles = {"test"})
+@ContextConfiguration("file:src/main/webapp/WEB-INF/spring/web-context.xml")
+@ActiveProfiles(profiles = { "test" })
 public class AccountsControllerTest {
 
 	@Autowired
@@ -50,8 +52,27 @@ public class AccountsControllerTest {
 
 	@Test
 	public void getAccount() throws Exception {
-		this.mockMvc.perform(get("/v1/accounts/1")).andExpect(status().isOk())
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+		this.mockMvc
+				.perform(get("/v1/accounts/1"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value(1));
+	}
+
+	@Test
+	public void getAuthenticatedUserAccount() throws Exception {
+		SecurityContextHolder.getContext().setAuthentication(
+				new UsernamePasswordAuthenticationToken("admin", "password"));
+		
+		//FIXME: Authentication missing
+		this.mockMvc
+				.perform(get("/v1/accounts/1"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.id").value(1));
+		
+		SecurityContextHolder.clearContext();
 	}
 }

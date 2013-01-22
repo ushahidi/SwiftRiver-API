@@ -19,4 +19,6 @@ import com.ushahidi.swiftriver.core.model.Account;
 public interface AccountDao {
 
 	public Account findById(long id);
+	
+	public Account findByUsername(String username);
 }
