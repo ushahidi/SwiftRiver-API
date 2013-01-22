@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.service;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Base interface for all SwiftRiver service interfaces. This interface
@@ -50,11 +51,4 @@ public interface SwiftRiverService<T, ID extends Serializable> {
 	 */
 	public void delete(T entity);
 	
-	/**
-	 * Gets an entity using its unique database ID
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public T findById(ID id);
 }

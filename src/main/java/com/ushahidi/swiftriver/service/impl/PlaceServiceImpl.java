@@ -39,6 +39,10 @@ public class PlaceServiceImpl extends AbstractServiceImpl<Place, Long> implement
 		this.placeDAO = placeDAO;
 	}
 
+	public Place getPlace(Long id) {
+		return placeDAO.findById(id);
+	}
+
 	public Place findByHash(String hash) {
 		return placeDAO.findByHash(hash);
 	}

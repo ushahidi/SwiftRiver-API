@@ -49,6 +49,10 @@ public class DropServiceImpl extends AbstractServiceImpl<Drop, Long> implements 
 		return dropDAO;
 	}
 
+	public Drop getDrop(Long id) {
+		return dropDAO.findById(id);
+	}
+
 	@Override
 	public void createDrops(Collection<Drop> drops) {
 		dropDAO.createDrops(drops);

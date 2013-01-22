@@ -12,7 +12,21 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Set;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -168,6 +182,21 @@ public class Account implements Serializable{
 		} else if (!accountPath.equals(other.accountPath))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+
+		// 2D array to represent the account data
+		Object[][] accountData = {
+				{"id", this.getId()},
+				{"name", this.getUser().getName()},
+				{"account_path", this.getAccountPath()}
+		};
+		
+		// Serialize the data array to JSON
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(accountData));
 	}
 
 }

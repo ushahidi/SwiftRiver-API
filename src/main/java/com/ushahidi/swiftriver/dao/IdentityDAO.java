@@ -14,16 +14,10 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.dao;
 
-import com.ushahidi.swiftriver.dao.TagDAO;
-import com.ushahidi.swiftriver.model.Tag;
+import com.ushahidi.swiftriver.model.Identity;
 
-public interface TagService extends SwiftRiverService<Tag, Long> {
+public interface IdentityDAO extends SwiftRiverDAO<Identity, Long> {
 
-	public void setTagDAO(TagDAO tagDAO);
-	
-	public Tag getTag(Long id);
-
-	public Tag findByHash(String hash);
 }

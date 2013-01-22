@@ -16,8 +16,10 @@
  */
 package com.ushahidi.swiftriver.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.ushahidi.swiftriver.dao.RiverDAO;
 import com.ushahidi.swiftriver.model.Channel;
@@ -30,13 +32,20 @@ public interface RiverService extends SwiftRiverService<River, Long> {
 	public void setRiverDAO(RiverDAO riverDAO);
 
 	/**
+	 * Gets and returns a River as a Map object
+	 * @param id
+	 * @return
+	 */
+	public Map<String, Object> getRiver(Long id);
+
+	/**
 	 * Gets the drops in a river using the specified id and parameters
 	 * 
 	 * @param id Unique ID of the river
 	 * @param params Additional(optional) parameters for filtering the drops listing
 	 * @return
 	 */
-	public List<Drop> getDrops(long id, Object ...params);
+	public ArrayList<String> getDrops(long id, Object ...params);
 	
 	/**
 	 * Gets users collaborating on the specified river
@@ -44,7 +53,7 @@ public interface RiverService extends SwiftRiverService<River, Long> {
 	 * @param river
 	 * @return
 	 */
-	public List<User> getCollaborators(River river);
+	public ArrayList<String> getCollaborators(River river);
 	
 	/**
 	 * Adds a user to the list of river collaborators

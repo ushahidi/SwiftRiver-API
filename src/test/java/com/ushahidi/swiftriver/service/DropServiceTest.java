@@ -16,42 +16,76 @@
  */
 package com.ushahidi.swiftriver.service;
 
-import org.junit.Assert;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.dao.DropDAO;
+import com.ushahidi.swiftriver.dao.PlaceDAO;
+import com.ushahidi.swiftriver.dao.TagDAO;
+import com.ushahidi.swiftriver.model.Place;
+import com.ushahidi.swiftriver.model.Tag;
+import com.ushahidi.swiftriver.service.impl.DropServiceImpl;
+import com.ushahidi.swiftriver.service.impl.PlaceServiceImpl;
+import com.ushahidi.swiftriver.service.impl.TagServiceImpl;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 public class DropServiceTest extends AbstractSwiftRiverTest {
-	
-	@Autowired
+
+	/** Service interfaces under test */	
 	private DropService dropService;
 	
-	@Autowired
 	private TagService tagService;
 
-	@Autowired
 	private PlaceService placeService;
 
+	/** DAO interfaces under test */
+	private DropDAO dropDAO;
+
+	private TagDAO tagDAO;
+	
+	private PlaceDAO placeDAO;
+
+	/* Drop id to be used for the test */
 	private Long dropId = new Long(18);
 	
 	@Override
 	@Before
 	public void beforeTest() {
-		// TODO Auto-generated method stub
+		// Drop servoce
+		dropService = new DropServiceImpl();
+		dropDAO = mock(DropDAO.class);
+		dropService.setDropDAO(dropDAO);
+
+		// Tag service
+		tagService = new TagServiceImpl();
+		tagDAO = mock(TagDAO.class);
+		tagService.setTagDAO(tagDAO);
 		
+		// Places
+		placeService = new PlaceServiceImpl();
+		placeDAO = mock(PlaceDAO.class);
+		placeService.setPlaceDAO(placeDAO);
+	}
+
+	@Test
+	public void testGetDrop() {
+		dropService.getDrop(dropId);
+		verify(dropDAO).findById(dropId);
 	}
 
 	/**
 	 * @verifies that a tag is added to a drop
 	 */
 	@Test
-	public void testAddTag() {		
-		int tagCount = dropService.getTags(dropId).size();
-		dropService.addTag(dropId, tagService.findById(new Long(12)));
-		
-		Assert.assertEquals((tagCount + 1), dropService.getTags(dropId).size());
+	public void testAddTag() {
+		Tag tag = tagService.getTag(new Long(12));		
+		verify(tagDAO).findById(new Long(12));
+
+		dropService.addTag(dropId, tag);
+		verify(dropDAO).addTag(dropId, tag);
 	}
 	
 	/**
@@ -59,11 +93,11 @@ public class DropServiceTest extends AbstractSwiftRiverTest {
 	 */
 	@Test
 	public void testRemoveTag() {
-		int tagCount = dropService.getTags(dropId).size();
-		int expectedTagCount = tagCount > 0 ? (tagCount - 1) : tagCount;
+		Tag tag =  tagService.getTag(new Long(12));
+		verify(tagDAO).findById(new Long(12));
 
-		dropService.removeTag(dropId, tagService.findById(new Long(12)));
-		Assert.assertEquals(expectedTagCount, dropService.getTags(dropId).size());
+		dropService.removeTag(dropId, tag);
+		verify(dropDAO).removeTag(dropId, tag);
 	}
 	
 	/**
@@ -71,10 +105,11 @@ public class DropServiceTest extends AbstractSwiftRiverTest {
 	 */
 	@Test
 	public void testAddPlace() {
-		int placeCount = dropService.getPlaces(dropId).size();
+		Place place = placeService.getPlace(new Long(99));
+		verify(placeDAO).findById(new Long(99));
 		
-		dropService.addPlace(dropId, placeService.findById(new Long(99)));
-		Assert.assertEquals((placeCount + 1), dropService.getPlaces(dropId).size());
+		dropService.addPlace(dropId, place);
+		verify(dropDAO).addPlace(dropId, place);
 	}
 	
 	/**
@@ -82,11 +117,11 @@ public class DropServiceTest extends AbstractSwiftRiverTest {
 	 */
 	@Test
 	public void testRemovePlace() {
-		int placeCount = dropService.getPlaces(dropId).size();
-		int expectedPlaceCount = placeCount > 0 ? (placeCount - 1) : placeCount;
-
-		dropService.removePlace(dropId, placeService.findById(new Long(99)));
-		Assert.assertEquals(expectedPlaceCount, dropService.getPlaces(dropId).size());
+		Place place = placeService.getPlace(new Long(99));
+		verify(placeDAO).findById(new Long(99));
+		
+		dropService.removePlace(dropId, place);
+		verify(dropDAO).removePlace(dropId, place);
 	}
 	
 	 

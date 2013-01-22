@@ -17,7 +17,16 @@
 package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -101,6 +110,20 @@ public class Media implements Serializable {
 		} else if (!hash.equals(other.hash))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		// 2D array representation the object properties
+		Object[][] mediaData = { 
+				{"id", this.getId()},
+				{"url", this.getUrl()},
+				{"type", this.getType()}
+		};
+		
+		// Serialize to JSON
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(mediaData));
 	}
 
 }

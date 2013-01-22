@@ -17,7 +17,16 @@
 package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -124,4 +133,20 @@ public class Place implements Serializable{
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		// 2D representation of the place data
+		Object[][] placeData = { 
+				{"id", this.getId()}, 
+				{"name", this.getPlaceName()}, 
+				{"latitude", this.getLatitude()},
+				{"longitude", this.getLongitude()}
+		};
+		
+		//Serialize the place data to JSON
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(placeData));
+	}
+
 }

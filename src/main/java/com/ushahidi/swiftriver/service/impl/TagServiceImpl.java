@@ -47,4 +47,8 @@ public class TagServiceImpl extends AbstractServiceImpl<Tag, Long> implements Ta
 		return tagDAO.findByHash(hash);
 	}
 
+	public Tag getTag(Long id) {
+		return tagDAO.findById(id);
+	}
+
 }

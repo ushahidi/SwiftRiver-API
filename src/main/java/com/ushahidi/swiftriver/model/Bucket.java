@@ -19,7 +19,23 @@ package com.ushahidi.swiftriver.model;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Collection;
-import javax.persistence.*;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.ushahidi.swiftriver.SwiftRiverException;
 
 /**
  * 
@@ -210,6 +226,31 @@ public class Bucket implements Serializable {
 		} else if (!bucketName.equals(other.bucketName))
 			return false;
 		return true;
+	}
+
+	/**
+	 * Returns a JSON representation of the bucket 
+	 */
+	@Override
+	public String toString() {
+		if (this.getAccount().equals(null)) {
+			throw new SwiftRiverException("No data found in Bucket reference reference");
+		}
+
+		// 2D array representation of the bucket data
+		Object[][] bucketData = {
+				{"id", this.getId()},
+				{"name", this.getBucketName()},
+				{"description", this.getBucketDescription()},
+				{"url", this.getBucketNameUrl()},
+				{"date_added", this.getBucketDateAdd()},
+				{"public", this.isBucketPublish()},
+				{"account", this.getAccount().toString()}
+		};
+
+		// Serialize the array to JSON
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(bucketData));
 	}
 
 }

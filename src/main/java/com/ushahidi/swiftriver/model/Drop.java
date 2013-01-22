@@ -18,9 +18,27 @@ package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Date;
-import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -37,6 +55,10 @@ public class Drop implements Serializable{
 	@GeneratedValue
 	private long id;
 	
+	@ManyToOne
+	@JoinColumn(name = "identity_id")
+	private Identity identity;
+
 	@Column(name = "channel", nullable = false)
 	private String channel;
 	
@@ -73,33 +95,33 @@ public class Drop implements Serializable{
 	@Column(name = "comment_count")
 	private int commentCount;
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(
 			name = "droplets_tags",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="tag_id"))
-	private Collection<Tag> tags = null;
+	private Set<Tag> tags = new HashSet<Tag>();
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(
 			name = "droplets_places",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="place_id"))
-	private Collection<Place> places = null;
+	private Set<Place> places = new HashSet<Place>();
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(
 			name = "droplets_links",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="link_id"))
-	private Collection<Link> links = null;
+	private Set<Link> links = new HashSet<Link>();
 	
-	@OneToMany(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinTable(
 			name = "droplets_media",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="media_id"))
-	private Collection<Media> media = null;
+	private Set<Media> media = new HashSet<Media>();
 
 	public Drop() {
 		
@@ -111,6 +133,14 @@ public class Drop implements Serializable{
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
 	}
 
 	public String getChannel() {
@@ -209,35 +239,35 @@ public class Drop implements Serializable{
 		this.commentCount = commentCount;
 	}
 
-	public Collection<Tag> getTags() {
+	public Set<Tag> getTags() {
 		return tags;
 	}
 
-	public void setTags(Collection<Tag> tags) {
+	public void setTags(Set<Tag> tags) {
 		this.tags = tags;
 	}
 
-	public Collection<Place> getPlaces() {
+	public Set<Place> getPlaces() {
 		return places;
 	}
 
-	public void setPlaces(Collection<Place> places) {
+	public void setPlaces(Set<Place> places) {
 		this.places = places;
 	}
 
-	public Collection<Link> getLinks() {
+	public Set<Link> getLinks() {
 		return links;
 	}
 
-	public void setLinks(Collection<Link> links) {
+	public void setLinks(Set<Link> links) {
 		this.links = links;
 	}
 
-	public Collection<Media> getMedia() {
+	public Set<Media> getMedia() {
 		return media;
 	}
 
-	public void setMedia(Collection<Media> media) {
+	public void setMedia(Set<Media> media) {
 		this.media = media;
 	}
 
@@ -270,6 +300,50 @@ public class Drop implements Serializable{
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		// Drop tags
+		ArrayList<String> dropTags = new ArrayList<String>();
+		for (Tag tag: this.getTags()) {
+			dropTags.add(tag.toString());
+		}
+		
+		// Places
+		ArrayList<String> dropPlaces = new ArrayList<String>();
+		for (Place place: this.getPlaces()) {
+			dropPlaces.add(place.toString());
+		}
+		
+		// Links
+		ArrayList<String>  dropLinks = new ArrayList<String>();
+		for (Link link: this.getLinks()) {
+			dropLinks.add(link.toString());
+		}
 
+		// Media
+		ArrayList<String> dropMedia = new ArrayList<String>();
+		for (Media media: this.getMedia()) {
+			dropMedia.add(media.toString());
+		}
+
+		// Pack the drop data
+		Object[][] dropData = {
+				{"id", this.getId()}, 
+				{"channel", this.getChannel()},
+				{"title", this.getDropletTitle()},
+				{"content", this.getDropletContent()},
+				{"date_published", this.getDropletDatePub()},
+				{"comment_count", this.getCommentCount()},
+				{"source", this.getIdentity().toString()},
+				{"tags", dropTags},
+				{"places", dropPlaces},
+				{"links", dropLinks},
+				{"media", dropMedia}
+		};
+		
+		// Serialize the drop data to JSON string
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(dropData));
+	}
 	
 }

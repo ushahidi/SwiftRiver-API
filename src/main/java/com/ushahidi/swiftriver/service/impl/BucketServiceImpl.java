@@ -16,12 +16,18 @@
  */
 package com.ushahidi.swiftriver.service.impl;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.ushahidi.swiftriver.dao.BucketDAO;
 import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
 import com.ushahidi.swiftriver.model.Bucket;
@@ -36,10 +42,10 @@ import com.ushahidi.swiftriver.service.BucketService;
  */
 @Service
 public class BucketServiceImpl extends AbstractServiceImpl<Bucket, Long> implements BucketService {
-
+	
 	@Autowired
 	private BucketDAO bucketDAO;
-	
+
 	public void setBucketDAO(BucketDAO bucketDAO) {
 		this.bucketDAO = bucketDAO;
 	}
@@ -48,9 +54,33 @@ public class BucketServiceImpl extends AbstractServiceImpl<Bucket, Long> impleme
 		return bucketDAO;
 	}
 
-	@Override
-	public Collection<Drop> getDrops(Long bucketId, Map<Object, Object>... params) {
-		return bucketDAO.getDrops(bucketId, params);
+	public Map<String, Object> getBucket(Long id) {
+		Bucket bucket = bucketDAO.findById(id);
+		
+		// Verify that the bucket exists
+		if (bucket == null) {
+			logger.debug("Could not find bucket with id " + id);
+			return null;
+		}
+		
+		// Deserialize the bucket data
+		Gson gson = new Gson();
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		
+		Map<String, Object> bucketDataMap = gson.fromJson(bucket.toString(), type);
+		
+		// Add the drops
+		return bucketDataMap;
+	}
+
+	public ArrayList<String> getDrops(Long bucketId, Map<Object, Object>... params) {
+		List<Drop> drops = (List<Drop>) bucketDAO.getDrops(bucketId, params);
+		
+		ArrayList<String> dropsList = new ArrayList<String>();
+		for (Drop drop: drops) {
+			dropsList.add(drop.toString());
+		}
+		return dropsList;
 	}
 
 	@Override
@@ -79,8 +109,9 @@ public class BucketServiceImpl extends AbstractServiceImpl<Bucket, Long> impleme
 	}
 
 	@Override
-	public Collection<User> getCollaborators(Bucket bucket) {
-		return bucketDAO.getCollaborators(bucket);
+	public Map<String, Object> getCollaborators(Bucket bucket) {
+		List<User> collaborators = (List<User>) bucketDAO.getCollaborators(bucket);
+		return null;
 	}
 
 	@Override

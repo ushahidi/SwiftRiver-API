@@ -19,7 +19,22 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -257,6 +272,14 @@ public class River implements Serializable{
 	}
 
 
+	public Timestamp getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(Timestamp expiryDate) {
+		this.expiryDate = expiryDate;
+	}
+
 	public boolean isExpired() {
 		return expired;
 	}
@@ -303,6 +326,26 @@ public class River implements Serializable{
 		} else if (!riverName.equals(other.riverName))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		Object[][] riverData = {
+				{"id", this.getId()},
+				{"name", this.getRiverName()},
+				{"url", this.getRiverNameUrl()},
+				{"public", this.isRiverPublic()},
+				{"drop_count", this.getDropCount()},
+				{"drop_quota", this.getDropQuota()},
+				{"date_added", this.getDateAdded()},
+				{"expiry_date", this.getExpiryDate()},
+				{"extension_count", this.getExtensionCount()},
+				{"account", this.getAccount().toString()}
+		};
+		
+		// Serrialize river data to JSON
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(riverData));
 	}
 	
 }

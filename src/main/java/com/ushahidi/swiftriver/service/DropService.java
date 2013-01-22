@@ -28,6 +28,8 @@ import com.ushahidi.swiftriver.model.Tag;
 public interface DropService extends SwiftRiverService<Drop, Long> {
 	
 	public void setDropDAO(DropDAO dropDAO);
+	
+	public Drop getDrop(Long id);
 
 	public void createDrops(Collection<Drop> drops);
 	

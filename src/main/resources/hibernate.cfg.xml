@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
                                          "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
- <session-factory name="sessionFactory">
+ <session-factory>
   <property name="hibernate.connection.driver_class">${hibernate.connection.driver}</property>
   <property name="hibernate.connection.password">${hibernate.connection.password}</property>
   <property name="hibernate.connection.url">${hibernate.connection.url}</property>

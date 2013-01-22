@@ -53,7 +53,7 @@ public class RiverServiceTest extends AbstractSwiftRiverTest{
 	 */
 	@Test
 	public void testGetRiver() {
-		riverService.findById(new Long(1));
+		riverService.getRiver(new Long(1));
 		verify(riverDAO).findById(new Long(1));
 	}
 	

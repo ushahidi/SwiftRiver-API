@@ -47,8 +47,8 @@ public class BucketServiceTest extends AbstractSwiftRiverTest {
 
 	@Test
 	public void testGetBucket() {
-		bucketService.findById(bucketId);
+		bucketService.getBucket(bucketId);
 		verify(bucketDAO).findById(bucketId);
-	}
+	}	
 
 }

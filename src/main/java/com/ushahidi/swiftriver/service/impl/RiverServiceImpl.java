@@ -16,12 +16,17 @@
  */
 package com.ushahidi.swiftriver.service.impl;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.ushahidi.swiftriver.dao.RiverDAO;
 import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
 import com.ushahidi.swiftriver.model.Channel;
@@ -49,14 +54,48 @@ public class RiverServiceImpl extends AbstractServiceImpl<River, Long> implement
 		return riverDAO;
 	}
 
-	@Override
-	public List<Drop> getDrops(long id, Object... params) {
-		return riverDAO.getDrops(id, params);
+	/**
+	 * @see RiverServiceImpl#getRiver(Long)
+	 */
+	public Map<String, Object> getRiver(Long id) {
+		// Fetch the river from the database
+		River river = riverDAO.findById(id);
+		
+		// Verify that the river exists
+		if (river == null) {
+			logger.debug("Could not find river with id " + id);
+			return null;
+		}
+
+		Gson gson = new Gson();
+		Type type = new TypeToken<Map<String, Object>>(){}.getType();
+		
+		Map<String, Object> riverData = gson.fromJson(river.toString(), type);
+		
+		return riverData;
 	}
 
-	@Override
-	public List<User> getCollaborators(River river) {
-		return riverDAO.getCollaborators(river);
+	/**
+	 * @see RiverService#getDrops(long, Object...)
+	 */
+	public ArrayList<String> getDrops(long id, Object... params) {
+		ArrayList<String> dropsArray = new ArrayList<String>();
+		for (Drop drop: riverDAO.getDrops(id, params)) {
+			dropsArray.add(drop.toString());
+		}
+		return dropsArray;
+	}
+
+	/**
+	 * @see RiverService#getCollaborators(River)
+	 */
+	public ArrayList<String> getCollaborators(River river) {
+		ArrayList<String> collaboratorsList = new ArrayList<String>();
+		for(User user: riverDAO.getCollaborators(river)) {
+			collaboratorsList.add(user.toString());
+		}
+		
+		return collaboratorsList;
 	}
 
 	@Override

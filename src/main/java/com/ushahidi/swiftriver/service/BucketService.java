@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -25,6 +26,8 @@ import com.ushahidi.swiftriver.model.Drop;
 import com.ushahidi.swiftriver.model.User;
 
 public interface BucketService extends SwiftRiverService<Bucket, Long> {
+
+	public Map<String, Object> getBucket(Long id);
 
 	/**
 	 * Sets the Bucket DAO to be used
@@ -40,7 +43,7 @@ public interface BucketService extends SwiftRiverService<Bucket, Long> {
 	 * @param params
 	 * @return
 	 */
-	public Collection<Drop> getDrops(Long bucketId, Map<Object, Object>...params);
+	public ArrayList<String> getDrops(Long bucketId, Map<Object, Object>...params);
 	
 	/**
 	 * Adds a single drop to a bucket
@@ -89,7 +92,7 @@ public interface BucketService extends SwiftRiverService<Bucket, Long> {
 	 * @param bucket Database ID of the bucket
 	 * @return
 	 */
-	public Collection<User> getCollaborators(Bucket bucket);
+	public Map<String, Object> getCollaborators(Bucket bucket);
 	
 	/**
 	 * Removes a user from the list of users collaborating on a bucket

@@ -10,16 +10,20 @@
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
-
+	<!-- Import database connection properties -->
 	<bean id="hibernateProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 		<property name="location">
 			<value>classpath:database.properties</value>
 		</property>
 	</bean>
 
+	<!-- Auto-scan components in com.ushahidi.swiftriver -->
 	<context:component-scan base-package="com.ushahidi.swiftriver" />
 
+	<!-- Hibernate session factory -->
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+	
+		<!-- Import hibenate configuration -->
 		<property name="configLocation">
 			<value>classpath:hibernate.cfg.xml</value>
 		</property>
@@ -27,15 +31,18 @@
 			<ref local="hibernateProperties" />
 		</property>
 
+		<!-- Automatically import model objects -->
 		<property name="packagesToScan" value="com.ushahidi.swiftriver.model" />
 	</bean>
 
+	<!-- HibernateTemplate -->
 	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
 		<constructor-arg>
 			<ref local="sessionFactory" />
 		</constructor-arg>
 	</bean>
 
+	<!-- Transaction manager -->
 	<tx:annotation-driven />
 	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
 		<property name="sessionFactory" ref="sessionFactory" />

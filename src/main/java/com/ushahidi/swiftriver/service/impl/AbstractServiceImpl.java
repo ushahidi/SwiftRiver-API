@@ -32,8 +32,8 @@ import com.ushahidi.swiftriver.service.SwiftRiverService;
  */
 public abstract class AbstractServiceImpl<T, ID extends Serializable> implements SwiftRiverService<T, ID> {
 
-	/** Logger */
-	protected static Logger logger = Logger.getLogger("service");
+	/* Logger */
+	protected static Logger logger = Logger.getLogger(SwiftRiverService.class);
 
 	/**
 	 * Gets the DAO interface to be used for database operations. This
@@ -62,13 +62,5 @@ public abstract class AbstractServiceImpl<T, ID extends Serializable> implements
 	public void delete(T entity) {
 		getServiceDAO().delete(entity);
 	}
-
-	/**
-	 * @see SwiftRiverDAO#findById(Serializable)
-	 */
-	public T findById(ID id) {
-		return getServiceDAO().findById(id);
-	}
-		
 	
 }

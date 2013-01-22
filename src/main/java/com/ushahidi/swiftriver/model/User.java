@@ -18,7 +18,20 @@ package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -56,6 +69,7 @@ public class User implements Serializable{
 	@Column(name = "last_login")
 	private int lastLogin;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "created_date")
 	private Date createdDate;
 	
@@ -158,6 +172,18 @@ public class User implements Serializable{
 		} else if (!email.equals(other.email))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		Object[][] userData = {
+				{"id", this.getId()},
+				{"name", this.getName()},
+				{"date_added", this.getCreatedDate()}
+		};
+		
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(userData));
 	}
 
 }

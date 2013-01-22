@@ -14,16 +14,24 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.dao.hibernate;
 
-import com.ushahidi.swiftriver.dao.TagDAO;
-import com.ushahidi.swiftriver.model.Tag;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-public interface TagService extends SwiftRiverService<Tag, Long> {
+import com.ushahidi.swiftriver.dao.IdentityDAO;
+import com.ushahidi.swiftriver.model.Identity;
 
-	public void setTagDAO(TagDAO tagDAO);
-	
-	public Tag getTag(Long id);
+/**
+ * Hibernate class for identities
+ * @author ekala
+ *
+ */
+@Repository("identityDAO")
+@Transactional
+public class HibernateIdentityDAO extends AbstractHibernateDAO<Identity, Long> implements IdentityDAO {
 
-	public Tag findByHash(String hash);
+	public HibernateIdentityDAO() {
+		super(Identity.class);
+	}
 }

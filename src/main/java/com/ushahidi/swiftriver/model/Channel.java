@@ -23,8 +23,13 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
- * 
+ * Model for channels 
  * @author ekala
  *
  */
@@ -171,6 +176,19 @@ public class Channel implements Serializable {
 		} else if (!riverId.equals(other.riverId))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		Object[][] channelData = {
+				{"id", this.getId()},
+				{"channel", this.getChannel()},
+				{"active", this.isFilterEnabled()}
+		};
+		
+		// Serialize the array to JSON string
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(channelData));
 	}
 
 }

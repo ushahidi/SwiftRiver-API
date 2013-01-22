@@ -98,7 +98,7 @@ public class TagServiceTest extends AbstractSwiftRiverTest {
 	@Test
 	public void testDeleteTag() {
 		
-		Tag tag = tagService.findById(Long.MAX_VALUE);
+		Tag tag = tagService.getTag(Long.MAX_VALUE);
 		tagService.delete(tag);
 
 		// Verify that tagDAO.delete was called

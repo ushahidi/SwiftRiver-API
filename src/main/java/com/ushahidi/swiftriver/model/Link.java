@@ -17,7 +17,16 @@
 package com.ushahidi.swiftriver.model;
 
 import java.io.Serializable;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import org.apache.commons.lang.ArrayUtils;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -90,6 +99,14 @@ public class Link implements Serializable{
 		} else if (!hash.equals(other.hash))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		Object[][] linkData = { {"id", this.getId()}, {"url", this.getUrl()} };
+		
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(ArrayUtils.toMap(linkData));
 	}
 
 }
