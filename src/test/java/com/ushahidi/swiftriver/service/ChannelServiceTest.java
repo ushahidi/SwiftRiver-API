@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
+import com.ushahidi.swiftriver.core.api.service.ChannelService;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 

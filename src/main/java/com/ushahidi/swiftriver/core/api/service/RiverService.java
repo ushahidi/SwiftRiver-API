@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.Collection;

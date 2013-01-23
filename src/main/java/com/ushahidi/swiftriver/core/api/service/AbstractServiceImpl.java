@@ -14,40 +14,47 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.core.api.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.io.Serializable;
 
-import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
-import com.ushahidi.swiftriver.core.model.Place;
 
 /**
- * Service class for places
+ * Base class for all SwiftRiver service classes.
  * @author ekala
  *
+ * @param <T>
+ * @param <ID>
  */
-@Service
-public class PlaceService extends AbstractServiceImpl<Place, Long> {
+public abstract class AbstractServiceImpl<T, ID extends Serializable> {
 
-	@Autowired
-	private PlaceDao placeDAO;
-
-	public void setPlaceDAO(PlaceDao placeDAO) {
-		this.placeDAO = placeDAO;
+	/**
+	 * Gets the DAO interface to be used for database operations. This
+	 * method MUST be implemented by all classes that extend this class.
+	 * @return
+	 */
+	public abstract SwiftRiverDao<T, ID> getServiceDAO();
+	
+	/**
+	 * @see SwiftRiverDao#create(Object)
+	 */
+	public void create(T entity) {
+		getServiceDAO().create(entity);
 	}
 
-	public Place getPlace(Long id) {
-		return placeDAO.findById(id);
+	/**
+	 * @see SwiftRiverDao#update(Object)
+	 */
+	public void update(T entity) {
+		getServiceDAO().update(entity);
 	}
 
-	public Place findByHash(String hash) {
-		return placeDAO.findByHash(hash);
+	/**
+	 * @see SwiftRiverDao#delete(Object)
+	 */
+	public void delete(T entity) {
+		getServiceDAO().delete(entity);
 	}
-
-	public SwiftRiverDao<Place, Long> getServiceDAO() {
-		return placeDAO;
-	}
-
+	
 }

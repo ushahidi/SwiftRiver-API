@@ -14,40 +14,40 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.core.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
-import com.ushahidi.swiftriver.core.api.dao.TagDao;
-import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.model.Place;
 
 /**
- * Service class for tags
+ * Service class for places
  * @author ekala
  *
  */
 @Service
-public class TagService extends AbstractServiceImpl<Tag, Long> {
+public class PlaceService extends AbstractServiceImpl<Place, Long> {
 
 	@Autowired
-	private TagDao tagDAO;
+	private PlaceDao placeDAO;
 
-	public void setTagDAO(TagDao tagDAO) {
-		this.tagDAO = tagDAO;
+	public void setPlaceDAO(PlaceDao placeDAO) {
+		this.placeDAO = placeDAO;
 	}
 
-	public SwiftRiverDao<Tag, Long> getServiceDAO() {
-		return tagDAO;
+	public Place getPlace(Long id) {
+		return placeDAO.findById(id);
 	}
 
-	public Tag findByHash(String hash) {
-		return tagDAO.findByHash(hash);
+	public Place findByHash(String hash) {
+		return placeDAO.findByHash(hash);
 	}
 
-	public Tag getTag(Long id) {
-		return tagDAO.findById(id);
+	public SwiftRiverDao<Place, Long> getServiceDAO() {
+		return placeDAO;
 	}
 
 }

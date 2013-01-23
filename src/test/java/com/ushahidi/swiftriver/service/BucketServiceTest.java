@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.api.service.BucketService;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**

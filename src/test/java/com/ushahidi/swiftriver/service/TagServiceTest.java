@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.api.service.TagService;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 

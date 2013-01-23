@@ -14,36 +14,40 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.core.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
-import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.Tag;
 
 /**
- * Service class for links
+ * Service class for tags
  * @author ekala
  *
  */
 @Service
-public class LinkService extends AbstractServiceImpl<Link, Long> {
+public class TagService extends AbstractServiceImpl<Tag, Long> {
 
 	@Autowired
-	private LinkDao linkDAO;
+	private TagDao tagDAO;
 
-	public void setLinkDAO(LinkDao linkDAO) {
-		this.linkDAO = linkDAO;
+	public void setTagDAO(TagDao tagDAO) {
+		this.tagDAO = tagDAO;
 	}
 
-	public Link findByHash(String hash) {
-		return linkDAO.findByHash(hash);
+	public SwiftRiverDao<Tag, Long> getServiceDAO() {
+		return tagDAO;
 	}
 
-	public SwiftRiverDao<Link, Long> getServiceDAO() {
-		return linkDAO;
+	public Tag findByHash(String hash) {
+		return tagDAO.findByHash(hash);
+	}
+
+	public Tag getTag(Long id) {
+		return tagDAO.findById(id);
 	}
 
 }

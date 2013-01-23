@@ -14,47 +14,36 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.core.api.service;
 
-import java.io.Serializable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Link;
 
 /**
- * Base class for all SwiftRiver service classes.
+ * Service class for links
  * @author ekala
  *
- * @param <T>
- * @param <ID>
  */
-public abstract class AbstractServiceImpl<T, ID extends Serializable> {
+@Service
+public class LinkService extends AbstractServiceImpl<Link, Long> {
 
-	/**
-	 * Gets the DAO interface to be used for database operations. This
-	 * method MUST be implemented by all classes that extend this class.
-	 * @return
-	 */
-	public abstract SwiftRiverDao<T, ID> getServiceDAO();
-	
-	/**
-	 * @see SwiftRiverDao#create(Object)
-	 */
-	public void create(T entity) {
-		getServiceDAO().create(entity);
+	@Autowired
+	private LinkDao linkDAO;
+
+	public void setLinkDAO(LinkDao linkDAO) {
+		this.linkDAO = linkDAO;
 	}
 
-	/**
-	 * @see SwiftRiverDao#update(Object)
-	 */
-	public void update(T entity) {
-		getServiceDAO().update(entity);
+	public Link findByHash(String hash) {
+		return linkDAO.findByHash(hash);
 	}
 
-	/**
-	 * @see SwiftRiverDao#delete(Object)
-	 */
-	public void delete(T entity) {
-		getServiceDAO().delete(entity);
+	public SwiftRiverDao<Link, Long> getServiceDAO() {
+		return linkDAO;
 	}
-	
+
 }
