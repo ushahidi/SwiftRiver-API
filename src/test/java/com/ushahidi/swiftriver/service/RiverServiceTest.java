@@ -22,9 +22,8 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.dao.RiverDAO;
-import com.ushahidi.swiftriver.dao.hibernate.HibernateRiverDAO;
-import com.ushahidi.swiftriver.service.impl.RiverServiceImpl;
+import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
@@ -36,19 +35,19 @@ public class RiverServiceTest extends AbstractSwiftRiverTest{
 	
 	private RiverService riverService;
 	
-	private RiverDAO riverDAO;
+	private RiverDao riverDAO;
 	
 	@Override
 	@Before
 	public void beforeTest() {
-		riverDAO = mock(RiverDAO.class);
-		riverService = new RiverServiceImpl();
+		riverDAO = mock(RiverDao.class);
+		riverService = new RiverService();
 		riverService.setRiverDAO(riverDAO);
 	}
 
 
 	/**
-	 * @see HibernateRiverDAO#getRiver(long)
+	 * @see JpaRiverDao#getRiver(long)
 	 * @verifies The river exists
 	 */
 	@Test
@@ -60,8 +59,8 @@ public class RiverServiceTest extends AbstractSwiftRiverTest{
 	
 	@Test
 	public void testGetDrops() {
-		riverService.getDrops(new Long(2));
-		verify(riverDAO).getDrops(new Long(2));
+		riverService.getDropsSinceId(new Long(2), 1000L, 50);
+		verify(riverDAO).getDrops(new Long(2), 1000L, 50);
 	}
 	
 	@Test

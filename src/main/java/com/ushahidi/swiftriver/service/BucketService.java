@@ -14,26 +14,24 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service.impl;
+package com.ushahidi.swiftriver.service;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.ushahidi.swiftriver.dao.BucketDAO;
-import com.ushahidi.swiftriver.dao.SwiftRiverDAO;
-import com.ushahidi.swiftriver.model.Bucket;
-import com.ushahidi.swiftriver.model.Drop;
-import com.ushahidi.swiftriver.model.User;
-import com.ushahidi.swiftriver.service.BucketService;
+import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.User;
 
 /**
  * Service class for buckets
@@ -41,16 +39,19 @@ import com.ushahidi.swiftriver.service.BucketService;
  *
  */
 @Service
-public class BucketServiceImpl extends AbstractServiceImpl<Bucket, Long> implements BucketService {
+public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	
 	@Autowired
-	private BucketDAO bucketDAO;
+	private BucketDao bucketDAO;
+	
+	/* Logger */
+	private static Logger logger = Logger.getLogger(BucketService.class);
 
-	public void setBucketDAO(BucketDAO bucketDAO) {
+	public void setBucketDAO(BucketDao bucketDAO) {
 		this.bucketDAO = bucketDAO;
 	}
 
-	public SwiftRiverDAO<Bucket, Long> getServiceDAO() {
+	public SwiftRiverDao<Bucket, Long> getServiceDAO() {
 		return bucketDAO;
 	}
 
@@ -73,48 +74,40 @@ public class BucketServiceImpl extends AbstractServiceImpl<Bucket, Long> impleme
 		return bucketDataMap;
 	}
 
-	public ArrayList<String> getDrops(Long bucketId, Map<Object, Object>... params) {
-		List<Drop> drops = (List<Drop>) bucketDAO.getDrops(bucketId, params);
-		
-		ArrayList<String> dropsList = new ArrayList<String>();
-		for (Drop drop: drops) {
-			dropsList.add(drop.toString());
-		}
+	public ArrayList<Map<String, Object>> getDrops(Long bucketId, int dropCount) {
+		ArrayList<Map<String, Object>> dropsList = new ArrayList<Map<String,Object>>();
+
+		// TODO: Fetch drops and covert them to a map
+
 		return dropsList;
 	}
 
-	@Override
 	public void addDrop(Long bucketId, Drop drop) {
 		bucketDAO.addDrop(bucketId, drop);
 	}
 
-	@Override
 	public void addDrops(Long bucketId, Collection<Drop> drops) {
 		bucketDAO.addDrops(bucketId, drops);
 	}
 
-	@Override
 	public void removeDrop(Long bucketId, Drop drop) {
 		bucketDAO.removeDrop(bucketId, drop);
 	}
 
-	@Override
 	public void removeDrops(Long bucketId, Collection<Drop> drops) {
 		bucketDAO.removeDrops(bucketId, drops);
 	}
 
-	@Override
 	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
 		bucketDAO.addCollaborator(bucketId, user, readOnly);
 	}
 
-	@Override
-	public Map<String, Object> getCollaborators(Bucket bucket) {
-		List<User> collaborators = (List<User>) bucketDAO.getCollaborators(bucket);
-		return null;
+	public ArrayList<Map<String, Object>> getCollaborators(Bucket bucket) {
+		ArrayList<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
+
+		return collaborators;
 	}
 
-	@Override
 	public void removeCollaborator(Long bucketId, User user) {
 		bucketDAO.removeCollaborator(bucketId, user);
 	}

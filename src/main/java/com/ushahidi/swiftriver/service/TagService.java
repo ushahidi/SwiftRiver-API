@@ -16,14 +16,38 @@
  */
 package com.ushahidi.swiftriver.service;
 
-import com.ushahidi.swiftriver.dao.TagDAO;
-import com.ushahidi.swiftriver.model.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface TagService extends SwiftRiverService<Tag, Long> {
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.Tag;
 
-	public void setTagDAO(TagDAO tagDAO);
-	
-	public Tag getTag(Long id);
+/**
+ * Service class for tags
+ * @author ekala
+ *
+ */
+@Service
+public class TagService extends AbstractServiceImpl<Tag, Long> {
 
-	public Tag findByHash(String hash);
+	@Autowired
+	private TagDao tagDAO;
+
+	public void setTagDAO(TagDao tagDAO) {
+		this.tagDAO = tagDAO;
+	}
+
+	public SwiftRiverDao<Tag, Long> getServiceDAO() {
+		return tagDAO;
+	}
+
+	public Tag findByHash(String hash) {
+		return tagDAO.findByHash(hash);
+	}
+
+	public Tag getTag(Long id) {
+		return tagDAO.findById(id);
+	}
+
 }

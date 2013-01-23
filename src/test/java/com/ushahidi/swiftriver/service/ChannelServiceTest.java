@@ -21,9 +21,8 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.dao.ChannelDAO;
-import com.ushahidi.swiftriver.model.Channel;
-import com.ushahidi.swiftriver.service.impl.ChannelServiceImpl;
+import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
+import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
@@ -34,12 +33,12 @@ import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 public class ChannelServiceTest extends AbstractSwiftRiverTest {
 	
 	private ChannelService channelService;
-	private ChannelDAO channelDAO;
+	private ChannelDao channelDAO;
 	
 	@Override
 	public void beforeTest() {
-		channelService = new ChannelServiceImpl();
-		channelDAO = mock(ChannelDAO.class);
+		channelService = new ChannelService();
+		channelDAO = mock(ChannelDao.class);
 		
 		channelService.setChannelDAO(channelDAO);
 	}

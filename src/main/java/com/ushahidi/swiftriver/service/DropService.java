@@ -18,135 +18,90 @@ package com.ushahidi.swiftriver.service;
 
 import java.util.Collection;
 
-import com.ushahidi.swiftriver.dao.DropDAO;
-import com.ushahidi.swiftriver.model.Drop;
-import com.ushahidi.swiftriver.model.Link;
-import com.ushahidi.swiftriver.model.Media;
-import com.ushahidi.swiftriver.model.Place;
-import com.ushahidi.swiftriver.model.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface DropService extends SwiftRiverService<Drop, Long> {
-	
-	public void setDropDAO(DropDAO dropDAO);
-	
-	public Drop getDrop(Long id);
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.Media;
+import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.Tag;
 
-	public void createDrops(Collection<Drop> drops);
+/**
+ * Service class for drops
+ * @author ekala
+ *
+ */
+@Service
+public class DropService extends AbstractServiceImpl<Drop, Long> {
 	
-	/**
-	 * Adds a link to a drop
-	 * @param dropId
-	 * @param link
-	 */
-	public void addLink(long dropId, Link link);
-	
-	/**
-	 * Adds a collection of links to a drop
-	 * 
-	 * @param dropId
-	 * @param links
-	 */
-	public void addLinks(long dropId, Collection<Link> links);
-	
-	/**
-	 * Removes a link from the list of a drop's links
-	 * @param dropId
-	 * @param link
-	 */
-	public void removeLink(long dropId, Link link);
+	@Autowired
+	private DropDao dropDAO;
 
-	/**
-	 * Gets the links for a specific drop
-	 * 
-	 * @param dropId
-	 * @return
-	 */
-	public Collection<Link> getLinks(long dropId);
+	public void setDropDAO(DropDao dropDAO) {
+		this.dropDAO = dropDAO;
+	}
 
-	/**
-	 * Adds a place to a drop
-	 * @param dropId
-	 * @param place
-	 */
-	public void addPlace(Long dropId, Place place);
-	
-	/**
-	 * Adds a collection of places to a drop
-	 * @param dropId
-	 * @param places
-	 */
-	public void addPlaces(long dropId, Collection<Place> places);
-	
-	/**
-	 * Removes a place from the list of places contained in a drop
-	 * @param dropId
-	 * @param place
-	 */
-	public void removePlace(Long dropId, Place place);
+	public SwiftRiverDao<Drop, Long> getServiceDAO() {
+		return dropDAO;
+	}
 
-	/**
-	 * Gets the places for a specific drop
-	 * 
-	 * @param dropId
-	 * @return
-	 */
-	public Collection<Place> getPlaces(long dropId);
-	
-	/**
-	 * Adds a single media item to a drop
-	 * @param dropId
-	 * @param media
-	 */
-	public void addMedia(long dropId, Media media);
-	
-	/**
-	 * Adds a collection of media to a drop
-	 * @param dropId
-	 * @param media
-	 */
-	public void addMultipleMedia(long dropId, Collection<Media> media);
-	
-	/**
-	 * Removes a media item from the drop's media collection
-	 * 
-	 * @param dropId
-	 * @param media
-	 */
-	public void removeMedia(long dropId, Media media);
-	
-	/**
-	 * Gets the media for a specific drop
-	 * 
-	 * @param dropId
-	 * @return
-	 */
-	public Collection<Media> getMedia(long dropId);
-	
-	/**
-	 * Adds a tag to a drop
-	 * @param dropId
-	 * @param tag
-	 */
-	public void addTag(Long dropId, Tag tag);
-	
-	/**
-	 * Adds a collection of tags to the drop
-	 * @param dropId
-	 * @param tags
-	 */
-	public void addTags(long dropId, Collection<Tag> tags);
-	
-	/**
-	 * Removes a tag from a drop's tag collection
-	 * @param dropId
-	 * @param tag
-	 */
-	public void removeTag(Long dropId, Tag tag);
-	
-	/**
-	 * Gets the tags for a specific drop
-	 * @param dropId
-	 * @return
-	 */
-	public Collection<Tag> getTags(long dropId);
+	public Drop getDrop(Long id) {
+		return dropDAO.findById(id);
+	}
+
+	public void createDrops(Collection<Drop> drops) {
+		dropDAO.createDrops(drops);
+	}
+
+	public void addLink(long dropId, Link link) {
+		dropDAO.addLink(dropId, link);
+	}
+
+	public void addLinks(long dropId, Collection<Link> links) {
+		dropDAO.addLinks(dropId, links);
+	}
+
+	public void removeLink(long dropId, Link link) {
+		dropDAO.removeLink(dropId, link);
+	}
+
+	public void addPlace(Long dropId, Place place) {
+		dropDAO.addPlace(dropId, place);
+	}
+
+	public void addPlaces(long dropId, Collection<Place> places) {
+		dropDAO.addPlaces(dropId, places);
+	}
+
+	public void removePlace(Long dropId, Place place) {
+		dropDAO.removePlace(dropId, place);
+	}
+
+	public void addMedia(long dropId, Media media) {
+		dropDAO.addMedia(dropId, media);
+	}
+
+	public void addMultipleMedia(long dropId, Collection<Media> media) {
+		dropDAO.addMultipleMedia(dropId, media);
+	}
+
+	public void removeMedia(long dropId, Media media) {
+		dropDAO.removeMedia(dropId, media);
+	}
+
+	public void addTag(Long dropId, Tag tag) {
+		dropDAO.addTag(dropId, tag);
+	}
+
+	public void addTags(long dropId, Collection<Tag> tags) {
+		dropDAO.addTags(dropId, tags);
+	}
+
+	public void removeTag(Long dropId, Tag tag) {
+		dropDAO.removeTag(dropId, tag);
+	}
+
 }

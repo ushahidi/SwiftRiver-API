@@ -18,13 +18,35 @@ package com.ushahidi.swiftriver.service;
 
 import java.util.Collection;
 
-import com.ushahidi.swiftriver.dao.ChannelDAO;
-import com.ushahidi.swiftriver.model.Channel;
-import com.ushahidi.swiftriver.model.ChannelOption;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface ChannelService extends SwiftRiverService<Channel, Integer> {
+import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Channel;
+import com.ushahidi.swiftriver.core.model.ChannelOption;
 
-	public void setChannelDAO(ChannelDAO channelDAO);
+/**
+ * Service class for channels
+ * @author ekala
+ *
+ */
+@Service
+public class ChannelService extends AbstractServiceImpl<Channel, Integer> {
 
-	public Collection<ChannelOption> getChannelOptions(Integer channelId);
+	@Autowired
+	private ChannelDao channelDAO;
+	
+	public void setChannelDAO(ChannelDao channelDAO) {
+		this.channelDAO = channelDAO;
+	}
+
+	public SwiftRiverDao<Channel, Integer> getServiceDAO() {
+		return channelDAO;
+	}
+
+	public Collection<ChannelOption> getChannelOptions(Integer channelId) {
+		return channelDAO.getChannelOptions(channelId);
+	}
+
 }

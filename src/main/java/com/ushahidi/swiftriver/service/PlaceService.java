@@ -16,14 +16,38 @@
  */
 package com.ushahidi.swiftriver.service;
 
-import com.ushahidi.swiftriver.dao.PlaceDAO;
-import com.ushahidi.swiftriver.model.Place;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface PlaceService extends SwiftRiverService<Place, Long> {
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Place;
 
-	public void setPlaceDAO(PlaceDAO placeDAO);
+/**
+ * Service class for places
+ * @author ekala
+ *
+ */
+@Service
+public class PlaceService extends AbstractServiceImpl<Place, Long> {
 
-	public Place findByHash(String hash);
+	@Autowired
+	private PlaceDao placeDAO;
 
-	public Place getPlace(Long id);
+	public void setPlaceDAO(PlaceDao placeDAO) {
+		this.placeDAO = placeDAO;
+	}
+
+	public Place getPlace(Long id) {
+		return placeDAO.findById(id);
+	}
+
+	public Place findByHash(String hash) {
+		return placeDAO.findByHash(hash);
+	}
+
+	public SwiftRiverDao<Place, Long> getServiceDAO() {
+		return placeDAO;
+	}
+
 }

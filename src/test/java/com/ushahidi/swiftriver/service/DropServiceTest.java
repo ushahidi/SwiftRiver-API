@@ -22,14 +22,11 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.dao.DropDAO;
-import com.ushahidi.swiftriver.dao.PlaceDAO;
-import com.ushahidi.swiftriver.dao.TagDAO;
-import com.ushahidi.swiftriver.model.Place;
-import com.ushahidi.swiftriver.model.Tag;
-import com.ushahidi.swiftriver.service.impl.DropServiceImpl;
-import com.ushahidi.swiftriver.service.impl.PlaceServiceImpl;
-import com.ushahidi.swiftriver.service.impl.TagServiceImpl;
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 public class DropServiceTest extends AbstractSwiftRiverTest {
@@ -42,11 +39,11 @@ public class DropServiceTest extends AbstractSwiftRiverTest {
 	private PlaceService placeService;
 
 	/** DAO interfaces under test */
-	private DropDAO dropDAO;
+	private DropDao dropDAO;
 
-	private TagDAO tagDAO;
+	private TagDao tagDAO;
 	
-	private PlaceDAO placeDAO;
+	private PlaceDao placeDAO;
 
 	/* Drop id to be used for the test */
 	private Long dropId = new Long(18);
@@ -55,18 +52,18 @@ public class DropServiceTest extends AbstractSwiftRiverTest {
 	@Before
 	public void beforeTest() {
 		// Drop servoce
-		dropService = new DropServiceImpl();
-		dropDAO = mock(DropDAO.class);
+		dropService = new DropService();
+		dropDAO = mock(DropDao.class);
 		dropService.setDropDAO(dropDAO);
 
 		// Tag service
-		tagService = new TagServiceImpl();
-		tagDAO = mock(TagDAO.class);
+		tagService = new TagService();
+		tagDAO = mock(TagDao.class);
 		tagService.setTagDAO(tagDAO);
 		
 		// Places
-		placeService = new PlaceServiceImpl();
-		placeDAO = mock(PlaceDAO.class);
+		placeService = new PlaceService();
+		placeDAO = mock(PlaceDao.class);
 		placeService.setPlaceDAO(placeDAO);
 	}
 

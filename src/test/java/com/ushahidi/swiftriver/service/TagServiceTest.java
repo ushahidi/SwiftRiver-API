@@ -24,9 +24,8 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.dao.TagDAO;
-import com.ushahidi.swiftriver.model.Tag;
-import com.ushahidi.swiftriver.service.impl.TagServiceImpl;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
@@ -36,15 +35,15 @@ import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
  */
 public class TagServiceTest extends AbstractSwiftRiverTest {
 	
-	private TagDAO tagDAO;
+	private TagDao tagDAO;
 	
 	private TagService tagService;
 
 	@Before
 	public void beforeTest() {
-		tagDAO = mock(TagDAO.class);
+		tagDAO = mock(TagDao.class);
 		
-		tagService = new TagServiceImpl();
+		tagService = new TagService();
 		tagService.setTagDAO(tagDAO);
 	}
 

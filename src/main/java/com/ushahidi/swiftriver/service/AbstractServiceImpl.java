@@ -17,38 +17,44 @@
 package com.ushahidi.swiftriver.service;
 
 import java.io.Serializable;
-import java.util.Map;
+
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
 
 /**
- * Base interface for all SwiftRiver service interfaces. This interface
- * defines the signatures for the methods used for CRUD operations
- *  
+ * Base class for all SwiftRiver service classes.
  * @author ekala
  *
  * @param <T>
  * @param <ID>
  */
-public interface SwiftRiverService<T, ID extends Serializable> {
+public abstract class AbstractServiceImpl<T, ID extends Serializable> {
+
+	/**
+	 * Gets the DAO interface to be used for database operations. This
+	 * method MUST be implemented by all classes that extend this class.
+	 * @return
+	 */
+	public abstract SwiftRiverDao<T, ID> getServiceDAO();
 	
 	/**
-	 * Creates a new entity in the database
-	 * 
-	 * @param entity
+	 * @see SwiftRiverDao#create(Object)
 	 */
-	public void create(T entity);
-	
+	public void create(T entity) {
+		getServiceDAO().create(entity);
+	}
+
 	/**
-	 * Updates an existing entity
-	 * 
-	 * @param entity
+	 * @see SwiftRiverDao#update(Object)
 	 */
-	public void update(T entity);
-	
+	public void update(T entity) {
+		getServiceDAO().update(entity);
+	}
+
 	/**
-	 * Deletes an entity from the database
-	 * 
-	 * @param entity
+	 * @see SwiftRiverDao#delete(Object)
 	 */
-	public void delete(T entity);
+	public void delete(T entity) {
+		getServiceDAO().delete(entity);
+	}
 	
 }

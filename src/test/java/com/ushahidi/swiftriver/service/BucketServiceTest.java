@@ -21,8 +21,7 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.dao.BucketDAO;
-import com.ushahidi.swiftriver.service.impl.BucketServiceImpl;
+import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
@@ -34,14 +33,14 @@ public class BucketServiceTest extends AbstractSwiftRiverTest {
 	
 	private BucketService bucketService;
 	
-	private BucketDAO bucketDAO;
+	private BucketDao bucketDAO;
 	
 	private Long bucketId = new Long(1);
 	
 	@Override
 	public void beforeTest() {
-		bucketDAO = mock(BucketDAO.class);
-		bucketService = new BucketServiceImpl();
+		bucketDAO = mock(BucketDao.class);
+		bucketService = new BucketService();
 		bucketService.setBucketDAO(bucketDAO);
 	}
 

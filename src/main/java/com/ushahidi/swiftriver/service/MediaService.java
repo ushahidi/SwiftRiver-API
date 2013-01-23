@@ -16,12 +16,34 @@
  */
 package com.ushahidi.swiftriver.service;
 
-import com.ushahidi.swiftriver.dao.MediaDAO;
-import com.ushahidi.swiftriver.model.Media;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface MediaService extends SwiftRiverService<Media, Long> {
+import com.ushahidi.swiftriver.core.api.dao.MediaDao;
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Media;
 
-	public void setMediaDAO(MediaDAO mediaDAO);
+/**
+ * Service class for media
+ * @author ekala
+ *
+ */
+@Service
+public class MediaService extends AbstractServiceImpl<Media, Long> {
 
-	public Media findByHash(String hash);
+	@Autowired
+	private MediaDao mediaDAO;
+
+	public void setMediaDAO(MediaDao mediaDAO) {
+		this.mediaDAO = mediaDAO;
+	}
+
+	public Media findByHash(String hash) {
+		return mediaDAO.findByHash(hash);
+	}
+
+	public SwiftRiverDao<Media, Long> getServiceDAO() {
+		return mediaDAO;
+	}
+
 }

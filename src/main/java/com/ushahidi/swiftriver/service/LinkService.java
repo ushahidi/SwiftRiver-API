@@ -16,12 +16,34 @@
  */
 package com.ushahidi.swiftriver.service;
 
-import com.ushahidi.swiftriver.dao.LinkDAO;
-import com.ushahidi.swiftriver.model.Link;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public interface LinkService extends SwiftRiverService<Link, Long> {
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
+import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.model.Link;
 
-	public void setLinkDAO(LinkDAO linkDAO);
+/**
+ * Service class for links
+ * @author ekala
+ *
+ */
+@Service
+public class LinkService extends AbstractServiceImpl<Link, Long> {
 
-	public Link findByHash(String hash);
+	@Autowired
+	private LinkDao linkDAO;
+
+	public void setLinkDAO(LinkDao linkDAO) {
+		this.linkDAO = linkDAO;
+	}
+
+	public Link findByHash(String hash) {
+		return linkDAO.findByHash(hash);
+	}
+
+	public SwiftRiverDao<Link, Long> getServiceDAO() {
+		return linkDAO;
+	}
+
 }
