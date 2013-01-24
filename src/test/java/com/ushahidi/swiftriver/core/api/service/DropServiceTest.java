@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.service;
+package com.ushahidi.swiftriver.core.api.service;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -22,51 +22,37 @@ import static org.mockito.Mockito.verify;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao;
-import com.ushahidi.swiftriver.core.api.service.RiverService;
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
+import com.ushahidi.swiftriver.core.api.service.DropService;
 import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
- * Tests for the River service
+ * Integration tests for the Drop service
  * @author ekala
  *
  */
-public class RiverServiceTest extends AbstractSwiftRiverTest{
-	
-	private RiverService riverService;
-	
-	private RiverDao riverDAO;
+public class DropServiceTest extends AbstractSwiftRiverTest {
+
+	/** Service interfaces under test */	
+	private DropService dropService = new DropService();
+
+	/** DAO interfaces under test */
+	private DropDao dropDAO;
+
+	/* Drop id to be used for the test */
+	private Long dropId = new Long(18);
 	
 	@Override
 	@Before
 	public void beforeTest() {
-		riverDAO = mock(RiverDao.class);
-		riverService = new RiverService();
-		riverService.setRiverDAO(riverDAO);
+		dropDAO = mock(DropDao.class);
+		dropService.setDropDAO(dropDAO);
 	}
 
-
-	/**
-	 * @see JpaRiverDao#getRiver(long)
-	 * @verifies The river exists
-	 */
 	@Test
-	public void testGetRiver() {
-		riverService.getRiver(new Long(1));
-		verify(riverDAO).findById(new Long(1));
+	public void testGetDrop() {
+		dropService.getDrop(dropId);
+		verify(dropDAO).findById(dropId);
 	}
-	
-	
-	@Test
-	public void testGetDrops() {
-		riverService.getDropsSinceId(new Long(2), 1000L, 50);
-		verify(riverDAO).getDrops(new Long(2), 1000L, 50);
-	}
-	
-	@Test
-	public void testGetChannels() {
-		riverService.getChannels(1);
-		verify(riverDAO).getChannels(1);
-	}
+	 
 }

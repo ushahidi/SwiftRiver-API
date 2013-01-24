@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.dao;
+package com.ushahidi.swiftriver.core.api.dao;
 
 import static org.junit.Assert.assertEquals;
 
