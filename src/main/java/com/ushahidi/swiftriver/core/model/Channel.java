@@ -19,10 +19,13 @@ package com.ushahidi.swiftriver.core.model;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -68,9 +71,9 @@ public class Channel implements Serializable {
 	@Column(name = "filter_runs")
 	private int filterRuns;
 	
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name="channel_filter_id")
-	private List<ChannelOption> channelOptions;
+	private Set<ChannelOption> channelOptions = new HashSet<ChannelOption>();
 
 	public Channel() {
 		
@@ -146,6 +149,14 @@ public class Channel implements Serializable {
 
 	public void setFilterRuns(int filterRuns) {
 		this.filterRuns = filterRuns;
+	}
+
+	public Set<ChannelOption> getChannelOptions() {
+		return channelOptions;
+	}
+
+	public void setChannelOptions(Set<ChannelOption> channelOptions) {
+		this.channelOptions = channelOptions;
 	}
 
 	@Override

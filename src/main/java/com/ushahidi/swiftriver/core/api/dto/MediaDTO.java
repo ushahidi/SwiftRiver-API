@@ -14,36 +14,43 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.service;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Map;
 
-import com.ushahidi.swiftriver.core.api.dao.MediaDao;
-import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import org.apache.commons.lang.ArrayUtils;
+
 import com.ushahidi.swiftriver.core.model.Media;
 
 /**
- * Service class for media
+ * DTO mapping class for the Media model
  * @author ekala
  *
  */
-@Service
-public class MediaService extends AbstractServiceImpl<Media, Long> {
+public class MediaDTO extends EntityDTO<Media> {
 
-	@Autowired
-	private MediaDao mediaDAO;
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> createDTO(Media entity) {
+		Object[][] mediaData = {
+				{"id", entity.getId()},
+				{"url", entity.getUrl()},
+				{"type", entity.getType()}
+		};
 
-	public void setMediaDAO(MediaDao mediaDAO) {
-		this.mediaDAO = mediaDAO;
+		return ArrayUtils.toMap(mediaData);
 	}
 
-	public Media findByHash(String hash) {
-		return mediaDAO.findByHash(hash);
-	}
+	@Override
+	public Media createModel(Map<String, Object> entityDTO) {
+		String url = (String) entityDTO.get("url");
+		
+		Media media = new Media();
+		media.setUrl(url);
+		media.setHash(EntityDTO.getMD5Hash(url));
+		media.setType((String)entityDTO.get("type"));
 
-	public JpaDao<Media, Long> getServiceDao() {
-		return mediaDAO;
+		return media;
 	}
 
 }

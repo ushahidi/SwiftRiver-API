@@ -14,40 +14,38 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.service;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static org.junit.Assert.assertEquals;
 
-import com.ushahidi.swiftriver.core.api.dao.JpaDao;
-import com.ushahidi.swiftriver.core.api.dao.TagDao;
-import com.ushahidi.swiftriver.core.model.Tag;
+import org.apache.commons.lang.ArrayUtils;
+import org.junit.Test;
+
+import com.ushahidi.swiftriver.core.model.Place;
 
 /**
- * Service class for tags
+ * Unit test for the Place DTO
  * @author ekala
  *
  */
-@Service
-public class TagService extends AbstractServiceImpl<Tag, Long> {
+public class PlaceDTOTest {
+	
+	/**
+	 * @verifies the hash created when creating the model matches
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateModel() {
+		Object[][] placeData = {
+				{"name", "Marsabit"},
+				{"coordinates", new Double[]{37.9899, 2.32839}}
+		};
+		
+		PlaceDTO placeDTO = new PlaceDTO();
+		Place place = placeDTO.createModel(ArrayUtils.toMap(placeData));
 
-	@Autowired
-	private TagDao tagDAO;
-
-	public void setTagDAO(TagDao tagDAO) {
-		this.tagDAO = tagDAO;
+		String expectedHash = "2d67198dc71747308498e9685bdcebc3";
+		
+		assertEquals(expectedHash, place.getHash());
 	}
-
-	public JpaDao<Tag, Long> getServiceDao() {
-		return tagDAO;
-	}
-
-	public Tag findByHash(String hash) {
-		return tagDAO.findByHash(hash);
-	}
-
-	public Tag getTag(Long id) {
-		return tagDAO.findById(id);
-	}
-
 }

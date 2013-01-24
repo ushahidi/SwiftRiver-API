@@ -14,40 +14,37 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.service;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static org.junit.Assert.assertEquals;
 
-import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
-import com.ushahidi.swiftriver.core.api.dao.JpaDao;
-import com.ushahidi.swiftriver.core.model.Place;
+import org.apache.commons.lang.ArrayUtils;
+import org.junit.Test;
+
+import com.ushahidi.swiftriver.core.model.Tag;
 
 /**
- * Service class for places
+ * Unit test for the TagDTO class
  * @author ekala
  *
  */
-@Service
-public class PlaceService extends AbstractServiceImpl<Place, Long> {
+public class TagDTOTest {
+	
+	/**
+	 * @verifies the hash computed when creating the model
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testCreateModel() {
+		TagDTO tagDTO = new TagDTO();
 
-	@Autowired
-	private PlaceDao placeDAO;
-
-	public void setPlaceDAO(PlaceDao placeDAO) {
-		this.placeDAO = placeDAO;
-	}
-
-	public Place getPlace(Long id) {
-		return placeDAO.findById(id);
-	}
-
-	public Place findByHash(String hash) {
-		return placeDAO.findByHash(hash);
-	}
-
-	public JpaDao<Place, Long> getServiceDao() {
-		return placeDAO;
+		Object[][] tagData = { {"tag_name", "Uhuru Kenyatta"}, {"tag_type", "person"} };
+		Tag tag = tagDTO.createModel(ArrayUtils.toMap(tagData));
+		
+		// Hash value to be expected from the Tag entity created from the DTO
+		String expectedHash = "a767beb96688d9807a181202929b456e";
+		
+		assertEquals(expectedHash, tag.getHash());
 	}
 
 }

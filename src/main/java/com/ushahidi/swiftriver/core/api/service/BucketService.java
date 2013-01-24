@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.User;
@@ -42,21 +43,21 @@ import com.ushahidi.swiftriver.core.model.User;
 public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	
 	@Autowired
-	private BucketDao bucketDAO;
+	private BucketDao bucketDao;
 	
 	/* Logger */
 	private static Logger logger = Logger.getLogger(BucketService.class);
 
 	public void setBucketDAO(BucketDao bucketDAO) {
-		this.bucketDAO = bucketDAO;
+		this.bucketDao = bucketDAO;
 	}
 
 	public JpaDao<Bucket, Long> getServiceDao() {
-		return bucketDAO;
+		return bucketDao;
 	}
 
 	public Map<String, Object> getBucket(Long id) {
-		Bucket bucket = bucketDAO.findById(id);
+		Bucket bucket = bucketDao.findById(id);
 		
 		// Verify that the bucket exists
 		if (bucket == null) {
@@ -77,29 +78,32 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	public ArrayList<Map<String, Object>> getDrops(Long bucketId, int dropCount) {
 		ArrayList<Map<String, Object>> dropsList = new ArrayList<Map<String,Object>>();
 
-		// TODO: Fetch drops and covert them to a map
+		DropDTO dropDTO = new DropDTO();
+		for (Drop drop: bucketDao.getDrops(bucketId, dropCount)) {
+			dropsList.add(dropDTO.createDTO(drop));
+		}
 
 		return dropsList;
 	}
 
 	public void addDrop(Long bucketId, Drop drop) {
-		bucketDAO.addDrop(bucketId, drop);
+		bucketDao.addDrop(bucketId, drop);
 	}
 
 	public void addDrops(Long bucketId, Collection<Drop> drops) {
-		bucketDAO.addDrops(bucketId, drops);
+		bucketDao.addDrops(bucketId, drops);
 	}
 
 	public void removeDrop(Long bucketId, Drop drop) {
-		bucketDAO.removeDrop(bucketId, drop);
+		bucketDao.removeDrop(bucketId, drop);
 	}
 
 	public void removeDrops(Long bucketId, Collection<Drop> drops) {
-		bucketDAO.removeDrops(bucketId, drops);
+		bucketDao.removeDrops(bucketId, drops);
 	}
 
 	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
-		bucketDAO.addCollaborator(bucketId, user, readOnly);
+		bucketDao.addCollaborator(bucketId, user, readOnly);
 	}
 
 	public ArrayList<Map<String, Object>> getCollaborators(Bucket bucket) {
@@ -109,7 +113,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	}
 
 	public void removeCollaborator(Long bucketId, User user) {
-		bucketDAO.removeCollaborator(bucketId, user);
+		bucketDao.removeCollaborator(bucketId, user);
 	}
 
 }

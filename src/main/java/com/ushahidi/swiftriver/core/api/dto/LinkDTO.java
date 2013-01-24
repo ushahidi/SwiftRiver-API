@@ -14,36 +14,37 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.service;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Map;
 
-import com.ushahidi.swiftriver.core.api.dao.LinkDao;
-import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import org.apache.commons.lang.ArrayUtils;
+
 import com.ushahidi.swiftriver.core.model.Link;
 
-/**
- * Service class for links
- * @author ekala
- *
- */
-@Service
-public class LinkService extends AbstractServiceImpl<Link, Long> {
+public class LinkDTO extends EntityDTO<Link> {
 
-	@Autowired
-	private LinkDao linkDAO;
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, Object> createDTO(Link entity) {
+		Object[][] linkData = {
+				{"id", entity.getId()},
+				{"url", entity.getUrl()}
+		};
 
-	public void setLinkDAO(LinkDao linkDAO) {
-		this.linkDAO = linkDAO;
+		return ArrayUtils.toMap(linkData);
 	}
 
-	public Link findByHash(String hash) {
-		return linkDAO.findByHash(hash);
-	}
+	@Override
+	public Link createModel(Map<String, Object> entityDTO) {
+		// Get the URL for the link
+		String url = (String) entityDTO.get("url");
 
-	public JpaDao<Link, Long> getServiceDao() {
-		return linkDAO;
+		Link link = new Link();
+		link.setUrl(url);
+		link.setHash(EntityDTO.getMD5Hash(url));
+		
+		return link;
 	}
 
 }

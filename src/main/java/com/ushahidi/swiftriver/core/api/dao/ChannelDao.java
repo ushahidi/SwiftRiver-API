@@ -16,18 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.Collection;
-
 import com.ushahidi.swiftriver.core.model.Channel;
-import com.ushahidi.swiftriver.core.model.ChannelOption;
 
 public interface ChannelDao extends JpaDao<Channel, Integer> {
 	
-	/**
-	 * Gets the channel options for the specified channel
-	 * 
-	 * @param channelId
-	 * @return
-	 */
-	public Collection<ChannelOption> getChannelOptions(Integer channelId);
 }
