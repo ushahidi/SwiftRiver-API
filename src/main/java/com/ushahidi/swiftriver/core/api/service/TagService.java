@@ -19,7 +19,7 @@ package com.ushahidi.swiftriver.core.api.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Tag;
 
@@ -38,7 +38,7 @@ public class TagService extends AbstractServiceImpl<Tag, Long> {
 		this.tagDAO = tagDAO;
 	}
 
-	public SwiftRiverDao<Tag, Long> getServiceDAO() {
+	public JpaDao<Tag, Long> getServiceDao() {
 		return tagDAO;
 	}
 

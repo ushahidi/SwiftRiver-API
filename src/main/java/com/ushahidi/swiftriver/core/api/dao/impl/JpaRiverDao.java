@@ -49,7 +49,7 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	 */	
 	@SuppressWarnings("unchecked")
 	public List<Drop> getDrops(Long id, Long sinceId, int dropCount) {
-		String sql = "SELECT r.drops FROM River r WHERE r.id = :riverId AND r.drops.id > :sinceId";
+		String sql = "SELECT r.drops FROM River r, IN(r.drops) d WHERE r.id = :riverId AND d.id > :sinceId";
 
 		Query query = entityManager.createQuery(sql);
 		query.setParameter("riverId", id);
@@ -64,7 +64,7 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	 */
 	@SuppressWarnings("unchecked")
 	public List<User> getCollaborators(Long riverId) {
-		String query = "SELECT r.collaborators FROM River r WHERE r = ?1";
+		String query = "SELECT r.collaborators FROM River r WHERE r.id = ?1";
 		
 		return (List<User>) entityManager.createQuery(query).setParameter(1, riverId).getResultList();
 	}
@@ -126,8 +126,12 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	@SuppressWarnings("unchecked")
 	public List<Channel> getChannels(long riverId) {
 		// TODO Auto-generated method stub
-		String query = "FROM Channel c WHERE c.riverId = ?";
-		return (List<Channel>) entityManager.createQuery(query).setParameter(0, riverId).getResultList();
+		String sql = "FROM Channel c WHERE c.riverId = ?1";
+
+		Query query = entityManager.createQuery(sql);
+		query.setParameter(1, riverId);
+		
+		return (List<Channel>) query.getResultList();
 	}
 
 }

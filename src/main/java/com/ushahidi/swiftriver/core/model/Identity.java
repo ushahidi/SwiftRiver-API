@@ -21,7 +21,6 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -39,7 +38,6 @@ public class Identity implements Serializable {
 	private static final long serialVersionUID = -8738305639598973112L;
 
 	@Id
-	@GeneratedValue
 	private long id;
 	
 	@Column(name="hash")
@@ -49,7 +47,7 @@ public class Identity implements Serializable {
 	private String channel;
 	
 	@Column(name="identity_orig_id")
-	private String originalId;
+	private String originId;
 	
 	@Column(name="identity_username")
 	private String username;
@@ -96,12 +94,12 @@ public class Identity implements Serializable {
 		this.channel = channel;
 	}
 
-	public String getOriginalId() {
-		return originalId;
+	public String getOriginId() {
+		return originId;
 	}
 
-	public void setOriginalId(String originalId) {
-		this.originalId = originalId;
+	public void setOriginId(String originId) {
+		this.originId = originId;
 	}
 
 	public String getUsername() {

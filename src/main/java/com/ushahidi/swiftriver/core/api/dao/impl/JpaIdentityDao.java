@@ -16,6 +16,11 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Query;
+
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,5 +38,18 @@ public class JpaIdentityDao extends AbstractJpaDao<Identity, Long> implements Id
 
 	public JpaIdentityDao() {
 		super(Identity.class);
+	}
+	
+	/**
+	 * @see IdentityDao#findIdentitiesByHash(ArrayList)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Identity> findIdentitiesByHash(ArrayList<String> identityHashes) {
+		String sql  ="FROM Identity WHERE hash IN (?1)";
+
+		Query query = entityManager.createQuery(sql);
+		query.setParameter(1, identityHashes);
+
+		return (List<Identity>) query.getResultList();
 	}
 }

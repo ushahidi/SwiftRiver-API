@@ -18,7 +18,7 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import com.ushahidi.swiftriver.core.model.Tag;
 
-public interface TagDao extends SwiftRiverDao<Tag, Long> {
+public interface TagDao extends JpaDao<Tag, Long> {
 	
 	/**
 	 * Finds a tag using its hash

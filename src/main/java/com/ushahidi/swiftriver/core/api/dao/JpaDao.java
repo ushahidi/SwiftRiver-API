@@ -23,7 +23,7 @@ import java.io.Serializable;
  * @author ekala
  *
  */
-public interface SwiftRiverDao <T, ID extends Serializable> {
+public interface JpaDao <T, ID extends Serializable> {
 
 	/**
 	 * Creates a new entity
@@ -51,4 +51,15 @@ public interface SwiftRiverDao <T, ID extends Serializable> {
 	 * @return
 	 */
 	public T findById(ID id);
+
+	/**
+	 * Allocates a range of IDs - specified by  @parm increment - for a given 
+	 * sequence and returns the last ID (of the sequence) before the allocation. 
+	 *    
+	 * @param sequenceName
+	 * @param increment
+	 * @return
+	 */
+	
+	public Long getSequenceNumber(String sequenceName, int increment);
 }

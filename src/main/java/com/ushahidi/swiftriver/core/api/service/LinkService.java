@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Link;
 
 /**
@@ -42,7 +42,7 @@ public class LinkService extends AbstractServiceImpl<Link, Long> {
 		return linkDAO.findByHash(hash);
 	}
 
-	public SwiftRiverDao<Link, Long> getServiceDAO() {
+	public JpaDao<Link, Long> getServiceDao() {
 		return linkDAO;
 	}
 

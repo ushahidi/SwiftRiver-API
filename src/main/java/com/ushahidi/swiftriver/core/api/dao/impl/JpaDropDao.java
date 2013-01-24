@@ -16,7 +16,11 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,6 +137,19 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 	 */
 	public void removeTag(Long dropId, Tag tag) {
 		findById(dropId).getTags().remove(tag);
+	}
+
+	/**
+	 * @see DropDao#findDropsByHash(ArrayList)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Drop> findDropsByHash(ArrayList<String> dropHashes) {
+		String sql = "FROM Drop d WHERE d.dropletHash in (?1)";
+
+		Query query = entityManager.createQuery(sql);
+		query.setParameter(1, dropHashes);
+
+		return (List<Drop>) query.getResultList();
 	}
 
 }

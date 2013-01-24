@@ -16,7 +16,9 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
@@ -29,7 +31,7 @@ import com.ushahidi.swiftriver.core.model.Tag;
  * @author ekala
  *
  */
-public interface DropDao extends SwiftRiverDao<Drop, Long>{
+public interface DropDao extends JpaDao<Drop, Long>{
 	
 	/**
 	 * Creates a collection of drops
@@ -124,4 +126,13 @@ public interface DropDao extends SwiftRiverDao<Drop, Long>{
 	 * @param tag
 	 */
 	public void removeTag(Long dropId, Tag tag);
+	
+	/**
+	 * Returns all drops with a hash in @param dropHashes
+	 *  
+	 * @param dropHashes Hashes of drops
+	 * @return
+	 */
+	public List<Drop> findDropsByHash(ArrayList<String> dropHashes);
+	
 }

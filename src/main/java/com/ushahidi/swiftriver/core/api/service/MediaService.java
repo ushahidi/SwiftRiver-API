@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ushahidi.swiftriver.core.api.dao.MediaDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Media;
 
 /**
@@ -42,7 +42,7 @@ public class MediaService extends AbstractServiceImpl<Media, Long> {
 		return mediaDAO.findByHash(hash);
 	}
 
-	public SwiftRiverDao<Media, Long> getServiceDAO() {
+	public JpaDao<Media, Long> getServiceDao() {
 		return mediaDAO;
 	}
 

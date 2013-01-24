@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.User;
@@ -51,7 +51,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 		this.bucketDAO = bucketDAO;
 	}
 
-	public SwiftRiverDao<Bucket, Long> getServiceDAO() {
+	public JpaDao<Bucket, Long> getServiceDao() {
 		return bucketDAO;
 	}
 

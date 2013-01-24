@@ -18,7 +18,7 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import com.ushahidi.swiftriver.core.model.Link;
 
-public interface LinkDao extends SwiftRiverDao<Link, Long> {
+public interface LinkDao extends JpaDao<Link, Long> {
 	
 	/**
 	 * Finds a link item using its hash

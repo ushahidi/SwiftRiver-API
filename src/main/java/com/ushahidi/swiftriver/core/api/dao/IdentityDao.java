@@ -16,8 +16,17 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Identity;
 
-public interface IdentityDao extends SwiftRiverDao<Identity, Long> {
-
+public interface IdentityDao extends JpaDao<Identity, Long> {
+	
+	/**
+	 * Returns all identity entities with a hash in @param identityHashes
+	 * @param identityHashes
+	 * @return
+	 */
+	public List<Identity> findIdentitiesByHash(ArrayList<String> identityHashes);
 }

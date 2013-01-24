@@ -18,7 +18,7 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import com.ushahidi.swiftriver.core.model.Media;
 
-public interface MediaDao extends SwiftRiverDao<Media, Long> {
+public interface MediaDao extends JpaDao<Media, Long> {
 	
 	/**
 	 * Finds a media item using its hash

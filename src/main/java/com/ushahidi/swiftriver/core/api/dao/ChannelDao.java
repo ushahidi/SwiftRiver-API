@@ -21,7 +21,7 @@ import java.util.Collection;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.ChannelOption;
 
-public interface ChannelDao extends SwiftRiverDao<Channel, Integer> {
+public interface ChannelDao extends JpaDao<Channel, Integer> {
 	
 	/**
 	 * Gets the channel options for the specified channel

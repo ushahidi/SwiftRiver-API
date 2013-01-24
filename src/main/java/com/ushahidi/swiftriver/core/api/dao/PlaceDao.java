@@ -18,7 +18,7 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import com.ushahidi.swiftriver.core.model.Place;
 
-public interface PlaceDao extends SwiftRiverDao<Place, Long> {
+public interface PlaceDao extends JpaDao<Place, Long> {
 	
 	/**
 	 * Finds a place using its hash

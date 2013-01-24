@@ -24,9 +24,11 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
@@ -41,17 +43,17 @@ import com.ushahidi.swiftriver.core.model.User;
 public class RiverService extends AbstractServiceImpl<River, Long> {
 
 	@Autowired
-	private RiverDao riverDAO;
+	private RiverDao riverDao;
 	
 	/* Logger */
 	private static Logger logger = Logger.getLogger(RiverService.class);
 
-	public void setRiverDAO(RiverDao riverDAO) {
-		this.riverDAO = riverDAO;
+	public void setRiverDAO(RiverDao riverDao) {
+		this.riverDao = riverDao;
 	}
 
-	public SwiftRiverDao<River, Long> getServiceDAO() {
-		return riverDAO;
+	public JpaDao<River, Long> getServiceDao() {
+		return riverDao;
 	}
 
 	/**
@@ -59,7 +61,7 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 	 */
 	public Map<String, Object> getRiver(Long id) {
 		// Fetch the river from the database
-		River river = riverDAO.findById(id);
+		River river = riverDao.findById(id);
 		
 		// Verify that the river exists
 		if (river == null) {
@@ -74,10 +76,14 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 	/**
 	 * @see RiverService#getDropsSinceId(Long, Long, int)
 	 */
+	@Transactional
 	public ArrayList<Map<String, Object>> getDropsSinceId(Long id, Long sinceId, int dropCount) {
 		ArrayList<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
-		
-		riverDAO.getDrops(id, sinceId, dropCount);
+
+		DropDTO dropDTO = new DropDTO();
+		for (Drop drop: riverDao.getDrops(id, sinceId, dropCount)) {
+			dropsArray.add(dropDTO.createDTO(drop));
+		}
 
 		// TODO: Fetch drops, convert them to a map and add them to dropsArray
 		return dropsArray;
@@ -93,37 +99,37 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 	}
 
 	public void addCollaborator(long riverId, User user, boolean readOnly) {
-		riverDAO.addCollaborator(riverId, user, readOnly);
+		riverDao.addCollaborator(riverId, user, readOnly);
 	}
 
 	public void removeCollaborator(long riverId, User user) {
-		riverDAO.removeCollaborator(riverId, user);
+		riverDao.removeCollaborator(riverId, user);
 	}
 
 	public void removeDrop(long riverId, Drop drop) {
-		riverDAO.removeDrop(riverId, drop);
+		riverDao.removeDrop(riverId, drop);
 	}
 
 	public void addDrop(long riverId, Drop drop) {
-		riverDAO.addDrop(riverId, drop);
+		riverDao.addDrop(riverId, drop);
 	}
 
 	public void addDrops(long riverId, Collection<Drop> drops) {
-		riverDAO.addDrops(riverId, drops);
+		riverDao.addDrops(riverId, drops);
 	}
 
 	public void addChannel(long riverId, Channel channel) {
-		riverDAO.addChannel(riverId, channel);
+		riverDao.addChannel(riverId, channel);
 	}
 
 	public ArrayList<Map<String, Object>> getChannels(long riverId) {
-		riverDAO.getChannels(riverId);
+		riverDao.getChannels(riverId);
 		// TODO: Implement this
 		return null;
 	}
 
 	public void removeChannel(long riverId, Channel channel) {
-		riverDAO.removeChannel(riverId, channel);
+		riverDao.removeChannel(riverId, channel);
 	}
 
 }

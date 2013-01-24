@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Place;
 
 /**
@@ -46,7 +46,7 @@ public class PlaceService extends AbstractServiceImpl<Place, Long> {
 		return placeDAO.findByHash(hash);
 	}
 
-	public SwiftRiverDao<Place, Long> getServiceDAO() {
+	public JpaDao<Place, Long> getServiceDao() {
 		return placeDAO;
 	}
 

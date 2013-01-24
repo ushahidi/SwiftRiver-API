@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.ChannelOption;
 
@@ -41,7 +41,7 @@ public class ChannelService extends AbstractServiceImpl<Channel, Integer> {
 		this.channelDAO = channelDAO;
 	}
 
-	public SwiftRiverDao<Channel, Integer> getServiceDAO() {
+	public JpaDao<Channel, Integer> getServiceDao() {
 		return channelDAO;
 	}
 

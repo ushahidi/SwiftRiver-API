@@ -25,7 +25,7 @@ import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.User;
 
 
-public interface RiverDao extends SwiftRiverDao<River, Long>{
+public interface RiverDao extends JpaDao<River, Long>{
 	
 	/**
 	 * Returns drops from the specified river where the oldest ID is

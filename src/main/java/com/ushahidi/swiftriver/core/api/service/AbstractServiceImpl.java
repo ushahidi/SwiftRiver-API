@@ -18,7 +18,7 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import java.io.Serializable;
 
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 
 /**
  * Base class for all SwiftRiver service classes.
@@ -34,27 +34,27 @@ public abstract class AbstractServiceImpl<T, ID extends Serializable> {
 	 * method MUST be implemented by all classes that extend this class.
 	 * @return
 	 */
-	public abstract SwiftRiverDao<T, ID> getServiceDAO();
+	public abstract JpaDao<T, ID> getServiceDao();
 	
 	/**
-	 * @see SwiftRiverDao#create(Object)
+	 * @see JpaDao#create(Object)
 	 */
 	public void create(T entity) {
-		getServiceDAO().create(entity);
+		getServiceDao().create(entity);
 	}
 
 	/**
-	 * @see SwiftRiverDao#update(Object)
+	 * @see JpaDao#update(Object)
 	 */
 	public void update(T entity) {
-		getServiceDAO().update(entity);
+		getServiceDao().update(entity);
 	}
 
 	/**
-	 * @see SwiftRiverDao#delete(Object)
+	 * @see JpaDao#delete(Object)
 	 */
 	public void delete(T entity) {
-		getServiceDAO().delete(entity);
+		getServiceDao().delete(entity);
 	}
 	
 }

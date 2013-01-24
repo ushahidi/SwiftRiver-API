@@ -28,7 +28,7 @@ import com.ushahidi.swiftriver.core.model.User;
  * @author ekala
  *
  */
-public interface BucketDao extends SwiftRiverDao<Bucket, Long>{
+public interface BucketDao extends JpaDao<Bucket, Long>{
 		
 	/**
 	 * Gets a collection of drops from a bucket using the specified parameters
