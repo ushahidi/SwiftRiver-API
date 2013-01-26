@@ -19,7 +19,10 @@ package com.ushahidi.swiftriver.core.api.dto;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import com.ushahidi.swiftriver.SwiftRiverException;
 
@@ -32,13 +35,17 @@ import com.ushahidi.swiftriver.SwiftRiverException;
  */
 public abstract class EntityDTO<T> {	
 
+	private static final Pattern NONLATIN = Pattern.compile("[^\\w-]");
+	private static final Pattern WHITESPACE = Pattern.compile("[\\s]");
+
 	/**
 	 * Given an entity, creates and returns a Map representation
 	 *  
 	 * @param entity
 	 * @return
 	 */
-	public abstract Map<String, Object> createDTO(T entity);
+	public abstract Map<String, Object> createDTO(T entity);	
+	
 	
 	/**
 	 * Given a Map<String, Object>, creates an entity of type T
@@ -86,6 +93,25 @@ public abstract class EntityDTO<T> {
 		}
 		
 		return md5String;
+	}
+
+	/**
+	 * Given a phrase (string), generates and returns a URL "slug"
+	 * The phrase is first normalized normalized and any whitespaces
+	 * are replaced with hyphens ("-")
+	 * 
+	 * @param phrase
+	 * @return
+	 */
+	public static String getURLSlug(String phrase) {
+		if (phrase == null || phrase.trim().length() == 0)
+			return "";
+		
+		String nonWhitespace = WHITESPACE.matcher(phrase).replaceAll("-");
+		String normalized = Normalizer.normalize(nonWhitespace, Form.NFD);
+		String slug = NONLATIN.matcher(normalized).replaceAll("");
+
+		return slug.toLowerCase();
 	}
 
 }
