@@ -16,27 +16,30 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.hasItems;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+
+import java.util.ArrayList;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.River;
 
-/**
- * Integration tests for the buckets hibernate class
- * @author ekala
- *
- */
 public class BucketServiceTest {
-	
+
 	private BucketService bucketService;
-	
+
 	private BucketDao bucketDAO;
-	
+
 	private Long bucketId = new Long(1);
-	
+
 	@Before
 	public void beforeTest() {
 		bucketDAO = mock(BucketDao.class);
@@ -48,6 +51,23 @@ public class BucketServiceTest {
 	public void testGetBucket() {
 		bucketService.getBucket(bucketId);
 		verify(bucketDAO).findById(bucketId);
-	}	
+	}
+
+	@Test
+	public void getBucketMap() {
+
+		Bucket bucket = new Bucket();
+		bucket.setFollowers(new ArrayList());
+		bucket.setCollaborators(new ArrayList());
+
+		Map<String, Object> riverMap = BucketService.getBucketMap(bucket,
+				new Account());
+
+		assertThat(
+				riverMap.keySet(),
+				hasItems("is_following", "is_collaborating", "id", "category",
+						"date_added", "description", "name", "follower_count",
+						"public", "drop_count"));
+	}
 
 }

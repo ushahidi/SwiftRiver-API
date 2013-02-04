@@ -72,7 +72,6 @@ public class AccountsController {
 	@ResponseBody
 	public Map<String, Object> getAccount(Principal principal) {
 		String username = principal.getName();
-		logger.debug("username = " + username);
 		return accountService.getAccount(username);
 	}
 

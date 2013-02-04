@@ -16,9 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,18 +29,13 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-/**
- * 
- * @author ekala
- *
- */
 @Entity
 @Table(name = "buckets")
-public class Bucket implements Serializable {
+public class Bucket  {
 	
-	private static final long serialVersionUID = 1566257762453998371L;
-
 	@Id
 	@GeneratedValue	
 	private long id;
@@ -50,29 +44,27 @@ public class Bucket implements Serializable {
 	@JoinColumn(name = "account_id")
 	private Account account;
 	
-	@Column(name="user_id")
-	private int userId;
-	
 	@Column(name = "bucket_name", nullable=false)
 	private String bucketName;
-	
-	@Column(name = "bucket_name_url", nullable=false)
-	private String bucketNameUrl;
 	
 	@Column(name = "bucket_description")
 	private String bucketDescription;
 	
 	@Column(name = "bucket_publish")
-	private boolean bucketPublish;
+	private boolean published;
 	
 	@Column(name = "default_layout")
 	private String defaultLayout;
 	
 	@Column(name = "bucket_date_add")
-	private Timestamp bucketDateAdd;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateAdded;
 	
 	@Column(name = "public_token")
 	private String publicToken;
+	
+	@Column(name = "drop_count")
+	private int dropCount;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
@@ -86,12 +78,28 @@ public class Bucket implements Serializable {
 	@JoinTable(
 			name = "bucket_collaborators",
 			joinColumns = @JoinColumn(name = "bucket_id"),
-			inverseJoinColumns = @JoinColumn(name="user_id")
+			inverseJoinColumns = @JoinColumn(name="account_id")
 	)
-	private Collection<User> collaborators = null;
+	private Collection<Account> collaborators = null;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(
+			name = "bucket_subscriptions",
+			joinColumns = @JoinColumn(name = "bucket_id"),
+			inverseJoinColumns = @JoinColumn(name="account_id")
+	)
+	private Collection<Account> followers = null;
 	
 	public Bucket() {
 		
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public Account getAccount() {
@@ -102,28 +110,12 @@ public class Bucket implements Serializable {
 		this.account = account;
 	}
 
-	public int getUser() {
-		return userId;
-	}
-
-	public void setUser(int userId) {
-		this.userId = userId;
-	}
-
 	public String getBucketName() {
 		return bucketName;
 	}
 
 	public void setBucketName(String bucketName) {
 		this.bucketName = bucketName;
-	}
-
-	public String getBucketNameUrl() {
-		return bucketNameUrl;
-	}
-
-	public void setBucketNameUrl(String bucketNameUrl) {
-		this.bucketNameUrl = bucketNameUrl;
 	}
 
 	public String getBucketDescription() {
@@ -134,12 +126,12 @@ public class Bucket implements Serializable {
 		this.bucketDescription = bucketDescription;
 	}
 
-	public boolean isBucketPublish() {
-		return bucketPublish;
+	public boolean isPublished() {
+		return published;
 	}
 
-	public void setBucketPublish(boolean bucketPublish) {
-		this.bucketPublish = bucketPublish;
+	public void setPublished(boolean published) {
+		this.published = published;
 	}
 
 	public String getDefaultLayout() {
@@ -150,12 +142,12 @@ public class Bucket implements Serializable {
 		this.defaultLayout = defaultLayout;
 	}
 
-	public Timestamp getBucketDateAdd() {
-		return bucketDateAdd;
+	public Date getDateAdded() {
+		return dateAdded;
 	}
 
-	public void setBucketDateAdd(Timestamp bucketDateAdd) {
-		this.bucketDateAdd = bucketDateAdd;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 
 	public String getPublicToken() {
@@ -166,10 +158,6 @@ public class Bucket implements Serializable {
 		this.publicToken = publicToken;
 	}
 
-	public long getId() {
-		return id;
-	}
-
 	public Collection<Drop> getDrops() {
 		return drops;
 	}
@@ -178,48 +166,28 @@ public class Bucket implements Serializable {
 		this.drops = drops;
 	}
 
-	public Collection<User> getCollaborators() {
+	public Collection<Account> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(Collection<User> collaborators) {
+	public void setCollaborators(Collection<Account> collaborators) {
 		this.collaborators = collaborators;
 	}
 
-	public void setId(long id) {
-		this.id = id;
+	public Collection<Account> getFollowers() {
+		return followers;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((account == null) ? 0 : account.hashCode());
-		result = prime * result
-				+ ((bucketName == null) ? 0 : bucketName.hashCode());
-		return result;
+	public void setFollowers(Collection<Account> followers) {
+		this.followers = followers;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Bucket other = (Bucket) obj;
-		if (account == null) {
-			if (other.account != null)
-				return false;
-		} else if (!account.equals(other.account))
-			return false;
-		if (bucketName == null) {
-			if (other.bucketName != null)
-				return false;
-		} else if (!bucketName.equals(other.bucketName))
-			return false;
-		return true;
+	public int getDropCount() {
+		return dropCount;
+	}
+
+	public void setDropCount(int dropCount) {
+		this.dropCount = dropCount;
 	}
 
 }

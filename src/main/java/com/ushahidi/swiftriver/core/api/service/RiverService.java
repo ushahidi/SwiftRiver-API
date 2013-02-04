@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.User;
+import com.ushahidi.swiftriver.core.util.DateUtil;
 
 /**
  * Service class for rivers
@@ -126,4 +129,24 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 		riverDao.removeChannel(riverId, channel);
 	}
 
+	public static Map<String, Object> getRiverMap(River river, Account queryingAccount)
+	{		
+		Object[][] riverData = { { "id", river.getId() },
+				{"name", river.getRiverName()},
+				{"description", null},
+				{"category", null},
+				{"follower_count", river.getFollowers().size()},
+				{"is_collaborating", river.getCollaborators().contains(queryingAccount)},
+				{"is_following", river.getFollowers().contains(queryingAccount)},
+				{"public", river.isRiverPublic()},
+				{"active", river.isActive()},
+				{"drop_count", river.getDropCount()},
+				{"drop_quota", river.getDropQuota()},
+				{"full", river.isFull()},
+				{"date_added", DateUtil.formatRFC822(river.getDateAdded())},
+				{"expiry_date", DateUtil.formatRFC822(river.getExpiryDate())},
+				{"extension_count", river.getExtensionCount()}};
+		
+		return ArrayUtils.toMap(riverData);
+	}
 }

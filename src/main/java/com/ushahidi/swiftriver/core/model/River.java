@@ -15,8 +15,6 @@
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +28,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * 
@@ -38,23 +38,18 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="rivers")
-public class River implements Serializable{
-
-	private static final long serialVersionUID = -7099235346765215176L;
+public class River {
 
 	@Id
 	@GeneratedValue
 	private long id;
 	
-	@ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+	@ManyToOne
 	@JoinColumn(name = "account_id")
 	private Account account;
 	
 	@Column(name="river_name", nullable=false)
 	private String riverName;
-	
-	@Column(name="river_name_url", nullable=false)
-	private String riverNameUrl;
 	
 	@Column(name="river_active")
 	private boolean active;
@@ -66,16 +61,18 @@ public class River implements Serializable{
 	private String defaultLayout;
 	
 	@Column(name="river_date_add")
-	private Timestamp dateAdded;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateAdded;
 	
 	@Column(name="max_drop_id")
 	private long maxDropId;
 	
 	@Column(name="drop_count")
-	private long dropCount;
+	private int dropCount;
 	
 	@Column(name="river_date_expiry")
-	private Timestamp expiryDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date expiryDate;
 	
 	@Column(name="river_expired")
 	private boolean expired;
@@ -86,25 +83,26 @@ public class River implements Serializable{
 	@Column(name="expiry_notification_sent")
 	private boolean expiryNotificationSent;
 	
-	@Column(name="email_id")
-	private String emailId;
-	
 	@Column(name="public_token")
 	private String publicToken;
 	
 	@Column(name="drop_quota")
-	private long dropQuota;
+	private int dropQuota;
 	
 	@Column(name = "river_full")
-	private boolean riverFull;
+	private boolean full;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="droplet_id"))
 	private List<Drop> drops = null;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="user_id"))
-	private List<User> collaborators = null;
+	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
+	private List<Account> collaborators = null;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name="river_subscriptions", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
+	private List<Account> followers = null;
 
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumn(name="river_id")
@@ -122,28 +120,20 @@ public class River implements Serializable{
 		this.id = id;
 	}
 
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
+	}
+
 	public String getRiverName() {
 		return riverName;
 	}
 
 	public void setRiverName(String riverName) {
 		this.riverName = riverName;
-	}
-
-	public String getRiverNameUrl() {
-		return riverNameUrl;
-	}
-
-	public void setRiverNameUrl(String riverNameUrl) {
-		this.riverNameUrl = riverNameUrl;
-	}
-
-	public Timestamp getDateAdded() {
-		return dateAdded;
-	}
-
-	public void setDateAdded(Timestamp dateAdded) {
-		this.dateAdded = dateAdded;
 	}
 
 	public boolean isActive() {
@@ -170,6 +160,14 @@ public class River implements Serializable{
 		this.defaultLayout = defaultLayout;
 	}
 
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+
 	public long getMaxDropId() {
 		return maxDropId;
 	}
@@ -178,12 +176,28 @@ public class River implements Serializable{
 		this.maxDropId = maxDropId;
 	}
 
-	public long getDropCount() {
+	public int getDropCount() {
 		return dropCount;
 	}
 
-	public void setDropCount(long dropCount) {
+	public void setDropCount(int dropCount) {
 		this.dropCount = dropCount;
+	}
+
+	public Date getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(Date expiryDate) {
+		this.expiryDate = expiryDate;
+	}
+
+	public boolean isExpired() {
+		return expired;
+	}
+
+	public void setExpired(boolean expired) {
+		this.expired = expired;
 	}
 
 	public int getExtensionCount() {
@@ -202,14 +216,6 @@ public class River implements Serializable{
 		this.expiryNotificationSent = expiryNotificationSent;
 	}
 
-	public String getEmailId() {
-		return emailId;
-	}
-
-	public void setEmailId(String emailId) {
-		this.emailId = emailId;
-	}
-
 	public String getPublicToken() {
 		return publicToken;
 	}
@@ -218,20 +224,20 @@ public class River implements Serializable{
 		this.publicToken = publicToken;
 	}
 
-	public long getDropQuota() {
+	public int getDropQuota() {
 		return dropQuota;
 	}
 
-	public void setDropQuota(long dropQuota) {
+	public void setDropQuota(int dropQuota) {
 		this.dropQuota = dropQuota;
 	}
 
-	public boolean isRiverFull() {
-		return riverFull;
+	public boolean isFull() {
+		return full;
 	}
 
-	public void setRiverFull(boolean riverFull) {
-		this.riverFull = riverFull;
+	public void setFull(boolean full) {
+		this.full = full;
 	}
 
 	public List<Drop> getDrops() {
@@ -242,45 +248,20 @@ public class River implements Serializable{
 		this.drops = drops;
 	}
 
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-
-	public List<User> getCollaborators() {
+	public List<Account> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(List<User> collaborators) {
+	public void setCollaborators(List<Account> collaborators) {
 		this.collaborators = collaborators;
 	}
 
-	public Date getRiverDateAdd() {
-		return getDateAdded();
+	public List<Account> getFollowers() {
+		return followers;
 	}
 
-	public void setRiverDateAdd(Timestamp riverDateAdd) {
-		this.setDateAdded(riverDateAdd);
-	}
-
-
-	public Timestamp getExpiryDate() {
-		return expiryDate;
-	}
-
-	public void setExpiryDate(Timestamp expiryDate) {
-		this.expiryDate = expiryDate;
-	}
-
-	public boolean isExpired() {
-		return expired;
-	}
-
-	public void setExpired(boolean expired) {
-		this.expired = expired;
+	public void setFollowers(List<Account> followers) {
+		this.followers = followers;
 	}
 
 	public List<Channel> getChannels() {
@@ -289,38 +270,6 @@ public class River implements Serializable{
 
 	public void setChannels(List<Channel> channels) {
 		this.channels = channels;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((account == null) ? 0 : account.hashCode());
-		result = prime * result
-				+ ((riverName == null) ? 0 : riverName.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		River other = (River) obj;
-		if (account == null) {
-			if (other.account != null)
-				return false;
-		} else if (!account.equals(other.account))
-			return false;
-		if (riverName == null) {
-			if (other.riverName != null)
-				return false;
-		} else if (!riverName.equals(other.riverName))
-			return false;
-		return true;
 	}
 	
 }

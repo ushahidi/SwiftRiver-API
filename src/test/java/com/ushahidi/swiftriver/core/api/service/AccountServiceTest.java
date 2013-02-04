@@ -14,6 +14,9 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import java.util.Map;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -21,22 +24,59 @@ import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.User;
 
+import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class AccountServiceTest {
 	
-	@Test
-	public void findById()
-	{
-		AccountDao mockAccountDao = mock(AccountDao.class);
-		Account account = new Account();
+	private Account account;
+
+	private AccountDao mockedAccountDao;
+	
+	private AccountService accountService;
+
+	@Before
+	public void setup() {
+		account = new Account();
+		account.setId(13);
 		account.setOwner(new User());
-		when(mockAccountDao.findById(1)).thenReturn(account);
-		AccountService accountService = new AccountService();
 		
-		accountService.setAccountDao(mockAccountDao);
-		accountService.getAccount(1);
+		mockedAccountDao = mock(AccountDao.class);		
+		when(mockedAccountDao.findById(anyInt())).thenReturn(account);
+		when(mockedAccountDao.findByUsername(anyString())).thenReturn(account);
 		
-		verify(mockAccountDao).findById(1);
+		accountService = new AccountService();
+		accountService.setAccountDao(mockedAccountDao);
+	}
+
+	@Test
+	public void findById() {
+		Map<String, Object> accountMap = accountService.getAccount(13);
+
+		verify(mockedAccountDao).findById(13);
+		assertEquals(13L, accountMap.get("id"));
+	}
+
+	@Test
+	public void findByUsername() {
+		Map<String, Object> accountMap = accountService.getAccount("admin");
+
+		verify(mockedAccountDao).findByUsername("admin");
+		assertEquals(13L, accountMap.get("id"));
+	}
+
+	@Test
+	public void getAccountMap() {
+		Map<String, Object> accountMap = accountService
+				.getAccountMap(account);
+
+		assertThat(
+				accountMap.keySet(),
+				hasItems("is_following", "buckets", "is_collaborator",
+						"rivers", "following_count", "id", "is_owner",
+						"date_added", "owner", "follower_count",
+						"river_quota_remaining", "account_path", "active",
+						"public"));
 	}
 }

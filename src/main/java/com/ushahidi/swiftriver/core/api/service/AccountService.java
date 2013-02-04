@@ -15,19 +15,27 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.util.DateUtil;
 
 @Transactional(readOnly = true)
 @Service
 public class AccountService {
+
+	final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
 	@Autowired
 	private AccountDao accountDao;
@@ -64,17 +72,19 @@ public class AccountService {
 	}
 
 	public Map<String, Object> getAccountMap(Account account) {
-		Object[][] accountData = { { "id", account.getId() },
+
+		Object[][] accountData = {
+				{ "id", account.getId() },
 				{ "account_path", account.getAccountPath() },
 				{ "active", account.isActive() },
 				{ "public", !account.isAccountPrivate() },
-				{ "date_added", account.getDateAdded() },
+				{ "date_added", DateUtil.formatRFC822(account.getDateAdded()) },
 				{ "river_quota_remaining", account.getRiverQuotaRemaining() },
 				{ "follower_count", 0 }, { "following_count", 0 },
 				{ "is_owner", false }, { "is_collaborator", false },
-				{ "is_following", false }, { "rivers", new ArrayList() },
-				{ "buckets", new ArrayList() } };
+				{ "is_following", false }};
 
+		// Populate owner data
 		Object[][] ownerData = { { "name", account.getOwner().getName() },
 				{ "email", account.getOwner().getEmail() },
 				{ "username", account.getOwner().getUsername() },
@@ -83,6 +93,49 @@ public class AccountService {
 		Map<String, Object> accountMap = ArrayUtils.toMap(accountData);
 		Map<String, Object> ownerMap = ArrayUtils.toMap(ownerData);
 		accountMap.put("owner", ownerMap);
+
+		// Populate Rivers
+		List<Map<String, Object>> riverList = new ArrayList<Map<String, Object>>();
+		if (account.getRivers() != null) {
+			for (River river : account.getRivers()) {
+				riverList.add(RiverService.getRiverMap(river, account));
+			}
+		}
+
+		if (account.getCollaboratingRivers() != null) {
+			for (River river : account.getCollaboratingRivers()) {
+				riverList.add(RiverService.getRiverMap(river, account));
+			}
+		}
+
+		if (account.getFollowingRivers() != null) {
+			for (River river : account.getFollowingRivers()) {
+				riverList.add(RiverService.getRiverMap(river, account));
+			}
+		}
+		accountMap.put("rivers", riverList);
+
+		// Populate Buckets
+		List<Map<String, Object>> bucketList = new ArrayList<Map<String, Object>>();
+		
+		if (account.getBuckets() != null) {
+			for (Bucket bucket : account.getBuckets()) {
+				bucketList.add(BucketService.getBucketMap(bucket, account));
+			}
+		}
+
+		if (account.getCollaboratingBuckets() != null) {
+			for (Bucket bucket : account.getCollaboratingBuckets()) {
+				bucketList.add(BucketService.getBucketMap(bucket, account));
+			}			
+		}
+
+		if (account.getFollowingBuckets() != null) {
+			for (Bucket bucket : account.getFollowingBuckets()) {
+				bucketList.add(BucketService.getBucketMap(bucket, account));
+			}			
+		}
+		accountMap.put("buckets", bucketList);
 
 		return accountMap;
 	}

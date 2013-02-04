@@ -17,11 +17,13 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +31,12 @@ import org.springframework.stereotype.Service;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.User;
+import com.ushahidi.swiftriver.core.util.DateUtil;
 
 /**
  * Service class for buckets
@@ -101,4 +106,19 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 		bucketDao.removeCollaborator(bucketId, user);
 	}
 
+	public static Map<String, Object> getBucketMap(Bucket bucket, Account queryingAccount)
+	{
+		Object[][] bucketData = { { "id", bucket.getId() },
+				{"name", bucket.getBucketName()},
+				{"description", null},
+				{"category", null},
+				{"follower_count", bucket.getFollowers().size()},
+				{"is_collaborating", bucket.getCollaborators().contains(queryingAccount)},
+				{"is_following", bucket.getFollowers().contains(queryingAccount)},
+				{"public", bucket.isPublished()},
+				{"drop_count", bucket.getDropCount()},
+				{"date_added", DateUtil.formatRFC822(bucket.getDateAdded())}};
+		
+		return ArrayUtils.toMap(bucketData);
+	}
 }

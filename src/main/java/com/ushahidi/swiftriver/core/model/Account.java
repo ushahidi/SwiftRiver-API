@@ -9,13 +9,17 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -52,7 +56,29 @@ public class Account {
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User owner;
-
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+	private List<River> rivers;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="river_id"))
+	private List<River> collaboratingRivers;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="river_subscriptions", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="river_id"))
+	private List<River> followingRivers;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+	private List<Bucket> buckets;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="bucket_subscriptions", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
+	private List<Bucket> followingBuckets;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="bucket_collaborators", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
+	private List<Bucket> collaboratingBuckets;
+	
 	public Account() {
 
 	}
@@ -119,6 +145,54 @@ public class Account {
 
 	public void setOwner(User owner) {
 		this.owner = owner;
+	}
+
+	public List<River> getRivers() {
+		return rivers;
+	}
+
+	public void setRivers(List<River> rivers) {
+		this.rivers = rivers;
+	}
+
+	public List<River> getCollaboratingRivers() {
+		return collaboratingRivers;
+	}
+
+	public void setCollaboratingRivers(List<River> collaboratingRivers) {
+		this.collaboratingRivers = collaboratingRivers;
+	}
+
+	public List<River> getFollowingRivers() {
+		return followingRivers;
+	}
+
+	public void setFollowingRivers(List<River> followingRivers) {
+		this.followingRivers = followingRivers;
+	}
+
+	public List<Bucket> getBuckets() {
+		return buckets;
+	}
+
+	public void setBuckets(List<Bucket> buckets) {
+		this.buckets = buckets;
+	}
+
+	public List<Bucket> getFollowingBuckets() {
+		return followingBuckets;
+	}
+
+	public void setFollowingBuckets(List<Bucket> followingBuckets) {
+		this.followingBuckets = followingBuckets;
+	}
+
+	public List<Bucket> getCollaboratingBuckets() {
+		return collaboratingBuckets;
+	}
+
+	public void setCollaboratingBuckets(List<Bucket> collaboratingBuckets) {
+		this.collaboratingBuckets = collaboratingBuckets;
 	}
 
 }

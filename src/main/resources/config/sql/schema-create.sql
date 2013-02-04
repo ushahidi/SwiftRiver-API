@@ -246,7 +246,6 @@ DEFAULT CHARACTER SET = utf8;
 CREATE TABLE IF NOT EXISTS `buckets` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `user_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Creator of this bucket',
   `bucket_name` varchar(255) NOT NULL DEFAULT '',
   `bucket_name_url` varchar(255) NOT NULL DEFAULT '',
   `bucket_description` text,
@@ -254,6 +253,7 @@ CREATE TABLE IF NOT EXISTS `buckets` (
   `default_layout` varchar(10) DEFAULT 'drops',
   `bucket_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `public_token` varchar(32),
+  `drop_count` INT  NULL  DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name`),
   UNIQUE KEY `un_bucket_name_url` (`account_id`,`bucket_name_url`),
@@ -619,11 +619,11 @@ CREATE TABLE IF NOT EXISTS `account_collaborators` (
 CREATE TABLE IF NOT EXISTS `river_collaborators` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `river_id` bigint(20) DEFAULT NULL,
-  `user_id` bigint(20) DEFAULT NULL,
+  `account_id` bigint(20) DEFAULT NULL,
   `collaborator_active` tinyint(1) DEFAULT NULL,
   `read_only` tinyint(1)  DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `river_id` (`river_id`,`user_id`)
+  UNIQUE KEY `river_id` (`river_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -632,12 +632,12 @@ CREATE TABLE IF NOT EXISTS `river_collaborators` (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS `bucket_collaborators` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(11) unsigned NOT NULL DEFAULT '0',
+  `account_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `bucket_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `collaborator_active` tinyint(1) DEFAULT NULL,
   `read_only` tinyint(1)  DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_id` (`user_id`,`bucket_id`)
+  UNIQUE KEY `account_id` (`account_id`,`bucket_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -674,8 +674,8 @@ CREATE TABLE IF NOT EXISTS `auth_tokens` (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS `bucket_subscriptions` (
   `bucket_id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
-  UNIQUE KEY `bucket_id` (`bucket_id`,`user_id`)
+  `account_id` bigint(20) NOT NULL,
+  UNIQUE KEY `bucket_id` (`bucket_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -684,8 +684,8 @@ CREATE TABLE IF NOT EXISTS `bucket_subscriptions` (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS `river_subscriptions` (
   `river_id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
-  UNIQUE KEY `river_id` (`river_id`,`user_id`)
+  `account_id` bigint(20) NOT NULL,
+  UNIQUE KEY `river_id` (`river_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
