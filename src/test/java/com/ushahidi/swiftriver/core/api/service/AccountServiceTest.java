@@ -12,11 +12,12 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ushahidi.swiftriver.core.service;
+package com.ushahidi.swiftriver.core.api.service;
 
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.core.data.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.User;
 

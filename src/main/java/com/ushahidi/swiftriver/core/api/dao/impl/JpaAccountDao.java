@@ -12,14 +12,14 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ushahidi.swiftriver.core.data.dao.impl;
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.springframework.stereotype.Repository;
 
-import com.ushahidi.swiftriver.core.data.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Repository

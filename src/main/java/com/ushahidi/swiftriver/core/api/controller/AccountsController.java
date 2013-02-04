@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.service.AccountService;
 
 @Controller
 @RequestMapping("/v1/accounts")

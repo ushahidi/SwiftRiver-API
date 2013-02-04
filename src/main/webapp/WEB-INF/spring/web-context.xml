@@ -41,10 +41,10 @@
 
 	<!-- Repository Beans -->
 	<bean id="accountDao"
-		class="com.ushahidi.swiftriver.core.data.dao.impl.JpaAccountDao" />
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
 
 	<!-- Service Beans -->
-	<bean id="accountService" class="com.ushahidi.swiftriver.core.service.AccountService" />
+	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
 
 	<!-- Enable the configuration of transactional behavior based on annotations -->
 	<tx:annotation-driven transaction-manager="txManager" />

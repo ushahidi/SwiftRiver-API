@@ -1,10 +1,11 @@
-package com.ushahidi.swiftriver.core.data.dao.impl;
+package com.ushahidi.swiftriver.core.dao.impl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
 import org.junit.Test;
 
+import com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
 import static org.junit.Assert.*;
