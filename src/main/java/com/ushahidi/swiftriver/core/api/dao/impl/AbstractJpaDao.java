@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -81,6 +82,18 @@ public abstract class AbstractJpaDao<T, ID extends Serializable> implements JpaD
 		Integer epochSequenceNo =  (Integer) query.getSingleResult();
 		
 		return new Long(epochSequenceNo.toString());
+	}
+
+	/**
+	 * @see JpaDao#createAll(Collection)
+	 */
+	@Transactional
+	public void createAll(Collection<T> entities) {
+		// NOTES: There is no batch insert operation in vanilla
+		// JPA. 
+		for (T entity: entities) {
+			entityManager.persist(entity);
+		}
 	}
 		 
 }

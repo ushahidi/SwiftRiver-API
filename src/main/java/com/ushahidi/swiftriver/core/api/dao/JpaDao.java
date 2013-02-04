@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.dao;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * Generic DAO interface for all DAO Objects
@@ -53,7 +54,7 @@ public interface JpaDao <T, ID extends Serializable> {
 	public T findById(ID id);
 
 	/**
-	 * Allocates a range of IDs - specified by  @parm increment - for a given 
+	 * Allocates a range of IDs - specified by  @param increment - for a given 
 	 * sequence and returns the last ID (of the sequence) before the allocation. 
 	 *    
 	 * @param sequenceName
@@ -62,4 +63,11 @@ public interface JpaDao <T, ID extends Serializable> {
 	 */
 	
 	public Long getSequenceNumber(String sequenceName, int increment);
+	
+	/**
+	 * Creates a collection of entities in a single transaction
+	 * 
+	 * @param entities
+	 */
+	public void createAll(Collection<T> entities);
 }
