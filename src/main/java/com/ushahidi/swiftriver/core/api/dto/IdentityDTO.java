@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.ushahidi.swiftriver.core.model.Identity;
+import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 public class IdentityDTO extends EntityDTO<Identity> {
 
@@ -39,13 +40,16 @@ public class IdentityDTO extends EntityDTO<Identity> {
 	@Override
 	public Identity createModel(Map<String, Object> entityDTO) {
 		Identity identity = new Identity();
+		if (entityDTO.get("id") != null) {
+			identity.setId(Long.parseLong((String) entityDTO.get("id")));
+		}
 		
 		// Get the origin ID and channel
 		String originId = (String) entityDTO.get("identity_orig_id");
 		String channel = (String) entityDTO.get("channel");
 		
 		// Generate the hash for the identity
-		String identityHash = EntityDTO.getMD5Hash(channel, originId);
+		String identityHash = SwiftRiverUtils.getMD5Hash(channel, originId);
 
 		identity.setHash(identityHash);
 		identity.setChannel(channel);

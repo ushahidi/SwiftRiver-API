@@ -29,7 +29,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author ekala
  *
  */
-@ContextConfiguration(locations = {"classpath:applicationContext.xml"})
+@ContextConfiguration("file:src/main/webapp/WEB-INF/spring/web-context.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(profiles = {"test"})
 public abstract class AbstractTransactionalTest extends AbstractTransactionalJUnit4SpringContextTests{

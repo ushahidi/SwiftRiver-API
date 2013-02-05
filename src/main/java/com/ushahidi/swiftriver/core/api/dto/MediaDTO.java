@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.ushahidi.swiftriver.core.model.Media;
+import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 /**
  * DTO mapping class for the Media model
@@ -47,7 +48,7 @@ public class MediaDTO extends EntityDTO<Media> {
 		
 		Media media = new Media();
 		media.setUrl(url);
-		media.setHash(EntityDTO.getMD5Hash(url));
+		media.setHash(SwiftRiverUtils.getMD5Hash(url));
 		media.setType((String)entityDTO.get("type"));
 
 		return media;

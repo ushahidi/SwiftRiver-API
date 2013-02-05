@@ -62,3 +62,42 @@ VALUES
 	(2,'twitter','Twitter','Adds a Twitter channel to SwiftRiver.',1,1,0);
 
 COMMIT;
+
+-- Users
+INSERT INTO `users`(`id`, `email`, `name`, `username`, `password`, `api_key`, `invites`) VALUES
+(3, 'admin@example.com', 'Admin User 1', 'admin1', 'DCMFFIFK', 'admin1', 10),
+(4,'admin2@example.com', 'Admin User 2', 'admin2', 'FG$((ASH', 'admin2', 20),
+(5, 'admin3@example.com', 'Admin User 3', 'admin3', 'LKICOOUFN', 'admin3', 30),
+(6, 'admin4@example.com', 'Admin User 4', 'admin4', 'ZPODIFMANU', 'admin4', 40),
+(7, 'admin5@example.com', 'Admin User 5', 'admin5', 'TMNDHACFRDLA', 'admin5', 50);
+
+
+-- -----------------------------------------------------
+-- Data for table `seq`
+-- -----------------------------------------------------
+INSERT INTO `seq` (`name`, `id`) VALUES 
+('droplets', 1),
+('tags', 1),
+('places', 1),
+('links', 1),
+('identities', 1),
+('media', 1),
+('river_tag_trends', 1),
+('rivers_droplets', 1);
+
+-- Accounts
+INSERT INTO accounts(id, user_id, account_path) VALUES
+(3, 3, 'admin1'),
+(4, 4, 'admin2'),
+(5, 5, 'admin3'),
+(6, 6, 'admin4'),
+(7, 7, 'admin5');
+
+-- Rivers
+INSERT INTO rivers(id, account_id, river_name, river_name_url) VALUES
+(1, 3, 'River Number One', 'river-number-one');
+
+
+-- Buckets
+INSERT INTO buckets(id, account_id, bucket_name, bucket_name_url) VALUES
+(1, 4, 'Bucket Number One', 'bucket-number-one');

@@ -23,33 +23,35 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
+import com.ushahidi.swiftriver.core.api.service.DropService;
+import com.ushahidi.swiftriver.test.AbstractTransactionalTest;
 
 /**
  * Integration tests for the Drop service
  * @author ekala
  *
  */
-public class DropServiceTest  {
+public class DropServiceTest extends AbstractTransactionalTest {
 
 	/** Service interfaces under test */	
 	private DropService dropService = new DropService();
 
 	/** DAO interfaces under test */
-	private DropDao dropDAO;
+	private DropDao dropDao;
 
 	/* Drop id to be used for the test */
 	private Long dropId = new Long(18);
 	
 	@Before
 	public void beforeTest() {
-		dropDAO = mock(DropDao.class);
-		dropService.setDropDAO(dropDAO);
+		dropDao = mock(DropDao.class);
+		dropService.setDropDao(dropDao);
 	}
 
 	@Test
 	public void testGetDrop() {
 		dropService.getDrop(dropId);
-		verify(dropDAO).findById(dropId);
+		verify(dropDao).findById(dropId);
 	}
-	 
+	
 }

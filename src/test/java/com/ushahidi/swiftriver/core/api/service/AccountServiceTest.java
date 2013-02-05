@@ -14,14 +14,15 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
-import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.User;
-
-import static org.mockito.Mockito.*;
 
 public class AccountServiceTest {
 	
@@ -31,12 +32,12 @@ public class AccountServiceTest {
 		AccountDao mockAccountDao = mock(AccountDao.class);
 		Account account = new Account();
 		account.setOwner(new User());
-		when(mockAccountDao.findById(1)).thenReturn(account);
+		when(mockAccountDao.findById(1L)).thenReturn(account);
 		AccountService accountService = new AccountService();
 		
 		accountService.setAccountDao(mockAccountDao);
 		accountService.getAccount(1);
 		
-		verify(mockAccountDao).findById(1);
+		verify(mockAccountDao).findById(1L);
 	}
 }

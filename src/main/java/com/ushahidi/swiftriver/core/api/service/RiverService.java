@@ -18,7 +18,7 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -29,10 +29,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.DropDTO;
+import com.ushahidi.swiftriver.core.api.dto.RiverDTO;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
-import com.ushahidi.swiftriver.core.model.User;
 
 /**
  * Service class for rivers
@@ -40,7 +42,7 @@ import com.ushahidi.swiftriver.core.model.User;
  *
  */
 @Service
-public class RiverService extends AbstractServiceImpl<River, Long> {
+public class RiverService {
 
 	@Autowired
 	private RiverDao riverDao;
@@ -48,18 +50,34 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 	/* Logger */
 	private static Logger logger = LoggerFactory.getLogger(RiverService.class);
 
-	public void setRiverDAO(RiverDao riverDao) {
+	public void setRiverDao(RiverDao riverDao) {
 		this.riverDao = riverDao;
 	}
 
 	public JpaDao<River, Long> getServiceDao() {
 		return riverDao;
 	}
+	
+	/**
+	 * Creates and returns a new river
+	 * @param riverData
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public Map<String, Object> createRiver(Map<String, Object> riverData) {
+		RiverDTO riverDTO = new RiverDTO();
+		
+		// TODO Extract account information from OAuth headers
+		River river = riverDao.save(riverDTO.createModel(riverData));		
+		return riverDTO.createDTO(river);
+	}
 
 	/**
-	 * @see RiverService#getRiver(Long)
+	 * Gets and returns a single river
+	 * @param id
+	 * @return
 	 */
-	public Map<String, Object> getRiver(Long id) {
+	public Map<String, Object> getRiver(long id) {
 		// Fetch the river from the database
 		River river = riverDao.findById(id);
 		
@@ -69,57 +87,70 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 			return null;
 		}
 		
-		// TODO Convert the river data to a map
-		return new HashMap<String, Object>();
+		RiverDTO riverDTO = new RiverDTO();
+		return riverDTO.createDTO(river);
 	}
 
 	/**
-	 * @see RiverService#getDropsSinceId(Long, Long, int)
+	 * Gets and returns the list of drops with an ID greater than 
+	 * @param sinceId
+	 * 
+	 * @param id Database ID of the river
+	 * @param sinceId
+	 * @param dropCount The number of drops to return
+	 * @return
 	 */
 	@Transactional
 	public ArrayList<Map<String, Object>> getDropsSinceId(Long id, Long sinceId, int dropCount) {
 		ArrayList<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
-		riverDao.getDrops(id, sinceId, dropCount);
+		DropDTO dropDTO = new DropDTO();
+		for (Drop drop: riverDao.getDrops(id, sinceId, dropCount)) {
+			dropsArray.add(dropDTO.createDTO(drop));
+		}
+
 		return dropsArray;
 	}
 
 	/**
-	 * @see RiverService#getCollaborators(River)
+	 * Gets the list of river collaborators
 	 */
-	public ArrayList<Map<String, Object>> getCollaborators(River river) {
-		ArrayList<Map<String, Object>> collaboratorsList = new ArrayList<Map<String,Object>>();
-
-		return collaboratorsList;
-	}
-
-	public void addCollaborator(long riverId, User user, boolean readOnly) {
-		riverDao.addCollaborator(riverId, user, readOnly);
-	}
-
-	public void removeCollaborator(long riverId, User user) {
-		riverDao.removeCollaborator(riverId, user);
+	@Transactional
+	public List<Map<String, Object>> getCollaborators(Long riverId) {
+		throw new UnsupportedOperationException();
 	}
 
 	public void removeDrop(long riverId, Drop drop) {
-		riverDao.removeDrop(riverId, drop);
+		throw new UnsupportedOperationException();
 	}
 
 	public void addDrop(long riverId, Drop drop) {
-		riverDao.addDrop(riverId, drop);
+		throw new UnsupportedOperationException();
 	}
 
 	public void addDrops(long riverId, Collection<Drop> drops) {
-		riverDao.addDrops(riverId, drops);
+		throw new UnsupportedOperationException();
 	}
 
 	public void addChannel(long riverId, Channel channel) {
-		riverDao.addChannel(riverId, channel);
+		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Gets and returns the channels in a river as a list of DTOs
+	 * @param riverId
+	 * @return
+	 */
+	@Transactional
 	public ArrayList<Map<String, Object>> getChannels(long riverId) {
-		riverDao.getChannels(riverId);
-		// TODO: Implement this
-		return null;
+		ArrayList<Map<String, Object>> channelsList = new ArrayList<Map<String,Object>>();
+		ChannelDTO channelDTO = new ChannelDTO();
+
+		River river = riverDao.findById(riverId);
+		for (Channel channel: river.getChannels()) {
+			channelsList.add(channelDTO.createDTO(channel));
+		}
+
+		return channelsList;
 	}
 
 	public void removeChannel(long riverId, Channel channel) {

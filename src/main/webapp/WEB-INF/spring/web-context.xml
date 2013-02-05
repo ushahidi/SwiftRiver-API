@@ -37,21 +37,13 @@
 	</bean>
 
 	<!-- Imports user-defined @Controller beans that process client requests -->
-	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
-
-	<!-- Repository Beans -->
-	<bean id="accountDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
-
-	<!-- Service Beans -->
-	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
+	<context:component-scan base-package="com.ushahidi.swiftriver.core.api" />
 
 	<!-- Enable the configuration of transactional behavior based on annotations -->
 	<tx:annotation-driven transaction-manager="txManager" />
 
-	<bean id="txManager"
-		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="dataSource" />
+	<bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
 	</bean>
 
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"

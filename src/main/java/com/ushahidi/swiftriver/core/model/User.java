@@ -30,14 +30,18 @@ import javax.persistence.TemporalType;
 @Table(name="users")
 public class User {
 
-	@GeneratedValue
 	@Id
+	@GeneratedValue
 	private long id;
 	
 	private String email;
+	
 	private String name;
+	
 	private String username;
-	private String password;	
+	
+	private String password;
+	
 	private int logins;
 	
 	@Temporal(TemporalType.TIMESTAMP)	

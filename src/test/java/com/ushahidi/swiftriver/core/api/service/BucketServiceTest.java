@@ -19,7 +19,6 @@ package com.ushahidi.swiftriver.core.api.service;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
@@ -31,23 +30,15 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
  */
 public class BucketServiceTest {
 	
-	private BucketService bucketService;
-	
-	private BucketDao bucketDAO;
-	
-	private Long bucketId = new Long(1);
-	
-	@Before
-	public void beforeTest() {
-		bucketDAO = mock(BucketDao.class);
-		bucketService = new BucketService();
-		bucketService.setBucketDAO(bucketDAO);
-	}
-
 	@Test
 	public void testGetBucket() {
-		bucketService.getBucket(bucketId);
-		verify(bucketDAO).findById(bucketId);
+		BucketDao bucketDao = mock(BucketDao.class);
+		BucketService bucketService = new BucketService();
+
+		bucketService.setBucketDao(bucketDao);
+		bucketService.getBucket(1L);
+
+		verify(bucketDao).findById(1L);
 	}	
 
 }

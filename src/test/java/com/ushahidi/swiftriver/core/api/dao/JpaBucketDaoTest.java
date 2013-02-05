@@ -51,7 +51,7 @@ public class JpaBucketDaoTest extends AbstractTransactionalTest {
 	@Test
 	@Rollback(false)
 	public void testCreateBucket() {
-		Account account = accountDao.findByAccountPath("admin5");
+		Account account = accountDao.findByUsername("admin5");
 		Bucket bucket = new Bucket();
 
 		bucket.setName("Test Bucket Number 2");
@@ -77,7 +77,7 @@ public class JpaBucketDaoTest extends AbstractTransactionalTest {
 		Bucket bucket = bucketDao.findById(bucketId);
 		int collaboratorCount = bucket.getCollaborators().size();
 		
-		Account account = accountDao.findByAccountPath("admin2");
+		Account account = accountDao.findByUsername("admin2");
 		bucketDao.addCollaborator(bucketId, account, true);
 		assertEquals(collaboratorCount+1, bucket.getCollaborators().size());
 	}

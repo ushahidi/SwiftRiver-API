@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 /**
  * DTO class for the Place model
@@ -34,7 +35,7 @@ public class PlaceDTO extends EntityDTO<Place> {
 	public Map<String, Object> createDTO(Place entity) {
 		Object[][] placeData = {
 				{"id", entity.getId()},
-				{"name", entity.getPlaceName()}, 
+				{"name", entity.getName()}, 
 				{"coordinates", new Double[]{entity.getLongitude(), entity.getLatitude()} }
 		};
 
@@ -46,15 +47,15 @@ public class PlaceDTO extends EntityDTO<Place> {
 		String placeName = (String) entityDTO.get("name");
 
 		Place place = new Place();
-		place.setPlaceName(placeName);
-		place.setPlaceName(place.getPlaceName().toLowerCase());
+		place.setName(placeName);
+		place.setName(place.getName().toLowerCase());
 		
 		Double[] coordinates = (Double[]) entityDTO.get("coordinates");
 		place.setLongitude(coordinates[0]);
 		place.setLatitude(coordinates[1]);
 		
 		// Generate the place hash
-		String placeHash = EntityDTO.getMD5Hash(placeName, coordinates[0], coordinates[1]);
+		String placeHash = SwiftRiverUtils.getMD5Hash(placeName, coordinates[0], coordinates[1]);
 		place.setHash(placeHash);
 
 		return place;

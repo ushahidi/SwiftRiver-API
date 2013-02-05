@@ -14,36 +14,16 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Repository
-public class JpaAccountDao implements AccountDao {
+public class JpaAccountDao extends AbstractJpaDao<Account, Long> implements AccountDao {
 
-	@PersistenceContext
-	private EntityManager em;
-
-	public EntityManager getEm() {
-		return em;
-	}
-
-	public void setEm(EntityManager em) {
-		this.em = em;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.ushahidi.swiftriver.core.data.dao.AccountDao#findById(long)
-	 */
-	public Account findById(long id) {
-		Account account = em.find(Account.class, id);
-		return account;
+	public JpaAccountDao() {
+		super(Account.class);
 	}
 
 	/*
@@ -55,7 +35,7 @@ public class JpaAccountDao implements AccountDao {
 	 */
 	public Account findByUsername(String username) {
 		String query = "SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username";
-		return (Account) em.createQuery(query)
+		return (Account) entityManager.createQuery(query)
 				.setParameter("username", username)
 				.getSingleResult();
 	}

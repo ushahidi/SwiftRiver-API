@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 public class LinkDTO extends EntityDTO<Link> {
 
@@ -42,7 +43,7 @@ public class LinkDTO extends EntityDTO<Link> {
 
 		Link link = new Link();
 		link.setUrl(url);
-		link.setHash(EntityDTO.getMD5Hash(url));
+		link.setHash(SwiftRiverUtils.getMD5Hash(url));
 		
 		return link;
 	}

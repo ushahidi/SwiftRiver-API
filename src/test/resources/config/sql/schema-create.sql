@@ -619,11 +619,11 @@ CREATE TABLE IF NOT EXISTS `account_collaborators` (
 CREATE TABLE IF NOT EXISTS `river_collaborators` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `river_id` bigint(20) DEFAULT NULL,
-  `user_id` bigint(20) DEFAULT NULL,
+  `account_id` bigint(20) DEFAULT NULL,
   `collaborator_active` tinyint(1) DEFAULT NULL,
   `read_only` tinyint(1)  DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `river_id` (`river_id`,`user_id`)
+  UNIQUE KEY `river_id` (`river_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -632,12 +632,12 @@ CREATE TABLE IF NOT EXISTS `river_collaborators` (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS `bucket_collaborators` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(11) unsigned NOT NULL DEFAULT '0',
+  `account_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `bucket_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `collaborator_active` tinyint(1) DEFAULT NULL,
   `read_only` tinyint(1)  DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `user_id` (`user_id`,`bucket_id`)
+  UNIQUE KEY `user_id` (`account_id`,`bucket_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -775,4 +775,13 @@ CREATE TABLE IF NOT EXISTS `account_channel_quotas` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `un_channel_option` (`account_id`, `channel`,`channel_option`),
   KEY `idx_user_id` (`account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- TABLE 'sequence'
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `seq` (
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

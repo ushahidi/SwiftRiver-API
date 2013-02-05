@@ -19,61 +19,25 @@ package com.ushahidi.swiftriver.core.api.service;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao;
 
 /**
  * Tests for the River service
  * @author ekala
  *
  */
-public class RiverServiceTest {
-	
-	private RiverService riverService;
-	
-	private RiverDao riverDao;
-		
-	@Before
-	public void beforeTest() {
-		riverDao = mock(RiverDao.class);
-		riverService = new RiverService();
-		riverService.setRiverDAO(riverDao);
-	}
+public class RiverServiceTest{
 
-
-	/**
-	 * @see JpaRiverDao#getRiver(long)
-	 * @verifies The river exists
-	 */
 	@Test
 	public void testGetRiver() {
-		riverService.getRiver(new Long(1));
-		verify(riverDao).findById(new Long(1));
+		RiverDao riverDao = mock(RiverDao.class);
+		RiverService service = new RiverService();
+		service.setRiverDao(riverDao);
+		
+		service.getRiver(2L);
+		verify(riverDao).findById(2L);
 	}
-	
-	
-	@Test
-	public void testGetDrops() {
-		riverService.getDropsSinceId(new Long(2), 1000L, 50);
-		verify(riverDao).getDrops(new Long(2), 1000L, 50);
-	}
-	
-	@Test
-	public void testGetChannels() {
-		riverService.getChannels(1);
-		verify(riverDao).getChannels(1);
-	}
-	
-	/**
-	 * @verfies that {@link RiverService#getDropsSinceId(Long, Long, int)}
-	 * exhibits the desired behaviour
-	 */
-	@Test
-	public void testGetDropsSinceId() {
-		riverService.getDropsSinceId(1L, 2000L, 50);
-		verify(riverDao).getDrops(1L, 2000L, 50);
-	}
+
 }

@@ -59,7 +59,7 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 	@Rollback(false)
 	public void testCreateRiver() {
 		River river = new River();
-		Account account = accountDao.findByAccountPath("admin1");
+		Account account = accountDao.findByUsername("admin1");
 		
 		river.setRiverName("Test river");
 		river.setRiverNameUrl("test-river");
@@ -83,7 +83,7 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 		River river = riverDao.findById(riverId);
 		int collaboratorCount = river.getCollaborators().size();
 
-		Account account = accountDao.findByAccountPath("admin3");
+		Account account = accountDao.findByUsername("admin3");
 		riverDao.addCollaborator(riverId, account, false);
 
 		assertEquals(collaboratorCount+1, river.getCollaborators().size());

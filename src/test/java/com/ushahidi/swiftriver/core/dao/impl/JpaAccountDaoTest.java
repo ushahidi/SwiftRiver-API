@@ -19,8 +19,8 @@ public class JpaAccountDaoTest {
 		EntityManager mockEntityManager = mock(EntityManager.class);
 		
 		JpaAccountDao accountDao = new JpaAccountDao();
-		accountDao.setEm(mockEntityManager);
-		accountDao.findById(999);
+		accountDao.setEntityManager(mockEntityManager);
+		accountDao.findById(999L);
 		
 		verify(mockEntityManager).find(Account.class, 999L);
 	}
@@ -36,7 +36,7 @@ public class JpaAccountDaoTest {
 		when(mockQuery.getSingleResult()).thenReturn(mockAccount);
 		
 		JpaAccountDao accountDao = new JpaAccountDao();
-		accountDao.setEm(mockEntityManager);
+		accountDao.setEntityManager(mockEntityManager);
 		Account account = accountDao.findByUsername("admin");
 		
 		verify(mockEntityManager).createQuery("SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username");

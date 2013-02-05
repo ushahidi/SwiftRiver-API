@@ -16,22 +16,22 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
 
 /**
  * Service class for buckets
@@ -39,7 +39,7 @@ import com.ushahidi.swiftriver.core.model.User;
  *
  */
 @Service
-public class BucketService extends AbstractServiceImpl<Bucket, Long> {
+public class BucketService {
 	
 	@Autowired
 	private BucketDao bucketDao;
@@ -47,21 +47,43 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	/* Logger */
 	final static Logger logger = LoggerFactory.getLogger(BucketService.class);
 
-	public void setBucketDAO(BucketDao bucketDAO) {
-		this.bucketDao = bucketDAO;
+	public void setBucketDao(BucketDao bucketDao) {
+		this.bucketDao = bucketDao;
 	}
 
 	public JpaDao<Bucket, Long> getServiceDao() {
 		return bucketDao;
 	}
+	
+	/**
+	 * Creates and returns a new bucket
+	 * @param bucketData
+	 * @return
+	 */
+	public Map<String, Object> createBucket(Map<String, Object> bucketData) {
+		BucketDTO bucketDTO = new BucketDTO();
+		
+		Bucket bucket = bucketDao.save(bucketDTO.createModel(bucketData));
+		return bucketDTO.createDTO(bucket);
+	}
 
-	public Map<String, Object> getBucket(Long id) {
+	/**
+	 * Gets and returns a single bucket
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public Map<String, Object> getBucket(long id) {
 		Bucket bucket = bucketDao.findById(id);
 		
-		Map<String, Object> bucketDataMap = new HashMap<String, Object>();
+		// Verify that the bucket exists
+		if (bucket == null) {
+			logger.debug("Could not find bucket with id " + id);
+			return null;
+		}
 		
-		// Add the drops
-		return bucketDataMap;
+		BucketDTO bucketDTO = new BucketDTO();
+		return bucketDTO.createDTO(bucket);
 	}
 
 	public ArrayList<Map<String, Object>> getDrops(Long bucketId, int dropCount) {
@@ -71,34 +93,32 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 		return dropsList;
 	}
 
-	public void addDrop(Long bucketId, Drop drop) {
-		bucketDao.addDrop(bucketId, drop);
+	public void addDrop(long bucketId, Drop drop) {
+		throw new UnsupportedOperationException();
 	}
 
-	public void addDrops(Long bucketId, Collection<Drop> drops) {
-		bucketDao.addDrops(bucketId, drops);
+	public void addDrops(long bucketId, Collection<Drop> drops) {
+		throw new UnsupportedOperationException();
 	}
 
 	public void removeDrop(Long bucketId, Drop drop) {
-		bucketDao.removeDrop(bucketId, drop);
+		throw new UnsupportedOperationException();
 	}
 
-	public void removeDrops(Long bucketId, Collection<Drop> drops) {
-		bucketDao.removeDrops(bucketId, drops);
+	public void removeDrops(long bucketId, Collection<Drop> drops) {
+		throw new UnsupportedOperationException();
 	}
 
-	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
-		bucketDao.addCollaborator(bucketId, user, readOnly);
-	}
-
-	public ArrayList<Map<String, Object>> getCollaborators(Bucket bucket) {
-		ArrayList<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
-
-		return collaborators;
-	}
-
-	public void removeCollaborator(Long bucketId, User user) {
-		bucketDao.removeCollaborator(bucketId, user);
+	/**
+	 * Gets and returns the list of users collaborating on the bucket specified
+	 * by bucketId
+	 * 
+	 * @param bucketId
+	 * @return
+	 */
+	@Transactional
+	public List<Map<String, Object>> getCollaborators(long bucketId) {
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 /**
  * DTO mapping class for the Tag model
@@ -47,7 +48,7 @@ public class TagDTO extends EntityDTO<Tag> {
 		String tagType = (String) entityDTO.get("tag_type");
 
 		// Compute the hash for the tag
-		String tagHash = EntityDTO.getMD5Hash(tagName, tagType);
+		String tagHash = SwiftRiverUtils.getMD5Hash(tagName, tagType);
 
 		Tag tag = new Tag();
 		tag.setTag(tagName);

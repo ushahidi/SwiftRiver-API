@@ -16,9 +16,7 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import com.ushahidi.swiftriver.core.model.Account;
 
-public interface AccountDao {
+public interface AccountDao extends JpaDao<Account, Long>{
 
-	public Account findById(long id);
-	
 	public Account findByUsername(String username);
 }
