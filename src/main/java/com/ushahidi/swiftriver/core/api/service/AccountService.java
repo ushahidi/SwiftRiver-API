@@ -80,15 +80,20 @@ public class AccountService {
 				{ "public", !account.isAccountPrivate() },
 				{ "date_added", DateUtil.formatRFC822(account.getDateAdded()) },
 				{ "river_quota_remaining", account.getRiverQuotaRemaining() },
-				{ "follower_count", 0 }, { "following_count", 0 },
-				{ "is_owner", false }, { "is_collaborator", false },
-				{ "is_following", false }};
+				{ "follower_count", account.getFollowers().size() },
+				{ "following_count", account.getFollowing().size() },
+				{ "is_owner", true }, { "is_collaborator", false },
+				{ "is_following", false } };
 
 		// Populate owner data
-		Object[][] ownerData = { { "name", account.getOwner().getName() },
+		Object[][] ownerData = {
+				{ "name", account.getOwner().getName() },
 				{ "email", account.getOwner().getEmail() },
 				{ "username", account.getOwner().getUsername() },
-				{ "date_added", account.getOwner().getCreatedDate() }, };
+				{
+						"date_added",
+						DateUtil.formatRFC822(account.getOwner()
+								.getCreatedDate()) }, };
 
 		Map<String, Object> accountMap = ArrayUtils.toMap(accountData);
 		Map<String, Object> ownerMap = ArrayUtils.toMap(ownerData);
@@ -117,7 +122,7 @@ public class AccountService {
 
 		// Populate Buckets
 		List<Map<String, Object>> bucketList = new ArrayList<Map<String, Object>>();
-		
+
 		if (account.getBuckets() != null) {
 			for (Bucket bucket : account.getBuckets()) {
 				bucketList.add(BucketService.getBucketMap(bucket, account));
@@ -127,13 +132,13 @@ public class AccountService {
 		if (account.getCollaboratingBuckets() != null) {
 			for (Bucket bucket : account.getCollaboratingBuckets()) {
 				bucketList.add(BucketService.getBucketMap(bucket, account));
-			}			
+			}
 		}
 
 		if (account.getFollowingBuckets() != null) {
 			for (Bucket bucket : account.getFollowingBuckets()) {
 				bucketList.add(BucketService.getBucketMap(bucket, account));
-			}			
+			}
 		}
 		accountMap.put("buckets", bucketList);
 

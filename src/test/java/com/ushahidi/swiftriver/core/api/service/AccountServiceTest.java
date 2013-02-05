@@ -14,6 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.junit.Before;
@@ -41,6 +42,8 @@ public class AccountServiceTest {
 		account = new Account();
 		account.setId(13);
 		account.setOwner(new User());
+		account.setFollowers(new ArrayList<Account>());
+		account.setFollowing(new ArrayList<Account>());
 		
 		mockedAccountDao = mock(AccountDao.class);		
 		when(mockedAccountDao.findById(anyInt())).thenReturn(account);

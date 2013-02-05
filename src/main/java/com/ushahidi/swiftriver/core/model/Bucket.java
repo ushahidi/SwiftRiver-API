@@ -48,7 +48,7 @@ public class Bucket  {
 	private String bucketName;
 	
 	@Column(name = "bucket_description")
-	private String bucketDescription;
+	private String description;
 	
 	@Column(name = "bucket_publish")
 	private boolean published;
@@ -118,12 +118,12 @@ public class Bucket  {
 		this.bucketName = bucketName;
 	}
 
-	public String getBucketDescription() {
-		return bucketDescription;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setBucketDescription(String bucketDescription) {
-		this.bucketDescription = bucketDescription;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public boolean isPublished() {

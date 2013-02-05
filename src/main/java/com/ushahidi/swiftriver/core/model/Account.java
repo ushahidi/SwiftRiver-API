@@ -57,6 +57,14 @@ public class Account {
 	@JoinColumn(name = "user_id")
 	private User owner;
 	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="account_followers", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="follower_id"))
+	private List<Account> followers;
+	
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="account_followers", joinColumns = @JoinColumn(name="follower_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
+	private List<Account> following;
+	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
 	private List<River> rivers;
 	
@@ -193,6 +201,22 @@ public class Account {
 
 	public void setCollaboratingBuckets(List<Bucket> collaboratingBuckets) {
 		this.collaboratingBuckets = collaboratingBuckets;
+	}
+
+	public List<Account> getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(List<Account> followers) {
+		this.followers = followers;
+	}
+
+	public List<Account> getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(List<Account> following) {
+		this.following = following;
 	}
 
 }

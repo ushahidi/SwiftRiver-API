@@ -110,7 +110,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	{
 		Object[][] bucketData = { { "id", bucket.getId() },
 				{"name", bucket.getBucketName()},
-				{"description", null},
+				{"description", bucket.getDescription()},
 				{"category", null},
 				{"follower_count", bucket.getFollowers().size()},
 				{"is_collaborating", bucket.getCollaborators().contains(queryingAccount)},
