@@ -24,6 +24,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -43,11 +44,10 @@ public class River implements Serializable{
 	private static final long serialVersionUID = -7099235346765215176L;
 
 	@Id
-	@GeneratedValue
-	private long id;
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	private Long id;
 	
-	@ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-	@JoinColumn(name = "account_id")
+	@ManyToOne
 	private Account account;
 	
 	@Column(name="river_name", nullable=false)
@@ -86,9 +86,6 @@ public class River implements Serializable{
 	@Column(name="expiry_notification_sent")
 	private boolean expiryNotificationSent;
 	
-	@Column(name="email_id")
-	private String emailId;
-	
 	@Column(name="public_token")
 	private String publicToken;
 	
@@ -100,25 +97,23 @@ public class River implements Serializable{
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="droplet_id"))
-	private List<Drop> drops = null;
+	private List<Drop> drops;
 	
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="user_id"))
-	private List<User> collaborators = null;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="river")
+	private List<RiverCollaborator> collaborators;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name="river_id")
-	private List<Channel> channels = null;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="river")
+	private List<Channel> channels;
 
 	public River() {
 		
 	}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -202,14 +197,6 @@ public class River implements Serializable{
 		this.expiryNotificationSent = expiryNotificationSent;
 	}
 
-	public String getEmailId() {
-		return emailId;
-	}
-
-	public void setEmailId(String emailId) {
-		this.emailId = emailId;
-	}
-
 	public String getPublicToken() {
 		return publicToken;
 	}
@@ -250,11 +237,11 @@ public class River implements Serializable{
 		this.account = account;
 	}
 
-	public List<User> getCollaborators() {
+	public List<RiverCollaborator> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(List<User> collaborators) {
+	public void setCollaborators(List<RiverCollaborator> collaborators) {
 		this.collaborators = collaborators;
 	}
 

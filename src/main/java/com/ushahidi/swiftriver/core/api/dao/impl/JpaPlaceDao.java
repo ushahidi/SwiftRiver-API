@@ -16,19 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.model.Place;
 
 /**
- * Hibernate class for places
+ * Repository class for places
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaPlaceDao extends AbstractJpaDao<Place, Long> implements PlaceDao{
 
 	public JpaPlaceDao() {
@@ -36,12 +37,13 @@ public class JpaPlaceDao extends AbstractJpaDao<Place, Long> implements PlaceDao
 	}
 
 	/**
-	 * @see PlaceDao#findByHash(String)
+	 * @see PlaceDao#findByHash(ArrayList)
 	 */
-	public Place findByHash(String hash) {
-		String sql = "FROM Place WHERE hash = ?1";
+	@SuppressWarnings("unchecked")
+	public List<Place> findByHash(ArrayList<String> placeHashes) {
+		String sql = "FROM Place WHERE hash IN (?1)";
 		
-		return (Place) entityManager.createQuery(sql).setParameter(1, hash).getSingleResult();
+		return (List<Place>) entityManager.createQuery(sql).setParameter(1, placeHashes).getResultList();
 	}
 
 }

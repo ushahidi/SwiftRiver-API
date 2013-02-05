@@ -21,22 +21,20 @@ import java.util.List;
 
 import javax.persistence.Query;
 
-
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
 
 /**
- * Hibernate class for buckets
+ * Repository class for buckets
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements BucketDao {
 
 	public JpaBucketDao() {
@@ -48,10 +46,10 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 	 */
 	@SuppressWarnings("unchecked")
 	public Collection<Drop> getDrops(Long bucketId, int dropCount) {
-		String sqlQuery = "SELECT b.drops FROM Bucket b WHERE b.id = :bucketId";
+		String sqlQuery = "SELECT b.drops FROM Bucket b WHERE b.id = ?1";
 
 		Query query = entityManager.createQuery(sqlQuery);
-		query.setParameter("bucketId", bucketId);
+		query.setParameter(1, bucketId);
 		query.setMaxResults(dropCount);
 
 		return (List<Drop>) query.getResultList();
@@ -85,28 +83,32 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 		findById(bucketId).getDrops().removeAll(drops);
 	}
 
-	/**
-	 * @see {@link BucketDao#addCollaborator(Long, User, boolean)}
-	 */
-	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
-		// TODO Auto-generated method stub
 
+	/**
+	 * @see BucketDao#addCollaborator(long, Account, boolean)
+	 */
+	public void addCollaborator(long bucketId, Account account, boolean readOnly) {
+		Bucket bucket = findById(bucketId);
+		
+		BucketCollaborator collaborator = new BucketCollaborator();
+		collaborator.setBucket(bucket);
+		collaborator.setAccount(account);
+		collaborator.setReadOnly(readOnly);
+		
+		bucket.getCollaborators().add(collaborator);
+		this.entityManager.persist(collaborator);
 	}
 
 	/**
-	 * @see BucketDao#getCollaborators(Long)
+	 * @see BucketDao#getCollaborators(long)
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<User> getCollaborators(Long bucketId) {
+	public List<BucketCollaborator> getCollaborators(long bucketId) {
 		String hql = "SELECT b.collaborators FROM Bucket b WHERE b.id = ?1";
-		return (List<User>) entityManager.createQuery(hql).setParameter(1, bucketId).getResultList();
-	}
+		Query query = entityManager.createQuery(hql);
+		query.setParameter(1, bucketId);
 
-	/**
-	 * @see BucketDao#removeCollaborator(Long, User)
-	 */
-	public void removeCollaborator(Long bucketId, User user) {
-		findById(bucketId).getCollaborators().remove(user);
+		return (List<BucketCollaborator>)query.getResultList();
 	}
 
 }

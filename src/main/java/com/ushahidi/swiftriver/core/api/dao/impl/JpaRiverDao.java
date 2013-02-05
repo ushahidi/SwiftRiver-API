@@ -22,22 +22,21 @@ import java.util.List;
 import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
-import com.ushahidi.swiftriver.core.model.User;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 
 /**
- * Hibernate class for Rivers
+ * Repository class for Rivers
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao {
 
 	public JpaRiverDao() {
@@ -60,29 +59,18 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	}
 
 	/**
-	 * @see RiverDao#getCollaborators(Long)
+	 * @see RiverDao#addCollaborator(long, Account, boolean)
 	 */
-	@SuppressWarnings("unchecked")
-	public List<User> getCollaborators(Long riverId) {
-		String query = "SELECT r.collaborators FROM River r WHERE r.id = ?1";
+	public void addCollaborator(long riverId, Account account, boolean readOnly) {
+		River river = findById(new Long(riverId));
+
+		RiverCollaborator collaborator = new RiverCollaborator();
+		collaborator.setAccount(account);
+		collaborator.setRiver(river);
+		collaborator.setReadOnly(readOnly);
 		
-		return (List<User>) entityManager.createQuery(query).setParameter(1, riverId).getResultList();
-	}
-
-	/**
-	 * @see RiverDao#addCollaborator(long, User, boolean)
-	 */
-	@Override
-	public void addCollaborator(long riverId, User user, boolean readOnly) {
-		// TODO Auto-generated method stub	
-	}
-
-	/**
-	 * @see RiverDao#removeCollaborator(long, User)
-	 */
-	@Override
-	public void removeCollaborator(long riverId, User user) {
-		findById(riverId).getDrops().remove(user);
+		river.getCollaborators().add(collaborator);
+		this.entityManager.persist(collaborator);		
 	}
 
 	/**
@@ -118,20 +106,6 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	 */
 	public void removeChannel(long riverId, Channel channel) {
 		findById(riverId).getChannels().remove(channel);
-	}
-
-	/**
-	 * @see RiverDao#getChannels(long)
-	 */
-	@SuppressWarnings("unchecked")
-	public List<Channel> getChannels(long riverId) {
-		// TODO Auto-generated method stub
-		String sql = "FROM Channel c WHERE c.riverId = ?1";
-
-		Query query = entityManager.createQuery(sql);
-		query.setParameter(1, riverId);
-		
-		return (List<Channel>) query.getResultList();
 	}
 
 }

@@ -32,14 +32,7 @@ import com.ushahidi.swiftriver.core.model.Tag;
  *
  */
 public interface DropDao extends JpaDao<Drop, Long>{
-	
-	/**
-	 * Creates a collection of drops
-	 * 
-	 * @param drops
-	 */
-	public void createDrops(Collection<Drop> drops);
-	
+
 	/**
 	 * Adds a link to a drop
 	 * @param dropId

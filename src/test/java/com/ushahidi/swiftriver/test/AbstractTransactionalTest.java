@@ -21,15 +21,18 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Base class for integration tests with transactions
+ * @author ekala
+ *
+ */
 @ContextConfiguration(locations = {"classpath:applicationContext.xml"})
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(profiles = {"test"})
-@Transactional
-public abstract class AbstractSwiftRiverTest extends AbstractJUnit4SpringContextTests{
+public abstract class AbstractTransactionalTest extends AbstractTransactionalJUnit4SpringContextTests{
 	
 	@Before
 	public abstract void beforeTest();

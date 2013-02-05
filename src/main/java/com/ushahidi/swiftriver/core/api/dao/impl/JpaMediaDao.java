@@ -16,19 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.MediaDao;
 import com.ushahidi.swiftriver.core.model.Media;
 
 /**
- * Hibernate class for Media
+ * Repository class for Media
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaMediaDao extends AbstractJpaDao<Media, Long> implements MediaDao {
 
 	public JpaMediaDao() {
@@ -36,12 +37,13 @@ public class JpaMediaDao extends AbstractJpaDao<Media, Long> implements MediaDao
 	}
 
 	/**
-	 * @see MediaDao#findByHash(String) 
+	 * @see MediaDao#findByHash(ArrayList) 
 	 */
-	public Media findByHash(String hash) {
-		String sql = "FROM Media WHERE hash = ?1";
+	@SuppressWarnings("unchecked")
+	public List<Media> findByHash(ArrayList<String> mediaHashes) {
+		String sql = "FROM Media WHERE hash IN (?1)";
 		
-		return (Media) entityManager.createQuery(sql).setParameter(1, sql).getSingleResult();
+		return (List<Media>) entityManager.createQuery(sql).setParameter(1, sql).getResultList();
 	}
 
 }

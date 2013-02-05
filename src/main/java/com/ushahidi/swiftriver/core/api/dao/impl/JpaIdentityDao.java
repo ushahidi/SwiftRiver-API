@@ -22,18 +22,16 @@ import java.util.List;
 import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.IdentityDao;
 import com.ushahidi.swiftriver.core.model.Identity;
 
 /**
- * Hibernate class for identities
+ * Repository class for identities
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaIdentityDao extends AbstractJpaDao<Identity, Long> implements IdentityDao {
 
 	public JpaIdentityDao() {
@@ -52,4 +50,5 @@ public class JpaIdentityDao extends AbstractJpaDao<Identity, Long> implements Id
 
 		return (List<Identity>) query.getResultList();
 	}
+
 }

@@ -16,14 +16,19 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Media;
 
 public interface MediaDao extends JpaDao<Media, Long> {
 	
 	/**
-	 * Finds a media item using its hash
-	 * @param hash
+	 * Gets and returns a list of media entities with the
+	 * specified hash values
+	 * 
+	 * @param mediaHashes
 	 * @return
 	 */
-	public Media findByHash(String hash);
+	public List<Media> findByHash(ArrayList<String> mediaHashes);
 }

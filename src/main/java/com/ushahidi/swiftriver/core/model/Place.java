@@ -41,10 +41,10 @@ public class Place implements Serializable{
 	private String hash;
 	
 	@Column(name="place_name", nullable = false)
-	private String placeName;
+	private String name;
 	
 	@Column(name="place_name_canonical")
-	private String placeNameCanonical;
+	private String canonicalName;
 	
 	@Column(name="longitude")
 	private Double longitude;
@@ -64,20 +64,20 @@ public class Place implements Serializable{
 		this.id = id;
 	}
 
-	public String getPlaceName() {
-		return placeName;
+	public String getName() {
+		return name;
 	}
 
-	public void setPlaceName(String placeName) {
-		this.placeName = placeName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public String getPlaceNameCanonical() {
-		return placeNameCanonical;
+	public String getCanonicalName() {
+		return canonicalName;
 	}
 
-	public void setPlaceNameCanonical(String placeNameCanonical) {
-		this.placeNameCanonical = placeNameCanonical;
+	public void setCanonicalName(String canonicalName) {
+		this.canonicalName = canonicalName;
 	}
 
 	public String getHash() {

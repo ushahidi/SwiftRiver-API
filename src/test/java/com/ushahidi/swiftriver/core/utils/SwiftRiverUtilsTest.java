@@ -14,18 +14,18 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dto;
+package com.ushahidi.swiftriver.core.utils;
 
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 /**
- * EntityDTO tests 
+ * SwiftRiverUtils unit tests 
  * @author ekala
  *
  */
-public class EntityDTOTest {
+public class SwiftRiverUtilsTest {
 	
 	/**
 	 * @verifies generation of URL slug from a phrase
@@ -35,6 +35,16 @@ public class EntityDTOTest {
 		String phrase = "Test URL slUg GENERATION";
 		
 		String expectedSlug = "test-url-slug-generation";
-		assertEquals(expectedSlug, EntityDTO.getURLSlug(phrase));
+		assertEquals(expectedSlug, SwiftRiverUtils.getURLSlug(phrase));
+	}
+	
+	/**
+	 * Verifies generation of an MD5 hash from a list of
+	 * strings 
+	 */
+	@Test
+	public void testGetMD5Hash() {
+		String expectedHash = "b8d83f3ff6c3301d4c7c5580c0b8cdab";
+		assertEquals(expectedHash, SwiftRiverUtils.getMD5Hash("Test ", "MD5 ", "Generation"));
 	}
 }

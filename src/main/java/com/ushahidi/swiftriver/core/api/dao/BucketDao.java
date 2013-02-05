@@ -18,9 +18,9 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.Collection;
 
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
 
 /**
  * Database operations for a bucket
@@ -72,28 +72,12 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	public void removeDrops(Long bucketId, Collection<Drop> drops);
 	
 	/**
-	 * Adds a user as a collaborator to a bucket
+	 * Adds a collaborator to the bucket with the specified id
 	 * 
 	 * @param bucketId
-	 * @param user
+	 * @param account
 	 * @param readOnly
 	 */
-	public void addCollaborator(Long bucketId, User user, boolean readOnly);
+	public void addCollaborator(long bucketId, Account account, boolean readOnly);
 	
-	/**
-	 * Gets the users collaborating on the bucket
-	 * 
-	 * @param bucketId Database ID of the bucket
-	 * @return
-	 */
-	public Collection<User> getCollaborators(Long bucketId);
-	
-	/**
-	 * Removes a user from the list of users collaborating on a bucket
-	 * 
-	 * @param bucketId
-	 * @param user
-	 */
-	public void removeCollaborator(Long bucketId, User user);
-		
 }

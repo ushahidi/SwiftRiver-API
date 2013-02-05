@@ -27,16 +27,18 @@ import java.util.Collection;
 public interface JpaDao <T, ID extends Serializable> {
 
 	/**
-	 * Creates a new entity
+	 * Creates and returns a new entity
+	 * 
 	 * @param entity
 	 * @return TODO
 	 */
-	public T create(T entity);
+	public T save(T entity);
 	
 	/**
-	 * Modifies an existing entity
+	 * Updates an existing entity
+	 * 
 	 * @param entity
-	 * @return TODO
+	 * @return
 	 */
 	public T update(T entity);
 	
@@ -65,9 +67,10 @@ public interface JpaDao <T, ID extends Serializable> {
 	public Long getSequenceNumber(String sequenceName, int increment);
 	
 	/**
-	 * Creates a collection of entities in a single transaction
+	 * Creates a collection of entities in a single transaction. Calls to
+	 * this method should be wrapped in a @Transactional annotation
 	 * 
 	 * @param entities
 	 */
-	public void createAll(Collection<T> entities);
+	public void saveAll(Collection<T> entities);
 }

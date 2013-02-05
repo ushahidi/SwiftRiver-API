@@ -19,11 +19,11 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -33,12 +33,11 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 /**
- * Hibernate class for drops
+ * Repository class for drops
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 
 
@@ -47,33 +46,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 	}
 
 	/**
-	 * @see DropDao#createDrops(Collection)
-	 */
-	public void createDrops(Collection<Drop> drops) {
-		// TODO Auto-generated method stub
-	}
-
-	/**
 	 * @see DropDao#addLink(long, Link)
 	 */
 	public void addLink(long dropId, Link link) {
-		getById(dropId).getLinks().add(link);
-	}
-
-	private Drop getById(long dropId) {
-		// TODO Auto-generated method stub
-		return null;
+		findById(dropId).getLinks().add(link);
 	}
 
 	/**
 	 * @see DropDao#addLinks(long, Collection)
 	 */
 	public void addLinks(long dropId, Collection<Link> links) {
-		getById(dropId).getLinks().addAll(links);
+		Drop drop = this.findById(dropId);
+		drop.getLinks().addAll((Set<Link>) links);
+		this.save(drop);
 	}
 
 	public void removeLink(long dropId, Link link) {
-		getById(dropId).getLinks().remove(link);
+		findById(dropId).getLinks().remove(link);
 	}
 
 	/**
@@ -87,7 +76,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 	 * @see DropDao#addPlaces(long, Collection)
 	 */
 	public void addPlaces(long dropId, Collection<Place> places) {
-		getById(dropId).getPlaces().addAll(places);
+		Drop drop = this.findById(dropId);
+		drop.getPlaces().addAll((Set<Place>) places);
+		this.save(drop);
 	}
 
 	/**
@@ -101,21 +92,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 	 * @see DropDao#addMedia(long, Media)
 	 */
 	public void addMedia(long dropId, Media media) {
-		getById(dropId).getMedia().add(media);
+		findById(dropId).getMedia().add(media);
 	}
 
 	/**
 	 * @see DropDao#addMultipleMedia(long, Collection)
 	 */
 	public void addMultipleMedia(long dropId, Collection<Media> media) {
-		getById(dropId).getMedia().addAll(media);
+		Drop drop = this.findById(dropId);
+		drop.getMedia().addAll((Set<Media>) media);
+		this.save(drop);
 	}
 
 	/**
 	 * @see DropDao#removeMedia(long, Media)
 	 */
 	public void removeMedia(long dropId, Media media) {
-		getById(dropId).getMedia().remove(media);
+		findById(dropId).getMedia().remove(media);
 	}
 
 	/**
@@ -129,7 +122,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 	 * @see DropDao#addTags(long, Collection)
 	 */
 	public void addTags(long dropId, Collection<Tag> tags) {
-		getById(dropId).getTags().addAll(tags);
+		Drop drop = this.findById(dropId);
+		drop.getTags().addAll((Set<Tag>) tags);
+		this.save(drop);
 	}
 
 	/**

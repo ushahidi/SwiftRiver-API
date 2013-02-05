@@ -17,8 +17,8 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,6 +30,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * 
@@ -46,7 +48,7 @@ public class Bucket implements Serializable {
 	@GeneratedValue	
 	private long id;
 	
-	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@ManyToOne
 	@JoinColumn(name = "account_id")
 	private Account account;
 	
@@ -54,22 +56,23 @@ public class Bucket implements Serializable {
 	private int userId;
 	
 	@Column(name = "bucket_name", nullable=false)
-	private String bucketName;
+	private String name;
 	
 	@Column(name = "bucket_name_url", nullable=false)
-	private String bucketNameUrl;
+	private String url;
 	
 	@Column(name = "bucket_description")
-	private String bucketDescription;
+	private String description;
 	
 	@Column(name = "bucket_publish")
-	private boolean bucketPublish;
+	private boolean published;
 	
 	@Column(name = "default_layout")
 	private String defaultLayout;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "bucket_date_add")
-	private Timestamp bucketDateAdd;
+	private Date dateAdded;
 	
 	@Column(name = "public_token")
 	private String publicToken;
@@ -80,18 +83,21 @@ public class Bucket implements Serializable {
 			joinColumns = @JoinColumn(name="bucket_id"),
 			inverseJoinColumns = @JoinColumn(name="droplet_id")
 	)
-	private Collection<Drop> drops = null;
+	private List<Drop> drops;
 	
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(
-			name = "bucket_collaborators",
-			joinColumns = @JoinColumn(name = "bucket_id"),
-			inverseJoinColumns = @JoinColumn(name="user_id")
-	)
-	private Collection<User> collaborators = null;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="bucket")
+	private List<BucketCollaborator> collaborators;
 	
 	public Bucket() {
 		
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public Account getAccount() {
@@ -111,35 +117,35 @@ public class Bucket implements Serializable {
 	}
 
 	public String getBucketName() {
-		return bucketName;
+		return name;
 	}
 
-	public void setBucketName(String bucketName) {
-		this.bucketName = bucketName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public String getBucketNameUrl() {
-		return bucketNameUrl;
+	public String getUrl() {
+		return url;
 	}
 
-	public void setBucketNameUrl(String bucketNameUrl) {
-		this.bucketNameUrl = bucketNameUrl;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
-	public String getBucketDescription() {
-		return bucketDescription;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setBucketDescription(String bucketDescription) {
-		this.bucketDescription = bucketDescription;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
-	public boolean isBucketPublish() {
-		return bucketPublish;
+	public boolean isPublished() {
+		return published;
 	}
 
-	public void setBucketPublish(boolean bucketPublish) {
-		this.bucketPublish = bucketPublish;
+	public void setPublished(boolean published) {
+		this.published = published;
 	}
 
 	public String getDefaultLayout() {
@@ -150,12 +156,12 @@ public class Bucket implements Serializable {
 		this.defaultLayout = defaultLayout;
 	}
 
-	public Timestamp getBucketDateAdd() {
-		return bucketDateAdd;
+	public Date getDateAdded() {
+		return dateAdded;
 	}
 
-	public void setBucketDateAdd(Timestamp bucketDateAdd) {
-		this.bucketDateAdd = bucketDateAdd;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 
 	public String getPublicToken() {
@@ -166,28 +172,20 @@ public class Bucket implements Serializable {
 		this.publicToken = publicToken;
 	}
 
-	public long getId() {
-		return id;
-	}
-
-	public Collection<Drop> getDrops() {
+	public List<Drop> getDrops() {
 		return drops;
 	}
 
-	public void setDrops(Collection<Drop> drops) {
+	public void setDrops(List<Drop> drops) {
 		this.drops = drops;
 	}
 
-	public Collection<User> getCollaborators() {
+	public List<BucketCollaborator> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(Collection<User> collaborators) {
+	public void setCollaborators(List<BucketCollaborator> collaborators) {
 		this.collaborators = collaborators;
-	}
-
-	public void setId(long id) {
-		this.id = id;
 	}
 
 	@Override
@@ -196,7 +194,7 @@ public class Bucket implements Serializable {
 		int result = 1;
 		result = prime * result + ((account == null) ? 0 : account.hashCode());
 		result = prime * result
-				+ ((bucketName == null) ? 0 : bucketName.hashCode());
+				+ ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -214,10 +212,10 @@ public class Bucket implements Serializable {
 				return false;
 		} else if (!account.equals(other.account))
 			return false;
-		if (bucketName == null) {
-			if (other.bucketName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!bucketName.equals(other.bucketName))
+		} else if (!name.equals(other.name))
 			return false;
 		return true;
 	}

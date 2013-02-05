@@ -16,14 +16,18 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Link;
 
 public interface LinkDao extends JpaDao<Link, Long> {
 	
 	/**
-	 * Finds a link item using its hash
+	 * Gets and returns a list of {@link Link} entities with the
+	 * specified hash values
 	 * 
-	 * @param hash
+	 * @param linkHashes
 	 */
-	public Link findByHash(String hash);
+	public List<Link> findByHash(ArrayList<String> linkHashes);
 }

@@ -23,8 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 
 /**
@@ -49,22 +47,31 @@ public abstract class AbstractJpaDao<T, ID extends Serializable> implements JpaD
 		this.entityManager = entityManager;
 	}
 
-	@Transactional(readOnly = false)
-	public T create(T entity) {
+	/**
+	 * @see JpaDao#save(Object)
+	 */
+	public T save(T entity) {
 		entityManager.persist(entity);
 		return entity;
 	}
 
-	@Transactional(readOnly = false)
+	/**
+	 * @see JpaDao#update(Object)
+	 */
 	public T update(T entity) {
 		return entityManager.merge(entity);
 	}
 
-	@Transactional(readOnly = false)
+	/**
+	 * @see JpaDao#delete(Object)
+	 */
 	public void delete(T entity) {
 		entityManager.remove(entity);
 	}
 	
+	/**
+	 * @see JpaDao#findById(Serializable)
+	 */
 	public T findById(ID id) {
 		return (T) entityManager.find(entityClass, id);
 	}
@@ -85,14 +92,13 @@ public abstract class AbstractJpaDao<T, ID extends Serializable> implements JpaD
 	}
 
 	/**
-	 * @see JpaDao#createAll(Collection)
+	 * @see JpaDao#saveAll(Collection)
 	 */
-	@Transactional
-	public void createAll(Collection<T> entities) {
+	public void saveAll(Collection<T> entities) {
 		// NOTES: There is no batch insert operation in vanilla
 		// JPA. 
 		for (T entity: entities) {
-			entityManager.persist(entity);
+			entityManager.merge(entity);
 		}
 	}
 		 

@@ -16,19 +16,22 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Query;
+
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 /**
- * Hibernate class for tags
+ * Repository class for tags
  * @author ekala
  *
  */
 @Repository
-@Transactional
 public class JpaTagDao extends AbstractJpaDao<Tag, Long> implements TagDao {
 
 	public JpaTagDao() {
@@ -36,11 +39,16 @@ public class JpaTagDao extends AbstractJpaDao<Tag, Long> implements TagDao {
 	}
 
 	/**
-	 * @see TagDao#findByHash(String)
+	 * @see TagDao#findByHash(ArrayList)
 	 */
-	public Tag findByHash(String hash) {
-		String sql = "from Tag where hash = ?";
-		return (Tag) entityManager.createQuery(sql).setParameter(0, hash).getSingleResult();
+	@SuppressWarnings("unchecked")
+	public List<Tag> findByHash(ArrayList<String> tagHashes) {
+		String sql = "FROM Tag WHERE hash IN (?1)";
+
+		Query query = entityManager.createQuery(sql);
+		query.setParameter(1, tagHashes);
+		
+		return (List<Tag>) query.getResultList();
 	}
 
 }

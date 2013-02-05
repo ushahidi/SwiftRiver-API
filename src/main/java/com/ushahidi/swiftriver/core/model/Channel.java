@@ -17,7 +17,6 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -29,8 +28,11 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * Model for channels 
@@ -50,23 +52,27 @@ public class Channel implements Serializable {
 	@Column(name = "channel")
 	private String channel;
 	
-	@Column(name = "river_id")
-	private Long riverId;
+	@ManyToOne
+	private River river;
 
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "filter_date_add")
-	private Timestamp filterDateAdd;
+	private Date dateAdded;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "filter_date_modified")
-	private Timestamp filterDateModified;
+	private Date dateModified;
 	
 	@Column(name = "filter_enabled")
 	private boolean filterEnabled;
 	
 	@Column(name = "filter_last_run")
-	private Timestamp filterLastRun;	
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date lastRun;	
 
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "filter_last_successful_run")
-	private Timestamp filterLastSuccessfulRun;
+	private Date lastSuccessfulRun;
 	
 	@Column(name = "filter_runs")
 	private int filterRuns;
@@ -95,28 +101,28 @@ public class Channel implements Serializable {
 		this.channel = channel;
 	}
 
-	public Long getRiver() {
-		return riverId;
+	public River getRiver() {
+		return river;
 	}
 
-	public void setRiver(Long river) {
-		this.riverId = river;
+	public void setRiver(River river) {
+		this.river = river;
 	}
 
 	public Date getFilterDateAdd() {
-		return filterDateAdd;
+		return dateAdded;
 	}
 
-	public void setFilterDateAdd(Timestamp filterDateAdd) {
-		this.filterDateAdd = filterDateAdd;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 
-	public Date getFilterDateModified() {
-		return filterDateModified;
+	public Date getDateModified() {
+		return dateModified;
 	}
 
-	public void setFilterDateModified(Timestamp filterDateModified) {
-		this.filterDateModified = filterDateModified;
+	public void setDateModified(Date dateModified) {
+		this.dateModified = dateModified;
 	}
 
 	public boolean isFilterEnabled() {
@@ -128,19 +134,19 @@ public class Channel implements Serializable {
 	}
 
 	public Date getFilterLastRun() {
-		return filterLastRun;
+		return lastRun;
 	}
 
-	public void setFilterLastRun(Timestamp filterLastRun) {
-		this.filterLastRun = filterLastRun;
+	public void setLastRun(Date lastRun) {
+		this.lastRun = lastRun;
 	}
 
-	public Date getFilterLastSuccessfulRun() {
-		return filterLastSuccessfulRun;
+	public Date getLastSuccessfulRun() {
+		return lastSuccessfulRun;
 	}
 
-	public void setFilterLastSuccessfulRun(Timestamp filterLastSuccessfulRun) {
-		this.filterLastSuccessfulRun = filterLastSuccessfulRun;
+	public void setLastSuccessfulRun(Date lastSuccessfulRun) {
+		this.lastSuccessfulRun = lastSuccessfulRun;
 	}
 
 	public int getFilterRuns() {
@@ -164,7 +170,7 @@ public class Channel implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((channel == null) ? 0 : channel.hashCode());
-		result = prime * result + ((riverId == null) ? 0 : riverId.hashCode());
+		result = prime * result + ((river == null) ? 0 : river.hashCode());
 		return result;
 	}
 
@@ -182,10 +188,10 @@ public class Channel implements Serializable {
 				return false;
 		} else if (!channel.equals(other.channel))
 			return false;
-		if (riverId == null) {
-			if (other.riverId != null)
+		if (river == null) {
+			if (other.river != null)
 				return false;
-		} else if (!riverId.equals(other.riverId))
+		} else if (!river.equals(other.river))
 			return false;
 		return true;
 	}

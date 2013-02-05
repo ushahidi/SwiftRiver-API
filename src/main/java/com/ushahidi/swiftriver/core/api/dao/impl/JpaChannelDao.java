@@ -17,19 +17,17 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.model.Channel;
 
 /**
- * Hibernate class for channels
+ * Repository class for channels
  * @author ekala
  *
  */
 
 @Repository
-@Transactional
 public class JpaChannelDao extends AbstractJpaDao<Channel, Integer> implements ChannelDao {
 
 	public JpaChannelDao() {

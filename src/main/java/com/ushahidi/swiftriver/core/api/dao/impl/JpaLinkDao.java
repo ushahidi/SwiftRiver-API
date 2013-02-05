@@ -16,14 +16,15 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Link;
 
 @Repository
-@Transactional
 public class JpaLinkDao extends AbstractJpaDao<Link, Long> implements LinkDao {
 
 	public JpaLinkDao() {
@@ -31,12 +32,13 @@ public class JpaLinkDao extends AbstractJpaDao<Link, Long> implements LinkDao {
 	}
 
 	/**
-	 * @see LinkDao#findByHash(String)
+	 * @see LinkDao#findByHash(ArrayList)
 	 */
-	public Link findByHash(String hash) {
-		String sql = "FROM Link where hash = ?1";
+	@SuppressWarnings("unchecked")
+	public List<Link> findByHash(ArrayList<String> linkHashes) {
+		String sql = "FROM Link WHERE hash IN (?1)";
 		
-		return (Link) entityManager.createQuery(sql).setParameter(1, hash).getSingleResult();
+		return (List<Link>) entityManager.createQuery(sql).setParameter(1, linkHashes).getResultList();
 	}
 
 }

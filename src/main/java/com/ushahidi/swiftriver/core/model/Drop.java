@@ -17,7 +17,6 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,6 +32,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * 
@@ -53,22 +54,22 @@ public class Drop implements Serializable{
 	@JoinColumn(name = "identity_id")
 	private Identity identity;
 
-	@Column(name = "channel", nullable = false)
+	@Column(name = "channel")
 	private String channel;
 	
-	@Column(name = "droplet_hash", nullable = false)
+	@Column(name = "droplet_hash")
 	private String dropletHash;
 	
-	@Column(name = "droplet_orig_id", nullable = false)
-	private String dropletOrigId;
+	@Column(name = "droplet_orig_id")
+	private String originId;
 	
-	@Column(name = "droplet_type", nullable = false)
+	@Column(name = "droplet_type")
 	private String dropletType;
 	
-	@Column(name = "droplet_title", nullable = false)
+	@Column(name = "droplet_title")
 	private String dropletTitle;
 	
-	@Column(name = "droplet_content", nullable = false)
+	@Column(name = "droplet_content")
 	private String dropletContent;
 	
 	@Column(name = "droplet_locale")
@@ -77,11 +78,13 @@ public class Drop implements Serializable{
 	@Column(name = "droplet_image")
 	private Long dropletImage;
 	
-	@Column(name = "droplet_date_pub", nullable = false)
-	private Timestamp datePublished;
+	@Column(name = "droplet_date_pub")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date datePublished;
 	
 	@Column(name = "droplet_date_add")
-	private Timestamp dateAdded;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateAdded;
 	
 	@Column(name = "original_url")
 	private Long originalUrl;
@@ -153,12 +156,12 @@ public class Drop implements Serializable{
 		this.dropletHash = dropletHash;
 	}
 
-	public String getDropletOrigId() {
-		return dropletOrigId;
+	public String getOriginId() {
+		return originId;
 	}
 
-	public void setDropletOrigId(String dropletOrigId) {
-		this.dropletOrigId = dropletOrigId;
+	public void setOriginId(String originId) {
+		this.originId = originId;
 	}
 
 	public String getDropletType() {
@@ -201,20 +204,20 @@ public class Drop implements Serializable{
 		this.dropletImage = dropletImage;
 	}
 
-	public Timestamp getDropletDatePub() {
+	public Date getDatePublished() {
 		return datePublished;
 	}
 
-	public void setDropletDatePub(Timestamp dropletDatePub) {
-		this.datePublished = dropletDatePub;
+	public void setDatePublished(Date datePublished) {
+		this.datePublished = datePublished;
 	}
 
 	public Date getDropletDateAdd() {
 		return dateAdded;
 	}
 
-	public void setDropletDateAdd(Timestamp dropletDateAdd) {
-		this.dateAdded = dropletDateAdd;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 
 	public Long getOriginalUrl() {
