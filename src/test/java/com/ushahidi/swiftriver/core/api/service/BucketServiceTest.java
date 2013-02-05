@@ -19,18 +19,17 @@ package com.ushahidi.swiftriver.core.api.service;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.service.BucketService;
-import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
  * Integration tests for the buckets hibernate class
  * @author ekala
  *
  */
-public class BucketServiceTest extends AbstractSwiftRiverTest {
+public class BucketServiceTest {
 	
 	private BucketService bucketService;
 	
@@ -38,7 +37,7 @@ public class BucketServiceTest extends AbstractSwiftRiverTest {
 	
 	private Long bucketId = new Long(1);
 	
-	@Override
+	@Before
 	public void beforeTest() {
 		bucketDAO = mock(BucketDao.class);
 		bucketService = new BucketService();

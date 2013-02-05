@@ -23,15 +23,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
-import com.ushahidi.swiftriver.core.api.service.DropService;
-import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
  * Integration tests for the Drop service
  * @author ekala
  *
  */
-public class DropServiceTest extends AbstractSwiftRiverTest {
+public class DropServiceTest  {
 
 	/** Service interfaces under test */	
 	private DropService dropService = new DropService();
@@ -42,7 +40,6 @@ public class DropServiceTest extends AbstractSwiftRiverTest {
 	/* Drop id to be used for the test */
 	private Long dropId = new Long(18);
 	
-	@Override
 	@Before
 	public void beforeTest() {
 		dropDAO = mock(DropDao.class);

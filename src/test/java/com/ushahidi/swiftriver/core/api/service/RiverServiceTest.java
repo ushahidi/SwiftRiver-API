@@ -24,21 +24,18 @@ import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao;
-import com.ushahidi.swiftriver.core.api.service.RiverService;
-import com.ushahidi.swiftriver.test.AbstractSwiftRiverTest;
 
 /**
  * Tests for the River service
  * @author ekala
  *
  */
-public class RiverServiceTest extends AbstractSwiftRiverTest{
+public class RiverServiceTest {
 	
 	private RiverService riverService;
 	
 	private RiverDao riverDao;
 		
-	@Override
 	@Before
 	public void beforeTest() {
 		riverDao = mock(RiverDao.class);

@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
-import com.ushahidi.swiftriver.core.api.dao.SwiftRiverDao;
+import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
@@ -42,10 +42,6 @@ public class DropService extends AbstractServiceImpl<Drop, Long> {
 
 	public void setDropDAO(DropDao dropDAO) {
 		this.dropDAO = dropDAO;
-	}
-
-	public SwiftRiverDao<Drop, Long> getServiceDAO() {
-		return dropDAO;
 	}
 
 	public Drop getDrop(Long id) {
@@ -102,6 +98,12 @@ public class DropService extends AbstractServiceImpl<Drop, Long> {
 
 	public void removeTag(Long dropId, Tag tag) {
 		dropDAO.removeTag(dropId, tag);
+	}
+
+	@Override
+	public JpaDao<Drop, Long> getServiceDao() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

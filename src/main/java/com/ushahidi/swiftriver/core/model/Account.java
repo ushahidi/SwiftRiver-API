@@ -8,68 +8,53 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-/**
- * 
- * @author ekala
- *
- */
 @Entity
-@Table(name="accounts")
-public class Account implements Serializable{
-	
-	private static final long serialVersionUID = 370787290154418798L;
+@Table(name = "accounts")
+public class Account {
+
 
 	@Id
 	@GeneratedValue
 	private long id;
-	
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User user;
-	
-	@Column(name = "account_path", nullable = false, unique = true)
+
+	@Column(name = "account_path")
 	private String accountPath;
-	
+
 	@Column(name = "account_private")
 	private boolean accountPrivate;
-	
-	@Column(name="account_date_add")
-	private Timestamp accountDateAdd;
 
-	@Column(name = "account_date_modified")
-	private Timestamp accountDateModified;
-	
 	@Column(name = "account_active")
-	private boolean accountActive;
-	
-	@Column(name="river_quota_remaining")
+	private boolean active;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "account_date_add")
+	private Date dateAdded;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "account_date_modified")
+	private Date dateModified;
+
+	@Column(name = "river_quota_remaining")
 	private int riverQuotaRemaining;
-	
-	@OneToMany
-	@JoinTable(name = "user_followers", joinColumns = { @JoinColumn(name = "user_id") })
-	private Set<Account> followers = null;
-	
-	@OneToMany
-	@JoinTable(name = "user_followers", joinColumns = { @JoinColumn(name = "follower_id") })
-	private Set<Account> following = null;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User owner;
+
 	public Account() {
-		
+
 	}
 
 	public long getId() {
@@ -78,14 +63,6 @@ public class Account implements Serializable{
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
 	}
 
 	public String getAccountPath() {
@@ -104,20 +81,28 @@ public class Account implements Serializable{
 		this.accountPrivate = accountPrivate;
 	}
 
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+
 	public Date getDateModified() {
-		return accountDateModified;
+		return dateModified;
 	}
 
-	public void setDateModified(Timestamp dateModified) {
-		this.accountDateModified = dateModified;
-	}
-
-	public boolean isAccountActive() {
-		return accountActive;
-	}
-
-	public void setAccountActive(boolean accountActive) {
-		this.accountActive = accountActive;
+	public void setDateModified(Date dateModified) {
+		this.dateModified = dateModified;
 	}
 
 	public int getRiverQuotaRemaining() {
@@ -128,55 +113,12 @@ public class Account implements Serializable{
 		this.riverQuotaRemaining = riverQuotaRemaining;
 	}
 
-
-	public Set<Account> getFollowers() {
-		return followers;
+	public User getOwner() {
+		return owner;
 	}
 
-	public void setFollowers(Set<Account> followers) {
-		this.followers = followers;
-	}
-
-	public Set<Account> getFollowing() {
-		return following;
-	}
-
-	public void setFollowing(Set<Account> following) {
-		this.following = following;
-	}
-
-	public Date getAccountDateAdd() {
-		return accountDateAdd;
-	}
-
-	public void setAccountDateAdd(Timestamp accountDateAdd) {
-		this.accountDateAdd = accountDateAdd;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((accountPath == null) ? 0 : accountPath.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Account other = (Account) obj;
-		if (accountPath == null) {
-			if (other.accountPath != null)
-				return false;
-		} else if (!accountPath.equals(other.accountPath))
-			return false;
-		return true;
+	public void setOwner(User owner) {
+		this.owner = owner;
 	}
 
 }

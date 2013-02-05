@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/jdbc 
+        http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+        http://www.springframework.org/schema/jee
+        http://www.springframework.org/schema/jee/spring-jee-3.1.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<mvc:annotation-driven />
+
+	<!-- post-processors for all standard config annotations -->
+	<context:annotation-config />
+
+	<!-- JPA EntityManagerFactory -->
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="com.ushahidi.swiftriver.core.model" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="showSql" value="false" />
+				<property name="generateDdl" value="false" />
+				<property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+			</bean>
+		</property>
+	</bean>
+
+	<!-- Imports user-defined @Controller beans that process client requests -->
+	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
+
+	<!-- Repository Beans -->
+	<bean id="accountDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
+
+	<!-- Service Beans -->
+	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
+
+	<!-- Enable the configuration of transactional behavior based on annotations -->
+	<tx:annotation-driven transaction-manager="txManager" />
+
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${db.class}" />
+		<property name="url" value="${db.url}" />
+		<property name="username" value="${db.username}" />
+		<property name="password" value="${db.password}" />
+	</bean>
+
+	<!-- Data Sources -->
+	<beans profile="prod">
+		<context:property-placeholder location="classpath:db-prod.properties" />
+	</beans>
+
+	<beans profile="test">
+		<context:property-placeholder location="classpath:db-test.properties" />
+
+		<jdbc:initialize-database data-source="dataSource">
+			<jdbc:script location="classpath:config/sql/schema-destroy.sql" />
+			<jdbc:script location="classpath:config/sql/schema-create.sql" />
+			<jdbc:script location="classpath:config/sql/test-data.sql" />
+		</jdbc:initialize-database>
+	</beans>
+</beans>

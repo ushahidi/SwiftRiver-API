@@ -19,17 +19,16 @@ package com.ushahidi.swiftriver.core.api.service;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
-import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.User;
@@ -46,7 +45,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	private BucketDao bucketDao;
 	
 	/* Logger */
-	private static Logger logger = Logger.getLogger(BucketService.class);
+	final static Logger logger = LoggerFactory.getLogger(BucketService.class);
 
 	public void setBucketDAO(BucketDao bucketDAO) {
 		this.bucketDao = bucketDAO;
@@ -59,17 +58,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	public Map<String, Object> getBucket(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		
-		// Verify that the bucket exists
-		if (bucket == null) {
-			logger.debug("Could not find bucket with id " + id);
-			return null;
-		}
-		
-		// Deserialize the bucket data
-		Gson gson = new Gson();
-		Type type = new TypeToken<Map<String, Object>>(){}.getType();
-		
-		Map<String, Object> bucketDataMap = gson.fromJson(bucket.toString(), type);
+		Map<String, Object> bucketDataMap = new HashMap<String, Object>();
 		
 		// Add the drops
 		return bucketDataMap;
@@ -78,11 +67,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 	public ArrayList<Map<String, Object>> getDrops(Long bucketId, int dropCount) {
 		ArrayList<Map<String, Object>> dropsList = new ArrayList<Map<String,Object>>();
 
-		DropDTO dropDTO = new DropDTO();
-		for (Drop drop: bucketDao.getDrops(bucketId, dropCount)) {
-			dropsList.add(dropDTO.createDTO(drop));
-		}
-
+		
 		return dropsList;
 	}
 

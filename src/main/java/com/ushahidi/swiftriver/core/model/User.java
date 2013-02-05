@@ -16,60 +16,39 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-/**
- * 
- * @author ekala
- *
- */
 @Entity
-@Table(name = "users")
-public class User implements Serializable{
+@Table(name="users")
+public class User {
 
-	private static final long serialVersionUID = -3850837819356897538L;
-	
+	@GeneratedValue
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 	
-	@Column(name = "email", nullable = false)
 	private String email;
-	
-	@Column(name = "name", nullable = false)
 	private String name;
-	
-	@Column(name = "password")
-	private String password;
-	
-	@Column(name = "api_key")
-	private String apiKey;
-	
-	@Column(name = "logins")
+	private String username;
+	private String password;	
 	private int logins;
 	
-	@Column(name = "invites")
-	private int invites;
-	
-	@Column(name = "last_login")
-	private int lastLogin;
+	@Temporal(TemporalType.TIMESTAMP)	
+	@Column(name="last_login")
+	private Date lastLoginDate;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "created_date")
+	@Column(name="created_date")
 	private Date createdDate;
-	
+
 	public User() {
-		
 	}
 
 	public long getId() {
@@ -96,20 +75,20 @@ public class User implements Serializable{
 		this.name = name;
 	}
 
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public String getPassword() {
 		return password;
 	}
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public String getApiKey() {
-		return apiKey;
-	}
-
-	public void setApiKey(String apiKey) {
-		this.apiKey = apiKey;
 	}
 
 	public int getLogins() {
@@ -120,20 +99,12 @@ public class User implements Serializable{
 		this.logins = logins;
 	}
 
-	public int getInvites() {
-		return invites;
+	public Date getLastLoginDate() {
+		return lastLoginDate;
 	}
 
-	public void setInvites(int invites) {
-		this.invites = invites;
-	}
-
-	public int getLastLogin() {
-		return lastLogin;
-	}
-
-	public void setLastLogin(int lastLogin) {
-		this.lastLogin = lastLogin;
+	public void setLastLoginDate(Date lastLoginDate) {
+		this.lastLoginDate = lastLoginDate;
 	}
 
 	public Date getCreatedDate() {
@@ -142,31 +113,6 @@ public class User implements Serializable{
 
 	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		User other = (User) obj;
-		if (email == null) {
-			if (other.email != null)
-				return false;
-		} else if (!email.equals(other.email))
-			return false;
-		return true;
 	}
 
 }

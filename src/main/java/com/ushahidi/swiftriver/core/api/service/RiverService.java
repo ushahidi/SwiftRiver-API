@@ -21,14 +21,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
@@ -46,7 +46,7 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 	private RiverDao riverDao;
 	
 	/* Logger */
-	private static Logger logger = Logger.getLogger(RiverService.class);
+	private static Logger logger = LoggerFactory.getLogger(RiverService.class);
 
 	public void setRiverDAO(RiverDao riverDao) {
 		this.riverDao = riverDao;
@@ -79,13 +79,7 @@ public class RiverService extends AbstractServiceImpl<River, Long> {
 	@Transactional
 	public ArrayList<Map<String, Object>> getDropsSinceId(Long id, Long sinceId, int dropCount) {
 		ArrayList<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
-
-		DropDTO dropDTO = new DropDTO();
-		for (Drop drop: riverDao.getDrops(id, sinceId, dropCount)) {
-			dropsArray.add(dropDTO.createDTO(drop));
-		}
-
-		// TODO: Fetch drops, convert them to a map and add them to dropsArray
+		riverDao.getDrops(id, sinceId, dropCount);
 		return dropsArray;
 	}
 

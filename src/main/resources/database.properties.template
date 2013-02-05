@@ -1,5 +1,0 @@
-# Database connection properties 
-database.driver=com.mysql.jdbc.Driver
-database.url=jdbc:mysql://localhost:3306/swiftweb
-database.username=
-database.password=
