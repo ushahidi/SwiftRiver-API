@@ -16,7 +16,6 @@
  */package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -31,6 +30,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * 
@@ -65,8 +66,9 @@ public class River implements Serializable{
 	@Column(name="default_layout")
 	private String defaultLayout;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="river_date_add")
-	private Timestamp dateAdded;
+	private Date dateAdded;
 	
 	@Column(name="max_drop_id")
 	private long maxDropId;
@@ -74,8 +76,9 @@ public class River implements Serializable{
 	@Column(name="drop_count")
 	private long dropCount;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="river_date_expiry")
-	private Timestamp expiryDate;
+	private Date expiryDate;
 	
 	@Column(name="river_expired")
 	private boolean expired;
@@ -109,174 +112,206 @@ public class River implements Serializable{
 		
 	}
 
+
 	public Long getId() {
 		return id;
 	}
+
 
 	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public String getRiverName() {
-		return riverName;
-	}
-
-	public void setRiverName(String riverName) {
-		this.riverName = riverName;
-	}
-
-	public String getRiverNameUrl() {
-		return riverNameUrl;
-	}
-
-	public void setRiverNameUrl(String riverNameUrl) {
-		this.riverNameUrl = riverNameUrl;
-	}
-
-	public Timestamp getDateAdded() {
-		return dateAdded;
-	}
-
-	public void setDateAdded(Timestamp dateAdded) {
-		this.dateAdded = dateAdded;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
-	public boolean isRiverPublic() {
-		return riverPublic;
-	}
-
-	public void setRiverPublic(boolean riverPublic) {
-		this.riverPublic = riverPublic;
-	}
-
-	public String getDefaultLayout() {
-		return defaultLayout;
-	}
-
-	public void setDefaultLayout(String defaultLayout) {
-		this.defaultLayout = defaultLayout;
-	}
-
-	public long getMaxDropId() {
-		return maxDropId;
-	}
-
-	public void setMaxDropId(long maxDropId) {
-		this.maxDropId = maxDropId;
-	}
-
-	public long getDropCount() {
-		return dropCount;
-	}
-
-	public void setDropCount(long dropCount) {
-		this.dropCount = dropCount;
-	}
-
-	public int getExtensionCount() {
-		return extensionCount;
-	}
-
-	public void setExtensionCount(int extensionCount) {
-		this.extensionCount = extensionCount;
-	}
-
-	public boolean isExpiryNotificationSent() {
-		return expiryNotificationSent;
-	}
-
-	public void setExpiryNotificationSent(boolean expiryNotificationSent) {
-		this.expiryNotificationSent = expiryNotificationSent;
-	}
-
-	public String getPublicToken() {
-		return publicToken;
-	}
-
-	public void setPublicToken(String publicToken) {
-		this.publicToken = publicToken;
-	}
-
-	public long getDropQuota() {
-		return dropQuota;
-	}
-
-	public void setDropQuota(long dropQuota) {
-		this.dropQuota = dropQuota;
-	}
-
-	public boolean isRiverFull() {
-		return riverFull;
-	}
-
-	public void setRiverFull(boolean riverFull) {
-		this.riverFull = riverFull;
-	}
-
-	public List<Drop> getDrops() {
-		return drops;
-	}
-
-	public void setDrops(List<Drop> drops) {
-		this.drops = drops;
-	}
 
 	public Account getAccount() {
 		return account;
 	}
 
+
 	public void setAccount(Account account) {
 		this.account = account;
 	}
 
-	public List<RiverCollaborator> getCollaborators() {
-		return collaborators;
-	}
 
-	public void setCollaborators(List<RiverCollaborator> collaborators) {
-		this.collaborators = collaborators;
-	}
-
-	public Date getRiverDateAdd() {
-		return getDateAdded();
-	}
-
-	public void setRiverDateAdd(Timestamp riverDateAdd) {
-		this.setDateAdded(riverDateAdd);
+	public String getRiverName() {
+		return riverName;
 	}
 
 
-	public Timestamp getExpiryDate() {
+	public void setRiverName(String riverName) {
+		this.riverName = riverName;
+	}
+
+
+	public String getRiverNameUrl() {
+		return riverNameUrl;
+	}
+
+
+	public void setRiverNameUrl(String riverNameUrl) {
+		this.riverNameUrl = riverNameUrl;
+	}
+
+
+	public boolean isActive() {
+		return active;
+	}
+
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+
+	public boolean isRiverPublic() {
+		return riverPublic;
+	}
+
+
+	public void setRiverPublic(boolean riverPublic) {
+		this.riverPublic = riverPublic;
+	}
+
+
+	public String getDefaultLayout() {
+		return defaultLayout;
+	}
+
+
+	public void setDefaultLayout(String defaultLayout) {
+		this.defaultLayout = defaultLayout;
+	}
+
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+
+
+	public long getMaxDropId() {
+		return maxDropId;
+	}
+
+
+	public void setMaxDropId(long maxDropId) {
+		this.maxDropId = maxDropId;
+	}
+
+
+	public long getDropCount() {
+		return dropCount;
+	}
+
+
+	public void setDropCount(long dropCount) {
+		this.dropCount = dropCount;
+	}
+
+
+	public Date getExpiryDate() {
 		return expiryDate;
 	}
 
-	public void setExpiryDate(Timestamp expiryDate) {
+
+	public void setExpiryDate(Date expiryDate) {
 		this.expiryDate = expiryDate;
 	}
+
 
 	public boolean isExpired() {
 		return expired;
 	}
 
+
 	public void setExpired(boolean expired) {
 		this.expired = expired;
 	}
+
+
+	public int getExtensionCount() {
+		return extensionCount;
+	}
+
+
+	public void setExtensionCount(int extensionCount) {
+		this.extensionCount = extensionCount;
+	}
+
+
+	public boolean isExpiryNotificationSent() {
+		return expiryNotificationSent;
+	}
+
+
+	public void setExpiryNotificationSent(boolean expiryNotificationSent) {
+		this.expiryNotificationSent = expiryNotificationSent;
+	}
+
+
+	public String getPublicToken() {
+		return publicToken;
+	}
+
+
+	public void setPublicToken(String publicToken) {
+		this.publicToken = publicToken;
+	}
+
+
+	public long getDropQuota() {
+		return dropQuota;
+	}
+
+
+	public void setDropQuota(long dropQuota) {
+		this.dropQuota = dropQuota;
+	}
+
+
+	public boolean isRiverFull() {
+		return riverFull;
+	}
+
+
+	public void setRiverFull(boolean riverFull) {
+		this.riverFull = riverFull;
+	}
+
+
+	public List<Drop> getDrops() {
+		return drops;
+	}
+
+
+	public void setDrops(List<Drop> drops) {
+		this.drops = drops;
+	}
+
+
+	public List<RiverCollaborator> getCollaborators() {
+		return collaborators;
+	}
+
+
+	public void setCollaborators(List<RiverCollaborator> collaborators) {
+		this.collaborators = collaborators;
+	}
+
 
 	public List<Channel> getChannels() {
 		return channels;
 	}
 
+
 	public void setChannels(List<Channel> channels) {
 		this.channels = channels;
 	}
+
 
 	@Override
 	public int hashCode() {

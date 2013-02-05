@@ -17,7 +17,6 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
@@ -35,6 +34,8 @@ import com.ushahidi.swiftriver.core.api.dto.RiverDTO;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 /**
  * Service class for rivers
@@ -47,17 +48,16 @@ public class RiverService {
 	@Autowired
 	private RiverDao riverDao;
 	
+	@Autowired
+	private ChannelDao channelDao;
+
 	/* Logger */
-	private static Logger logger = LoggerFactory.getLogger(RiverService.class);
+	final static Logger LOG = LoggerFactory.getLogger(RiverService.class);
 
 	public void setRiverDao(RiverDao riverDao) {
 		this.riverDao = riverDao;
 	}
 
-	public JpaDao<River, Long> getServiceDao() {
-		return riverDao;
-	}
-	
 	/**
 	 * Creates and returns a new river
 	 * @param riverData
@@ -77,20 +77,22 @@ public class RiverService {
 	 * @param id
 	 * @return
 	 */
-	public Map<String, Object> getRiver(long id) {
+	@Transactional
+	public Map<String, Object> getRiver(Long id) {
 		// Fetch the river from the database
 		River river = riverDao.findById(id);
 		
 		// Verify that the river exists
 		if (river == null) {
-			logger.debug("Could not find river with id " + id);
+			LOG.debug(String.format("Could not find river with id %d", id));
 			return null;
 		}
 		
-		RiverDTO riverDTO = new RiverDTO();
-		return riverDTO.createDTO(river);
+		// Load the channels
+		river.getChannels();
+		return new RiverDTO().createDTO(river);
 	}
-
+	
 	/**
 	 * Gets and returns the list of drops with an ID greater than 
 	 * @param sinceId
@@ -101,8 +103,8 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public ArrayList<Map<String, Object>> getDropsSinceId(Long id, Long sinceId, int dropCount) {
-		ArrayList<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
+	public List<Map<String, Object>> getDropsSinceId(Long id, Long sinceId, int dropCount) {
+		List<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
 		DropDTO dropDTO = new DropDTO();
 		for (Drop drop: riverDao.getDrops(id, sinceId, dropCount)) {
 			dropsArray.add(dropDTO.createDTO(drop));
@@ -112,27 +114,50 @@ public class RiverService {
 	}
 
 	/**
-	 * Gets the list of river collaborators
+	 * Modifies an existing river and returns {@link Map}
+	 * representation (of the river) with the modified data
+	 * 
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public Map<String, Object> updateRiver(Long id, Map<String, Object> body) {
+		River river = riverDao.findById(id);
+		
+		if (river == null) {
+			// TODO throw not found exception
+		}
+
+		String riverName = (String) body.get("name");
+
+		river.setRiverName(riverName);
+		river.setRiverPublic(Boolean.parseBoolean((String) body.get("public")));
+		river.setRiverNameUrl(SwiftRiverUtils.getURLSlug(riverName));
+
+		// Save the changes
+		riverDao.update(river);
+		
+		return new RiverDTO().createDTO(river);		
+	}
+
+	/**
+	 * Deletes a river
+	 * @param id
 	 */
 	@Transactional
-	public List<Map<String, Object>> getCollaborators(Long riverId) {
-		throw new UnsupportedOperationException();
-	}
+	public boolean deleteRiver(Long id) {
+		River river = riverDao.findById(id);
+		
+		// Throw exception if the river doesn't exist
+		if (river == null) {
+			LOG.info(String.format("River with id %d not found", id.longValue()));
+			return false;
+		}
 
-	public void removeDrop(long riverId, Drop drop) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addDrop(long riverId, Drop drop) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addDrops(long riverId, Collection<Drop> drops) {
-		throw new UnsupportedOperationException();
-	}
-
-	public void addChannel(long riverId, Channel channel) {
-		throw new UnsupportedOperationException();
+		// Delete the river
+		riverDao.delete(river);
+		return true;
 	}
 
 	/**
@@ -141,20 +166,50 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public ArrayList<Map<String, Object>> getChannels(long riverId) {
-		ArrayList<Map<String, Object>> channelsList = new ArrayList<Map<String,Object>>();
+	public List<Map<String, Object>> getChannels(Long riverId) {
+		List<Map<String, Object>> channelsList = new ArrayList<Map<String,Object>>();
 		ChannelDTO channelDTO = new ChannelDTO();
-
+	
 		River river = riverDao.findById(riverId);
 		for (Channel channel: river.getChannels()) {
 			channelsList.add(channelDTO.createDTO(channel));
 		}
-
+	
 		return channelsList;
 	}
 
-	public void removeChannel(long riverId, Channel channel) {
-		riverDao.removeChannel(riverId, channel);
+	/**
+	 * Adds a channel to a river
+	 * 
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Transactional
+	public Map<String, Object> addChannel(Long id, Map<String, Object> body) {
+		ChannelDTO dto = new ChannelDTO();
+		
+		River river = riverDao.findById(id);
+		Channel channel = dto.createModel(body);
+		channel.setRiver(river);
+		
+		river.getChannels().add(channel);
+		channelDao.save(channel);
+		
+		return dto.createDTO(channel);
+	}
+
+	@Transactional
+	public List<Map<String, Object>> getCollaborators(Long id) {
+		List<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
+		
+		River river = riverDao.findById(id);
+		for (RiverCollaborator entry: river.getCollaborators()) {
+			// TODO: Create Map<String, Object> representation for each
+			// entry
+		}
+		
+		return collaborators;
 	}
 
 }

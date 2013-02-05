@@ -15,8 +15,10 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,11 +27,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
+import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Controller
 @RequestMapping("/v1/rivers")
 public class RiversController {
+
+	@Autowired
+	private RiverService riverService;
 
 	/**
 	 * Handler for creating a new river.
@@ -38,8 +45,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public Account createAccount(@RequestBody Map<String, Object> body) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public Map<String, Object> createRiver(@RequestBody Map<String, Object> body) {
+		return riverService.createRiver(body);
 	}
 
 	/**
@@ -50,8 +57,8 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getRiver(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public Map<String, Object> getRiver(@PathVariable Long id) {
+		return riverService.getRiver(id);
 	}
 
 	/**
@@ -62,9 +69,9 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account modifyRiver(@RequestBody Map<String, Object> body,
+	public Map<String, Object> modifyRiver(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return riverService.updateRiver(id, body);
 	}
 
 	/**
@@ -74,9 +81,10 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	@ResponseBody
-	public Account deleteRiver(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void deleteRiver(@PathVariable Long id) {
+		if (!riverService.deleteRiver(id)) {
+			throw new ResourceNotFoundException("The river does not exist");
+		}
 	}
 
 	/**
@@ -86,9 +94,10 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/channels", method = RequestMethod.POST)
-	public Account addChannel(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public Map<String, Object> addChannel(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return riverService.addChannel(id, body);
 	}
 
 	/**
@@ -98,8 +107,9 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/channels", method = RequestMethod.GET)
-	public Account getChannels(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public List<Map<String, Object>> getChannels(@PathVariable Long id) {
+		return riverService.getChannels(id);
 	}
 
 	/**
@@ -109,7 +119,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/channels", method = RequestMethod.PUT)
-	public Account modifyChannel(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public Map<String, Object> modifyChannel(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -121,7 +132,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/channels", method = RequestMethod.DELETE)
-	public Account deleteChannel(@PathVariable Long id) {
+	public void deleteChannel(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -132,7 +143,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
-	public Account addCollaborator(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public Map<String, Object> addCollaborator(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -144,8 +156,9 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.GET)
-	public Account getCollaborators(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public List<Map<String, Object>> getCollaborators(@PathVariable Long id) {
+		return riverService.getCollaborators(id);
 	}
 
 	/**
@@ -155,7 +168,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.PUT)
-	public Account modifyCollaborator(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public Map<String, Object> modifyCollaborator(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -167,7 +181,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.DELETE)
-	public Account deleteCollaborator(@PathVariable Long id) {
+	public void deleteCollaborator(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -190,7 +204,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
-	public Account getFollowers(@PathVariable Long id) {
+	@ResponseBody
+	public List<Map<String, Object>> getFollowers(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -201,7 +216,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.DELETE)
-	public Account deleteFollower(@PathVariable Long id) {
+	public void deleteFollower(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -224,7 +239,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.GET)
-	public Account getSubscriptions(@PathVariable Long id) {
+	@ResponseBody
+	public List<Map<String, Object>> getSubscriptions(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -235,7 +251,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.PUT)
-	public Account modifySubscription(@RequestBody Map<String, Object> body,
+	public void modifySubscription(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -247,7 +263,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.DELETE)
-	public Account deleteSubscription(@PathVariable Long id) {
+	public void deleteSubscription(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -258,7 +274,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET)
-	public Account getDrops(
+	@ResponseBody
+	public List<Map<String, Object>> getDrops(
 			@PathVariable Long id,
 			@RequestParam(value = "count", required = false, defaultValue = "50") int count,
 			@RequestParam(value = "max_id", required = false) long maxId,
@@ -278,7 +295,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
-	public Account deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
+	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 }
