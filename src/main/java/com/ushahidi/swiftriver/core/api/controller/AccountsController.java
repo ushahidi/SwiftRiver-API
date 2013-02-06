@@ -25,8 +25,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.model.Account;
 
@@ -55,11 +58,25 @@ public class AccountsController {
 	 * 
 	 * @param id
 	 * @return
+	 * @throws NotFoundException 
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<String, Object> getAccount(@PathVariable Long id) {
-		return accountService.getAccount(id);
+	public GetAccountDTO getAccountById(@PathVariable Long id) throws NotFoundException {
+		return accountService.getAccountById(id);
+	}
+	
+	/**
+	 * Get account details for the specified id.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws NotFoundException 
+	 */
+	@RequestMapping(method = RequestMethod.GET, params="account_path")
+	@ResponseBody
+	public GetAccountDTO getAccountByName(@RequestParam("account_path") String accountPath) throws NotFoundException {
+		return accountService.getAccountByName(accountPath);
 	}
 
 	/**
@@ -67,12 +84,13 @@ public class AccountsController {
 	 * 
 	 * @param id
 	 * @return
+	 * @throws NotFoundException 
 	 */
 	@RequestMapping(value = "/me", method = RequestMethod.GET)
 	@ResponseBody
-	public Map<String, Object> getAccount(Principal principal) {
+	public GetAccountDTO getAccount(Principal principal) throws NotFoundException {
 		String username = principal.getName();
-		return accountService.getAccount(username);
+		return accountService.getAccountByUsername(username);
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)

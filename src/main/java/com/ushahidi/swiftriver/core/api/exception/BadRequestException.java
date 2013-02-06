@@ -12,33 +12,12 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.exception;
 
-import com.ushahidi.swiftriver.core.model.Account;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-public interface AccountDao {
+@ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Malformed request.")
+public class BadRequestException extends Exception {
 
-	/**
-	 * Get an account by its ID
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public Account findById(long id);
-	
-	/**
-	 * Get an account by its username
-	 * 
-	 * @param username
-	 * @return
-	 */
-	public Account findByUsername(String username);
-	
-	/**
-	 * Get an account by its account path
-	 * 
-	 * @param accountPath
-	 * @return
-	 */
-	public Account findByName(String accountPath);
 }

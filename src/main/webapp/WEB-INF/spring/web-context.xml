@@ -45,6 +45,14 @@
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
+	<!-- Bean Mapper -->
+	<bean id="mapper" class="org.dozer.DozerBeanMapper">
+		<property name="mappingFiles">
+			<list>
+				<value>config/dozer-bean-mappings.xml</value>
+			</list>
+		</property>
+	</bean>
 
 	<!-- Enable the configuration of transactional behavior based on annotations -->
 	<tx:annotation-driven transaction-manager="txManager" />

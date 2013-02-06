@@ -59,4 +59,12 @@ public class JpaAccountDao implements AccountDao {
 				.setParameter("username", username)
 				.getSingleResult();
 	}
+
+	@Override
+	public Account findByName(String accountPath) {
+		String query = "SELECT a FROM Account a WHERE a.accountPath = :account_path";
+		return (Account) em.createQuery(query)
+				.setParameter("account_path", accountPath)
+				.getSingleResult();
+	}
 }

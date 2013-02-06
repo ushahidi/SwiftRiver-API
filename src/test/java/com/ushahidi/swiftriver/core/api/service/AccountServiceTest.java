@@ -14,26 +14,34 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import java.util.ArrayList;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+
+import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
-import com.ushahidi.swiftriver.core.api.service.AccountService;
+import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.User;
-
-import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.*;
-import static org.mockito.Mockito.*;
 
 public class AccountServiceTest {
 	
 	private Account account;
+	
+	private GetAccountDTO getAccountDTO;
 
 	private AccountDao mockedAccountDao;
+	
+	private Mapper mockedMapper;
 	
 	private AccountService accountService;
 
@@ -45,41 +53,51 @@ public class AccountServiceTest {
 		account.setFollowers(new ArrayList<Account>());
 		account.setFollowing(new ArrayList<Account>());
 		
+		getAccountDTO = new GetAccountDTO();
+		
 		mockedAccountDao = mock(AccountDao.class);		
 		when(mockedAccountDao.findById(anyInt())).thenReturn(account);
 		when(mockedAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockedAccountDao.findByName(anyString())).thenReturn(account);
+		
+		mockedMapper = mock(Mapper.class);
+		when(mockedMapper.map(account, GetAccountDTO.class)).thenReturn(getAccountDTO);
 		
 		accountService = new AccountService();
 		accountService.setAccountDao(mockedAccountDao);
+		accountService.setMapper(mockedMapper);
 	}
 
 	@Test
-	public void findById() {
-		Map<String, Object> accountMap = accountService.getAccount(13);
+	public void findById() throws NotFoundException {
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13);
 
 		verify(mockedAccountDao).findById(13);
-		assertEquals(13L, accountMap.get("id"));
+		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
 	@Test
-	public void findByUsername() {
-		Map<String, Object> accountMap = accountService.getAccount("admin");
+	public void findByUsername() throws NotFoundException {
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountByUsername("admin");
 
 		verify(mockedAccountDao).findByUsername("admin");
-		assertEquals(13L, accountMap.get("id"));
+		assertEquals(getAccountDTO, actualGetAccountDTO);
+	}
+	
+	@Test
+	public void findByName() throws NotFoundException {
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountByName("default");
+
+		verify(mockedAccountDao).findByName("default");
+		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
 	@Test
-	public void getAccountMap() {
-		Map<String, Object> accountMap = accountService
-				.getAccountMap(account);
+	public void mapGetAccountDTO() {
+		GetAccountDTO actualGetAccountDTO = accountService
+				.mapGetAccountDTO(account);
 
-		assertThat(
-				accountMap.keySet(),
-				hasItems("is_following", "buckets", "is_collaborator",
-						"rivers", "following_count", "id", "is_owner",
-						"date_added", "owner", "follower_count",
-						"river_quota_remaining", "account_path", "active",
-						"public"));
+		verify(mockedMapper).map(account, GetAccountDTO.class);
+		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 }
