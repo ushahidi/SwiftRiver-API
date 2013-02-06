@@ -16,8 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +41,6 @@ public abstract class AbstractControllerTest {
 	@Before
 	public void setup() throws Exception {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac)
-				.alwaysExpect(status().isOk()).build();
+				.build();
 	}
 }
