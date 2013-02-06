@@ -16,88 +16,56 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItems;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Map;
-
+import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao;
-import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.River;
 
-/**
- * Tests for the River service
- * 
- * @author ekala
- * 
- */
 public class RiverServiceTest {
+	
+	private River river;
+	
+	private GetRiverDTO getRiverDTO;
 
 	private RiverService riverService;
 
-	private RiverDao riverDao;
+	private RiverDao mockedRiverDao;
+	
+	private Mapper mockedMapper;
 
 	@Before
 	public void setup() {
-		riverDao = mock(RiverDao.class);
+		river = new River();
+		
+		mockedRiverDao = mock(RiverDao.class);
+		
+		when(mockedRiverDao.findById(anyInt())).thenReturn(river);
+		
+		mockedMapper = mock(Mapper.class);
+		when(mockedMapper.map(river, GetRiverDTO.class)).thenReturn(getRiverDTO);
+		
 		riverService = new RiverService();
-		riverService.setRiverDAO(riverDao);
+		riverService.setRiverDao(mockedRiverDao);
+		riverService.setMapper(mockedMapper);
 	}
-
-	/**
-	 * @see JpaRiverDao#getRiver(long)
-	 * @verifies The river exists
-	 */
+	
 	@Test
-	public void testGetRiver() {
-		riverService.getRiver(new Long(1));
-		verify(riverDao).findById(new Long(1));
+	public void findById() throws NotFoundException {
+		GetRiverDTO actualGetRiverDTO = riverService.getRiverById(22L);
+
+		verify(mockedRiverDao).findById(22);
+		assertEquals(getRiverDTO, actualGetRiverDTO);
 	}
 
-	@Test
-	public void testGetDrops() {
-		riverService.getDropsSinceId(new Long(2), 1000L, 50);
-		verify(riverDao).getDrops(new Long(2), 1000L, 50);
-	}
-
-	@Test
-	public void testGetChannels() {
-		riverService.getChannels(1);
-		verify(riverDao).getChannels(1);
-	}
-
-	/**
-	 * @verfies that {@link RiverService#getDropsSinceId(Long, Long, int)}
-	 *          exhibits the desired behaviour
-	 */
-	@Test
-	public void testGetDropsSinceId() {
-		riverService.getDropsSinceId(1L, 2000L, 50);
-		verify(riverDao).getDrops(1L, 2000L, 50);
-	}
-
-	@Test
-	public void getRiverMap() {
-
-		River river = new River();
-		river.setFollowers(new ArrayList());
-		river.setCollaborators(new ArrayList());
-
-		Map<String, Object> riverMap = RiverService.getRiverMap(river,
-				new Account());
-
-		assertThat(
-				riverMap.keySet(),
-				hasItems("extension_count", "is_following", "drop_quota",
-						"is_collaborating", "id", "category", "date_added",
-						"full", "description", "name", "follower_count",
-						"active", "expiry_date", "public", "drop_count"));
-	}
+	
 }

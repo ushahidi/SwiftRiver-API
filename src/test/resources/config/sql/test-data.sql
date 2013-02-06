@@ -81,6 +81,18 @@ INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_active`, `river_p
 (1, 3, 'River 1', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0);
 
 -- -----------------------------------------------------
+-- Data for table `river_channels`
+-- -----------------------------------------------------
+INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `date_added`, `date_modified`) VALUES 
+(1, 1, 'rss', 1, '2013-01-02 00:00:02', '2013-02-02 00:00:02');
+
+-- -----------------------------------------------------
+-- Data for table `river_channel_options`
+-- -----------------------------------------------------
+INSERT INTO `river_channel_options` (`id`, `river_channel_id`, `key`, `value`) VALUES
+(1, 1, 'url', '{"value":"http:\/\/www.engadget.com\/rss.xml","title":"Engadget","quota_usage":1}');
+
+-- -----------------------------------------------------
 -- Data for table `buckets`
 -- -----------------------------------------------------
 INSERT INTO `buckets` (`id`, `account_id`, `bucket_name`, `bucket_description`, `bucket_publish`, `bucket_date_add`, `drop_count`) VALUES 

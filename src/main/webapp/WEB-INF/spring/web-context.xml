@@ -40,11 +40,13 @@
 	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
 
 	<!-- Repository Beans -->
-	<bean id="accountDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
+	<bean id="accountDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
+	<bean id="river" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
+	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService" />
+
 	<!-- Bean Mapper -->
 	<bean id="mapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">

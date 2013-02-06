@@ -17,6 +17,9 @@ package com.ushahidi.swiftriver.core.api.controller;
 import java.util.Date;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,11 +28,20 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.api.service.AccountService;
+import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Controller
 @RequestMapping("/v1/rivers")
 public class RiversController {
+	
+	final Logger logger = LoggerFactory.getLogger(RiversController.class);
+	
+	@Autowired
+	private RiverService riverService;
 
 	/**
 	 * Handler for creating a new river.
@@ -38,7 +50,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public Account createAccount(@RequestBody Map<String, Object> body) {
+	public Account createRiver(@RequestBody Map<String, Object> body) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -47,11 +59,12 @@ public class RiversController {
 	 * 
 	 * @param id
 	 * @return
+	 * @throws NotFoundException 
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getRiver(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetRiverDTO getRiver(@PathVariable Long id) throws NotFoundException {
+		return riverService.getRiverById(id);
 	}
 
 	/**

@@ -364,24 +364,17 @@ CREATE TABLE IF NOT EXISTS `account_droplet_tags` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 -- -----------------------------------------------------
--- Table `channel_filters`
+-- Table `river_channels`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `channel_filters` (
+CREATE TABLE IF NOT EXISTS `river_channels` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `channel` varchar(100) NOT NULL,
   `river_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `user_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `filter_name` varchar(255) DEFAULT NULL,
-  `filter_description` varchar(255) DEFAULT NULL,
-  `filter_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `filter_date_modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `filter_last_run` TIMESTAMP NOT NULL,
-  `filter_last_successful_run` TIMESTAMP NOT NULL,
-  `filter_runs` int(11) NOT NULL DEFAULT '0',
-  `filter_enabled` tinyint(4) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  KEY `filter_date_add_idx` (`filter_date_add`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Filters generate droplets from channels';
+  `channel` varchar(100) NOT NULL,
+  `active` tinyint(4) NOT NULL DEFAULT '1',
+  `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `date_modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 -- -----------------------------------------------------
@@ -549,19 +542,18 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `channel_filter_options`
+-- Table `river_channel_options`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `channel_filter_options` (
-  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `channel_filter_id` INT(11) UNSIGNED NOT NULL DEFAULT 0 ,
+CREATE TABLE IF NOT EXISTS `river_channel_options` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `river_channel_id` BIGINT(11) UNSIGNED NOT NULL DEFAULT 0 ,
   `key` VARCHAR(255) NOT NULL ,
   `value` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
-  INDEX `channel_filter_id_idx` (`channel_filter_id` ASC) ,
+  INDEX `river_channel_id_idx` (`river_channel_id` ASC) ,
   INDEX `key_idx` (`key` ASC) )
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8, 
-COMMENT = 'Channel filter options' ;
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------

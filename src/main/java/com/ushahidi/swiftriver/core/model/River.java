@@ -31,11 +31,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-/**
- * 
- * @author ekala
- *
- */
 @Entity
 @Table(name="rivers")
 public class River {
@@ -104,10 +99,9 @@ public class River {
 	@JoinTable(name="river_subscriptions", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
 	private List<Account> followers = null;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name="river_id")
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="river")
 	private List<Channel> channels = null;
-
+	
 	public River() {
 		
 	}

@@ -16,94 +16,17 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.Collection;
-import java.util.List;
-
-import com.ushahidi.swiftriver.core.model.Channel;
-import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
-import com.ushahidi.swiftriver.core.model.User;
 
 
-public interface RiverDao extends JpaDao<River, Long>{
+public interface RiverDao {
 	
 	/**
-	 * Returns drops from the specified river where the oldest ID is
-	 * specified by @param sinceId
+	 * Get a River by its ID
 	 * 
-	 * @param id Unique ID of the river
-	 * @param sinceId Oldest dropId
-	 * @param dropCount No. of drops to return
+	 * @param id
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Long sinceId, int dropCount);
-	
-	/**
-	 * Gets users collaborating on the specified river
-	 * 
-	 * @param riverId
-	 * @return
-	 */
-	public List<User> getCollaborators(Long riverId);
-	
-	/**
-	 * Adds a user to the list of river collaborators
-	 * @param riverId
-	 * @param user
-	 * @param readOnly
-	 */
-	public void addCollaborator(long riverId, User user, boolean readOnly);
-	
-	/**
-	 * Removes a user from the list of river collaborators
-	 * @param riverId
-	 * @param user
-	 */
-	public void removeCollaborator(long riverId, User user);
-	
-	/**
-	 * Removes a drop from the river
-	 * 
-	 * @param riverId River containing the drop to be removed
-	 * @param drop Drop to be removed from the river
-	 */
-	public void removeDrop(long riverId, Drop drop);
-	
-	/**
-	 * Adds a drop to a river
-	 * 
-	 * @param riverId
-	 * @param drop
-	 */
-	public void addDrop(long riverId, Drop drop);
-	
-	/**
-	 * Adds a collection of drops to a river
-	 * 
-	 * @param riverId
-	 * @param drops
-	 */
-	public void addDrops(long riverId, Collection<Drop> drops);
-	
-	/**
-	 * Adds a channel to a river
-	 * 
-	 * @param riverId
-	 * @param channel
-	 */
-	public void addChannel(long riverId, Channel channel);
-	
-	/**
-	 * Gets the channels in a river
-	 * @param riverId
-	 */
-	public List<Channel> getChannels(long riverId);
-
-	/**
-	 * Removes a channel from a river
-	 * @param riverId
-	 * @param channel
-	 */
-	public void removeChannel(long riverId, Channel channel);
+	public River findById(long id);	
 	
 }
