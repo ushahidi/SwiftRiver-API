@@ -28,11 +28,11 @@ import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
  * @author ekala
  *
  */
-public class TagDTO extends EntityDTO<Tag> {
+public class TagDTO extends AbstractDTO<Tag> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(Tag entity) {
+	public Map<String, Object> createMapFromEntity(Tag entity) {
 		Object[][] tagData = {
 				{"id", entity.getId()},
 				{"tag", entity.getTag()},
@@ -43,9 +43,9 @@ public class TagDTO extends EntityDTO<Tag> {
 	}
 
 	@Override
-	public Tag createModel(Map<String, Object> entityDTO) {
-		String tagName = (String) entityDTO.get("tag_name");
-		String tagType = (String) entityDTO.get("tag_type");
+	public Tag createEntityFromMap(Map<String, Object> map) {
+		String tagName = (String) map.get("tag_name");
+		String tagType = (String) map.get("tag_type");
 
 		// Compute the hash for the tag
 		String tagHash = SwiftRiverUtils.getMD5Hash(tagName, tagType);
@@ -57,6 +57,18 @@ public class TagDTO extends EntityDTO<Tag> {
 		tag.setHash(tagHash);
 
 		return tag;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		// TODO Auto-generated method stub
+		return new String[]{};
+	}
+
+	@Override
+	protected void copyFromMap(Tag target, Map<String, Object> source) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -28,11 +28,11 @@ import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
  * @author ekala
  *
  */
-public class MediaDTO extends EntityDTO<Media> {
+public class MediaDTO extends AbstractDTO<Media> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(Media entity) {
+	public Map<String, Object> createMapFromEntity(Media entity) {
 		Object[][] mediaData = {
 				{"id", entity.getId()},
 				{"url", entity.getUrl()},
@@ -43,15 +43,27 @@ public class MediaDTO extends EntityDTO<Media> {
 	}
 
 	@Override
-	public Media createModel(Map<String, Object> entityDTO) {
-		String url = (String) entityDTO.get("url");
+	public Media createEntityFromMap(Map<String, Object> map) {
+		String url = (String) map.get("url");
 		
 		Media media = new Media();
 		media.setUrl(url);
 		media.setHash(SwiftRiverUtils.getMD5Hash(url));
-		media.setType((String)entityDTO.get("type"));
+		media.setType((String)map.get("type"));
 
 		return media;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		// TODO Auto-generated method stub
+		return new String[]{};
+	}
+
+	@Override
+	protected void copyFromMap(Media target, Map<String, Object> source) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

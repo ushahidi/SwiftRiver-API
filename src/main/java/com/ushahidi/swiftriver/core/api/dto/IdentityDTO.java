@@ -23,11 +23,11 @@ import org.apache.commons.lang.ArrayUtils;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
-public class IdentityDTO extends EntityDTO<Identity> {
+public class IdentityDTO extends AbstractDTO<Identity> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(Identity entity) {
+	public Map<String, Object> createMapFromEntity(Identity entity) {
 		Object[][] identityData= { 
 				{"id", entity.getId()},
 				{"name", entity.getName()},
@@ -38,15 +38,15 @@ public class IdentityDTO extends EntityDTO<Identity> {
 	}
 
 	@Override
-	public Identity createModel(Map<String, Object> entityDTO) {
+	public Identity createEntityFromMap(Map<String, Object> map) {
 		Identity identity = new Identity();
-		if (entityDTO.get("id") != null) {
-			identity.setId(Long.parseLong((String) entityDTO.get("id")));
+		if (map.get("id") != null) {
+			identity.setId(Long.parseLong((String) map.get("id")));
 		}
 		
 		// Get the origin ID and channel
-		String originId = (String) entityDTO.get("identity_orig_id");
-		String channel = (String) entityDTO.get("channel");
+		String originId = (String) map.get("identity_orig_id");
+		String channel = (String) map.get("channel");
 		
 		// Generate the hash for the identity
 		String identityHash = SwiftRiverUtils.getMD5Hash(channel, originId);
@@ -54,11 +54,23 @@ public class IdentityDTO extends EntityDTO<Identity> {
 		identity.setHash(identityHash);
 		identity.setChannel(channel);
 		identity.setOriginId(originId);
-		identity.setUsername((String) entityDTO.get("identity_username"));
-		identity.setName((String) entityDTO.get("identity_name"));
-		identity.setAvatar((String) entityDTO.get("identity_avatar"));
+		identity.setUsername((String) map.get("identity_username"));
+		identity.setName((String) map.get("identity_name"));
+		identity.setAvatar((String) map.get("identity_avatar"));
 
 		return identity;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		// TODO Auto-generated method stub
+		return new String[]{};
+	}
+
+	@Override
+	protected void copyFromMap(Identity target, Map<String, Object> source) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

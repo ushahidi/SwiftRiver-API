@@ -28,11 +28,11 @@ import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
  * @author ekala
  *
  */
-public class PlaceDTO extends EntityDTO<Place> {
+public class PlaceDTO extends AbstractDTO<Place> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(Place entity) {
+	public Map<String, Object> createMapFromEntity(Place entity) {
 		Object[][] placeData = {
 				{"id", entity.getId()},
 				{"name", entity.getName()}, 
@@ -43,14 +43,14 @@ public class PlaceDTO extends EntityDTO<Place> {
 	}
 
 	@Override
-	public Place createModel(Map<String, Object> entityDTO) {
-		String placeName = (String) entityDTO.get("name");
+	public Place createEntityFromMap(Map<String, Object> map) {
+		String placeName = (String) map.get("name");
 
 		Place place = new Place();
 		place.setName(placeName);
 		place.setName(place.getName().toLowerCase());
 		
-		Double[] coordinates = (Double[]) entityDTO.get("coordinates");
+		Double[] coordinates = (Double[]) map.get("coordinates");
 		place.setLongitude(coordinates[0]);
 		place.setLatitude(coordinates[1]);
 		
@@ -59,6 +59,18 @@ public class PlaceDTO extends EntityDTO<Place> {
 		place.setHash(placeHash);
 
 		return place;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		// TODO Auto-generated method stub
+		return new String[]{};
+	}
+
+	@Override
+	protected void copyFromMap(Place target, Map<String, Object> source) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -116,7 +116,7 @@ public class Bucket implements Serializable {
 		this.userId = userId;
 	}
 
-	public String getBucketName() {
+	public String getName() {
 		return name;
 	}
 

@@ -23,11 +23,11 @@ import org.apache.commons.lang.ArrayUtils;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
-public class LinkDTO extends EntityDTO<Link> {
+public class LinkDTO extends AbstractDTO<Link> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(Link entity) {
+	public Map<String, Object> createMapFromEntity(Link entity) {
 		Object[][] linkData = {
 				{"id", entity.getId()},
 				{"url", entity.getUrl()}
@@ -37,15 +37,27 @@ public class LinkDTO extends EntityDTO<Link> {
 	}
 
 	@Override
-	public Link createModel(Map<String, Object> entityDTO) {
+	public Link createEntityFromMap(Map<String, Object> map) {
 		// Get the URL for the link
-		String url = (String) entityDTO.get("url");
+		String url = (String) map.get("url");
 
 		Link link = new Link();
 		link.setUrl(url);
 		link.setHash(SwiftRiverUtils.getMD5Hash(url));
 		
 		return link;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		// TODO Auto-generated method stub
+		return new String[]{};
+	}
+
+	@Override
+	protected void copyFromMap(Link target, Map<String, Object> source) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

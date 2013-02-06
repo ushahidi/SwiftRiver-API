@@ -29,21 +29,21 @@ import com.ushahidi.swiftriver.core.model.ChannelOption;
  * @author ekala
  *
  */
-public class ChannelDTO extends EntityDTO<Channel> {
+public class ChannelDTO extends AbstractDTO<Channel> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(Channel entity) {
+	public Map<String, Object> createMapFromEntity(Channel entity) {
 		ArrayList<Map<String, Object>> channelOptions = new ArrayList<Map<String,Object>>();
 		ChannelOptionDTO channelOptionDTO = new ChannelOptionDTO();
 
 		for (ChannelOption channelOption: entity.getChannelOptions()) {
-			channelOptions.add(channelOptionDTO.createDTO(channelOption));
+			channelOptions.add(channelOptionDTO.createMapFromEntity(channelOption));
 		}
 
 		Object[][] channelData = {
 				{"id", entity.getId()},
-				{"channel", entity.getChannel()},
+				{"name", entity.getChannel()},
 				{"options", channelOptions}
 		};
 
@@ -51,16 +51,28 @@ public class ChannelDTO extends EntityDTO<Channel> {
 	}
 
 	@Override
-	public Channel createModel(Map<String, Object> entityDTO) {
+	public Channel createEntityFromMap(Map<String, Object> map) {
 		Channel channel = new Channel();
 		
-		if (entityDTO.get("id") != null) {
-			channel.setId(Integer.parseInt((String) entityDTO.get("id")));
+		if (map.get("id") != null) {
+			channel.setId((Integer) map.get("id"));
 		}
-		channel.setChannel((String) entityDTO.get("channel"));
+		channel.setChannel((String) map.get("channel"));
 //		channel.setRiver(Long.parseLong((String) entityDTO.get("river_id")));
 
 		return channel;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		// TODO Auto-generated method stub
+		return new String[]{};
+	}
+
+	@Override
+	protected void copyFromMap(Channel target, Map<String, Object> source) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

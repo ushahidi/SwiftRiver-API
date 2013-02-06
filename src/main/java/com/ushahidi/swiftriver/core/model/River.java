@@ -52,10 +52,10 @@ public class River implements Serializable{
 	private Account account;
 	
 	@Column(name="river_name", nullable=false)
-	private String riverName;
+	private String name;
 	
 	@Column(name="river_name_url", nullable=false)
-	private String riverNameUrl;
+	private String url;
 	
 	@Column(name="river_active")
 	private boolean active;
@@ -133,23 +133,23 @@ public class River implements Serializable{
 	}
 
 
-	public String getRiverName() {
-		return riverName;
+	public String getName() {
+		return name;
 	}
 
 
-	public void setRiverName(String riverName) {
-		this.riverName = riverName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 
-	public String getRiverNameUrl() {
-		return riverNameUrl;
+	public String getUrl() {
+		return url;
 	}
 
 
-	public void setRiverNameUrl(String riverNameUrl) {
-		this.riverNameUrl = riverNameUrl;
+	public void setUrl(String url) {
+		this.url = url;
 	}
 
 
@@ -319,7 +319,7 @@ public class River implements Serializable{
 		int result = 1;
 		result = prime * result + ((account == null) ? 0 : account.hashCode());
 		result = prime * result
-				+ ((riverName == null) ? 0 : riverName.hashCode());
+				+ ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -337,10 +337,10 @@ public class River implements Serializable{
 				return false;
 		} else if (!account.equals(other.account))
 			return false;
-		if (riverName == null) {
-			if (other.riverName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!riverName.equals(other.riverName))
+		} else if (!name.equals(other.name))
 			return false;
 		return true;
 	}

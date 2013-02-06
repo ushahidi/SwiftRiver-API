@@ -31,22 +31,22 @@ import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
  * @author ekala
  *
  */
-public class RiverDTO extends EntityDTO<River> {
+public class RiverDTO extends AbstractDTO<River> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Map<String, Object> createDTO(River entity) {
+	public Map<String, Object> createMapFromEntity(River entity) {
 		List<Map<String, Object>> channelsList = new ArrayList<Map<String,Object>>();
 		ChannelDTO channelDTO = new ChannelDTO();
 
 		for (Channel channel: entity.getChannels()) {
-			channelsList.add(channelDTO.createDTO(channel));
+			channelsList.add(channelDTO.createMapFromEntity(channel));
 		}
 
 		Object[][] riverData = {
 				{"id", entity.getId()},
-				{"name", entity.getRiverName()},
-				{"url", entity.getRiverNameUrl()},
+				{"name", entity.getName()},
+				{"url", entity.getUrl()},
 				{"public", entity.isRiverPublic()},
 				{"active", entity.isActive()},
 				{"full", entity.isRiverFull()},
@@ -62,22 +62,39 @@ public class RiverDTO extends EntityDTO<River> {
 	}
 
 	@Override
-	public River createModel(Map<String, Object> entityDTO) {
+	public River createEntityFromMap(Map<String, Object> map) {
 		River river = new River();
-		if (entityDTO.get("id") == null) {
-			river.setId(Long.parseLong((String) entityDTO.get("id")));
+		if (map.get("id") != null) {
+			String riverId = ((Integer) map.get("id")).toString();
+			river.setId(Long.parseLong(riverId));
 		}
 
-		String riverName = (String) entityDTO.get("name");
+		String riverName = (String) map.get("name");
 
-		river.setRiverName(riverName);
-		river.setRiverNameUrl(SwiftRiverUtils.getURLSlug(riverName));
-		river.setActive(Boolean.parseBoolean((String) entityDTO.get("active")));
+		river.setName(riverName);
+		river.setUrl(SwiftRiverUtils.getURLSlug(riverName));
+		river.setActive((Boolean) map.get("active"));
+		river.setRiverPublic((Boolean) map.get("public"));
 		
-		if (entityDTO.get("layout") != null) {
-			river.setDefaultLayout((String) entityDTO.get("layout"));
+		if (map.get("layout") != null) {
+			river.setDefaultLayout((String) map.get("layout"));
 		}
 		return river;
+	}
+
+	@Override
+	protected String[] getValidationKeys() {
+		return new String[]{"name", "public"};
+	}
+
+	@Override
+	protected void copyFromMap(River target, Map<String, Object> source) {
+		River dummy = createEntityFromMap(source);
+		
+		target.setName(dummy.getName());
+		target.setUrl(dummy.getUrl());
+		target.setActive(dummy.isActive());
+		target.setRiverPublic(dummy.isRiverPublic());
 	}
 
 }
