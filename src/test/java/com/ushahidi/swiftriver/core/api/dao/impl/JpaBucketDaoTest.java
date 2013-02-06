@@ -13,7 +13,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
- */package com.ushahidi.swiftriver.core.api.dao;
+ */package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;

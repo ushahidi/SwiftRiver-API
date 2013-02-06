@@ -1,4 +1,4 @@
-package com.ushahidi.swiftriver.core.dao.impl;
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
