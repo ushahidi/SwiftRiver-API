@@ -32,6 +32,8 @@ public class UnauthorizedRequestException extends RuntimeException {
 
 	private static final long serialVersionUID = -6741600228177740936L;
 	
+	public UnauthorizedRequestException() { }
+
 	public UnauthorizedRequestException(String message) {
 		super(message);
 	}

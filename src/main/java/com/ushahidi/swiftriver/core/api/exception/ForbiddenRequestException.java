@@ -31,6 +31,8 @@ public class ForbiddenRequestException extends RuntimeException {
 
 	private static final long serialVersionUID = -5181429160292524717L;
 
+	public ForbiddenRequestException() { }
+
 	public ForbiddenRequestException(String message) {
 		super(message);
 	}
