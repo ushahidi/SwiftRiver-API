@@ -42,7 +42,7 @@ public class PlaceDTOTest {
 		};
 		
 		PlaceDTO placeDTO = new PlaceDTO();
-		Place place = placeDTO.createModel(ArrayUtils.toMap(placeData));
+		Place place = placeDTO.createEntityFromMap(ArrayUtils.toMap(placeData));
 
 		String expectedHash = "2d67198dc71747308498e9685bdcebc3";
 		

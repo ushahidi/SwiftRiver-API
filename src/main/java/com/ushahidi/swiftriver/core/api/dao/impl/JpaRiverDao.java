@@ -59,21 +59,6 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	}
 
 	/**
-	 * @see RiverDao#addCollaborator(long, Account, boolean)
-	 */
-	public void addCollaborator(long riverId, Account account, boolean readOnly) {
-		River river = findById(new Long(riverId));
-
-		RiverCollaborator collaborator = new RiverCollaborator();
-		collaborator.setAccount(account);
-		collaborator.setRiver(river);
-		collaborator.setReadOnly(readOnly);
-		
-		river.getCollaborators().add(collaborator);
-		this.entityManager.persist(collaborator);		
-	}
-
-	/**
 	 * @see RiverDao#removeDrop(long, Drop)
 	 */
 	public void removeDrop(long riverId, Drop drop) {
@@ -106,6 +91,36 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	 */
 	public void removeChannel(long riverId, Channel channel) {
 		findById(riverId).getChannels().remove(channel);
+	}
+
+	/**
+	 * @see RiverDao#addCollaborator(long, Account, boolean)
+	 */
+	public RiverCollaborator addCollaborator(long riverId, Account account, boolean readOnly) {
+		River river = findById(new Long(riverId));
+	
+		RiverCollaborator collaborator = new RiverCollaborator();
+		collaborator.setAccount(account);
+		collaborator.setRiver(river);
+		collaborator.setReadOnly(readOnly);
+		
+		river.getCollaborators().add(collaborator);
+		this.entityManager.persist(collaborator);
+		
+		return collaborator;
+	}
+
+	/**
+	 * @see {@link RiverDao#deleteCollaborator(Long, Long)}
+	 */
+	public void deleteCollaborator(Long id, Long collaboratorId) {
+		// Retrieve the collaborator from the DB
+		RiverCollaborator collaborator = this.entityManager.find(RiverCollaborator.class, 
+				collaboratorId);
+		
+		if (collaborator.getRiver() != null && collaborator.getRiver().getId().equals(id)) {
+			this.entityManager.remove(collaborator);
+		}
 	}
 
 }

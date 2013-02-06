@@ -93,11 +93,49 @@ INSERT INTO accounts(id, user_id, account_path) VALUES
 (6, 6, 'admin4'),
 (7, 7, 'admin5');
 
--- Rivers
+-- ------------------------
+-- Data for table `rivers`
+-- ------------------------
 INSERT INTO rivers(id, account_id, river_name, river_name_url) VALUES
-(1, 3, 'River Number One', 'river-number-one');
+(1, 3, 'River Number One', 'river-number-one'),
+(2, 4, 'River Number x', 'river-number-x');
 
+-- ------------------------------------
+-- Data for table `river_collaborators`
+-- -------------------------------------
+INSERT INTO river_collaborators(river_id, account_id, read_only) VALUES
+(1, 2, 0),
+(1, 5, 1);
 
+-- --------------------------
+-- Data for `channel_filters`
+-- --------------------------
+INSERT INTO `channel_filters` (`id`, `channel`, `river_id`) VALUES
+(1, 'rss', 1),
+(2, 'email', 1),
+(3, 'sms', 1);
+
+-- ---------------------------------
+-- Data for `channel_filter_options`
+-- ---------------------------------
+INSERT INTO `channel_filter_options` (`id`, `channel_filter_id`, `key`, `value`)
+VALUES
+	(1, 1, 'url', '{\"value\":\"http:\\/\\/feeds.boingboing.net\\/boingboing\\/iBag\",\"title\":\"Boing Boing\"}'),
+	(2, 1, 'url', '{\"value\":\"http:\\/\\/feeds.feedburner.com\\/codinghorror\\/\",\"title\":\"Coding Horror\"}'),
+	(3, 1, 'url', '{\"value\":\"http:\\/\\/daringfireball.net\\/index.xml\",\"title\":\"Daring Fireball\"}'),
+	(4, 1, 'url', '{\"value\":\"http:\\/\\/feeds.feedburner.com\\/failblog\",\"title\":\"Epic Fail Funny Videos and Funny Pictures\"}'),
+	(5, 1, 'url', '{\"value\":\"http:\\/\\/www.fastcompany.com\\/rss.xml\",\"title\":\"Fast Company\"}'),
+	(6, 1, 'url', '{\"value\":\"http:\\/\\/gizmodo.com\\/index.xml\",\"title\":\"Gizmodo\"}');
+
+-- ----------
 -- Buckets
+-- ----------
 INSERT INTO buckets(id, account_id, bucket_name, bucket_name_url) VALUES
 (1, 4, 'Bucket Number One', 'bucket-number-one');
+
+-- ------------------------------------
+-- Data for table `bucket_collaborators`
+-- -------------------------------------
+INSERT INTO bucket_collaborators(bucket_id, account_id, read_only) VALUES
+(1, 2, 0),
+(1, 3, 1);

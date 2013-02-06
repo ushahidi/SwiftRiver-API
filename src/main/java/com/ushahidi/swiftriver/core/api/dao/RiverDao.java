@@ -23,6 +23,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 
 public interface RiverDao extends JpaDao<River, Long>{
@@ -38,14 +39,6 @@ public interface RiverDao extends JpaDao<River, Long>{
 	 */
 	public List<Drop> getDrops(Long id, Long sinceId, int dropCount);
 	
-	/**
-	 * Adds a collaborator to a river
-	 * @param riverId
-	 * @param account
-	 * @param readOnly
-	 */
-	public void addCollaborator(long riverId, Account account, boolean readOnly);
-
 	/**
 	 * Removes a drop from the river
 	 * 
@@ -84,5 +77,20 @@ public interface RiverDao extends JpaDao<River, Long>{
 	 * @param channel
 	 */
 	public void removeChannel(long riverId, Channel channel);
+
+	/**
+	 * Adds a collaborator to a river
+	 * @param riverId
+	 * @param account
+	 * @param readOnly
+	 */
+	public RiverCollaborator addCollaborator(long riverId, Account account, boolean readOnly);
+
+	/**
+	 * Removes a collaborator from the river
+	 * @param id
+	 * @param collaboratorId
+	 */
+	public void deleteCollaborator(Long id, Long collaboratorId);
 	
 }

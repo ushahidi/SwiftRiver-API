@@ -39,7 +39,7 @@ public class TagDTOTest {
 		TagDTO tagDTO = new TagDTO();
 
 		Object[][] tagData = { {"tag_name", "Uhuru Kenyatta"}, {"tag_type", "person"} };
-		Tag tag = tagDTO.createModel(ArrayUtils.toMap(tagData));
+		Tag tag = tagDTO.createEntityFromMap(ArrayUtils.toMap(tagData));
 		
 		// Hash value to be expected from the Tag entity created from the DTO
 		String expectedHash = "a767beb96688d9807a181202929b456e";

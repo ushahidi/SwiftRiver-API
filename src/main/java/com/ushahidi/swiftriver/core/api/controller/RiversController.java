@@ -45,6 +45,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
+	@ResponseBody
 	public Map<String, Object> createRiver(@RequestBody Map<String, Object> body) {
 		return riverService.createRiver(body);
 	}
@@ -58,7 +59,11 @@ public class RiversController {
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
 	public Map<String, Object> getRiver(@PathVariable Long id) {
-		return riverService.getRiver(id);
+		Map<String, Object> river = riverService.getRiver(id);
+		if (river == null) {
+			throw new ResourceNotFoundException("The river does not exist");
+		}
+		return river;
 	}
 
 	/**
@@ -80,7 +85,7 @@ public class RiversController {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)	
 	public void deleteRiver(@PathVariable Long id) {
 		if (!riverService.deleteRiver(id)) {
 			throw new ResourceNotFoundException("The river does not exist");
@@ -131,9 +136,9 @@ public class RiversController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/channels", method = RequestMethod.DELETE)
-	public void deleteChannel(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/channels/{channel_id}", method = RequestMethod.DELETE)
+	public void deleteChannel(@PathVariable Long id, @PathVariable Integer channel_id) {
+		riverService.deleteChannel(id, channel_id);
 	}
 
 	/**
@@ -146,7 +151,7 @@ public class RiversController {
 	@ResponseBody
 	public Map<String, Object> addCollaborator(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return riverService.addCollaborator(id, body);
 	}
 
 	/**
@@ -180,9 +185,9 @@ public class RiversController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.DELETE)
-	public void deleteCollaborator(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/collaborators/{collaborator_id}", method = RequestMethod.DELETE)
+	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long collaborator_id) {
+		riverService.deleteCollaborator(id, collaborator_id);
 	}
 
 	/**

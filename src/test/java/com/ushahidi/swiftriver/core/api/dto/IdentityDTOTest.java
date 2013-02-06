@@ -46,7 +46,7 @@ public class IdentityDTOTest {
 		};
 		
 		IdentityDTO dto = new IdentityDTO();
-		Identity identity = dto.createModel(ArrayUtils.toMap(identityData));
+		Identity identity = dto.createEntityFromMap(ArrayUtils.toMap(identityData));
 		
 		String expectedHash = "bbe447f2ce1ae7d429fec1edecb9fe0d";
 		assertEquals(expectedHash, identity.getHash());

@@ -36,7 +36,7 @@ import com.ushahidi.swiftriver.core.api.dao.MediaDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
-import com.ushahidi.swiftriver.core.api.dto.EntityDTO;
+import com.ushahidi.swiftriver.core.api.dto.AbstractDTO;
 import com.ushahidi.swiftriver.core.api.dto.IdentityDTO;
 import com.ushahidi.swiftriver.core.api.dto.LinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.MediaDTO;
@@ -132,12 +132,12 @@ public class DropService {
 		// Map the identities to models
 		for (Map<String, Object> entry: drops) {
 			// Create identity model and add it to identities collection
-			Identity identity= identityDTO.createModel(entry);
+			Identity identity= identityDTO.createEntityFromMap(entry);
 			mappedIdentities.add(identity);
 
 			// Set the identity for the drop
 			entry.put("identity", identity);
-			Drop drop = dropDTO.createModel(entry);
+			Drop drop = dropDTO.createEntityFromMap(entry);
 
 			String dropHash = drop.getDropletHash();
 			dropHashes.add(dropHash);
@@ -493,13 +493,13 @@ public class DropService {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> void populateDropMetadataMap(String dropHash, Map<String, Object> dropEntity, 
-			String metadataKey, EntityDTO metadataEntityDTO, Map<String, Set<T>> metadataMap,
+			String metadataKey, AbstractDTO metadataEntityDTO, Map<String, Set<T>> metadataMap,
 			Set<T> metadataSet) {
 
 		Set<T> dropMetadataSet = new HashSet<T>();
 
 		for (Map<String, Object> entry: (ArrayList<Map<String, Object>>)dropEntity.get(metadataKey)) {
-			T medataEntity = (T) metadataEntityDTO.createModel(entry);
+			T medataEntity = (T) metadataEntityDTO.createEntityFromMap(entry);
 			if (metadataMap.get(dropHash) != null) {
 				dropMetadataSet = metadataMap.get(dropHash);
 				metadataMap.remove(dropHash);

@@ -57,7 +57,7 @@ public class JpaBucketDaoTest extends AbstractTransactionalTest {
 		Bucket bucket = new Bucket();
 
 		bucket.setName("Test Bucket Number 2");
-		bucket.setUrl(SwiftRiverUtils.getURLSlug(bucket.getBucketName()));
+		bucket.setUrl(SwiftRiverUtils.getURLSlug(bucket.getName()));
 		bucket.setPublished(true);
 		bucket.setAccount(account);
 		

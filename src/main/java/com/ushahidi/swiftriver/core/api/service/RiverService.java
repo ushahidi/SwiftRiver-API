@@ -26,16 +26,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
+import com.ushahidi.swiftriver.core.api.dto.RiverCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.RiverDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
-import com.ushahidi.swiftriver.core.utils.SwiftRiverUtils;
 
 /**
  * Service class for rivers
@@ -50,6 +54,9 @@ public class RiverService {
 	
 	@Autowired
 	private ChannelDao channelDao;
+
+	@Autowired
+	private AccountDao accountDao;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(RiverService.class);
@@ -68,8 +75,8 @@ public class RiverService {
 		RiverDTO riverDTO = new RiverDTO();
 		
 		// TODO Extract account information from OAuth headers
-		River river = riverDao.save(riverDTO.createModel(riverData));		
-		return riverDTO.createDTO(river);
+		River river = riverDao.save(riverDTO.createEntityFromMap(riverData));		
+		return riverDTO.createMapFromEntity(river);
 	}
 
 	/**
@@ -83,14 +90,12 @@ public class RiverService {
 		River river = riverDao.findById(id);
 		
 		// Verify that the river exists
-		if (river == null) {
-			LOG.debug(String.format("Could not find river with id %d", id));
+		if (river == null)
 			return null;
-		}
 		
 		// Load the channels
 		river.getChannels();
-		return new RiverDTO().createDTO(river);
+		return new RiverDTO().createMapFromEntity(river);
 	}
 	
 	/**
@@ -107,7 +112,7 @@ public class RiverService {
 		List<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
 		DropDTO dropDTO = new DropDTO();
 		for (Drop drop: riverDao.getDrops(id, sinceId, dropCount)) {
-			dropsArray.add(dropDTO.createDTO(drop));
+			dropsArray.add(dropDTO.createMapFromEntity(drop));
 		}
 
 		return dropsArray;
@@ -123,22 +128,22 @@ public class RiverService {
 	 */
 	@Transactional(readOnly = false)
 	public Map<String, Object> updateRiver(Long id, Map<String, Object> body) {
-		River river = riverDao.findById(id);
+		River river  = riverDao.findById(id);
 		
-		if (river == null) {
-			// TODO throw not found exception
+		// River exists
+		if (river ==  null) {
+			throw new ResourceNotFoundException();
 		}
-
-		String riverName = (String) body.get("name");
-
-		river.setRiverName(riverName);
-		river.setRiverPublic(Boolean.parseBoolean((String) body.get("public")));
-		river.setRiverNameUrl(SwiftRiverUtils.getURLSlug(riverName));
-
+		
+		RiverDTO dto = new RiverDTO();
+		if (!dto.updateEntityFromMap(river, body)) {
+			throw new BadRequestException("Invalid or missing parameters");
+		}
+		
 		// Save the changes
 		riverDao.update(river);
-		
-		return new RiverDTO().createDTO(river);		
+
+		return dto.createMapFromEntity(river);		
 	}
 
 	/**
@@ -172,7 +177,7 @@ public class RiverService {
 	
 		River river = riverDao.findById(riverId);
 		for (Channel channel: river.getChannels()) {
-			channelsList.add(channelDTO.createDTO(channel));
+			channelsList.add(channelDTO.createMapFromEntity(channel));
 		}
 	
 		return channelsList;
@@ -190,26 +195,85 @@ public class RiverService {
 		ChannelDTO dto = new ChannelDTO();
 		
 		River river = riverDao.findById(id);
-		Channel channel = dto.createModel(body);
+		if (river == null)
+			throw new ResourceNotFoundException("The specified river does not exist");
+
+		Channel channel = dto.createEntityFromMap(body);
 		channel.setRiver(river);
 		
-		river.getChannels().add(channel);
 		channelDao.save(channel);
 		
-		return dto.createDTO(channel);
+		return dto.createMapFromEntity(channel);
+	}
+
+	/**
+	 * Deletes the channel identified by @param channel_id
+	 * from the river
+	 *  
+	 * @param id
+	 * @param channel_id
+	 */
+	@Transactional
+	public void deleteChannel(Long id, Integer channel_id) {
+		// Look up the channel in the databases
+		Channel channel = channelDao.findById(channel_id);
+
+		// Does the channel exist?
+		if (channel == null) {
+			LOG.error(String.format("The specified channel(%d) does not exist", channel_id));
+			throw new ResourceNotFoundException();
+		}
+
+		// Does the channel belong to the specified river
+		if (channel.getRiver() == null || (!channel.getRiver().getId().equals(id))) {
+			LOG.error("The channel does not belong to the specified river or the river is invalid");
+			throw new ResourceNotFoundException();
+		}			
+		
+		channelDao.delete(channel);
 	}
 
 	@Transactional
 	public List<Map<String, Object>> getCollaborators(Long id) {
 		List<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
 		
+		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
 		River river = riverDao.findById(id);
 		for (RiverCollaborator entry: river.getCollaborators()) {
-			// TODO: Create Map<String, Object> representation for each
-			// entry
+			collaborators.add(dto.createMapFromEntity(entry));
 		}
 		
 		return collaborators;
 	}
 
+	/**
+	 * Adds a collaborator to the specified river
+	 * 
+	 * @param id
+	 * @param body
+	 */
+	@SuppressWarnings("unchecked")
+	@Transactional
+	public Map<String, Object> addCollaborator(Long id, Map<String, Object> body) {
+		boolean readOnly = (Boolean)body.get("read_only");
+
+		// Get the account
+		Integer accountId = (Integer) ((Map<String, Object>)body.get("account")).get("id");
+		Account account = accountDao.findById(Long.parseLong(accountId.toString()));
+		
+		RiverCollaborator collaborator = riverDao.addCollaborator(id, account, readOnly);
+		
+		return new RiverCollaboratorDTO().createMapFromEntity(collaborator);
+		
+	}
+
+	/**
+	 * Removes a collaborator from the specified river
+	 * @param id
+	 * @param collaborator_id
+	 */
+	@Transactional
+	public void deleteCollaborator(Long id, Long collaborator_id) {
+		riverDao.deleteCollaborator(id, collaborator_id);
+	}
 }

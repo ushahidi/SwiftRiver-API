@@ -64,8 +64,8 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 		River river = new River();
 		Account account = accountDao.findByUsername("admin1");
 		
-		river.setRiverName("Test river");
-		river.setRiverNameUrl("test-river");
+		river.setName("Test river");
+		river.setUrl("test-river");
 		river.setAccount(account);
 		river.setRiverPublic(false);
 		
@@ -86,7 +86,7 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 		River river = riverDao.findById(riverId);
 		int collaboratorCount = river.getCollaborators().size();
 
-		Account account = accountDao.findByUsername("admin3");
+		Account account = accountDao.findByUsername("admin4");
 		riverDao.addCollaborator(riverId, account, false);
 
 		assertEquals(collaboratorCount+1, river.getCollaborators().size());
