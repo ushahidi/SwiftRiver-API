@@ -230,6 +230,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 		// Test collaborator payload
 		Object[][] collaboratorData = {
 				{"read_only", false},
+				{"active", false},
 				{"account", accountData }
 		};
 
@@ -240,7 +241,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.content(new ObjectMapper().writeValueAsBytes(collaboratorMap )))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
-			.andExpect(jsonPath("$.account.id").value(7))
+			.andExpect(jsonPath("$.id").value(7))
 			.andExpect(jsonPath("$.account.account_path").value("admin5"));			
 	}
 	
@@ -252,16 +253,16 @@ public class RiversControllerTest extends AbstractControllerTest {
 	@Test
 	public void modifyCollaborator() throws Exception {
 		// Test data
-		Object[][] collaborotorData = {{"read_only", true}, {"active", false}};
+		Object[][] collaborotorData = {{"read_only", false}, {"active", false}};
 		
 		Map<String, Object> collaboratorMap = ArrayUtils.toMap(collaborotorData);
 
-		this.mockMvc.perform(put("/v1/rivers/1/collaborators/1")
+		this.mockMvc.perform(put("/v1/rivers/1/collaborators/5")
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(new ObjectMapper().writeValueAsBytes(collaboratorMap )))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.read_only").value(true))
+				.andExpect(jsonPath("$.read_only").value(false))
 				.andExpect(jsonPath("$.active").value(false));
 	}
 	

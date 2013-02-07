@@ -24,8 +24,6 @@ import javax.persistence.Query;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
@@ -80,45 +78,23 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	}
 
 	/**
-	 * @see RiverDao#addChannel(long, Channel)
+	 * @see RiverDao#addCollaborator(River, RiverCollaborator)
 	 */
-	public void addChannel(long riverId, Channel channel) {
-		findById(riverId).getChannels().add(channel);
-	}
-
-	/**
-	 * @see RiverDao#removeChannel(long, Channel)
-	 */
-	public void removeChannel(long riverId, Channel channel) {
-		findById(riverId).getChannels().remove(channel);
-	}
-
-	/**
-	 * @see RiverDao#addCollaborator(long, Account, boolean)
-	 */
-	public RiverCollaborator addCollaborator(long riverId, Account account, boolean readOnly) {
-		River river = findById(new Long(riverId));
-	
-		RiverCollaborator collaborator = new RiverCollaborator();
-		collaborator.setAccount(account);
+	public void addCollaborator(River river, RiverCollaborator collaborator) {
 		collaborator.setRiver(river);
-		collaborator.setReadOnly(readOnly);
-		
-		river.getCollaborators().add(collaborator);
 		this.entityManager.persist(collaborator);
-		
-		return collaborator;
+
+		this.entityManager.refresh(river);
 	}
 
 	/**
 	 * @see {@link RiverDao#deleteCollaborator(Long, Long)}
 	 */
-	public void deleteCollaborator(Long id, Long collaboratorId) {
+	public void deleteCollaborator(Long id, Long accountId) {
 		// Retrieve the collaborator from the DB
-		RiverCollaborator collaborator = this.entityManager.find(RiverCollaborator.class, 
-				collaboratorId);
+		RiverCollaborator collaborator = findCollaborator(id, accountId);
 		
-		if (collaborator.getRiver() != null && collaborator.getRiver().getId().equals(id)) {
+		if (collaborator != null) {
 			this.entityManager.remove(collaborator);
 		}
 	}
@@ -126,11 +102,13 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	/**
 	 * @see {@link RiverDao#findCollaborator(Long, Long)}
 	 */
-	public RiverCollaborator findCollaborator(Long riverId, Long collaboratorId) {
-		String sql = "FROM RiverCollaborator rc WHERE rc.id = :collaboratorId AND rc.river.id =:riverId";
+	public RiverCollaborator findCollaborator(Long riverId, Long accountId) {
+		String sql = "FROM RiverCollaborator rc " +
+				"WHERE rc.account.id = :accountId " + 
+				"AND rc.river.id =:riverId";
 
 		Query query = this.entityManager.createQuery(sql);
-		query.setParameter("collaboratorId", collaboratorId);
+		query.setParameter("accountId", accountId);
 		query.setParameter("riverId", riverId);
 
 		return (RiverCollaborator) query.getSingleResult();

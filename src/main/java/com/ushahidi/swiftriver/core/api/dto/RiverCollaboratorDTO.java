@@ -35,7 +35,7 @@ public class RiverCollaboratorDTO extends AbstractDTO<RiverCollaborator> {
 		Map<String, Object> accountMap = new AccountDTO().createMapFromEntity(entity.getAccount());
 
 		Object[][] collaboratorData = {
-				{"id", entity.getId()},
+				{"id", entity.getAccount().getId()},
 				{"active", entity.isActive()},
 				{"read_only", entity.isReadOnly()},
 				{"account", accountMap}

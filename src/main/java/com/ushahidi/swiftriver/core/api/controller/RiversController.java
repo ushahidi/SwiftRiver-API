@@ -123,12 +123,12 @@ public class RiversController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/channels/{channel_id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/channels/{channelId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public Map<String, Object> modifyChannel(@PathVariable Long id,
-			@PathVariable Integer channel_id,
+			@PathVariable Integer channelId,
 			@RequestBody Map<String, Object> body) {
-		return riverService.modifyChannel(id, channel_id, body);
+		return riverService.modifyChannel(id, channelId, body);
 	}
 
 	/**
@@ -173,11 +173,11 @@ public class RiversController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{collaborator_id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public Map<String, Object> modifyCollaborator(@PathVariable Long id,
-			@PathVariable Long collaborator_id, @RequestBody Map<String, Object> body) {
-		return riverService.modifyCollaborator(id, collaborator_id, body);
+			@PathVariable Long collaboratorId, @RequestBody Map<String, Object> body) {
+		return riverService.modifyCollaborator(id, collaboratorId, body);
 	}
 
 	/**
@@ -186,9 +186,9 @@ public class RiversController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{collaborator_id}", method = RequestMethod.DELETE)
-	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long collaborator_id) {
-		riverService.deleteCollaborator(id, collaborator_id);
+	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
+	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long collaboratorId) {
+		riverService.deleteCollaborator(id, collaboratorId);
 	}
 
 	/**
@@ -222,9 +222,9 @@ public class RiversController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/followers/{follower_id}", method = RequestMethod.DELETE)
-	public void deleteFollower(@PathVariable Long id, @PathVariable Long follower_id) {
-		riverService.deleteFollower(id, follower_id);
+	@RequestMapping(value = "/{id}/followers/{followerId}", method = RequestMethod.DELETE)
+	public void deleteFollower(@PathVariable Long id, @PathVariable Long followerId) {
+		riverService.deleteFollower(id, followerId);
 	}
 
 	/**

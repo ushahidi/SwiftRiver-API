@@ -316,15 +316,24 @@ public class RiverService {
 	@SuppressWarnings("unchecked")
 	@Transactional
 	public Map<String, Object> addCollaborator(Long riverId, Map<String, Object> body) {
-		boolean readOnly = (Boolean)body.get("read_only");
-
+		// Load the river and check if it exists
+		River river = riverDao.findById(riverId);
+		if (river == null) {
+			throw new ResourceNotFoundException();
+		}
+		
 		// Get the account
 		Integer accountId = (Integer) ((Map<String, Object>)body.get("account")).get("id");
 		Account account = accountDao.findById(Long.parseLong(accountId.toString()));
+
+		// Create RiverCollaborator instance from map 
+		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
 		
-		RiverCollaborator collaborator = riverDao.addCollaborator(riverId, account, readOnly);
+		RiverCollaborator collaborator = dto.createEntityFromMap(body);
+		collaborator.setAccount(account);
 		
-		return new RiverCollaboratorDTO().createMapFromEntity(collaborator);
+		riverDao.addCollaborator(river, collaborator);
+		return dto.createMapFromEntity(collaborator);
 		
 	}
 
@@ -332,15 +341,15 @@ public class RiverService {
 	 * Modifies a collaborator
 	 * 
 	 * @param riverId
-	 * @param collaboratorId
+	 * @param accountId
 	 * @param body
 	 * @return
 	 */
 	@Transactional
 	public Map<String, Object> modifyCollaborator(Long riverId,
-			Long collaboratorId, Map<String, Object> body) {
+			Long accountId, Map<String, Object> body) {
 
-		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, collaboratorId);
+		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, accountId);
 		
 		// Collaborator exists?
 		if (collaborator == null) {
@@ -361,13 +370,16 @@ public class RiverService {
 	}
 
 	/**
-	 * Removes a collaborator from the specified river
+	 * Removes a collaborator in <code>accountId</code> from the river
+	 * specified in <code>riverId</code>. <code>accountId</code> is the
+	 * {@link Account} id of the collaborator
+	 * 
 	 * @param riverId
-	 * @param collaboratorId
+	 * @param accountId
 	 */
 	@Transactional
-	public void deleteCollaborator(Long riverId, Long collaboratorId) {
-		riverDao.deleteCollaborator(riverId, collaboratorId);
+	public void deleteCollaborator(Long riverId, Long accountId) {
+		riverDao.deleteCollaborator(riverId, accountId);
 	}
 
 	/**
@@ -421,14 +433,14 @@ public class RiverService {
 	}
 
 	/**
-	 * Deletes the follower whose {@link Account} id is <code>followerId</code>
+	 * Deletes the follower whose {@link Account} id is <code>accountId</code>
 	 * from the river specified by <code>riverId</code>
 	 * 
 	 * @param riverId
-	 * @param followerId
+	 * @param accountId
 	 */
 	@Transactional
-	public void deleteFollower(Long riverId, Long followerId) {
+	public void deleteFollower(Long riverId, Long accountId) {
 		// Load the river and check if it exists
 		River river = riverDao.findById(riverId);		
 		if (river == null) {
@@ -436,7 +448,7 @@ public class RiverService {
 		}
 
 		// Load the account and check if it exists
-		Account account = accountDao.findById(followerId);
+		Account account = accountDao.findById(accountId);
 		if (account == null) {
 			throw new ResourceNotFoundException();
 		}

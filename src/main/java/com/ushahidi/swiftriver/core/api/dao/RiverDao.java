@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
@@ -35,7 +34,7 @@ public interface RiverDao extends JpaDao<River, Long>{
 	 * @param id Unique ID of the river
 	 * @param sinceId Oldest dropId
 	 * @param dropCount No. of drops to return
-	 * @return
+	 * @return {@link List}
 	 */
 	public List<Drop> getDrops(Long id, Long sinceId, int dropCount);
 	
@@ -62,38 +61,23 @@ public interface RiverDao extends JpaDao<River, Long>{
 	 * @param drops
 	 */
 	public void addDrops(long riverId, Collection<Drop> drops);
-	
-	/**
-	 * Adds a channel to a river
-	 * 
-	 * @param riverId
-	 * @param channel
-	 */
-	public void addChannel(long riverId, Channel channel);
-	
-	/**
-	 * Removes a channel from a river
-	 * @param riverId
-	 * @param channel
-	 */
-	public void removeChannel(long riverId, Channel channel);
 
 	/**
-	 * Gets and returns a collaborator using the collaborator id
+	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
+	 * and the river specified by <code>riverId</code>
 	 * 
 	 * @param riverId
-	 * @param collaboratorId
-	 * @return
+	 * @param accountId
+	 * @return {@link RiverCollaborator}
 	 */
-	public RiverCollaborator findCollaborator(Long riverId, Long collaboratorId);
+	public RiverCollaborator findCollaborator(Long riverId, Long accountId);
 
 	/**
 	 * Adds a collaborator to a river
-	 * @param riverId
-	 * @param account
-	 * @param readOnly
+	 * @param river
+	 * @param collaborator
 	 */
-	public RiverCollaborator addCollaborator(long riverId, Account account, boolean readOnly);
+	public void addCollaborator(River river, RiverCollaborator collaborator);
 
 	/**
 	 * Updates a collaborator
@@ -103,10 +87,12 @@ public interface RiverDao extends JpaDao<River, Long>{
 	public void updateCollaborator(RiverCollaborator collaborator);
 
 	/**
-	 * Removes a collaborator from the river
+	 * Removes the {@link Account} with id <code>accountId</code>
+	 * from the list of collaborators on river with id <code>id</code>
+	 * 
 	 * @param id
-	 * @param collaboratorId
+	 * @param accountId
 	 */
-	public void deleteCollaborator(Long id, Long collaboratorId);
+	public void deleteCollaborator(Long id, Long accountId);
 	
 }
