@@ -2,10 +2,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ushahidi</groupId>
-	<artifactId>swiftriver-core</artifactId>
+	<artifactId>swiftriver-api</artifactId>
 	<packaging>war</packaging>
 	<version>1.0-SNAPSHOT</version>
-	<name>SwiftRiver Core</name>
+	<name>SwiftRiver API</name>
 	<properties>
 		<org.springframework.version>3.2.0.RELEASE</org.springframework.version>
 		<org.slf4j.version>1.6.1</org.slf4j.version>
@@ -127,7 +127,7 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>swiftriver-core</finalName>
+		<finalName>swiftriver-api</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.tomcat.maven</groupId>
