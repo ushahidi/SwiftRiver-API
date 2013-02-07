@@ -110,7 +110,7 @@ INSERT INTO river_collaborators(river_id, account_id, read_only) VALUES
 -- --------------------------
 -- Data for `channel_filters`
 -- --------------------------
-INSERT INTO `channel_filters` (`id`, `channel`, `river_id`) VALUES
+INSERT INTO `river_channels` (`id`, `channel`, `river_id`) VALUES
 (1, 'rss', 1),
 (2, 'email', 1),
 (3, 'sms', 1);
@@ -118,7 +118,7 @@ INSERT INTO `channel_filters` (`id`, `channel`, `river_id`) VALUES
 -- ---------------------------------
 -- Data for `channel_filter_options`
 -- ---------------------------------
-INSERT INTO `channel_filter_options` (`id`, `channel_filter_id`, `key`, `value`)
+INSERT INTO `river_channel_options` (`id`, `river_channel_id`, `key`, `value`)
 VALUES
 	(1, 1, 'url', '{\"value\":\"http:\\/\\/feeds.boingboing.net\\/boingboing\\/iBag\",\"title\":\"Boing Boing\"}'),
 	(2, 1, 'url', '{\"value\":\"http:\\/\\/feeds.feedburner.com\\/codinghorror\\/\",\"title\":\"Coding Horror\"}'),

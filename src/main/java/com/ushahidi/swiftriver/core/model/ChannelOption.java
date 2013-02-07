@@ -9,7 +9,14 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
-import javax.persistence.*;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * 
@@ -17,7 +24,7 @@ import javax.persistence.*;
  *
  */
 @Entity
-@Table(name = "channel_filter_options")
+@Table(name = "river_channel_options")
 public class ChannelOption implements Serializable {
 	
 	private static final long serialVersionUID = 2202984709505558045L;
@@ -25,26 +32,27 @@ public class ChannelOption implements Serializable {
 	@Id
 	@GeneratedValue
 	private int id;
+
+	@ManyToOne
+	@JoinColumn(name="river_channel_id")
+	private Channel channel;
 	
-	@Column(name = "channel_filter_id")
-	private int channelId;
-	
-	@Column(name = "key", nullable = false)
+	@Column(name = "`key`")
 	private String key;
 	
-	@Column(name = "value", nullable = false)
+	@Column(name = "`value`")
 	private String value;
 	
 	public ChannelOption() {
 		
 	}
 
-	public int getChannel() {
-		return channelId;
+	public Channel getChannel() {
+		return channel;
 	}
 
-	public void setChannel(int channel) {
-		this.channelId = channel;
+	public void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 	public String getKey() {

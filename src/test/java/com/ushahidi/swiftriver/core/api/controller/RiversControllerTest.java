@@ -24,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -115,6 +117,41 @@ public class RiversControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.[0].name").value("rss"));
+	}
+	
+	/**
+	 * Test for {@link RiversController#addChannel(Map, Long)}
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void addChannel() throws Exception {
+		// Test channel data
+		List<Map<String, Object>> channelOptions = new ArrayList<Map<String,Object>>();
+		channelOptions.add(ArrayUtils.toMap(
+				new Object[][]{
+						{"key", "user"},
+						{"value", "ushahidi"}}));
+		
+		Object[][] channelData = {
+				{"name", "twitter"},
+				{"options", channelOptions}
+		};
+
+		// Convert to Map
+		Map<String, Object> channelMap = ArrayUtils.toMap(channelData);
+
+		// Mock request
+		this.mockMvc.perform(post("/v1/rivers/1/channels")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsBytes(channelMap )))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType("application/json;charset=UTF-8"))
+			.andExpect(jsonPath("$.id").value(4))
+			.andExpect(jsonPath("$.name").value("twitter"))
+			.andExpect(jsonPath("$.options[0].key").value("user"))
+			.andExpect(jsonPath("$.options[0].value").value("ushahidi"));
 	}
 
 	/**

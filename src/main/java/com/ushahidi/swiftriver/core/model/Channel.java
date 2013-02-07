@@ -18,16 +18,13 @@ package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -40,7 +37,7 @@ import javax.persistence.TemporalType;
  *
  */
 @Entity
-@Table(name = "channel_filters")
+@Table(name = "river_channels")
 public class Channel implements Serializable {
 	
 	private static final long serialVersionUID = 3575711835255222818L;
@@ -56,30 +53,15 @@ public class Channel implements Serializable {
 	private River river;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "filter_date_add")
+	@Column(name = "date_added")
 	private Date dateAdded;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "filter_date_modified")
+	@Column(name = "date_modified")
 	private Date dateModified;
-	
-	@Column(name = "filter_enabled")
-	private boolean filterEnabled;
-	
-	@Column(name = "filter_last_run")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date lastRun;	
-
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "filter_last_successful_run")
-	private Date lastSuccessfulRun;
-	
-	@Column(name = "filter_runs")
-	private int filterRuns;
-	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name="channel_filter_id")
-	private Set<ChannelOption> channelOptions = new HashSet<ChannelOption>();
+		
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="channel")
+	private List<ChannelOption> channelOptions;
 
 	public Channel() {
 		
@@ -125,43 +107,11 @@ public class Channel implements Serializable {
 		this.dateModified = dateModified;
 	}
 
-	public boolean isFilterEnabled() {
-		return filterEnabled;
-	}
-
-	public void setFilterEnabled(boolean filterEnabled) {
-		this.filterEnabled = filterEnabled;
-	}
-
-	public Date getFilterLastRun() {
-		return lastRun;
-	}
-
-	public void setLastRun(Date lastRun) {
-		this.lastRun = lastRun;
-	}
-
-	public Date getLastSuccessfulRun() {
-		return lastSuccessfulRun;
-	}
-
-	public void setLastSuccessfulRun(Date lastSuccessfulRun) {
-		this.lastSuccessfulRun = lastSuccessfulRun;
-	}
-
-	public int getFilterRuns() {
-		return filterRuns;
-	}
-
-	public void setFilterRuns(int filterRuns) {
-		this.filterRuns = filterRuns;
-	}
-
-	public Set<ChannelOption> getChannelOptions() {
+	public List<ChannelOption> getChannelOptions() {
 		return channelOptions;
 	}
 
-	public void setChannelOptions(Set<ChannelOption> channelOptions) {
+	public void setChannelOptions(List<ChannelOption> channelOptions) {
 		this.channelOptions = channelOptions;
 	}
 
