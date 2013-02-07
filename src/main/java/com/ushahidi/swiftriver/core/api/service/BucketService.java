@@ -63,8 +63,8 @@ public class BucketService {
 	public Map<String, Object> createBucket(Map<String, Object> bucketData) {
 		BucketDTO bucketDTO = new BucketDTO();
 		
-		Bucket bucket = bucketDao.save(bucketDTO.createModel(bucketData));
-		return bucketDTO.createDTO(bucket);
+		Bucket bucket = bucketDao.save(bucketDTO.createEntityFromMap(bucketData));
+		return bucketDTO.createMapFromEntity(bucket);
 	}
 
 	/**
@@ -77,13 +77,10 @@ public class BucketService {
 		Bucket bucket = bucketDao.findById(id);
 		
 		// Verify that the bucket exists
-		if (bucket == null) {
-			logger.debug("Could not find bucket with id " + id);
+		if (bucket == null) 
 			return null;
-		}
 		
-		BucketDTO bucketDTO = new BucketDTO();
-		return bucketDTO.createDTO(bucket);
+		return new BucketDTO().createMapFromEntity(bucket);
 	}
 
 	public ArrayList<Map<String, Object>> getDrops(Long bucketId, int dropCount) {

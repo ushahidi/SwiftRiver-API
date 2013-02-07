@@ -30,6 +30,7 @@ import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ChannelOptionDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.api.dto.RiverCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.RiverDTO;
@@ -37,6 +38,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
+import com.ushahidi.swiftriver.core.model.ChannelOption;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
@@ -203,29 +205,86 @@ public class RiverService {
 		
 		channelDao.save(channel);
 		
+		// Check for channel options
+		if (body.containsKey("options")) {			
+			channelDao.addChannelOptions(channel, getChannelOptionsFromMap(body));
+		}
+		
 		return dto.createMapFromEntity(channel);
+	}
+
+
+	/**
+	 * Modifies an existing channel
+	 * 
+	 * @param id
+	 * @param channelId
+	 * @param body
+	 * @return
+	 */
+	@Transactional
+	public Map<String, Object> modifyChannel(Long id, Integer channelId,
+			Map<String, Object> body) {
+
+		Channel channel = channelDao.findById(channelId);
+		
+		if (channel == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		// Does the channel belong to the river
+		if (!channel.getRiver().getId().equals(id)) {
+			throw new ResourceNotFoundException();
+		}
+
+		ChannelDTO dto = new ChannelDTO();
+		if (!dto.updateEntityFromMap(channel, body)) {
+			throw new BadRequestException();
+		}
+		
+		// Remove all channel options for the current channel
+		channelDao.deleteAllChannelOptions(channel);
+		
+		channelDao.addChannelOptions(channel, getChannelOptionsFromMap(body));
+		
+		return dto.createMapFromEntity(channel);
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<ChannelOption> getChannelOptionsFromMap(
+			Map<String, Object> body) {
+
+		List<Map<String, Object>> options = (List<Map<String, Object>>)body.get("options");
+		ChannelOptionDTO optionDTO = new ChannelOptionDTO();
+		
+		List<ChannelOption> channelOptions = new ArrayList<ChannelOption>();
+		for (Map<String, Object> entry: options) {
+			channelOptions.add(optionDTO.createEntityFromMap(entry));
+		}
+		
+		return channelOptions;
 	}
 
 	/**
 	 * Deletes the channel identified by @param channel_id
 	 * from the river
 	 *  
-	 * @param id
-	 * @param channel_id
+	 * @param riverId
+	 * @param channelId
 	 */
 	@Transactional
-	public void deleteChannel(Long id, Integer channel_id) {
+	public void deleteChannel(Long riverId, Integer channelId) {
 		// Look up the channel in the databases
-		Channel channel = channelDao.findById(channel_id);
+		Channel channel = channelDao.findById(channelId);
 
 		// Does the channel exist?
 		if (channel == null) {
-			LOG.error(String.format("The specified channel(%d) does not exist", channel_id));
+			LOG.error(String.format("The specified channel(%d) does not exist", channelId));
 			throw new ResourceNotFoundException();
 		}
 
 		// Does the channel belong to the specified river
-		if (channel.getRiver() == null || (!channel.getRiver().getId().equals(id))) {
+		if (channel.getRiver() == null || (!channel.getRiver().getId().equals(riverId))) {
 			LOG.error("The channel does not belong to the specified river or the river is invalid");
 			throw new ResourceNotFoundException();
 		}			
@@ -234,11 +293,11 @@ public class RiverService {
 	}
 
 	@Transactional
-	public List<Map<String, Object>> getCollaborators(Long id) {
+	public List<Map<String, Object>> getCollaborators(Long riverId) {
 		List<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
 		
 		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
-		River river = riverDao.findById(id);
+		River river = riverDao.findById(riverId);
 		for (RiverCollaborator entry: river.getCollaborators()) {
 			collaborators.add(dto.createMapFromEntity(entry));
 		}
@@ -249,31 +308,63 @@ public class RiverService {
 	/**
 	 * Adds a collaborator to the specified river
 	 * 
-	 * @param id
+	 * @param riverId
 	 * @param body
 	 */
 	@SuppressWarnings("unchecked")
 	@Transactional
-	public Map<String, Object> addCollaborator(Long id, Map<String, Object> body) {
+	public Map<String, Object> addCollaborator(Long riverId, Map<String, Object> body) {
 		boolean readOnly = (Boolean)body.get("read_only");
 
 		// Get the account
 		Integer accountId = (Integer) ((Map<String, Object>)body.get("account")).get("id");
 		Account account = accountDao.findById(Long.parseLong(accountId.toString()));
 		
-		RiverCollaborator collaborator = riverDao.addCollaborator(id, account, readOnly);
+		RiverCollaborator collaborator = riverDao.addCollaborator(riverId, account, readOnly);
 		
 		return new RiverCollaboratorDTO().createMapFromEntity(collaborator);
 		
 	}
 
 	/**
-	 * Removes a collaborator from the specified river
-	 * @param id
-	 * @param collaborator_id
+	 * Modifies a collaborator
+	 * 
+	 * @param riverId
+	 * @param collaboratorId
+	 * @param body
+	 * @return
 	 */
 	@Transactional
-	public void deleteCollaborator(Long id, Long collaborator_id) {
-		riverDao.deleteCollaborator(id, collaborator_id);
+	public Map<String, Object> modifyCollaborator(Long riverId,
+			Long collaboratorId, Map<String, Object> body) {
+
+		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, collaboratorId);
+		
+		// Collaborator exists?
+		if (collaborator == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
+		
+		// Copy the new properties to the loaded entity
+		if (!dto.updateEntityFromMap(collaborator, body)) {
+			throw new BadRequestException();
+		}
+		
+		// Post changes to the DB
+		riverDao.updateCollaborator(collaborator);
+
+		return dto.createMapFromEntity(collaborator);		
+	}
+
+	/**
+	 * Removes a collaborator from the specified river
+	 * @param riverId
+	 * @param collaboratorId
+	 */
+	@Transactional
+	public void deleteCollaborator(Long riverId, Long collaboratorId) {
+		riverDao.deleteCollaborator(riverId, collaboratorId);
 	}
 }

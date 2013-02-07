@@ -79,12 +79,28 @@ public interface RiverDao extends JpaDao<River, Long>{
 	public void removeChannel(long riverId, Channel channel);
 
 	/**
+	 * Gets and returns a collaborator using the collaborator id
+	 * 
+	 * @param riverId
+	 * @param collaboratorId
+	 * @return
+	 */
+	public RiverCollaborator findCollaborator(Long riverId, Long collaboratorId);
+
+	/**
 	 * Adds a collaborator to a river
 	 * @param riverId
 	 * @param account
 	 * @param readOnly
 	 */
 	public RiverCollaborator addCollaborator(long riverId, Account account, boolean readOnly);
+
+	/**
+	 * Updates a collaborator
+	 * 
+	 * @param collaborator
+	 */
+	public void updateCollaborator(RiverCollaborator collaborator);
 
 	/**
 	 * Removes a collaborator from the river

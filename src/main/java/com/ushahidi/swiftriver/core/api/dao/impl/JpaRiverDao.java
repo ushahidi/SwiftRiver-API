@@ -123,4 +123,24 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 		}
 	}
 
+	/**
+	 * @see {@link RiverDao#findCollaborator(Long, Long)}
+	 */
+	public RiverCollaborator findCollaborator(Long riverId, Long collaboratorId) {
+		String sql = "FROM RiverCollaborator rc WHERE rc.id = :collaboratorId AND rc.river.id =:riverId";
+
+		Query query = this.entityManager.createQuery(sql);
+		query.setParameter("collaboratorId", collaboratorId);
+		query.setParameter("riverId", riverId);
+
+		return (RiverCollaborator) query.getSingleResult();
+	}
+
+	/**
+	 * @see {@link RiverDao#updateCollaborator(RiverCollaborator)}
+	 */
+	public void updateCollaborator(RiverCollaborator collaborator) {
+		this.entityManager.merge(collaborator);
+	}
+
 }

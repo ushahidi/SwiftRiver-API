@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.dto;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -34,7 +35,7 @@ public class ChannelDTO extends AbstractDTO<Channel> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, Object> createMapFromEntity(Channel entity) {
-		ArrayList<Map<String, Object>> channelOptions = new ArrayList<Map<String,Object>>();
+		List<Map<String, Object>> channelOptions = new ArrayList<Map<String,Object>>();
 		ChannelOptionDTO channelOptionDTO = new ChannelOptionDTO();
 
 		for (ChannelOption channelOption: entity.getChannelOptions()) {
@@ -54,19 +55,14 @@ public class ChannelDTO extends AbstractDTO<Channel> {
 	public Channel createEntityFromMap(Map<String, Object> map) {
 		Channel channel = new Channel();
 		
-		if (map.get("id") != null) {
-			channel.setId((Integer) map.get("id"));
-		}
-		channel.setChannel((String) map.get("channel"));
-//		channel.setRiver(Long.parseLong((String) entityDTO.get("river_id")));
+		channel.setChannel((String) map.get("name"));
 
 		return channel;
 	}
 
 	@Override
 	protected String[] getValidationKeys() {
-		// TODO Auto-generated method stub
-		return new String[]{};
+		return new String[]{"name", "options"};
 	}
 
 	@Override

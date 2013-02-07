@@ -33,7 +33,6 @@ public class ChannelOptionDTO extends AbstractDTO<ChannelOption> {
 	@Override
 	public Map<String, Object> createMapFromEntity(ChannelOption entity) {
 		Object[][] channelOptionData = {
-				{"id", entity.getId()},
 				{"key", entity.getKey()},
 				{"value", entity.getValue()}
 		};
@@ -45,11 +44,7 @@ public class ChannelOptionDTO extends AbstractDTO<ChannelOption> {
 	public ChannelOption createEntityFromMap(Map<String, Object> map) {
 
 		ChannelOption channelOption = new ChannelOption();
-		if (map.get("id") != null) {
-			channelOption.setId((Integer)map.get("id"));
-		}
 
-		channelOption.setChannel((Integer) map.get("channel_id"));
 		channelOption.setKey((String) map.get("key"));
 		channelOption.setValue((String) map.get("value"));
 		
@@ -59,7 +54,7 @@ public class ChannelOptionDTO extends AbstractDTO<ChannelOption> {
 	@Override
 	protected String[] getValidationKeys() {
 		// TODO Auto-generated method stub
-		return new String[]{};
+		return new String[]{"key", "value"};
 	}
 
 	@Override

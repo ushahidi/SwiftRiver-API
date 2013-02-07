@@ -119,15 +119,16 @@ public class RiversController {
 
 	/**
 	 * Handler for modifying an existing channel.
-	 * 
 	 * @param body
+	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/channels", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/channels/{channel_id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Map<String, Object> modifyChannel(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public Map<String, Object> modifyChannel(@PathVariable Long id,
+			@PathVariable Integer channel_id,
+			@RequestBody Map<String, Object> body) {
+		return riverService.modifyChannel(id, channel_id, body);
 	}
 
 	/**
@@ -136,9 +137,9 @@ public class RiversController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/channels/{channel_id}", method = RequestMethod.DELETE)
-	public void deleteChannel(@PathVariable Long id, @PathVariable Integer channel_id) {
-		riverService.deleteChannel(id, channel_id);
+	@RequestMapping(value = "/{id}/channels/{channelId}", method = RequestMethod.DELETE)
+	public void deleteChannel(@PathVariable Long id, @PathVariable Integer channelId) {
+		riverService.deleteChannel(id, channelId);
 	}
 
 	/**
@@ -168,15 +169,15 @@ public class RiversController {
 
 	/**
 	 * Handler for modifying an existing collaborator.
-	 * 
 	 * @param body
+	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/collaborators/{collaborator_id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Map<String, Object> modifyCollaborator(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public Map<String, Object> modifyCollaborator(@PathVariable Long id,
+			@PathVariable Long collaborator_id, @RequestBody Map<String, Object> body) {
+		return riverService.modifyCollaborator(id, collaborator_id, body);
 	}
 
 	/**

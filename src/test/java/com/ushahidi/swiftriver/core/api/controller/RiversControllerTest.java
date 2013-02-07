@@ -153,6 +153,36 @@ public class RiversControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$.options[0].key").value("user"))
 			.andExpect(jsonPath("$.options[0].value").value("ushahidi"));
 	}
+	
+	/**
+	 * Test for {@link RiversController#modifyChannel(Long, Integer, Map)}
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void modifyChannel() throws Exception {
+		// Test channel data
+		List<Map<String, Object>> channelOptions = new ArrayList<Map<String,Object>>();
+		channelOptions.add(ArrayUtils.toMap(
+				new Object[][]{
+						{"key", "url"},
+						{"value", "http://www.reddit.com/.rss"}}));
+		
+		Object[][] channelData = {
+				{"name", "rss"},
+				{"options", channelOptions}
+		};
+
+		// Convert to Map
+		Map<String, Object> channelMap = ArrayUtils.toMap(channelData);
+		this.mockMvc.perform(put("/v1/rivers/1/channels/1")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsBytes(channelMap )))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("rss"))
+				.andExpect(jsonPath("$.options[0].value").value("http://www.reddit.com/.rss"));
+	}
 
 	/**
 	 * Test for {@link RiversController#deleteChannel(Long, Integer)} where
@@ -212,6 +242,27 @@ public class RiversControllerTest extends AbstractControllerTest {
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.account.id").value(7))
 			.andExpect(jsonPath("$.account.account_path").value("admin5"));			
+	}
+	
+	/**
+	 * Test for {@link RiversController#modifyCollaborator(Long, Long, Map)}
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void modifyCollaborator() throws Exception {
+		// Test data
+		Object[][] collaborotorData = {{"read_only", true}, {"active", false}};
+		
+		Map<String, Object> collaboratorMap = ArrayUtils.toMap(collaborotorData);
+
+		this.mockMvc.perform(put("/v1/rivers/1/collaborators/1")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsBytes(collaboratorMap )))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.read_only").value(true))
+				.andExpect(jsonPath("$.active").value(false));
 	}
 	
 	/**
