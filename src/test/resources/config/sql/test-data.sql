@@ -100,12 +100,14 @@ INSERT INTO rivers(id, account_id, river_name, river_name_url) VALUES
 (1, 3, 'River Number One', 'river-number-one'),
 (2, 4, 'River Number x', 'river-number-x');
 
+
 -- ------------------------------------
 -- Data for table `river_collaborators`
 -- -------------------------------------
 INSERT INTO river_collaborators(river_id, account_id, read_only) VALUES
 (1, 2, 0),
 (1, 5, 1);
+
 
 -- --------------------------
 -- Data for `channel_filters`
@@ -114,6 +116,7 @@ INSERT INTO `river_channels` (`id`, `channel`, `river_id`) VALUES
 (1, 'rss', 1),
 (2, 'email', 1),
 (3, 'sms', 1);
+
 
 -- ---------------------------------
 -- Data for `channel_filter_options`
@@ -127,11 +130,13 @@ VALUES
 	(5, 1, 'url', '{\"value\":\"http:\\/\\/www.fastcompany.com\\/rss.xml\",\"title\":\"Fast Company\"}'),
 	(6, 1, 'url', '{\"value\":\"http:\\/\\/gizmodo.com\\/index.xml\",\"title\":\"Gizmodo\"}');
 
+
 -- ----------
 -- Buckets
 -- ----------
 INSERT INTO buckets(id, account_id, bucket_name, bucket_name_url) VALUES
 (1, 4, 'Bucket Number One', 'bucket-number-one');
+
 
 -- ------------------------------------
 -- Data for table `bucket_collaborators`
@@ -139,3 +144,15 @@ INSERT INTO buckets(id, account_id, bucket_name, bucket_name_url) VALUES
 INSERT INTO bucket_collaborators(bucket_id, account_id, read_only) VALUES
 (1, 2, 0),
 (1, 3, 1);
+
+
+-- Data for table `river_followers`
+INSERT INTO river_followers(river_id, account_id) VALUES 
+(1, 6),
+(1, 7);
+
+
+-- Data for table `bucket_followers` 
+INSERT INTO bucket_followers(bucket_id, account_id) VALUES
+(1, 7),
+(1, 6);

@@ -107,6 +107,10 @@ public class River implements Serializable{
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="river")
 	private List<Channel> channels;
+	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name="river_followers", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
+	private List<Account> followers;
 
 	public River() {
 		
@@ -310,6 +314,16 @@ public class River implements Serializable{
 
 	public void setChannels(List<Channel> channels) {
 		this.channels = channels;
+	}
+
+
+	public List<Account> getFollowers() {
+		return followers;
+	}
+
+
+	public void setFollowers(List<Account> followers) {
+		this.followers = followers;
 	}
 
 

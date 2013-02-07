@@ -274,5 +274,46 @@ public class RiversControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(delete("/v1/rivers/1/collaborators/2"))
 			.andExpect(status().isOk());
 	}
+	
+	/**
+	 * Test for {@link RiversController#addFollower(Map, Long)d}
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void addFollower() throws Exception {
+		// Test data
+		Map<String, Object> body = ArrayUtils.toMap(new Object[][]{{"id", 1}});
+		
+		// Mock request
+		this.mockMvc.perform(post("/v1/rivers/1/followers")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsBytes(body)))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.id").value(1))
+			.andExpect(jsonPath("$.account_path").value("default"));
+	}
+	
+	/**
+	 * Test for {@link RiversController#getFollowers(Long)}
+	 * @throws Exception
+	 */
+	@Test
+	public void getFollowers() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/followers"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").isArray());
+	}
+	
+	/**
+	 * Test for {@link RiversController#deleteFollower(Long, Long)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteFollower() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/followers/7"))
+			.andExpect(status().isOk());
+	}
 
 }

@@ -663,22 +663,22 @@ CREATE TABLE IF NOT EXISTS `auth_tokens` (
 
 
 -- ----------------------------------------
--- TABLE 'bucket_subscriptions'
+-- TABLE 'bucket_followers'
 -- ----------------------------------------
-CREATE TABLE IF NOT EXISTS `bucket_subscriptions` (
+CREATE TABLE IF NOT EXISTS `bucket_followers` (
   `bucket_id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
-  UNIQUE KEY `bucket_id` (`bucket_id`,`user_id`)
+  `account_id` bigint(20) NOT NULL,
+  UNIQUE KEY `bucket_id` (`bucket_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 -- ----------------------------------------
--- TABLE 'river_subscriptions'
+-- TABLE 'river_followers'
 -- ----------------------------------------
-CREATE TABLE IF NOT EXISTS `river_subscriptions` (
+CREATE TABLE IF NOT EXISTS `river_followers` (
   `river_id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
-  UNIQUE KEY `river_id` (`river_id`,`user_id`)
+  `account_id` bigint(20) NOT NULL,
+  UNIQUE KEY `river_id` (`river_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

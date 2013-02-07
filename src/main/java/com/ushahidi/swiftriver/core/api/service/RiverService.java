@@ -26,9 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.controller.RiversController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ChannelOptionDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
@@ -366,5 +368,80 @@ public class RiverService {
 	@Transactional
 	public void deleteCollaborator(Long riverId, Long collaboratorId) {
 		riverDao.deleteCollaborator(riverId, collaboratorId);
+	}
+
+	/**
+	 * Adds a follower to the specified river
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Transactional
+	public Map<String, Object> addFollower(Long id, Map<String, Object> body) {
+		if (!body.containsKey("id")) {
+			throw new BadRequestException();
+		}
+		
+		// Load the river
+		River river = riverDao.findById(id);
+
+		Integer accountId = (Integer) body.get("id");
+		Account account = accountDao.findById(Long.parseLong(accountId.toString()));
+
+		river.getFollowers().add(account);
+		riverDao.update(river);
+
+		return new AccountDTO().createMapFromEntity(account);
+	}
+
+	/**
+	 * Gets and returns a list of {@link Account} entities that are following 
+	 * the river identified by <code>id</code>. The entities are transformed
+	 * to DTO for purposes of consumption by {@link RiversController}
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Transactional
+	public List<Map<String, Object>> getFollowers(Long id) {
+		River river = riverDao.findById(id);
+		
+		// Does the river exist?
+		if (river == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		List<Map<String, Object>> followerList = new ArrayList<Map<String,Object>>();
+		AccountDTO dto = new AccountDTO();
+		for (Account account: river.getFollowers()) {
+			followerList.add(dto.createMapFromEntity(account));
+		}
+		
+		return followerList;
+	}
+
+	/**
+	 * Deletes the follower whose {@link Account} id is <code>followerId</code>
+	 * from the river specified by <code>riverId</code>
+	 * 
+	 * @param riverId
+	 * @param followerId
+	 */
+	@Transactional
+	public void deleteFollower(Long riverId, Long followerId) {
+		// Load the river and check if it exists
+		River river = riverDao.findById(riverId);		
+		if (river == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		// Load the account and check if it exists
+		Account account = accountDao.findById(followerId);
+		if (account == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		river.getFollowers().remove(account);
+		riverDao.update(river);
 	}
 }
