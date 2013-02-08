@@ -15,8 +15,10 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +27,18 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.BucketCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.service.BucketService;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Controller
 @RequestMapping("/v1/buckets")
 public class BucketsController {
 
+	@Autowired
+	private BucketService bucketService;
+	
 	/**
 	 * Handler for creating a new bucket.
 	 * 
@@ -38,8 +46,9 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public Account createAccount(@RequestBody Map<String, Object> body) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public BucketDTO createBucket(@RequestBody BucketDTO body) {
+		return bucketService.createBucket(body);
 	}
 
 	/**
@@ -50,8 +59,8 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getBucket(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public BucketDTO getBucket(@PathVariable Long id) {
+		return bucketService.getBucket(id);
 	}
 
 	/**
@@ -62,9 +71,9 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account modifyBucket(@RequestBody Map<String, Object> body,
+	public BucketDTO modifyBucket(@RequestBody BucketDTO body,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return bucketService.modifyBucket(id, body);
 	}
 
 	/**
@@ -74,9 +83,8 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	@ResponseBody
-	public Account deleteBucket(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void deleteBucket(@PathVariable Long id) {
+		bucketService.deleteBucket(id);
 	}
 
 	/**
@@ -86,9 +94,10 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
-	public Account addCollaborator(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public BucketCollaboratorDTO addCollaborator(@RequestBody BucketCollaboratorDTO body,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return bucketService.addCollaborator(id, body);
 	}
 
 	/**
@@ -98,8 +107,9 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.GET)
-	public Account getCollaborators(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public List<BucketCollaboratorDTO> getCollaborators(@PathVariable Long id) {
+		return bucketService.getCollaborators(id);
 	}
 
 	/**
@@ -108,10 +118,11 @@ public class BucketsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.PUT)
-	public Account modifyCollaborator(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public BucketCollaboratorDTO modifyCollaborator(@RequestBody BucketCollaboratorDTO body,
+			@PathVariable Long id, @PathVariable Long accountId) {
+		return bucketService.modifyCollaborator(id, accountId, body);
 	}
 
 	/**
@@ -154,7 +165,7 @@ public class BucketsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/followers", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.DELETE)
 	public Account deleteFollower(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}

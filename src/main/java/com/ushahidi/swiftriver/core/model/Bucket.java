@@ -67,6 +67,9 @@ public class Bucket implements Serializable {
 	@Column(name = "bucket_publish")
 	private boolean published;
 	
+	@Column
+	private boolean active;
+	
 	@Column(name = "default_layout")
 	private String defaultLayout;
 	
@@ -146,6 +149,14 @@ public class Bucket implements Serializable {
 
 	public void setPublished(boolean published) {
 		this.published = published;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
 	public String getDefaultLayout() {

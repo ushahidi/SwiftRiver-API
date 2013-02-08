@@ -78,7 +78,7 @@ public class JpaBucketDaoTest extends AbstractTransactionalTest {
 		int collaboratorCount = bucket.getCollaborators().size();
 		
 		Account account = accountDao.findByUsername("admin2");
-		bucketDao.addCollaborator(bucketId, account, true);
+		bucketDao.addCollaborator(bucket, account, true);
 		assertEquals(collaboratorCount+1, bucket.getCollaborators().size());
 	}
 

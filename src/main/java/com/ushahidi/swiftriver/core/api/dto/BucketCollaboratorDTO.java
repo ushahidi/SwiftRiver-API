@@ -20,31 +20,24 @@ import java.util.Date;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 
 /**
- * DTO mapping class for {@link Bucket}
+ * DTO mapping class for {@link BucketCollaborator}
  * @author ekala
  *
  */
-public class BucketDTO {
+public class BucketCollaboratorDTO {
 	
 	private long id;
 	
-	private String name;
+	private boolean active;
 	
-	private String description;
+	@JsonProperty("read_only")
+	private boolean readOnly;
 	
 	@JsonProperty("date_added")
 	private Date dateAdded;
-	
-	@JsonProperty("drop_count")
-	private int dropCount;
-	
-	@JsonProperty("public")
-	private boolean published;
-	
-	private boolean active;
 
 	public long getId() {
 		return id;
@@ -52,46 +45,6 @@ public class BucketDTO {
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public Date getDateAdded() {
-		return dateAdded;
-	}
-
-	public void setDateAdded(Date dateAdded) {
-		this.dateAdded = dateAdded;
-	}
-
-	public int getDropCount() {
-		return dropCount;
-	}
-
-	public void setDropCount(int dropCount) {
-		this.dropCount = dropCount;
-	}
-
-	public boolean isPublished() {
-		return published;
-	}
-
-	public void setPublished(boolean published) {
-		this.published = published;
 	}
 
 	public boolean isActive() {
@@ -102,5 +55,21 @@ public class BucketDTO {
 		this.active = active;
 	}
 
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+	
 	
 }

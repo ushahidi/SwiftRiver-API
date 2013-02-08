@@ -135,7 +135,8 @@ VALUES
 -- Buckets
 -- ----------
 INSERT INTO buckets(id, account_id, bucket_name, bucket_name_url) VALUES
-(1, 4, 'Bucket Number One', 'bucket-number-one');
+(1, 4, 'Bucket Number One', 'bucket-number-one'),
+(2, 3, 'Bucket Two', 'bucket-two');
 
 
 -- ------------------------------------

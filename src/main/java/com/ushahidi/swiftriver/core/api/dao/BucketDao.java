@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
 
 /**
@@ -64,20 +65,29 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	public void removeDrop(Long bucketId, Drop drop);
 
 	/**
-	 * Removes a group of drops from a bucket
-	 * 
-	 * @param bucketId
-	 * @param drops
-	 */
-	public void removeDrops(Long bucketId, Collection<Drop> drops);
-	
-	/**
 	 * Adds a collaborator to the bucket with the specified id
 	 * 
-	 * @param bucketId
+	 * @param bucket
 	 * @param account
 	 * @param readOnly
+	 * @return TODO
 	 */
-	public void addCollaborator(long bucketId, Account account, boolean readOnly);
+	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly);
+
+	/**
+	 * Retrieves a {@link BucketCollaborator} record using the bucket id (<code>id</code>
+	 * and the account id (<code>accountId</code>) of the collaborator
+	 * 
+	 * @param id
+	 * @param accountId
+	 * @return {@link BucketCollaborator} on success, null otherwise
+	 */
+	public BucketCollaborator findCollaborator(Long id, Long accountId);
+
+	/**
+	 * Modifies a bucket collaborator record 
+	 * @param collaborator
+	 */
+	public void updateCollaborator(BucketCollaborator collaborator);
 	
 }

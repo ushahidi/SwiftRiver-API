@@ -51,19 +51,6 @@ CREATE TABLE IF NOT EXISTS `tags` (
   KEY `tag_idx` (`tag_canonical`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
--- -----------------------------------------------------
--- Table `snapshots`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `snapshots` (
-  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `account_id` INT(11) UNSIGNED NOT NULL DEFAULT 0 ,
-  `snapshot_name` VARCHAR(255) NOT NULL ,
-  PRIMARY KEY (`id`) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
-
-
 -- -----------------------------------------------------
 -- Table `droplets_links`
 -- -----------------------------------------------------
@@ -250,10 +237,12 @@ CREATE TABLE IF NOT EXISTS `buckets` (
   `bucket_name` varchar(255) NOT NULL DEFAULT '',
   `bucket_name_url` varchar(255) NOT NULL DEFAULT '',
   `bucket_description` text,
-  `bucket_publish` tinyint(4) NOT NULL DEFAULT '0',
+  `bucket_publish` tinyint(1) NOT NULL DEFAULT '0',
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
   `default_layout` varchar(10) DEFAULT 'drops',
   `bucket_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `public_token` varchar(32),
+  `drop_count` INT(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name`),
   UNIQUE KEY `un_bucket_name_url` (`account_id`,`bucket_name_url`),
@@ -615,6 +604,7 @@ CREATE TABLE IF NOT EXISTS `river_collaborators` (
   `account_id` bigint(20) DEFAULT NULL,
   `collaborator_active` tinyint(1) DEFAULT 0,
   `read_only` tinyint(1)  DEFAULT '0',
+  `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `river_id` (`river_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -629,6 +619,7 @@ CREATE TABLE IF NOT EXISTS `bucket_collaborators` (
   `bucket_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `collaborator_active` tinyint(1) DEFAULT 0,
   `read_only` tinyint(1)  DEFAULT '0',
+  `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`account_id`,`bucket_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

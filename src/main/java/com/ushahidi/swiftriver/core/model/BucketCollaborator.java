@@ -16,6 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -47,6 +49,9 @@ public class BucketCollaborator {
 	
 	@Column(name="read_only")
 	private boolean readOnly;
+	
+	@Column(name="date_added")
+	private Date dateAdded;
 
 	public long getId() {
 		return id;
@@ -86,6 +91,14 @@ public class BucketCollaborator {
 
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
+	}
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 	
 	

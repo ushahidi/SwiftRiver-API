@@ -77,26 +77,19 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 	}
 
 	/**
-	 * @see BucketDao#removeDrops(Long, Collection)
+	 * @see BucketDao#addCollaborator(Bucket, Account, boolean)
 	 */
-	public void removeDrops(Long bucketId, Collection<Drop> drops) {
-		findById(bucketId).getDrops().removeAll(drops);
-	}
-
-
-	/**
-	 * @see BucketDao#addCollaborator(long, Account, boolean)
-	 */
-	public void addCollaborator(long bucketId, Account account, boolean readOnly) {
-		Bucket bucket = findById(bucketId);
-		
+	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly) {
 		BucketCollaborator collaborator = new BucketCollaborator();
 		collaborator.setBucket(bucket);
 		collaborator.setAccount(account);
 		collaborator.setReadOnly(readOnly);
-		
+
 		bucket.getCollaborators().add(collaborator);
+
 		this.entityManager.persist(collaborator);
+		
+		return collaborator;
 	}
 
 	/**
@@ -109,6 +102,28 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 		query.setParameter(1, bucketId);
 
 		return (List<BucketCollaborator>)query.getResultList();
+	}
+
+	/**
+	 * @see {@link BucketDao#findCollaborator(Long, Long)}
+	 */
+	@SuppressWarnings("unchecked")
+	public BucketCollaborator findCollaborator(Long id, Long accountId) {
+		String sql = "FROM BucketCollaborator bc WHERE bc.bucket.id =:bucketId AND bc.account.id = :accountId";
+		
+		Query query = entityManager.createQuery(sql);
+		query.setParameter("bucketId", id);
+		query.setParameter("accountId", accountId);
+
+		List<BucketCollaborator> results = (List<BucketCollaborator>) query.getResultList();
+		return results.isEmpty() ? null : results.get(0);
+	}
+
+	/**
+	 * @see {@link BucketDao#updateCollaborator(BucketCollaborator)}
+	 */
+	public void updateCollaborator(BucketCollaborator collaborator) {
+		this.entityManager.merge(collaborator);
 	}
 
 }
