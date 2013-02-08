@@ -1,47 +1,44 @@
 package com.ushahidi.swiftriver.core.dao.impl;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao;
+import com.ushahidi.swiftriver.core.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.model.Account;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-public class JpaAccountDaoTest {
+public class JpaAccountDaoTest extends AbstractDaoTest {
+	
+	@Autowired
+	JpaAccountDao accountDao;
 	
 	@Test
 	public void findById()
 	{
-		EntityManager mockEntityManager = mock(EntityManager.class);
+		Account account = accountDao.findById(5);
 		
-		JpaAccountDao accountDao = new JpaAccountDao();
-		accountDao.setEm(mockEntityManager);
-		accountDao.findById(999);
-		
-		verify(mockEntityManager).find(Account.class, 999L);
+		assertNotNull(account);
+		assertEquals("user3", account.getAccountPath());
 	}
 	
 	@Test
 	public void findByUsername()
 	{
-		EntityManager mockEntityManager = mock(EntityManager.class);
-		Query mockQuery = mock(Query.class);
-		Account mockAccount = mock(Account.class);
-		when(mockEntityManager.createQuery(anyString())).thenReturn(mockQuery);
-		when(mockQuery.setParameter(anyString(), anyString())).thenReturn(mockQuery);
-		when(mockQuery.getSingleResult()).thenReturn(mockAccount);
+		Account account = accountDao.findByUsername("user2");
 		
-		JpaAccountDao accountDao = new JpaAccountDao();
-		accountDao.setEm(mockEntityManager);
-		Account account = accountDao.findByUsername("admin");
-		
-		verify(mockEntityManager).createQuery("SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username");
-		verify(mockQuery).setParameter("username", "admin");
-		assertEquals(mockAccount, account);
+		assertNotNull(account);
+		assertEquals(4, account.getId());
 	}
-
+	
+	@Test
+	public void findByName()
+	{
+		Account account = accountDao.findByName("default");
+		
+		assertNotNull(account);
+		assertEquals(1, account.getId());
+	}
 }
