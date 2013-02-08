@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -51,7 +50,7 @@ public class JpaBucketDaoTest extends AbstractTransactionalTest {
 	 * in the database
 	 */
 	@Test
-	@Rollback(false)
+	@Transactional
 	public void testCreateBucket() {
 		Account account = accountDao.findByUsername("admin5");
 		Bucket bucket = new Bucket();
@@ -73,7 +72,6 @@ public class JpaBucketDaoTest extends AbstractTransactionalTest {
 	 */
 	@Test
 	@Transactional
-	@Rollback(false)
 	public void testAddBucketCollaborator() {
 		long bucketId = 1;
 		Bucket bucket = bucketDao.findById(bucketId);

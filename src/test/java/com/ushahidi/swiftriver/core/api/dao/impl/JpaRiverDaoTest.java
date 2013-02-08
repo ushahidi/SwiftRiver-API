@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -59,8 +58,7 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 	 * Verifies that a river is successfully created
 	 */
 	@Test
-	@Transactional(readOnly = false)
-	@Rollback(false)
+	@Transactional
 	public void testCreateRiver() {
 		River river = new River();
 		Account account = accountDao.findByUsername("admin1");
@@ -80,7 +78,6 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 	 */
 	@Test
 	@Transactional
-	@Rollback(false)
 	public void testAddCollaborator() {
 		long riverId = 1;
 
