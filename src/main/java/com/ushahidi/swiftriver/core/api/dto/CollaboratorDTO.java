@@ -21,15 +21,23 @@ import java.util.Date;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 /**
- * DTO mapping class for {@link BucketCollaborator}
+ * Generic DTO mapping class for {@link BucketCollaborator}
+ * and {@link RiverCollaborator} entities
+ * 
  * @author ekala
  *
  */
-public class BucketCollaboratorDTO {
+public class CollaboratorDTO {
 	
 	private long id;
+	
+	private String name;
+	
+	@JsonProperty("account_path")
+	private String accountPath;
 	
 	private boolean active;
 	
@@ -45,6 +53,22 @@ public class BucketCollaboratorDTO {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getAccountPath() {
+		return accountPath;
+	}
+
+	public void setAccountPath(String accountPath) {
+		this.accountPath = accountPath;
 	}
 
 	public boolean isActive() {
