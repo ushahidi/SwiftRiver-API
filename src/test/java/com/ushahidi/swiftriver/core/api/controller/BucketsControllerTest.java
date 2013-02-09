@@ -20,7 +20,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 
-import com.ushahidi.swiftriver.core.api.dto.BucketCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -85,12 +85,12 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	}
 	
 	/**
-	 * Test for {@link BucketsController#addCollaborator(BucketCollaboratorDTO, Long)}
+	 * Test for {@link BucketsController#addCollaborator(CollaboratorDTO, Long)}
 	 * @throws Exception
 	 */
 	@Test
 	public void addCollaborator() throws Exception {
-		BucketCollaboratorDTO collaborator = new BucketCollaboratorDTO();
+		CollaboratorDTO collaborator = new CollaboratorDTO();
 
 		collaborator.setId(1);
 		collaborator.setActive(false);
@@ -118,12 +118,12 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	}
 
 	/**
-	 * Test for {@link BucketsController#modifyCollaborator(BucketCollaboratorDTO, Long, Long)}
+	 * Test for {@link BucketsController#modifyCollaborator(CollaboratorDTO, Long, Long)}
 	 * @throws Exception
 	 */
 	@Test
 	public void modifyCollaborator() throws Exception {
-		BucketCollaboratorDTO collaborator = new BucketCollaboratorDTO();
+		CollaboratorDTO collaborator = new CollaboratorDTO();
 		collaborator.setActive(true);
 		collaborator.setReadOnly(false);
 

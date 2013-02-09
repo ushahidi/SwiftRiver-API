@@ -28,7 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dto.BucketCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
@@ -145,7 +146,7 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional
-	public BucketCollaboratorDTO addCollaborator(Long id, BucketCollaboratorDTO body) {
+	public CollaboratorDTO addCollaborator(Long id, CollaboratorDTO body) {
 		// Does the bucket exist
 		Bucket bucket = bucketDao.findById(id);
 		
@@ -157,9 +158,7 @@ public class BucketService {
 		// operation is an owner of the bucket. Throw UnauthorizedException
 		
 		// Does the account already exist as a collaborator?
-		BucketCollaborator collaborator = bucketDao.findCollaborator(id, body.getId());
-		
-		if (collaborator != null) {
+		if (bucketDao.findCollaborator(id, body.getId()) != null) {
 			LOG.error(String.format("The specified account(%d) is already collaborating on bucket(%d)", 
 					id, body.getId()));
 			throw new BadRequestException();
@@ -170,9 +169,9 @@ public class BucketService {
 			throw new BadRequestException("The specified account id does not exist");
 		}
 	
-		collaborator= bucketDao.addCollaborator(bucket, account, body.isReadOnly());
+		bucketDao.addCollaborator(bucket, account, body.isReadOnly());
 		
-		body.setId(collaborator.getAccount().getId());
+		body.setId(account.getId());
 		return body;
 	}
 
@@ -184,18 +183,18 @@ public class BucketService {
 	 * @return {@link List}
 	 */
 	@Transactional
-	public List<BucketCollaboratorDTO> getCollaborators(Long id) {
+	public List<CollaboratorDTO> getCollaborators(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
 			throw new ResourceNotFoundException();
 		}
 		
-		List<BucketCollaboratorDTO> collaborotorList = new ArrayList<BucketCollaboratorDTO>();
+		List<CollaboratorDTO> collaborotorList = new ArrayList<CollaboratorDTO>();
 
 		// Iterate through each collaborator and add them
 		// to the return list
 		for (BucketCollaborator entry: bucket.getCollaborators()) {
-			BucketCollaboratorDTO dto = new BucketCollaboratorDTO();
+			CollaboratorDTO dto = new CollaboratorDTO();
 
 			dto.setId(entry.getAccount().getId());
 			dto.setActive(entry.isActive());
@@ -218,8 +217,8 @@ public class BucketService {
 	 * @return {link BucketCollaboratorDTO}
 	 */
 	@Transactional
-	public BucketCollaboratorDTO modifyCollaborator(Long id, Long accountId,
-			BucketCollaboratorDTO body) {
+	public CollaboratorDTO modifyCollaborator(Long id, Long accountId,
+			CollaboratorDTO body) {
 
 		if (bucketDao.findById(id) == null) {
 			throw new ResourceNotFoundException();
@@ -241,6 +240,109 @@ public class BucketService {
 		body.setId(collaborator.getId());
 
 		return body;
+	}
+
+	/**
+	 * Removes the account with the specified <code>accountId</code> from
+	 * the list of collaborators on the bucket with the specified <code>id</code>
+	 * parameter
+	 * 
+	 * @param id Database id of the {@link Bucket}
+	 * @param accountId Database id of the collaborating {@link Account}
+	 */
+	@Transactional
+	public void deleteCollaborator(Long id, Long accountId) {
+		BucketCollaborator collaborator = bucketDao.findCollaborator(id, accountId);
+		if (collaborator == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		bucketDao.deleteCollaborator(collaborator);
+		
+	}
+
+	/**
+	 * Adds the {@link Account} with the specified id in <code>body</code>
+	 * to the list of followers for the {@link Bucket} identified by
+	 * <code>id</code>
+	 * 
+	 * @param id
+	 * @param body
+	 */
+	@Transactional
+	public void addFollower(Long id, AccountDTO body) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		Account account = accountDao.findById(body.getId());
+		if (account == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		// Is the account already following the bucket
+		if (bucket.getFollowers().contains(account)) {
+			LOG.error(String.format("The specified account - %d - is already following bucket %d", 
+					body.getId(), id));
+			throw new BadRequestException();
+		}
+		
+		bucket.getFollowers().add(account);
+		bucketDao.update(bucket);
+		
+	}
+
+	/**
+	 * Gets and returns the list of followers for the {@link Bucket}
+	 * with the specified <code>id</code>
+	 * 
+	 * @param id
+	 * @return {@link List<AccountDTO>}
+	 */
+	public List<AccountDTO> getFollowers(Long id) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		List<AccountDTO> followers = new ArrayList<AccountDTO>();
+		for (Account account: bucket.getFollowers()) {
+			AccountDTO dto = mapper.map(account, AccountDTO.class);
+			
+			// Set the name and email address
+			dto.setName(account.getOwner().getName());
+			dto.setEmail(account.getOwner().getEmail());
+			
+			followers.add(dto);
+		}
+		
+		return followers;
+	}
+
+	/**
+	 * Removes the account with the specified <code>accountId</code>
+	 * from the list of {@link Account}s following the bucket identified
+	 * by <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@Transactional
+	public void deleteFollower(Long id, Long accountId) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		Account account = accountDao.findById(accountId);
+		if (account == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		bucket.getFollowers().remove(account);
+		bucketDao.update(bucket);
+		
 	}
 
 }

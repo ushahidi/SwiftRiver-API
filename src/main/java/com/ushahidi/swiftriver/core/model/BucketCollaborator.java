@@ -24,6 +24,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.TemporalType;
+import javax.persistence.Temporal;
 
 /**
  * Model for bucket collaborators
@@ -50,6 +52,7 @@ public class BucketCollaborator {
 	@Column(name="read_only")
 	private boolean readOnly;
 	
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="date_added")
 	private Date dateAdded;
 

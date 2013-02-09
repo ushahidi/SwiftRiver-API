@@ -126,4 +126,11 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 		this.entityManager.merge(collaborator);
 	}
 
+	/**
+	 * @see {@link BucketDao#deleteCollaborator(BucketCollaborator)}
+	 */
+	public void deleteCollaborator(BucketCollaborator collaborator) {
+		this.entityManager.remove(collaborator);
+	}
+
 }

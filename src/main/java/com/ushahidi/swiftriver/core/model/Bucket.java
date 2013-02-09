@@ -91,6 +91,10 @@ public class Bucket implements Serializable {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="bucket")
 	private List<BucketCollaborator> collaborators;
 	
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name="bucket_followers", joinColumns=@JoinColumn(name="bucket_id"), inverseJoinColumns=@JoinColumn(name="account_id"))
+	private List<Account> followers;
+	
 	public Bucket() {
 		
 	}
@@ -197,6 +201,14 @@ public class Bucket implements Serializable {
 
 	public void setCollaborators(List<BucketCollaborator> collaborators) {
 		this.collaborators = collaborators;
+	}
+
+	public List<Account> getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(List<Account> followers) {
+		this.followers = followers;
 	}
 
 	@Override

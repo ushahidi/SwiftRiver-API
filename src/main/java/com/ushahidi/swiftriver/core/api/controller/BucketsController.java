@@ -27,10 +27,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.ushahidi.swiftriver.core.api.dto.BucketCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
-import com.ushahidi.swiftriver.core.model.Account;
 
 @Controller
 @RequestMapping("/v1/buckets")
@@ -95,7 +95,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
 	@ResponseBody
-	public BucketCollaboratorDTO addCollaborator(@RequestBody BucketCollaboratorDTO body,
+	public CollaboratorDTO addCollaborator(@RequestBody CollaboratorDTO body,
 			@PathVariable Long id) {
 		return bucketService.addCollaborator(id, body);
 	}
@@ -108,7 +108,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.GET)
 	@ResponseBody
-	public List<BucketCollaboratorDTO> getCollaborators(@PathVariable Long id) {
+	public List<CollaboratorDTO> getCollaborators(@PathVariable Long id) {
 		return bucketService.getCollaborators(id);
 	}
 
@@ -120,7 +120,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public BucketCollaboratorDTO modifyCollaborator(@RequestBody BucketCollaboratorDTO body,
+	public CollaboratorDTO modifyCollaborator(@RequestBody CollaboratorDTO body,
 			@PathVariable Long id, @PathVariable Long accountId) {
 		return bucketService.modifyCollaborator(id, accountId, body);
 	}
@@ -131,9 +131,9 @@ public class BucketsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.DELETE)
-	public Account deleteCollaborator(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.DELETE)
+	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long accountId) {
+		bucketService.deleteCollaborator(id, accountId);
 	}
 
 	/**
@@ -143,9 +143,9 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
-	public Account addFollower(@RequestBody Map<String, Object> body,
+	public void addFollower(@RequestBody AccountDTO body,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		bucketService.addFollower(id, body);
 	}
 
 	/**
@@ -155,8 +155,9 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
-	public Account getFollowers(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public List<AccountDTO> getFollowers(@PathVariable Long id) {
+		return bucketService.getFollowers(id);
 	}
 
 	/**
@@ -166,8 +167,8 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.DELETE)
-	public Account deleteFollower(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void deleteFollower(@PathVariable Long id, @PathVariable Long accountId) {
+		bucketService.deleteFollower(id, accountId);
 	}
 
 	/**
@@ -177,7 +178,8 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.POST)
-	public Account addSubscription(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public Map<String, Object> addSubscription(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -189,7 +191,8 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.GET)
-	public Account getSubscriptions(@PathVariable Long id) {
+	@ResponseBody
+	public List<Map<String, Object>> getSubscriptions(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -200,7 +203,8 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.PUT)
-	public Account modifySubscription(@RequestBody Map<String, Object> body,
+	@ResponseBody
+	public Map<String, Object> modifySubscription(@RequestBody Map<String, Object> body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -211,8 +215,8 @@ public class BucketsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.DELETE)
-	public Account deleteSubscription(@PathVariable Long id) {
+	@RequestMapping(value = "/{id}/subscriptions/{subscriptionId}", method = RequestMethod.DELETE)
+	public void deleteSubscription(@PathVariable Long id, @PathVariable Long subscriptionId) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -223,7 +227,8 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET)
-	public Account getDrops(
+	@ResponseBody
+	public List<Map<String, Object>> getDrops(
 			@PathVariable Long id,
 			@RequestParam(value = "count", required = false, defaultValue = "50") int count,
 			@RequestParam(value = "max_id", required = false) long maxId,
@@ -243,7 +248,7 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
-	public Account deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
+	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 }

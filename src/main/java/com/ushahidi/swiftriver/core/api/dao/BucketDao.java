@@ -89,5 +89,12 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	 * @param collaborator
 	 */
 	public void updateCollaborator(BucketCollaborator collaborator);
+
+	/**
+	 * Deletes a {@link BucketCollaborator} record from the database
+	 * 
+	 * @param collaborator
+	 */
+	public void deleteCollaborator(BucketCollaborator collaborator);
 	
 }
