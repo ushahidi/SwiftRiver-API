@@ -224,14 +224,11 @@ public class RiversControllerTest extends AbstractControllerTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void addCollaborator() throws Exception {
-		Map<String, Object> accountData = ArrayUtils.toMap(
-				new Object[][]{{"id", 7}});
-
 		// Test collaborator payload
 		Object[][] collaboratorData = {
+				{"id", 1},
 				{"read_only", false},
 				{"active", false},
-				{"account", accountData }
 		};
 
 		Map<String, Object> collaboratorMap = ArrayUtils.toMap(collaboratorData);
@@ -241,8 +238,8 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.content(new ObjectMapper().writeValueAsBytes(collaboratorMap )))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
-			.andExpect(jsonPath("$.id").value(7))
-			.andExpect(jsonPath("$.account.account_path").value("admin5"));			
+			.andExpect(jsonPath("$.id").value(1))
+			.andExpect(jsonPath("$.account_path").value("default"));			
 	}
 	
 	/**
@@ -291,9 +288,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(new ObjectMapper().writeValueAsBytes(body)))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").value(1))
-			.andExpect(jsonPath("$.account_path").value("default"));
+			.andExpect(status().isOk());
 	}
 	
 	/**

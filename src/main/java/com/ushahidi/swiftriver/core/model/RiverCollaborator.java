@@ -16,6 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,6 +25,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * Model class for river collaborators
@@ -48,6 +52,10 @@ public class RiverCollaborator {
 	
 	@Column(name="read_only")
 	private boolean readOnly;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="date_added")
+	private Date dateAdded;
 
 	public Long getId() {
 		return id;
@@ -87,6 +95,14 @@ public class RiverCollaborator {
 
 	public void setReadOnly(boolean readOnly) {
 		this.readOnly = readOnly;
+	}
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 	
 	

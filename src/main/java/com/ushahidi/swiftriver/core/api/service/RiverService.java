@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,15 +34,13 @@ import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ChannelOptionDTO;
-import com.ushahidi.swiftriver.core.api.dto.DropDTO;
-import com.ushahidi.swiftriver.core.api.dto.RiverCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.RiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.ChannelOption;
-import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
@@ -61,6 +60,9 @@ public class RiverService {
 
 	@Autowired
 	private AccountDao accountDao;
+	
+	@Autowired
+	private Mapper mapper;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(RiverService.class);
@@ -102,26 +104,6 @@ public class RiverService {
 		return new RiverDTO().createMapFromEntity(river);
 	}
 	
-	/**
-	 * Gets and returns the list of drops with an ID greater than 
-	 * @param sinceId
-	 * 
-	 * @param id Database ID of the river
-	 * @param sinceId
-	 * @param dropCount The number of drops to return
-	 * @return
-	 */
-	@Transactional
-	public List<Map<String, Object>> getDropsSinceId(Long id, Long sinceId, int dropCount) {
-		List<Map<String, Object>> dropsArray = new ArrayList<Map<String,Object>>();
-		DropDTO dropDTO = new DropDTO();
-		for (Drop drop: riverDao.getDrops(id, sinceId, dropCount)) {
-			dropsArray.add(dropDTO.createMapFromEntity(drop));
-		}
-
-		return dropsArray;
-	}
-
 	/**
 	 * Modifies an existing river and returns {@link Map}
 	 * representation (of the river) with the modified data
@@ -295,13 +277,23 @@ public class RiverService {
 	}
 
 	@Transactional
-	public List<Map<String, Object>> getCollaborators(Long riverId) {
-		List<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
-		
-		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
+	public List<CollaboratorDTO> getCollaborators(Long riverId) {
 		River river = riverDao.findById(riverId);
+		if (river == null) {
+			throw new ResourceNotFoundException();
+		}
+
+		List<CollaboratorDTO> collaborators = new ArrayList<CollaboratorDTO>();
+		
 		for (RiverCollaborator entry: river.getCollaborators()) {
-			collaborators.add(dto.createMapFromEntity(entry));
+			CollaboratorDTO dto = new CollaboratorDTO();
+			
+			dto.setId(entry.getAccount().getId());
+			dto.setActive(entry.isActive());
+			dto.setReadOnly(entry.isReadOnly());
+			dto.setDateAdded(entry.getDateAdded());
+			
+			collaborators.add(dto);
 		}
 		
 		return collaborators;
@@ -313,28 +305,26 @@ public class RiverService {
 	 * @param riverId
 	 * @param body
 	 */
-	@SuppressWarnings("unchecked")
 	@Transactional
-	public Map<String, Object> addCollaborator(Long riverId, Map<String, Object> body) {
-		// Load the river and check if it exists
+	public CollaboratorDTO addCollaborator(Long riverId, CollaboratorDTO body) {
+		// Check if the bucket exists
 		River river = riverDao.findById(riverId);
 		if (river == null) {
 			throw new ResourceNotFoundException();
 		}
 		
-		// Get the account
-		Integer accountId = (Integer) ((Map<String, Object>)body.get("account")).get("id");
-		Account account = accountDao.findById(Long.parseLong(accountId.toString()));
-
-		// Create RiverCollaborator instance from map 
-		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
+		//Is the account already collaborating on the river
+		if (riverDao.findCollaborator(riverId, body.getId()) != null) {
+			LOG.error("The account is already collaborating on the river");
+			throw new BadRequestException();
+		}
 		
-		RiverCollaborator collaborator = dto.createEntityFromMap(body);
-		collaborator.setAccount(account);
+		Account account = accountDao.findById(body.getId());
+		riverDao.addCollaborator(river, account, body.isReadOnly());
 		
-		riverDao.addCollaborator(river, collaborator);
-		return dto.createMapFromEntity(collaborator);
-		
+		body.setId(account.getId());
+		body.setAccountPath(account.getAccountPath());
+		return body;
 	}
 
 	/**
@@ -346,8 +336,8 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public Map<String, Object> modifyCollaborator(Long riverId,
-			Long accountId, Map<String, Object> body) {
+	public CollaboratorDTO modifyCollaborator(Long riverId,
+			Long accountId, CollaboratorDTO body) {
 
 		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, accountId);
 		
@@ -355,18 +345,17 @@ public class RiverService {
 		if (collaborator == null) {
 			throw new ResourceNotFoundException();
 		}
+		
+		collaborator.setActive(body.isActive());
+		collaborator.setReadOnly(body.isReadOnly());
 
-		RiverCollaboratorDTO dto = new RiverCollaboratorDTO();
-		
-		// Copy the new properties to the loaded entity
-		if (!dto.updateEntityFromMap(collaborator, body)) {
-			throw new BadRequestException();
-		}
-		
 		// Post changes to the DB
 		riverDao.updateCollaborator(collaborator);
+		
+		body.setId(collaborator.getAccount().getId());
+		body.setAccountPath(collaborator.getAccount().getAccountPath());
 
-		return dto.createMapFromEntity(collaborator);		
+		return body;		
 	}
 
 	/**
@@ -389,21 +378,21 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public Map<String, Object> addFollower(Long id, Map<String, Object> body) {
-		if (!body.containsKey("id")) {
-			throw new BadRequestException();
+	public void addFollower(Long id, AccountDTO body) {
+		// Does the river exist?
+		River river = riverDao.findById(id);
+		if (river == null) {
+			throw new ResourceNotFoundException();
 		}
 		
-		// Load the river
-		River river = riverDao.findById(id);
-
-		Integer accountId = (Integer) body.get("id");
-		Account account = accountDao.findById(Long.parseLong(accountId.toString()));
+		Account account = accountDao.findById(body.getId());
+		if (account == null) {
+			throw new ResourceNotFoundException();
+		}
 
 		river.getFollowers().add(account);
 		riverDao.update(river);
 
-		return new AccountDTO().createMapFromEntity(account);
 	}
 
 	/**
@@ -415,7 +404,7 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public List<Map<String, Object>> getFollowers(Long id) {
+	public List<AccountDTO> getFollowers(Long id) {
 		River river = riverDao.findById(id);
 		
 		// Does the river exist?
@@ -423,10 +412,13 @@ public class RiverService {
 			throw new ResourceNotFoundException();
 		}
 
-		List<Map<String, Object>> followerList = new ArrayList<Map<String,Object>>();
-		AccountDTO dto = new AccountDTO();
+		List<AccountDTO> followerList = new ArrayList<AccountDTO>();
 		for (Account account: river.getFollowers()) {
-			followerList.add(dto.createMapFromEntity(account));
+			AccountDTO accountDto = mapper.map(account, AccountDTO.class);
+			accountDto.setName(account.getOwner().getName());
+			accountDto.setEmail(account.getOwner().getEmail());
+			
+			followerList.add(accountDto);
 		}
 		
 		return followerList;
@@ -455,5 +447,16 @@ public class RiverService {
 		
 		river.getFollowers().remove(account);
 		riverDao.update(river);
+	}
+
+	/**
+	 * Deletes the drop specified by <code>dropId</code> from the
+	 * river in <code>id</code> 
+	 * @param id
+	 * @param dropId
+	 * @return boolean
+	 */
+	public boolean deleteDrop(Long id, Long dropId) {
+		return riverDao.removeDrop(id, dropId);		
 	}
 }

@@ -16,59 +16,103 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.Map;
+import java.util.Date;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.ushahidi.swiftriver.core.model.Account;
 
 /**
- * DTO mapping class for buckets
+ * DTO mapping class for {@link Account} objects.
  * 
  * @author ekala
  */
-public class AccountDTO extends AbstractDTO<Account> {
-
-	/**
-	 * @see {@link AbstractDTO#createMapFromEntity(Object)}
-	 */
-	@SuppressWarnings("unchecked")
-	public Map<String, Object> createMapFromEntity(Account entity) {
-		Object[][] accountData = {
-				{"id", entity.getId()},
-				{"account_path", entity.getAccountPath()},
-				{"active", entity.isActive()},
-				{"public", entity.isAccountPrivate()}
-		};
-
-		return ArrayUtils.toMap(accountData);
+public class AccountDTO {
+	
+	private long id;
+	
+	private String name;
+	
+	private String email;
+	
+	@JsonProperty("account_path")
+	private String accountPath;
+	
+	@JsonProperty("public")
+	private String isPublic;
+	
+	@JsonProperty("date_added")
+	private Date dateAdded;
+	
+	@JsonProperty("follower_count")
+	private int followerCount;
+	
+	@JsonProperty("following_count")
+	private int followingCount;
+	
+	public long getId() {
+		return id;
 	}
 
-	/**
-	 * @see {@link AbstractDTO#createEntityFromMap(Map)}
-	 */
-	public Account createEntityFromMap(Map<String, Object> map) {
-		Account account = new Account();
-
-		account.setAccountPath((String) map.get("account_path"));
-		account.setActive((Boolean) map.get("active"));
-		account.setAccountPrivate((Boolean) map.get("public"));
-		
-		return account;
+	public void setId(long id) {
+		this.id = id;
 	}
 
-	@Override
-	protected String[] getValidationKeys() {
-		return new String[]{"account_path", "public", "active"};
+	public String getName() {
+		return name;
 	}
 
-	@Override
-	protected void copyFromMap(Account target, Map<String, Object> source) {
-		Account dummy = createEntityFromMap(source);
-		
-		target.setAccountPath(dummy.getAccountPath());
-		target.setAccountPrivate(dummy.isAccountPrivate());
-		target.setActive(dummy.isActive());
+	public void setName(String name) {
+		this.name = name;
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getAccountPath() {
+		return accountPath;
+	}
+
+	public void setAccountPath(String accountPath) {
+		this.accountPath = accountPath;
+	}
+
+	public String getIsPublic() {
+		return isPublic;
+	}
+
+	public void setIsPublic(String isPublic) {
+		this.isPublic = isPublic;
+	}
+
+	public Date getDateAdded() {
+		return dateAdded;
+	}
+
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
+	}
+
+	public int getFollowerCount() {
+		return followerCount;
+	}
+
+	public void setFollowerCount(int followerCount) {
+		this.followerCount = followerCount;
+	}
+
+	public int getFollowingCount() {
+		return followingCount;
+	}
+
+	public void setFollowingCount(int followingCount) {
+		this.followingCount = followingCount;
+	}
+	
+	
 }

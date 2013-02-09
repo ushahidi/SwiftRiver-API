@@ -18,6 +18,7 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -26,25 +27,6 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 
 public interface RiverDao extends JpaDao<River, Long>{
-	
-	/**
-	 * Returns drops from the specified river where the oldest ID is
-	 * specified by @param sinceId
-	 * 
-	 * @param id Unique ID of the river
-	 * @param sinceId Oldest dropId
-	 * @param dropCount No. of drops to return
-	 * @return {@link List}
-	 */
-	public List<Drop> getDrops(Long id, Long sinceId, int dropCount);
-	
-	/**
-	 * Removes a drop from the river
-	 * 
-	 * @param riverId River containing the drop to be removed
-	 * @param drop Drop to be removed from the river
-	 */
-	public void removeDrop(long riverId, Drop drop);
 	
 	/**
 	 * Adds a drop to a river
@@ -75,9 +57,11 @@ public interface RiverDao extends JpaDao<River, Long>{
 	/**
 	 * Adds a collaborator to a river
 	 * @param river
-	 * @param collaborator
+	 * @param account
+	 * @param readOnly
+	 * @return {@link RiverCollaborator}
 	 */
-	public void addCollaborator(River river, RiverCollaborator collaborator);
+	public RiverCollaborator addCollaborator(River river, Account account, boolean readOnly);
 
 	/**
 	 * Updates a collaborator
@@ -94,5 +78,35 @@ public interface RiverDao extends JpaDao<River, Long>{
 	 * @param accountId
 	 */
 	public void deleteCollaborator(Long id, Long accountId);
+
+	/**
+	 * Deletes the drop specified by 
+	 * @param id
+	 * @param dropId
+	 * @return
+	 */
+	public boolean removeDrop(Long id, Long dropId);
+
+	/**
+	 * Gets and returns the drops for the river specified in <code>id</code>
+	 * using the parameters in <code>requestParams</code>.
+	 * 
+	 * The valid parameter keys for <code>requestParams</code> are:
+	 * <ul>
+	 * <li>count</li>
+	 * <li>max_id</li>
+	 * <li>since_id</li>
+	 * <li>date_from</li>
+	 * <li>date_to</li>
+	 * <li>keywords</li>
+	 * <li>channels</li>
+	 * <li>location</li>
+	 * </ul>
+	 *
+	 * @param id ID of the river in the database
+	 * @param requestParams <key,value> pairs of the parameters to use for fetching the drops
+	 * @return {@link List}
+	 */
+	public List<Drop> getDrops(Long id, Map<String, Object> requestParams);
 	
 }

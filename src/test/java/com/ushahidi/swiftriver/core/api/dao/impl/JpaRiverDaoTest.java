@@ -29,7 +29,6 @@ import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.River;
-import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.test.AbstractTransactionalTest;
 
 /**
@@ -86,12 +85,7 @@ public class JpaRiverDaoTest extends AbstractTransactionalTest {
 
 		Account account = accountDao.findByUsername("admin4");		
 		
-		RiverCollaborator collaborator = new RiverCollaborator();
-		collaborator.setAccount(account);
-		collaborator.setActive(false);
-		collaborator.setReadOnly(true);
-
-		riverDao.addCollaborator(river, collaborator);
+		riverDao.addCollaborator(river, account, true);
 		assertEquals(collaboratorCount+1, river.getCollaborators().size());
 	}
 	

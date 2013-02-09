@@ -18,12 +18,14 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Query;
 
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
@@ -42,28 +44,6 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	}
 
 	/**
-	 * @see RiverDao#getDrops(Long, Long, int)
-	 */	
-	@SuppressWarnings("unchecked")
-	public List<Drop> getDrops(Long id, Long sinceId, int dropCount) {
-		String sql = "SELECT r.drops FROM River r, IN(r.drops) d WHERE r.id = :riverId AND d.id > :sinceId";
-
-		Query query = entityManager.createQuery(sql);
-		query.setParameter("riverId", id);
-		query.setParameter("sinceId", sinceId);
-		query.setMaxResults(dropCount);
-
-		return (List<Drop>) query.getResultList();
-	}
-
-	/**
-	 * @see RiverDao#removeDrop(long, Drop)
-	 */
-	public void removeDrop(long riverId, Drop drop) {
-		findById(riverId).getDrops().remove(drop);
-	}
-
-	/**
 	 * @see RiverDao#addDrop(long, Drop)
 	 */
 	public void addDrop(long riverId, Drop drop) {
@@ -78,13 +58,18 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	}
 
 	/**
-	 * @see RiverDao#addCollaborator(River, RiverCollaborator)
+	 * @see RiverDao#addCollaborator(River, Account, boolean)
 	 */
-	public void addCollaborator(River river, RiverCollaborator collaborator) {
+	public RiverCollaborator addCollaborator(River river, Account account, boolean readOnly) {
+		RiverCollaborator collaborator = new RiverCollaborator();
 		collaborator.setRiver(river);
+		collaborator.setAccount(account);
+		collaborator.setReadOnly(readOnly);
+		
+		river.getCollaborators().add(collaborator);
 		this.entityManager.persist(collaborator);
 
-		this.entityManager.refresh(river);
+		return collaborator;
 	}
 
 	/**
@@ -102,6 +87,7 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	/**
 	 * @see {@link RiverDao#findCollaborator(Long, Long)}
 	 */
+	@SuppressWarnings("unchecked")
 	public RiverCollaborator findCollaborator(Long riverId, Long accountId) {
 		String sql = "FROM RiverCollaborator rc " +
 				"WHERE rc.account.id = :accountId " + 
@@ -111,7 +97,8 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 		query.setParameter("accountId", accountId);
 		query.setParameter("riverId", riverId);
 
-		return (RiverCollaborator) query.getSingleResult();
+		List<RiverCollaborator> result = (List<RiverCollaborator>) query.getResultList();
+		return result.isEmpty() ? null : result.get(0);
 	}
 
 	/**
@@ -119,6 +106,28 @@ public class JpaRiverDao extends AbstractJpaDao<River, Long> implements RiverDao
 	 */
 	public void updateCollaborator(RiverCollaborator collaborator) {
 		this.entityManager.merge(collaborator);
+	}
+
+	/**
+	 * @see {@link RiverDao#removeDrop(Long, Long)}
+	 */
+	public boolean removeDrop(Long id, Long dropId) {
+		String sql = "DELETE FROM RiverDrop rd " +
+				"WHERE rd.id = :dropId " + 
+				"AND rd.river.id = :riverId";
+		Query query = entityManager.createQuery(sql);
+		query.setParameter("riverId", id);
+		query.setParameter("dropId", dropId);
+		
+		return query.executeUpdate() == 1;
+	}
+
+	/**
+	 * @see {@link RiverDao#getDrops(Long, Map)}
+	 */
+	public List<Drop> getDrops(Long id, Map<String, Object> requestParams) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

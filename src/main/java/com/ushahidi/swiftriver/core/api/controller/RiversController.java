@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -150,7 +152,7 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<String, Object> addCollaborator(@RequestBody Map<String, Object> body,
+	public CollaboratorDTO addCollaborator(@RequestBody CollaboratorDTO body,
 			@PathVariable Long id) {
 		return riverService.addCollaborator(id, body);
 	}
@@ -163,7 +165,7 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Map<String, Object>> getCollaborators(@PathVariable Long id) {
+	public List<CollaboratorDTO> getCollaborators(@PathVariable Long id) {
 		return riverService.getCollaborators(id);
 	}
 
@@ -175,8 +177,8 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Map<String, Object> modifyCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId, @RequestBody Map<String, Object> body) {
+	public CollaboratorDTO modifyCollaborator(@PathVariable Long id,
+			@PathVariable Long collaboratorId, @RequestBody CollaboratorDTO body) {
 		return riverService.modifyCollaborator(id, collaboratorId, body);
 	}
 
@@ -198,10 +200,9 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
-	@ResponseBody
-	public Map<String, Object> addFollower(@RequestBody Map<String, Object> body,
+	public void addFollower(@RequestBody AccountDTO body,
 			@PathVariable Long id) {
-		return riverService.addFollower(id, body);
+		riverService.addFollower(id, body);
 	}
 
 	/**
@@ -212,7 +213,7 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Map<String, Object>> getFollowers(@PathVariable Long id) {
+	public List<AccountDTO> getFollowers(@PathVariable Long id) {
 		return riverService.getFollowers(id);
 	}
 
@@ -284,14 +285,14 @@ public class RiversController {
 	@ResponseBody
 	public List<Map<String, Object>> getDrops(
 			@PathVariable Long id,
-			@RequestParam(value = "count", required = false, defaultValue = "50") int count,
-			@RequestParam(value = "max_id", required = false) long maxId,
-			@RequestParam(value = "since_id", required = false) long sinceId,
+			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
+			@RequestParam(value = "max_id", required = false) Long maxId,
+			@RequestParam(value = "since_id", required = false) Long sinceId,
 			@RequestParam(value = "date_from", required = false) Date dateFrom,
 			@RequestParam(value = "date_to", required = false) Date dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "count", required = false, defaultValue = "50") String location) {
+			@RequestParam(value = "location", required = false) String location) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 	
@@ -303,7 +304,7 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		riverService.deleteDrop(id, dropId);
 	}
 
 }
