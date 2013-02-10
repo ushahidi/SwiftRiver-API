@@ -134,4 +134,87 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.read_only").value(false));
 	}
+	
+	/**
+	 * Test for {@link BucketsController#getDrops(Long, Integer, Long, Long, java.util.Date, java.util.Date, String, String, String)}
+	 * @throws Exception
+	 */
+	@Test
+	public void getDrops() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops"))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType("application/json;charset=UTF-8"))
+			.andExpect(jsonPath("$.[0].source").exists())
+			.andExpect(jsonPath("$.[0].tags").isArray())
+			.andExpect(jsonPath("$.[0].places").isArray())
+			.andExpect(jsonPath("$.[0].media").isArray())
+			.andExpect(jsonPath("$.[0].links").isArray());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#getDrops(Long, Integer, Long, Long, java.util.Date, java.util.Date, String, String, String)}
+	 * where the <code>max_id</code> parameter has been specified
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getDropsByMaxId() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("max_id", "31"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[0].id").value(31));
+	}
+	
+	/**
+	 * Test for {@link BucketsController#getDrops(Long, Integer, Long, Long, java.util.Date, java.util.Date, String, String, String)}
+	 * where the <code>since_id</code> parameter has been specified
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getDropsBySinceId() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("since_id", "40"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[0].id").value(50))
+			.andExpect(jsonPath("$.[9].id").value(41));
+	}
+	
+	/**
+	 * Test for {@link BucketsController#getDrops(Long, Integer, Long, Long, java.util.Date, java.util.Date, String, String, String)}
+	 * where the <code>channels</code> parameter has been specified
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getDropsByChannel() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("channels", "instagram,twitter"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[0].id").doesNotExist());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#deleteDrop(Long, Long)} where the
+	 * drop exists in the target bucket
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteDrop() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/35"))
+			.andExpect(status().isOk());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#deleteDrop(Long, Long)} where the
+	 * drop does not exist in the target bucket. Should return a 404
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteNonExistentDrop() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/500000"))
+			.andExpect(status().isNotFound());
+	}
 }

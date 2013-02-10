@@ -18,9 +18,20 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ListJoin;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
@@ -37,22 +48,10 @@ import com.ushahidi.swiftriver.core.model.Drop;
 @Repository
 public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements BucketDao {
 
+	final static Logger LOG = LoggerFactory.getLogger(JpaBucketDao.class);
+	
 	public JpaBucketDao() {
 		super(Bucket.class);
-	}
-
-	/**
-	 * @see BucketDao#getDrops(Long, int)
-	 */
-	@SuppressWarnings("unchecked")
-	public Collection<Drop> getDrops(Long bucketId, int dropCount) {
-		String sqlQuery = "SELECT b.drops FROM Bucket b WHERE b.id = ?1";
-
-		Query query = entityManager.createQuery(sqlQuery);
-		query.setParameter(1, bucketId);
-		query.setMaxResults(dropCount);
-
-		return (List<Drop>) query.getResultList();
 	}
 
 	/**
@@ -131,6 +130,73 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 	 */
 	public void deleteCollaborator(BucketCollaborator collaborator) {
 		this.entityManager.remove(collaborator);
+	}
+
+	/**
+	 * @see {@link BucketDao#getDrops(Long, Map)}
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Drop> getDrops(Long bucketId, Map<String, Object> requestParams) {
+		CriteriaBuilder cb = this.entityManager.getCriteriaBuilder();
+		CriteriaQuery<Drop> dropsQuery = cb.createQuery(Drop.class);
+		
+		Root<Drop> dropRoot = dropsQuery.from(Drop.class);
+		Path<Long> dropId = dropRoot.get("id");
+
+		// Join drops and buckets
+		Root<Bucket> bucketRoot = dropsQuery.from(Bucket.class);
+		ListJoin<Bucket, Drop> bucketDrops =  bucketRoot.joinList("drops", JoinType.INNER);
+
+		CriteriaQuery<Drop> bucketDropsQuery = dropsQuery.select(bucketDrops);
+
+		// Apply the query parameters
+		Predicate filterPredicates = cb.and(
+				cb.equal(bucketDrops.get("id"), dropId),
+				cb.equal(bucketRoot.get("id"), bucketId));
+
+		// Check for since_id parameter
+		if (requestParams.containsKey("since_id")) {
+			Long sinceId = (Long)requestParams.get("since_id");
+			filterPredicates = cb.and(filterPredicates, cb.gt(dropId, sinceId));
+		}
+		
+		// Check for max_id parameter
+		if (requestParams.containsKey("max_id")) {
+			Long maxId = (Long) requestParams.get("max_id");
+			filterPredicates = cb.and(filterPredicates, cb.le(dropId, maxId));
+		}
+		
+		// Check for channels parameter
+		if (requestParams.containsKey("channels")) {
+			List<String> channelsList = (List<String>) requestParams.get("channels");
+			filterPredicates = cb.and(filterPredicates, 
+					cb.in(dropRoot.get("channel")).value(channelsList));
+		}
+		
+		// Apply the predicates and order the results by drop id in descending order
+		bucketDropsQuery.where(filterPredicates);
+		bucketDropsQuery.orderBy(cb.desc(dropId));
+		TypedQuery<Drop> resultsQuery = this.entityManager.createQuery(bucketDropsQuery);
+
+		Integer dropCount = (Integer) requestParams.get("count");
+		resultsQuery.setMaxResults(dropCount);
+		
+		return resultsQuery.getResultList();
+	}
+
+	/**
+	 * @see {@link BucketDao#deleteDrop(Long, Long)}
+	 */
+	public boolean deleteDrop(Long id, Long dropId) {
+		String sql = "DELETE FROM buckets_droplets " +
+				"WHERE bucket_id = :bucketId " + 
+				"AND droplet_id = :dropId";
+		
+		Query query = this.entityManager.createNativeQuery(sql);
+		query.setParameter("bucketId", id);
+		query.setParameter("dropId", dropId);
+
+		return query.executeUpdate() > 0;
 	}
 
 }

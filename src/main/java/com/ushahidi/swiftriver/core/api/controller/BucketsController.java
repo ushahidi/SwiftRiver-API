@@ -15,6 +15,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 
 @Controller
@@ -228,17 +230,28 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Map<String, Object>> getDrops(
+	public List<DropDTO> getDrops(
 			@PathVariable Long id,
-			@RequestParam(value = "count", required = false, defaultValue = "50") int count,
-			@RequestParam(value = "max_id", required = false) long maxId,
-			@RequestParam(value = "since_id", required = false) long sinceId,
+			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
+			@RequestParam(value = "max_id", required = false) Long maxId,
+			@RequestParam(value = "since_id", required = false) Long sinceId,
 			@RequestParam(value = "date_from", required = false) Date dateFrom,
 			@RequestParam(value = "date_to", required = false) Date dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "count", required = false, defaultValue = "50") String location) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+			@RequestParam(value = "location", required = false) String location) {
+		Map<String, Object> requestParams = new HashMap<String, Object>();
+		requestParams.put("count", count);
+		
+		if (maxId != null) requestParams.put("max_id", maxId);
+		if (sinceId != null) requestParams.put("since_id", sinceId);
+		if (dateFrom != null) requestParams.put("date_from", dateFrom);
+		if (dateTo != null) requestParams.put("dae_to", dateTo);
+		if (keywords != null) requestParams.put("keywords", keywords);
+		if (channels != null) requestParams.put("channels", channels);
+		if (location != null) requestParams.put("location", location);
+
+		return bucketService.getDrops(id, requestParams);
 	}
 
 	/**
@@ -249,6 +262,6 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		bucketService.deleteDrop(id, dropId);
 	}
 }

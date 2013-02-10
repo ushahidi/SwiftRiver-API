@@ -17,6 +17,8 @@
 package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
@@ -35,10 +37,10 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	 * Gets a collection of drops from a bucket using the specified parameters
 	 *  
 	 * @param bucketId
-	 * @param dropCount TODO
-	 * @return
+	 * @param requestParams 
+	 * @return {@link LinkDTO}
 	 */
-	public Collection<Drop> getDrops(Long bucketId, int dropCount);
+	public List<Drop> getDrops(Long bucketId, Map<String, Object> requestParams);
 	
 	/**
 	 * Adds a single drop to a bucket
@@ -96,5 +98,15 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	 * @param collaborator
 	 */
 	public void deleteCollaborator(BucketCollaborator collaborator);
+
+	/**
+	 * Deletes the {@link Drop} with the id in <code>dropId</code> from the list of 
+	 * drops for the {@link Bucket} with the id specified in <code>id</code>
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @return boolean
+	 */
+	public boolean deleteDrop(Long id, Long dropId);
 	
 }

@@ -17,8 +17,11 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,13 +32,15 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
-import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.DropDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.Drop;
 
 /**
  * Service class for buckets
@@ -343,6 +348,65 @@ public class BucketService {
 		bucket.getFollowers().remove(account);
 		bucketDao.update(bucket);
 		
+	}
+
+	/**
+	 * Gets and returns the drops for the bucket specified in <code>id</code>
+	 * using the parameters contained in <code>requestParams</code>
+	 * 
+	 * Nullity and type safety checks are performed on the request parameters
+	 * before they're passed on to DAO for building out the DB query and subsequent
+	 * fetching of the {@link Drop} entities
+	 *  
+	 * @param id
+	 * @param requestParams
+	 * @return
+	 */
+	@Transactional
+	public List<DropDTO> getDrops(Long id, Map<String, Object> requestParams) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new ResourceNotFoundException();
+		}
+		
+		// Check for channels parameter, split the string and convert the
+		// resultant array to a list
+		if (requestParams.containsKey("channels")) {
+			String channels = (String)requestParams.get("channels");
+			if (channels.trim().length() == 0) {
+				LOG.error("No value specified for the \"channels\" parameter.");
+				throw new BadRequestException();
+			}
+			List<String> channelsList = Arrays.asList(StringUtils.split(channels, ','));
+			requestParams.put("channels", channelsList);
+		}
+
+		List<Drop> drops = bucketDao.getDrops(id, requestParams);
+		
+		List<DropDTO> bucketDrops = new ArrayList<DropDTO>();
+		for (Drop drop: drops) {			
+			DropDTO dropDto = mapper.map(drop, DropDTO.class);
+			bucketDrops.add(dropDto);
+		}
+
+		return bucketDrops;
+	}
+
+	/**
+	 * Deletes the {@link Drop} specified in <code>bucketId</code> from the
+	 * {@link Bucket} specified in <code>id</code>
+	 * 
+	 * If the drop does not exist in the specified bucket, a
+	 * {@link ResourceNotFoundException} exception is thrown
+	 * 
+	 * @param id
+	 * @param dropId
+	 */
+	@Transactional
+	public void deleteDrop(Long id, Long dropId) {		 
+		if (!bucketDao.deleteDrop(id, dropId)) {
+			throw new ResourceNotFoundException();
+		}
 	}
 
 }

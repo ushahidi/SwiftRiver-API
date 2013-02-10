@@ -18,13 +18,11 @@ package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -67,10 +65,10 @@ public class Drop implements Serializable{
 	private String dropletType;
 	
 	@Column(name = "droplet_title")
-	private String dropletTitle;
+	private String title;
 	
 	@Column(name = "droplet_content")
-	private String dropletContent;
+	private String content;
 	
 	@Column(name = "droplet_locale")
 	private String dropletLocale;
@@ -92,33 +90,33 @@ public class Drop implements Serializable{
 	@Column(name = "comment_count")
 	private int commentCount;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
 			name = "droplets_tags",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="tag_id"))
-	private Set<Tag> tags = new HashSet<Tag>();
+	private List<Tag> tags;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
 			name = "droplets_places",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="place_id"))
-	private Set<Place> places = new HashSet<Place>();
+	private List<Place> places;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
 			name = "droplets_links",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="link_id"))
-	private Set<Link> links = new HashSet<Link>();
+	private List<Link> links;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(
 			name = "droplets_media",
 			joinColumns = @JoinColumn(name="droplet_id"),
 			inverseJoinColumns = @JoinColumn(name="media_id"))
-	private Set<Media> media = new HashSet<Media>();
+	private List<Media> media;
 
 	public Drop() {
 		
@@ -172,20 +170,20 @@ public class Drop implements Serializable{
 		this.dropletType = dropletType;
 	}
 
-	public String getDropletTitle() {
-		return dropletTitle;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setDropletTitle(String dropletTitle) {
-		this.dropletTitle = dropletTitle;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
-	public String getDropletContent() {
-		return dropletContent;
+	public String getContent() {
+		return content;
 	}
 
-	public void setDropletContent(String dropletContent) {
-		this.dropletContent = dropletContent;
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 	public String getDropletLocale() {
@@ -212,7 +210,7 @@ public class Drop implements Serializable{
 		this.datePublished = datePublished;
 	}
 
-	public Date getDropletDateAdd() {
+	public Date getDateAdded() {
 		return dateAdded;
 	}
 
@@ -236,35 +234,35 @@ public class Drop implements Serializable{
 		this.commentCount = commentCount;
 	}
 
-	public Set<Tag> getTags() {
+	public List<Tag> getTags() {
 		return tags;
 	}
 
-	public void setTags(Set<Tag> tags) {
+	public void setTags(List<Tag> tags) {
 		this.tags = tags;
 	}
 
-	public Set<Place> getPlaces() {
+	public List<Place> getPlaces() {
 		return places;
 	}
 
-	public void setPlaces(Set<Place> places) {
+	public void setPlaces(List<Place> places) {
 		this.places = places;
 	}
 
-	public Set<Link> getLinks() {
+	public List<Link> getLinks() {
 		return links;
 	}
 
-	public void setLinks(Set<Link> links) {
+	public void setLinks(List<Link> links) {
 		this.links = links;
 	}
 
-	public Set<Media> getMedia() {
+	public List<Media> getMedia() {
 		return media;
 	}
 
-	public void setMedia(Set<Media> media) {
+	public void setMedia(List<Media> media) {
 		this.media = media;
 	}
 
