@@ -80,7 +80,13 @@
 		<jdbc:initialize-database data-source="dataSource">
 			<jdbc:script location="classpath:config/sql/schema-destroy.sql" />
 			<jdbc:script location="classpath:config/sql/schema-create.sql" />
-			<jdbc:script location="classpath:config/sql/test-data.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-identities.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-drops.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-drop-tags.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-drop-links.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-drop-places.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-drop-media.sql" />
+			<jdbc:script location="classpath:config/sql/test-data-general.sql" />
 		</jdbc:initialize-database>
 	</beans>
 	

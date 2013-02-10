@@ -34,7 +34,13 @@ INSERT INTO `settings` (`id`, `key`, `value`) VALUES
 TRUNCATE TABLE `users`;
 INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`) VALUES 
 (1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', 'c2bac288881c7dd9531c607e73b3af798499917760023656e9847b10b8e75542', 0, NULL, md5(rand())),
-(2, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, '');
+(2, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, ''),
+(3, 'admin@example.com', 'Admin User 1', 'admin1', 'DCMFFIFK', 10, NULL, 'admin1'),
+(4,'admin2@example.com', 'Admin User 2', 'admin2', 'FG$((ASH', 20, NULL, 'admin2'),
+(5, 'admin3@example.com', 'Admin User 3', 'admin3', 'LKICOOUFN', 30, NULL, 'admin3'),
+(6, 'admin4@example.com', 'Admin User 4', 'admin4', 'ZPODIFMANU', 40, NULL, 'admin4'),
+(7, 'admin5@example.com', 'Admin User 5', 'admin5', 'TMNDHACFRDLA', 50, NULL, 'admin5');
+
 
 -- -----------------------------------------------------
 -- Data for table `roles_users`
@@ -50,7 +56,13 @@ INSERT INTO `roles_users` (`user_id`, `role_id`, `account_id`) VALUES
 TRUNCATE TABLE `accounts`;
 INSERT INTO `accounts` (`user_id`, `account_path`) VALUES 
 (1, 'default'),
-(2, 'public');
+(2, 'public'),
+(3, 'admin1'),
+(4, 'admin2'),
+(5, 'admin3'),
+(6, 'admin4'),
+(7, 'admin5');
+
 
 -- -----------------------------------------------------
 -- Data for table `plugins`
@@ -62,14 +74,6 @@ VALUES
 	(2,'twitter','Twitter','Adds a Twitter channel to SwiftRiver.',1,1,0);
 
 COMMIT;
-
--- Users
-INSERT INTO `users`(`id`, `email`, `name`, `username`, `password`, `api_key`, `invites`) VALUES
-(3, 'admin@example.com', 'Admin User 1', 'admin1', 'DCMFFIFK', 'admin1', 10),
-(4,'admin2@example.com', 'Admin User 2', 'admin2', 'FG$((ASH', 'admin2', 20),
-(5, 'admin3@example.com', 'Admin User 3', 'admin3', 'LKICOOUFN', 'admin3', 30),
-(6, 'admin4@example.com', 'Admin User 4', 'admin4', 'ZPODIFMANU', 'admin4', 40),
-(7, 'admin5@example.com', 'Admin User 5', 'admin5', 'TMNDHACFRDLA', 'admin5', 50);
 
 
 -- -----------------------------------------------------
@@ -85,13 +89,6 @@ INSERT INTO `seq` (`name`, `id`) VALUES
 ('river_tag_trends', 1),
 ('rivers_droplets', 1);
 
--- Accounts
-INSERT INTO accounts(id, user_id, account_path) VALUES
-(3, 3, 'admin1'),
-(4, 4, 'admin2'),
-(5, 5, 'admin3'),
-(6, 6, 'admin4'),
-(7, 7, 'admin5');
 
 -- ------------------------
 -- Data for table `rivers`
@@ -157,3 +154,9 @@ INSERT INTO river_followers(river_id, account_id) VALUES
 INSERT INTO bucket_followers(bucket_id, account_id) VALUES
 (1, 7),
 (1, 6);
+
+-- ---------------------------------
+-- Data for table `buckets_droplets`
+-- ---------------------------------
+INSERT INTO `buckets_droplets`(`bucket_id`, `droplet_id`, `droplet_date_added`)
+(SELECT 1 AS `bucket_id`, `id`, `droplet_date_add` FROM `droplets` WHERE `id` > 30 AND `id` <= 50);
