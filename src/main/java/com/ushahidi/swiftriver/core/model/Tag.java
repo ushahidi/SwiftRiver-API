@@ -47,7 +47,7 @@ public class Tag implements Serializable{
 	private String tagCanonical;
 	
 	@Column(name="tag_type", nullable = false)
-	private String tagType;
+	private String type;
 	
 	public Tag() {
 		
@@ -77,12 +77,12 @@ public class Tag implements Serializable{
 		this.tagCanonical = tagCanonical;
 	}
 
-	public String getTagType() {
-		return tagType;
+	public String getType() {
+		return type;
 	}
 
-	public void setTagType(String tagType) {
-		this.tagType = tagType;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public long getId() {

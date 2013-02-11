@@ -16,6 +16,10 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.List;
+
+import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 
 
@@ -28,5 +32,15 @@ public interface RiverDao {
 	 * @return
 	 */
 	public River findById(long id);	
-	
+
+	/**
+	 * Get list of drops from the given river.
+	 * 
+	 * @param id
+	 * @param maxId
+	 * @param dropCount
+	 * @param queryingAccount
+	 * @return
+	 */
+	public List<Drop> getDrops(Long id, Long maxId, int dropCount, Account queryingAccount);
 }

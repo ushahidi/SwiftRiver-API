@@ -41,7 +41,8 @@
 
 	<!-- Repository Beans -->
 	<bean id="accountDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
-	<bean id="river" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
+	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
+	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />

@@ -16,6 +16,9 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 
 @Transactional(readOnly = true)
@@ -37,6 +44,9 @@ public class RiverService {
 
 	@Autowired
 	private RiverDao riverDao;
+	
+	@Autowired
+	private AccountDao accountDao;
 	
 	@Autowired
 	private Mapper mapper;
@@ -72,18 +82,33 @@ public class RiverService {
 			throw new NotFoundException();
 		}
 				
-		return mapGetRiverDTO(river);
+		return mapper.map(river, GetRiverDTO.class);
 	}
-	
+
 	/**
-	 * Convert the given River into a GetRiverDTO
-	 * @param river
+	 * Get a list of drops in the river
+	 * 
+	 * @param id - Id of the river
+	 * @param maxId - Maximum id of the drops to return
+	 * @param dropCount - Number of drops to return
+	 * @param username - Username of the account querying the drops
 	 * @return
+	 * @throws NotFoundException
 	 */
-	public GetRiverDTO mapGetRiverDTO(River river) {
-		GetRiverDTO riverDTO = mapper.map(river, GetRiverDTO.class);
+	public List<GetDropDTO> getDrops(Long id, Long maxId, int dropCount, String username) throws NotFoundException {
 		
-		return riverDTO;
+		Account queryingAccount = accountDao.findByUsername(username);
+		List<Drop> drops = riverDao.getDrops(id, maxId, dropCount, queryingAccount);
+		
+		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
+		
+		if (drops == null) {
+			throw new NotFoundException();
+		}
+		
+		for (Drop drop : drops) {
+			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));
+		}
+		return getDropDTOs; 
 	}
-	
 }

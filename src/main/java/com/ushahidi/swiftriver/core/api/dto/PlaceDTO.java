@@ -35,7 +35,7 @@ public class PlaceDTO extends EntityDTO<Place> {
 		Object[][] placeData = {
 				{"id", entity.getId()},
 				{"name", entity.getPlaceName()}, 
-				{"coordinates", new Double[]{entity.getLongitude(), entity.getLatitude()} }
+				{"coordinates", new Float[]{entity.getLongitude(), entity.getLatitude()} }
 		};
 
 		return ArrayUtils.toMap(placeData);
@@ -49,7 +49,7 @@ public class PlaceDTO extends EntityDTO<Place> {
 		place.setPlaceName(placeName);
 		place.setPlaceName(place.getPlaceName().toLowerCase());
 		
-		Double[] coordinates = (Double[]) entityDTO.get("coordinates");
+		Float[] coordinates = (Float[]) entityDTO.get("coordinates");
 		place.setLongitude(coordinates[0]);
 		place.setLatitude(coordinates[1]);
 		

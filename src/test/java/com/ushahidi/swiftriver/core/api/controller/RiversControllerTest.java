@@ -22,6 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.text.SimpleDateFormat;
 
 import org.junit.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.ushahidi.swiftriver.core.util.DateUtil;
 
@@ -29,14 +32,14 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void getAccountByNonExistentId() throws Exception {
-		this.mockMvc
-				.perform(get("/v1/rivers/9999"))
-				.andExpect(status().isNotFound());
+		this.mockMvc.perform(get("/v1/rivers/9999")).andExpect(
+				status().isNotFound());
 	}
-	
+
 	@Test
 	public void getRiverById() throws Exception {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
+		SimpleDateFormat dateFormat = new SimpleDateFormat(
+				"EEE, d MMM yyyy HH:mm:ss Z");
 		this.mockMvc
 				.perform(get("/v1/rivers/1"))
 				.andExpect(status().isOk())
@@ -52,9 +55,25 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.public").value(true))
 				.andExpect(jsonPath("$.drop_count").value(100))
 				.andExpect(jsonPath("$.drop_quota").value(10000))
-				.andExpect(jsonPath("$.date_added").value(DateUtil.formatRFC822(dateFormat.parse("Wed, 2 Jan 2013 00:00:02 +0000"))))
-				.andExpect(jsonPath("$.expiry_date").value(DateUtil.formatRFC822(dateFormat.parse("Sat, 2 Feb 2013 03:00:02 +0300"))))
+				.andExpect(
+						jsonPath("$.date_added")
+								.value(DateUtil.formatRFC822(dateFormat
+										.parse("Wed, 2 Jan 2013 00:00:02 +0000"), null)))
+				.andExpect(
+						jsonPath("$.expiry_date")
+								.value(DateUtil.formatRFC822(dateFormat
+										.parse("Sat, 2 Feb 2013 03:00:02 +0300"), null)))
 				.andExpect(jsonPath("$.extension_count").value(0))
 				.andExpect(jsonPath("$.channels").isArray());
+	}
+
+	@Test
+	public void getDrops() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		
+		this.mockMvc.perform(get("/v1/rivers/1/drops").principal(authentication)).andExpect(
+				status().isOk());
 	}
 }

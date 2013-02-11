@@ -16,6 +16,7 @@ package com.ushahidi.swiftriver.core.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class DateUtil {
 
@@ -27,8 +28,12 @@ public class DateUtil {
 	 * @param date
 	 * @return
 	 */
-	public static String formatRFC822(Date date) {
+	public static String formatRFC822(Date date, String timezone) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
+		
+		if (timezone != null) {
+			dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
+		}
 		
 		String dateString = null;
 		

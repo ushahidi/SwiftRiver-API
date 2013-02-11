@@ -14,7 +14,9 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import java.security.Principal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -28,9 +30,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
-import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
 
@@ -267,20 +269,39 @@ public class RiversController {
 	/**
 	 * Get drops in the river.
 	 * 
-	 * @param body
 	 * @return
+	 * @throws NotFoundException 
 	 */
 	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET)
-	public Account getDrops(
+	@ResponseBody
+	public List<GetDropDTO> getDrops(
 			@PathVariable Long id,
-			@RequestParam(value = "count", required = false, defaultValue = "50") int count,
-			@RequestParam(value = "max_id", required = false) long maxId,
-			@RequestParam(value = "since_id", required = false) long sinceId,
+			Principal principal,
+			@RequestParam(value = "count", required = false, defaultValue = "10") int count,
+			@RequestParam(value = "max_id", required = false) Long maxId,
+			@RequestParam(value = "since_id", required = false) Long sinceId,
 			@RequestParam(value = "date_from", required = false) Date dateFrom,
 			@RequestParam(value = "date_to", required = false) Date dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "count", required = false, defaultValue = "50") String location) {
+			@RequestParam(value = "count", required = false) String location) throws NotFoundException {
+		
+		if (maxId == null) {
+			maxId = Long.MAX_VALUE;
+		}
+		
+		return riverService.getDrops(id, maxId, count, principal.getName());
+	}
+	
+	/**
+	 * Stream a river.
+	 * 
+	 * @param body
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops", method=RequestMethod.GET, headers="X-Stream")
+	public Account getDropsStream(@PathVariable Long id) {
+		//TODO: Redirect to streaming server.
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 	

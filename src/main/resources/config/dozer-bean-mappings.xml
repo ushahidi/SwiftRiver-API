@@ -7,4 +7,14 @@
 		<date-format>EEE, d MMM yyyy HH:mm:ss Z</date-format>
 	</configuration>
 
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.model.Drop</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetDropDTO</class-b>
+
+		<field>
+			<a>originalUrl.url</a>
+			<b>originalUrl</b>
+		</field>
+	</mapping>
+
 </mappings> 

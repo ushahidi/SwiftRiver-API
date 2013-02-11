@@ -16,10 +16,9 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -33,92 +32,76 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-/**
- * 
- * @author ekala
- *
- */
 @Entity
 @Table(name = "droplets")
-public class Drop implements Serializable{
-
-	private static final long serialVersionUID = 8626488270653399780L;
+public class Drop {
 
 	@Id
 	@GeneratedValue
 	private long id;
 	
-	@ManyToOne
-	@JoinColumn(name = "identity_id")
-	private Identity identity;
-
 	@Column(name = "channel", nullable = false)
 	private String channel;
 	
-	@Column(name = "droplet_hash", nullable = false)
-	private String dropletHash;
-	
-	@Column(name = "droplet_orig_id", nullable = false)
-	private String dropletOrigId;
-	
-	@Column(name = "droplet_type", nullable = false)
-	private String dropletType;
-	
 	@Column(name = "droplet_title", nullable = false)
-	private String dropletTitle;
-	
+	private String title;
+
 	@Column(name = "droplet_content", nullable = false)
-	private String dropletContent;
-	
-	@Column(name = "droplet_locale")
-	private String dropletLocale;
-	
-	@Column(name = "droplet_image")
-	private Long dropletImage;
+	private String content;
+
+	@ManyToOne
+	@JoinColumn(name = "identity_id")
+	private Identity identity;
 	
 	@Column(name = "droplet_date_pub", nullable = false)
-	private Timestamp datePublished;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date datePublished;
 	
-	@Column(name = "droplet_date_add")
-	private Timestamp dateAdded;
-	
-	@Column(name = "original_url")
-	private Long originalUrl;
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private Link originalUrl;
+
+	@Column(name = "droplet_orig_id", nullable = false)
+	private String originalId;
 	
 	@Column(name = "comment_count")
 	private int commentCount;
-	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinTable(
-			name = "droplets_tags",
-			joinColumns = @JoinColumn(name="droplet_id"),
-			inverseJoinColumns = @JoinColumn(name="tag_id"))
-	private Set<Tag> tags = new HashSet<Tag>();
-	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinTable(
-			name = "droplets_places",
-			joinColumns = @JoinColumn(name="droplet_id"),
-			inverseJoinColumns = @JoinColumn(name="place_id"))
-	private Set<Place> places = new HashSet<Place>();
-	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinTable(
-			name = "droplets_links",
-			joinColumns = @JoinColumn(name="droplet_id"),
-			inverseJoinColumns = @JoinColumn(name="link_id"))
-	private Set<Link> links = new HashSet<Link>();
-	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinTable(
-			name = "droplets_media",
-			joinColumns = @JoinColumn(name="droplet_id"),
-			inverseJoinColumns = @JoinColumn(name="media_id"))
-	private Set<Media> media = new HashSet<Media>();
+
+	@Column(name = "droplet_type", nullable = false)
+	private String type;
+
+	@Column(name = "droplet_locale")
+	private String locale;
+
+	@ManyToOne
+	@JoinColumn(name = "droplet_image")
+	private Media image;
+
+	@Column(name = "droplet_date_add")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date dateAdded;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "droplets_tags", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+	private List<Tag> tags;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "droplets_places", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "place_id"))
+	private List<Place> places;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "droplets_links", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "link_id"))
+	private List<Link> links;
+
+	@OneToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "droplets_media", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
+	private List<Media> media;
 
 	public Drop() {
-		
+
 	}
 
 	public long getId() {
@@ -145,67 +128,59 @@ public class Drop implements Serializable{
 		this.channel = channel;
 	}
 
-	public String getDropletHash() {
-		return dropletHash;
+	public String getOriginalId() {
+		return originalId;
 	}
 
-	public void setDropletHash(String dropletHash) {
-		this.dropletHash = dropletHash;
+	public void setOriginalId(String originalId) {
+		this.originalId = originalId;
 	}
 
-	public String getDropletOrigId() {
-		return dropletOrigId;
+	public String getType() {
+		return type;
 	}
 
-	public void setDropletOrigId(String dropletOrigId) {
-		this.dropletOrigId = dropletOrigId;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public String getDropletType() {
-		return dropletType;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setDropletType(String dropletType) {
-		this.dropletType = dropletType;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
-	public String getDropletTitle() {
-		return dropletTitle;
+	public String getContent() {
+		return content;
 	}
 
-	public void setDropletTitle(String dropletTitle) {
-		this.dropletTitle = dropletTitle;
+	public void setContent(String content) {
+		this.content = content;
 	}
 
-	public String getDropletContent() {
-		return dropletContent;
+	public String getLocale() {
+		return locale;
 	}
 
-	public void setDropletContent(String dropletContent) {
-		this.dropletContent = dropletContent;
+	public void setLocal(String locale) {
+		this.locale = locale;
 	}
 
-	public String getDropletLocale() {
-		return dropletLocale;
+	public Media getImage() {
+		return image;
 	}
 
-	public void setDropletLocale(String dropletLocale) {
-		this.dropletLocale = dropletLocale;
+	public void setImage(Media image) {
+		this.image = image;
 	}
 
-	public Long getDropletImage() {
-		return dropletImage;
-	}
-
-	public void setDropletImage(Long dropletImage) {
-		this.dropletImage = dropletImage;
-	}
-
-	public Timestamp getDropletDatePub() {
+	public Date getDatePublished() {
 		return datePublished;
 	}
 
-	public void setDropletDatePub(Timestamp dropletDatePub) {
+	public void setDatePublished(Date dropletDatePub) {
 		this.datePublished = dropletDatePub;
 	}
 
@@ -213,15 +188,15 @@ public class Drop implements Serializable{
 		return dateAdded;
 	}
 
-	public void setDropletDateAdd(Timestamp dropletDateAdd) {
+	public void setDropletDateAdd(Date dropletDateAdd) {
 		this.dateAdded = dropletDateAdd;
 	}
 
-	public Long getOriginalUrl() {
+	public Link getOriginalUrl() {
 		return originalUrl;
 	}
 
-	public void setOriginalUrl(Long originalUrl) {
+	public void setOriginalUrl(Link originalUrl) {
 		this.originalUrl = originalUrl;
 	}
 
@@ -233,65 +208,36 @@ public class Drop implements Serializable{
 		this.commentCount = commentCount;
 	}
 
-	public Set<Tag> getTags() {
+	public List<Tag> getTags() {
 		return tags;
 	}
 
-	public void setTags(Set<Tag> tags) {
+	public void setTags(List<Tag> tags) {
 		this.tags = tags;
 	}
 
-	public Set<Place> getPlaces() {
+	public List<Place> getPlaces() {
 		return places;
 	}
 
-	public void setPlaces(Set<Place> places) {
+	public void setPlaces(List<Place> places) {
 		this.places = places;
 	}
 
-	public Set<Link> getLinks() {
+	public List<Link> getLinks() {
 		return links;
 	}
 
-	public void setLinks(Set<Link> links) {
+	public void setLinks(List<Link> links) {
 		this.links = links;
 	}
 
-	public Set<Media> getMedia() {
+	public List<Media> getMedia() {
 		return media;
 	}
 
-	public void setMedia(Set<Media> media) {
+	public void setMedia(List<Media> media) {
 		this.media = media;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((dropletHash == null) ? 0 : dropletHash.hashCode());
-		result = prime * result + (int) (id ^ (id >>> 32));
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Drop other = (Drop) obj;
-		if (dropletHash == null) {
-			if (other.dropletHash != null)
-				return false;
-		} else if (!dropletHash.equals(other.dropletHash))
-			return false;
-		if (id != other.id)
-			return false;
-		return true;
 	}
 
 }

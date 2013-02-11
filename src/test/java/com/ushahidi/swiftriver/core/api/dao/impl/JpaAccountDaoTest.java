@@ -1,4 +1,4 @@
-package com.ushahidi.swiftriver.core.dao.impl;
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -6,8 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao;
-import com.ushahidi.swiftriver.core.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.model.Account;
 
 public class JpaAccountDaoTest extends AbstractDaoTest {

@@ -35,7 +35,7 @@ public class TagDTO extends EntityDTO<Tag> {
 		Object[][] tagData = {
 				{"id", entity.getId()},
 				{"tag", entity.getTag()},
-				{"type", entity.getTagType()}
+				{"type", entity.getType()}
 		};
 
 		return ArrayUtils.toMap(tagData);
@@ -52,7 +52,7 @@ public class TagDTO extends EntityDTO<Tag> {
 		Tag tag = new Tag();
 		tag.setTag(tagName);
 		tag.setTagCanonical(tagName.toLowerCase());
-		tag.setTagType(tagType);
+		tag.setType(tagType);
 		tag.setHash(tagHash);
 
 		return tag;

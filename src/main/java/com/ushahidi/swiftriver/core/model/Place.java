@@ -16,44 +16,38 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-/**
- * 
- * @author ekala
- *
- */
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 @Entity
-@Table(name="places")
-public class Place implements Serializable{
-	
-	private static final long serialVersionUID = -8003953814633031845L;
+@Table(name = "places")
+public class Place {
 
 	@Id
 	private long id;
-	
-	@Column(name="hash", nullable = false)
+
+	@Column(name = "hash", nullable = false)
 	private String hash;
-	
-	@Column(name="place_name", nullable = false)
+
+	@Column(name = "place_name", nullable = false)
 	private String placeName;
-	
-	@Column(name="place_name_canonical")
+
+	@Column(name = "place_name_canonical")
 	private String placeNameCanonical;
-	
-	@Column(name="longitude")
-	private Double longitude;
-	
-	@Column(name="latitude")
-	private Double latitude;
+
+	@Column(name = "longitude")
+	private Float longitude;
+
+	@Column(name = "latitude")
+	private Float latitude;
 
 	public Place() {
-		
+
 	}
 
 	public long getId() {
@@ -88,45 +82,41 @@ public class Place implements Serializable{
 		this.hash = hash;
 	}
 
-	public Double getLongitude() {
+	public Float getLongitude() {
 		return longitude;
 	}
 
-	public void setLongitude(Double longitude) {
+	public void setLongitude(Float longitude) {
 		this.longitude = longitude;
 	}
 
-	public Double getLatitude() {
+	public Float getLatitude() {
 		return latitude;
 	}
 
-	public void setLatitude(Double latitude) {
+	public void setLatitude(Float latitude) {
 		this.latitude = latitude;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
-		return result;
+		return new HashCodeBuilder(17, 31).append(placeName).append(longitude)
+				.append(latitude).toHashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		if (obj == this)
+			return true;
+		if (obj.getClass() != getClass())
 			return false;
+
 		Place other = (Place) obj;
-		if (hash == null) {
-			if (other.hash != null)
-				return false;
-		} else if (!hash.equals(other.hash))
-			return false;
-		return true;
+		return new EqualsBuilder().append(placeName, other.placeName)
+				.append(longitude, other.longitude)
+				.append(latitude, other.latitude).isEquals();
 	}
 
 }

@@ -16,24 +16,22 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.io.Serializable;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-/**
- * 
- * @author ekala
- *
- */
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 @Entity
 @Table(name = "media")
-public class Media implements Serializable {
+public class Media  {
 	
-	private static final long serialVersionUID = -2163487250433744245L;
-
 	@Id
 	private long id;
 	
@@ -45,6 +43,9 @@ public class Media implements Serializable {
 	
 	@Column(name = "type", nullable = false)
 	private String type;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="media")
+	private List<MediaThumbnail> thumbnails;
 	
 	public Media() {
 		
@@ -82,29 +83,34 @@ public class Media implements Serializable {
 		this.id = id;
 	}
 
+	public List<MediaThumbnail> getThumbnails() {
+		return thumbnails;
+	}
+
+	public void setThumbnails(List<MediaThumbnail> thumbnails) {
+		this.thumbnails = thumbnails;
+	}
+
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
-		return result;
+		return new HashCodeBuilder(17, 31).
+	            append(url).
+	            toHashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Media other = (Media) obj;
-		if (hash == null) {
-			if (other.hash != null)
-				return false;
-		} else if (!hash.equals(other.hash))
-			return false;
-		return true;
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        Media other = (Media) obj;
+        return new EqualsBuilder().
+            append(url, other.url).
+            isEquals();
 	}
 
 }

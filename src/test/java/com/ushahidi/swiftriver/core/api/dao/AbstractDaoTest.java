@@ -1,4 +1,4 @@
-package com.ushahidi.swiftriver.core.dao;
+package com.ushahidi.swiftriver.core.api.dao;
 
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;

@@ -16,8 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,7 +32,6 @@ import com.ushahidi.swiftriver.core.api.dao.JpaDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.util.DateUtil;
 
@@ -117,7 +114,7 @@ public class BucketService extends AbstractServiceImpl<Bucket, Long> {
 				{"is_following", bucket.getFollowers().contains(queryingAccount)},
 				{"public", bucket.isPublished()},
 				{"drop_count", bucket.getDropCount()},
-				{"date_added", DateUtil.formatRFC822(bucket.getDateAdded())}};
+				{"date_added", DateUtil.formatRFC822(bucket.getDateAdded(), null)}};
 		
 		return ArrayUtils.toMap(bucketData);
 	}
