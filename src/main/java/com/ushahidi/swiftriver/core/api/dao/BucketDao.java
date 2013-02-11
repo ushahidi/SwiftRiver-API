@@ -108,5 +108,15 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	 * @return boolean
 	 */
 	public boolean deleteDrop(Long id, Long dropId);
-	
+
+	/**
+	 * Gets and returns the bucket with the name specified in <code>bucketName</code> 
+	 * and is owned by the {@link Account} in <code>account</account>
+	 * 
+	 * @param account
+	 * @param bucketName
+	 * @return {@link Bucket}
+	 */
+	public Bucket findBucketByName(Account account, String bucketName);
+
 }

@@ -31,10 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ResourceNotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -113,10 +113,20 @@ public class BucketService {
 		if (bucket == null) {
 			throw new ResourceNotFoundException();
 		}
-		
-		Bucket updated = mapper.map(body, Bucket.class);
 
-		bucket.setName(updated.getName());
+		// Get the submitted name
+		String bucketName = body.getName();
+
+		// Check if the owner already have a bucket with the
+		// specified name
+		if (!bucket.getName().equals(bucketName) && 
+				bucketDao.findBucketByName(bucket.getAccount(), bucketName) != null) {
+			throw new BadRequestException();
+		}
+		
+		Bucket updated = mapper.map(body, Bucket.class);		
+
+		bucket.setName(bucketName);
 		bucket.setPublished(updated.isPublished());
 		bucket.setActive(updated.isActive());
 		

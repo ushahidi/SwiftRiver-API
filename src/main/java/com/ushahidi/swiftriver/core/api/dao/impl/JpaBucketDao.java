@@ -199,4 +199,18 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 		return query.executeUpdate() > 0;
 	}
 
+	/**
+	 * @see {@link BucketDao#findBucketByName(Account, String)}
+	 */
+	@SuppressWarnings("unchecked")
+	public Bucket findBucketByName(Account account, String bucketName) {
+		String jPQL = "FROM Bucket b WHERE account = :account AND bucketName = :name";
+		Query query = this.entityManager.createQuery(jPQL);
+		query.setParameter("account", account);
+		query.setParameter("name", bucketName);
+		
+		List<Bucket> results = (List<Bucket>) query.getResultList();
+		return results.isEmpty() ? null : results.get(0);
+	}
+
 }
