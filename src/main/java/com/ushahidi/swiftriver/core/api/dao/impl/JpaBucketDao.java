@@ -204,7 +204,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 	 */
 	@SuppressWarnings("unchecked")
 	public Bucket findBucketByName(Account account, String bucketName) {
-		String jPQL = "FROM Bucket b WHERE account = :account AND bucketName = :name";
+		String jPQL = "FROM Bucket b WHERE account = :account AND name = :name";
 		Query query = this.entityManager.createQuery(jPQL);
 		query.setParameter("account", account);
 		query.setParameter("name", bucketName);
