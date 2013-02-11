@@ -23,11 +23,12 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import com.ushahidi.swiftriver.core.model.Account;
 
 /**
- * DTO mapping class for {@link Account} objects.
+ * DTO mapping class for {@link Account} objects that
+ * are following buckets and/or rivers
  * 
  * @author ekala
  */
-public class AccountDTO {
+public class FollowerDTO {
 	
 	private long id;
 	

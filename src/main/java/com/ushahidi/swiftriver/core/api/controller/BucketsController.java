@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
@@ -145,7 +145,7 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
-	public void addFollower(@RequestBody AccountDTO body,
+	public void addFollower(@RequestBody FollowerDTO body,
 			@PathVariable Long id) {
 		bucketService.addFollower(id, body);
 	}
@@ -158,7 +158,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
-	public List<AccountDTO> getFollowers(@PathVariable Long id) {
+	public List<FollowerDTO> getFollowers(@PathVariable Long id) {
 		return bucketService.getFollowers(id);
 	}
 

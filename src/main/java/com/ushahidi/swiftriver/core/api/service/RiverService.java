@@ -31,7 +31,7 @@ import com.ushahidi.swiftriver.core.api.controller.RiversController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.ChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ChannelOptionDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
@@ -378,7 +378,7 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public void addFollower(Long id, AccountDTO body) {
+	public void addFollower(Long id, FollowerDTO body) {
 		// Does the river exist?
 		River river = riverDao.findById(id);
 		if (river == null) {
@@ -404,7 +404,7 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public List<AccountDTO> getFollowers(Long id) {
+	public List<FollowerDTO> getFollowers(Long id) {
 		River river = riverDao.findById(id);
 		
 		// Does the river exist?
@@ -412,9 +412,9 @@ public class RiverService {
 			throw new ResourceNotFoundException();
 		}
 
-		List<AccountDTO> followerList = new ArrayList<AccountDTO>();
+		List<FollowerDTO> followerList = new ArrayList<FollowerDTO>();
 		for (Account account: river.getFollowers()) {
-			AccountDTO accountDto = mapper.map(account, AccountDTO.class);
+			FollowerDTO accountDto = mapper.map(account, FollowerDTO.class);
 			accountDto.setName(account.getOwner().getName());
 			accountDto.setEmail(account.getOwner().getEmail());
 			

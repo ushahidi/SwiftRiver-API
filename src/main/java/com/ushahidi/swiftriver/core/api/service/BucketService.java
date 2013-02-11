@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dto.AccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropDTO;
@@ -275,7 +275,7 @@ public class BucketService {
 	 * @param body
 	 */
 	@Transactional
-	public void addFollower(Long id, AccountDTO body) {
+	public void addFollower(Long id, FollowerDTO body) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
 			throw new ResourceNotFoundException();
@@ -305,15 +305,15 @@ public class BucketService {
 	 * @param id
 	 * @return {@link List<AccountDTO>}
 	 */
-	public List<AccountDTO> getFollowers(Long id) {
+	public List<FollowerDTO> getFollowers(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
 			throw new ResourceNotFoundException();
 		}
 		
-		List<AccountDTO> followers = new ArrayList<AccountDTO>();
+		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
 		for (Account account: bucket.getFollowers()) {
-			AccountDTO dto = mapper.map(account, AccountDTO.class);
+			FollowerDTO dto = mapper.map(account, FollowerDTO.class);
 			
 			// Set the name and email address
 			dto.setName(account.getOwner().getName());
