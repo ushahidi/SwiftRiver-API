@@ -61,7 +61,7 @@ public class Drop {
 	private Date datePublished;
 	
 	@ManyToOne
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "original_url")
 	private Link originalUrl;
 
 	@Column(name = "droplet_orig_id", nullable = false)

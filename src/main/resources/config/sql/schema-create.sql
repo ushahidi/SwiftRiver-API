@@ -85,7 +85,6 @@ CREATE TABLE IF NOT EXISTS `rivers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `river_name` varchar(255) NOT NULL DEFAULT '',
-  `river_name_url` varchar(255) NOT NULL DEFAULT '',
   `river_active` tinyint(4) NOT NULL DEFAULT '1',
   `river_public` tinyint(4) NOT NULL DEFAULT '0',
   `river_current` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Identifies if this is the last River that  was worked on',
@@ -101,8 +100,6 @@ CREATE TABLE IF NOT EXISTS `rivers` (
   `extension_count` int(11) NOT NULL DEFAULT '0' COMMENT 'The no. of times the expiry date has been extended',
   `public_token` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `un_river_name_url` (`account_id`,`river_name_url`),
-  KEY `river_name_url` (`river_name_url`),
   KEY `account_id_idx` (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -244,10 +241,9 @@ DEFAULT CHARACTER SET = utf8;
 -- Table `buckets`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `buckets` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) unsigned NOT NULL DEFAULT '0',
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `bucket_name` varchar(255) NOT NULL DEFAULT '',
-  `bucket_name_url` varchar(255) NOT NULL DEFAULT '',
   `bucket_description` text,
   `bucket_publish` tinyint(4) NOT NULL DEFAULT '0',
   `default_layout` varchar(10) DEFAULT 'drops',
@@ -256,7 +252,6 @@ CREATE TABLE IF NOT EXISTS `buckets` (
   `drop_count` INT  NULL  DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name`),
-  UNIQUE KEY `un_bucket_name_url` (`account_id`,`bucket_name_url`),
   KEY `bucket_date_add_idx` (`bucket_date_add`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -375,6 +370,21 @@ CREATE TABLE IF NOT EXISTS `river_channels` (
   `date_modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- -----------------------------------------------------
+-- Table `river_channel_options`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `river_channel_options` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `river_channel_id` BIGINT(11) UNSIGNED NOT NULL DEFAULT 0 ,
+  `key` VARCHAR(255) NOT NULL ,
+  `value` TEXT NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `river_channel_id_idx` (`river_channel_id` ASC) ,
+  INDEX `key_idx` (`key` ASC) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -542,21 +552,6 @@ DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
--- Table `river_channel_options`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `river_channel_options` (
-  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `river_channel_id` BIGINT(11) UNSIGNED NOT NULL DEFAULT 0 ,
-  `key` VARCHAR(255) NOT NULL ,
-  `value` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `river_channel_id_idx` (`river_channel_id` ASC) ,
-  INDEX `key_idx` (`key` ASC) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
-
-
--- -----------------------------------------------------
 -- Table `droplets_tags`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `droplets_tags` (
@@ -612,8 +607,9 @@ CREATE TABLE IF NOT EXISTS `river_collaborators` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `river_id` bigint(20) DEFAULT NULL,
   `account_id` bigint(20) DEFAULT NULL,
-  `collaborator_active` tinyint(1) DEFAULT NULL,
+  `collaborator_active` tinyint(1) DEFAULT 0,
   `read_only` tinyint(1)  DEFAULT '0',
+  `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `river_id` (`river_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -626,8 +622,9 @@ CREATE TABLE IF NOT EXISTS `bucket_collaborators` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `bucket_id` bigint(11) unsigned NOT NULL DEFAULT '0',
-  `collaborator_active` tinyint(1) DEFAULT NULL,
+  `collaborator_active` tinyint(1) DEFAULT 0,
   `read_only` tinyint(1)  DEFAULT '0',
+  `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',  
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`,`bucket_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -662,9 +659,9 @@ CREATE TABLE IF NOT EXISTS `auth_tokens` (
 
 
 -- ----------------------------------------
--- TABLE 'bucket_subscriptions'
+-- TABLE 'bucket_followers'
 -- ----------------------------------------
-CREATE TABLE IF NOT EXISTS `bucket_subscriptions` (
+CREATE TABLE IF NOT EXISTS `bucket_followers` (
   `bucket_id` bigint(20) NOT NULL,
   `account_id` bigint(20) NOT NULL,
   UNIQUE KEY `bucket_id` (`bucket_id`,`account_id`)
@@ -672,9 +669,9 @@ CREATE TABLE IF NOT EXISTS `bucket_subscriptions` (
 
 
 -- ----------------------------------------
--- TABLE 'river_subscriptions'
+-- TABLE 'river_followers'
 -- ----------------------------------------
-CREATE TABLE IF NOT EXISTS `river_subscriptions` (
+CREATE TABLE IF NOT EXISTS `river_followers` (
   `river_id` bigint(20) NOT NULL,
   `account_id` bigint(20) NOT NULL,
   UNIQUE KEY `river_id` (`river_id`,`account_id`)

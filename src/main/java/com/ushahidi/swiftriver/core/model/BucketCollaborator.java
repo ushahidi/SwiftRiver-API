@@ -22,38 +22,39 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Temporal;
 
+/**
+ * Model for bucket collaborators
+ * @author ekala
+ *
+ */
 @Entity
-@Table(name="users")
-public class User {
-
+@Table(name="bucket_collaborators")
+public class BucketCollaborator {
+	
 	@Id
 	@GeneratedValue
 	private long id;
 	
-	private String email;
+	@ManyToOne
+	private Account account;
 	
-	private String name;
+	@ManyToOne
+	private Bucket bucket;
 	
-	private String username;
+	@Column(name="collaborator_active")
+	private boolean active;
 	
-	private String password;
-	
-	private int logins;
-	
-	@Temporal(TemporalType.TIMESTAMP)	
-	@Column(name="last_login")
-	private Date lastLoginDate;
+	@Column(name="read_only")
+	private boolean readOnly;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="created_date")
-	private Date createdDate;
-
-	public User() {
-	}
+	@Column(name="date_added")
+	private Date dateAdded;
 
 	public long getId() {
 		return id;
@@ -63,60 +64,44 @@ public class User {
 		this.id = id;
 	}
 
-	public String getEmail() {
-		return email;
+	public Account getAccount() {
+		return account;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
-	public String getName() {
-		return name;
+	public Bucket getBucket() {
+		return bucket;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setBucket(Bucket bucket) {
+		this.bucket = bucket;
 	}
 
-	public String getUsername() {
-		return username;
+	public boolean isActive() {
+		return active;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 
-	public String getPassword() {
-		return password;
+	public boolean isReadOnly() {
+		return readOnly;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
 	}
 
-	public int getLogins() {
-		return logins;
+	public Date getDateAdded() {
+		return dateAdded;
 	}
 
-	public void setLogins(int logins) {
-		this.logins = logins;
-	}
-
-	public Date getLastLoginDate() {
-		return lastLoginDate;
-	}
-
-	public void setLastLoginDate(Date lastLoginDate) {
-		this.lastLoginDate = lastLoginDate;
-	}
-
-	public Date getCreatedDate() {
-		return createdDate;
-	}
-
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
-
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
+	}	
+	
 }

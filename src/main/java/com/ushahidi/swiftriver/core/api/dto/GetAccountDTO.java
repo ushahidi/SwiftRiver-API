@@ -225,8 +225,7 @@ public class GetAccountDTO {
 		
 		private long id;
 		
-		@JsonProperty("name")
-		private String bucketName;
+		private String name;
 		
 		private String description;
 		
@@ -258,12 +257,12 @@ public class GetAccountDTO {
 			this.id = id;
 		}
 
-		public String getBucketName() {
-			return bucketName;
+		public String getName() {
+			return name;
 		}
 
-		public void setBucketName(String name) {
-			this.bucketName = name;
+		public void setName(String name) {
+			this.name = name;
 		}
 
 		public String getDescription() {

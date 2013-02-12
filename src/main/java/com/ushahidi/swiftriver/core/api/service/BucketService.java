@@ -17,23 +17,30 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dao.JpaDao;
+import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
-import com.ushahidi.swiftriver.core.util.DateUtil;
 
 /**
  * Service class for buckets
@@ -41,81 +48,375 @@ import com.ushahidi.swiftriver.core.util.DateUtil;
  *
  */
 @Service
-public class BucketService extends AbstractServiceImpl<Bucket, Long> {
+@Transactional(readOnly = true)
+public class BucketService {
 	
 	@Autowired
 	private BucketDao bucketDao;
 	
+	@Autowired
+	private Mapper mapper;
+
+	@Autowired
+	private AccountDao accountDao;
+	
 	/* Logger */
 	final static Logger logger = LoggerFactory.getLogger(BucketService.class);
 
-	public void setBucketDAO(BucketDao bucketDAO) {
-		this.bucketDao = bucketDAO;
+	public void setBucketDao(BucketDao bucketDao) {
+		this.bucketDao = bucketDao;
 	}
 
-	public JpaDao<Bucket, Long> getServiceDao() {
-		return bucketDao;
+	/**
+	 * Creates a new {@link Bucket} and returns its DTO representation
+	 * 
+	 * @param bucketData
+	 * @return {@link BucketDTO}
+	 */
+	@Transactional(readOnly = false)
+	public BucketDTO createBucket(BucketDTO body) {
+		Bucket bucket = mapper.map(body, Bucket.class);
+//		bucket.setAccount(account);
+		
+		// Save bucket
+		bucketDao.save(bucket);
+		
+		return mapper.map(bucket, BucketDTO.class);
 	}
 
-	public Map<String, Object> getBucket(Long id) {
+	/**
+	 * Gets and returns a single bucket
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public BucketDTO getBucket(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		
-		Map<String, Object> bucketDataMap = new HashMap<String, Object>();
+		// Verify that the bucket exists
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
 		
-		// Add the drops
-		return bucketDataMap;
+		return mapper.map(bucket, BucketDTO.class);
 	}
 
-	public ArrayList<Map<String, Object>> getDrops(Long bucketId, int dropCount) {
-		ArrayList<Map<String, Object>> dropsList = new ArrayList<Map<String,Object>>();
+	/**
+	 * Modifies a bucket
+	 * 
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public BucketDTO modifyBucket(Long id, BucketDTO body) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
 
+		// Get the submitted name
+		String bucketName = body.getName();
+
+		// Check if the owner already have a bucket with the
+		// specified name
+		if (!bucket.getName().equals(bucketName) && 
+				bucketDao.findBucketByName(bucket.getAccount(), bucketName) != null) {
+			throw new BadRequestException();
+		}
 		
-		return dropsList;
-	}
+		Bucket updated = mapper.map(body, Bucket.class);		
 
-	public void addDrop(Long bucketId, Drop drop) {
-		bucketDao.addDrop(bucketId, drop);
-	}
-
-	public void addDrops(Long bucketId, Collection<Drop> drops) {
-		bucketDao.addDrops(bucketId, drops);
-	}
-
-	public void removeDrop(Long bucketId, Drop drop) {
-		bucketDao.removeDrop(bucketId, drop);
-	}
-
-	public void removeDrops(Long bucketId, Collection<Drop> drops) {
-		bucketDao.removeDrops(bucketId, drops);
-	}
-
-	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
-		bucketDao.addCollaborator(bucketId, user, readOnly);
-	}
-
-	public ArrayList<Map<String, Object>> getCollaborators(Bucket bucket) {
-		ArrayList<Map<String, Object>> collaborators = new ArrayList<Map<String,Object>>();
-
-		return collaborators;
-	}
-
-	public void removeCollaborator(Long bucketId, User user) {
-		bucketDao.removeCollaborator(bucketId, user);
-	}
-
-	public static Map<String, Object> getBucketMap(Bucket bucket, Account queryingAccount)
-	{
-		Object[][] bucketData = { { "id", bucket.getId() },
-				{"name", bucket.getBucketName()},
-				{"description", bucket.getDescription()},
-				{"category", null},
-				{"follower_count", bucket.getFollowers().size()},
-				{"is_collaborating", bucket.getCollaborators().contains(queryingAccount)},
-				{"is_following", bucket.getFollowers().contains(queryingAccount)},
-				{"public", bucket.isPublished()},
-				{"drop_count", bucket.getDropCount()},
-				{"date_added", DateUtil.formatRFC822(bucket.getDateAdded(), null)}};
+		bucket.setName(bucketName);
+		bucket.setPublished(updated.isPublished());
+		bucket.setPublished(updated.isPublished());
 		
-		return ArrayUtils.toMap(bucketData);
+		bucketDao.update(bucket);
+		
+		return mapper.map(bucket, BucketDTO.class);
 	}
+
+	/**
+	 * Deletes the bucket with the specified <code>id</code>
+	 * 
+	 * @param id
+	 */
+	@Transactional(readOnly = false)
+	public void deleteBucket(Long id) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
+		bucketDao.delete(bucket);
+	}
+
+	/**
+	 * Adds a collaborator to the bucket specified by <id>. 
+	 * 
+	 * If the {@link Account} id specified in <code>body</code> has already 
+	 * been added as a collaborator, a {@link BadRequestException} is thrown
+	 * and execution halts.
+	 *  
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public CollaboratorDTO addCollaborator(Long id, CollaboratorDTO body) {
+		// Does the bucket exist
+		Bucket bucket = bucketDao.findById(id);
+		
+		if (bucket == null) {
+			throw new NotFoundException("The specified bucket does not exist");
+		}
+		
+		//FIXME Validation check to determine if the account performing the 
+		// operation is an owner of the bucket. Throw UnauthorizedException
+		
+		// Does the account already exist as a collaborator?
+		if (bucketDao.findCollaborator(id, body.getId()) != null) {
+			logger.error(String.format("The specified account(%d) is already collaborating on bucket(%d)", 
+					id, body.getId()));
+			throw new BadRequestException();
+		}
+		
+		Account account = accountDao.findById(body.getId());
+		if (account == null) {
+			throw new BadRequestException("The specified account id does not exist");
+		}
+	
+		bucketDao.addCollaborator(bucket, account, body.isReadOnly());
+		
+		body.setId(account.getId());
+		return body;
+	}
+
+	/**
+	 * Gets and returns a the of users collaborating on the
+	 * bucket specified by <code>id</code>
+	 * 
+	 * @param id
+	 * @return {@link List}
+	 */
+	public List<CollaboratorDTO> getCollaborators(Long id) {
+		Bucket bucket = bucketDao.findById(id);
+		
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
+		
+		List<CollaboratorDTO> collaborotorList = new ArrayList<CollaboratorDTO>();
+
+		// Iterate through each collaborator and add them
+		// to the return list
+		for (BucketCollaborator collaborator: bucket.getCollaborators()) {
+			CollaboratorDTO dto = new CollaboratorDTO();
+
+			dto.setId(collaborator.getAccount().getId());
+			dto.setActive(collaborator.isActive());
+			dto.setReadOnly(collaborator.isReadOnly());
+			dto.setDateAdded(collaborator.getDateAdded());
+			
+			collaborotorList.add(dto);
+		}
+
+		return collaborotorList;
+	}
+
+	/**
+	 * Modifies and returns the modified collaborator identified by <code>accountId</code>
+	 * for the river in <code>id</code>
+	 * 
+	 * @param id Database id of the {@link Bucket} to which a collaborator is to be added
+	 * @param accountId Database id of the {@link Account} to be added as a collaborator
+	 * @param body
+	 * @return {link BucketCollaboratorDTO}
+	 */
+	@Transactional(readOnly = false)
+	public CollaboratorDTO modifyCollaborator(Long id, Long accountId,
+			CollaboratorDTO body) {
+
+		if (bucketDao.findById(id) == null) {
+			throw new NotFoundException();
+		}
+
+		// Locate the collaborator
+		BucketCollaborator collaborator = bucketDao.findCollaborator(id, accountId);
+		
+		if (collaborator == null) {
+			throw new NotFoundException();
+		}
+		
+		collaborator.setActive(body.isActive());
+		collaborator.setReadOnly(body.isReadOnly());
+		
+		// Update
+		bucketDao.updateCollaborator(collaborator);
+		
+		body.setId(collaborator.getId());
+
+		return body;
+	}
+
+	/**
+	 * Removes the account with the specified <code>accountId</code> from
+	 * the list of collaborators on the bucket with the specified <code>id</code>
+	 * parameter
+	 * 
+	 * @param id Database id of the {@link Bucket}
+	 * @param accountId Database id of the collaborating {@link Account}
+	 */
+	@Transactional(readOnly = false)
+	public void deleteCollaborator(Long id, Long accountId) {
+		BucketCollaborator collaborator = bucketDao.findCollaborator(id, accountId);
+		if (collaborator == null) {
+			throw new NotFoundException();
+		}
+
+		bucketDao.deleteCollaborator(collaborator);
+		
+	}
+
+	/**
+	 * Adds the {@link Account} with the specified id in <code>body</code>
+	 * to the list of followers for the {@link Bucket} identified by
+	 * <code>id</code>
+	 * 
+	 * @param id
+	 * @param body
+	 */
+	@Transactional(readOnly = false)
+	public void addFollower(Long id, FollowerDTO body) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
+		
+		Account account = accountDao.findById(body.getId());
+		if (account == null) {
+			throw new NotFoundException();
+		}
+		
+		// Is the account already following the bucket
+		if (bucket.getFollowers().contains(account)) {
+			logger.error(String.format("The specified account - %d - is already following bucket %d", 
+					body.getId(), id));
+			throw new BadRequestException();
+		}
+		
+		bucket.getFollowers().add(account);
+		bucketDao.update(bucket);
+		
+	}
+
+	/**
+	 * Gets and returns the list of followers for the {@link Bucket}
+	 * with the specified <code>id</code>
+	 * 
+	 * @param id
+	 * @return {@link List<AccountDTO>}
+	 */
+	public List<FollowerDTO> getFollowers(Long id) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
+		
+		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
+		for (Account account: bucket.getFollowers()) {
+			FollowerDTO dto = mapper.map(account, FollowerDTO.class);
+			
+			// Set the name and email address
+			dto.setName(account.getOwner().getName());
+			dto.setEmail(account.getOwner().getEmail());
+			
+			followers.add(dto);
+		}
+		
+		return followers;
+	}
+
+	/**
+	 * Removes the account with the specified <code>accountId</code>
+	 * from the list of {@link Account}s following the bucket identified
+	 * by <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@Transactional(readOnly = false)
+	public void deleteFollower(Long id, Long accountId) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
+		
+		Account account = accountDao.findById(accountId);
+		if (account == null) {
+			throw new NotFoundException();
+		}
+
+		bucket.getFollowers().remove(account);
+		bucketDao.update(bucket);
+		
+	}
+
+	/**
+	 * Gets and returns the drops for the bucket specified in <code>id</code>
+	 * using the parameters contained in <code>requestParams</code>
+	 * 
+	 * Nullity and type safety checks are performed on the request parameters
+	 * before they're passed on to DAO for building out the DB query and subsequent
+	 * fetching of the {@link Drop} entities
+	 *  
+	 * @param id
+	 * @param requestParams
+	 * @return
+	 */
+	public List<GetDropDTO> getDrops(Long id, Map<String, Object> requestParams) {
+		Bucket bucket = bucketDao.findById(id);
+		if (bucket == null) {
+			throw new NotFoundException();
+		}
+		
+		// Check for channels parameter, split the string and convert the
+		// resultant array to a list
+		if (requestParams.containsKey("channels")) {
+			String channels = (String)requestParams.get("channels");
+			if (channels.trim().length() == 0) {
+				logger.error("No value specified for the \"channels\" parameter.");
+				throw new BadRequestException();
+			}
+			List<String> channelsList = Arrays.asList(StringUtils.split(channels, ','));
+			requestParams.put("channels", channelsList);
+		}
+
+		List<Drop> drops = bucketDao.getDrops(id, requestParams);
+		
+		List<GetDropDTO> bucketDrops = new ArrayList<GetDropDTO>();
+		for (Drop drop: drops) {			
+			GetDropDTO dropDto = mapper.map(drop, GetDropDTO.class);
+			bucketDrops.add(dropDto);
+		}
+
+		return bucketDrops;
+	}
+
+	/**
+	 * Deletes the {@link Drop} specified in <code>bucketId</code> from the
+	 * {@link Bucket} specified in <code>id</code>
+	 * 
+	 * If the drop does not exist in the specified bucket, a
+	 * {@link NotFoundException} exception is thrown
+	 * 
+	 * @param id
+	 * @param dropId
+	 */
+	@Transactional(readOnly = false)
+	public void deleteDrop(Long id, Long dropId) {		 
+		if (!bucketDao.deleteDrop(id, dropId)) {
+			throw new NotFoundException();
+		}
+	}
+
 }

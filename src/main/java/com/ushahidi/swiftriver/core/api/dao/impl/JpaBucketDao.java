@@ -18,45 +18,69 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.ListJoin;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
+import com.ushahidi.swiftriver.core.model.River;
 
 /**
- * Hibernate class for buckets
+ * Repository class for buckets
  * @author ekala
  *
  */
 @Repository
-@Transactional
-public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements BucketDao {
+public class JpaBucketDao extends AbstractJpaDao implements BucketDao {
 
-	public JpaBucketDao() {
-		super(Bucket.class);
-	}
-
-	/**
-	 * @see BucketDao#getDrops(Long, int)
+	final static Logger LOG = LoggerFactory.getLogger(JpaBucketDao.class);
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#update(com.ushahidi.swiftriver.core.model.Bucket)
 	 */
-	@SuppressWarnings("unchecked")
-	public Collection<Drop> getDrops(Long bucketId, int dropCount) {
-		String sqlQuery = "SELECT b.drops FROM Bucket b WHERE b.id = :bucketId";
-
-		Query query = entityManager.createQuery(sqlQuery);
-		query.setParameter("bucketId", bucketId);
-		query.setMaxResults(dropCount);
-
-		return (List<Drop>) query.getResultList();
+	public Bucket update(Bucket bucket) {
+		return em.merge(bucket);
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#save(com.ushahidi.swiftriver.core.model.Bucket)
+	 */
+	public Bucket save(Bucket bucket) {
+		em.persist(bucket);
+		return bucket;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#delete(com.ushahidi.swiftriver.core.model.Bucket)
+	 */
+	public void delete(Bucket bucket) {
+		em.remove(bucket);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findById(long)
+	 */
+	public Bucket findById(long id) {
+		Bucket bucket = em.find(Bucket.class, id);
+		return bucket;
+	}
+	
 	/**
 	 * @see BucketDao#addDrop(Long, Drop)
 	 */
@@ -79,34 +103,141 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket, Long> implements Bucket
 	}
 
 	/**
-	 * @see BucketDao#removeDrops(Long, Collection)
+	 * @see BucketDao#addCollaborator(Bucket, Account, boolean)
 	 */
-	public void removeDrops(Long bucketId, Collection<Drop> drops) {
-		findById(bucketId).getDrops().removeAll(drops);
+	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly) {
+		BucketCollaborator collaborator = new BucketCollaborator();
+		collaborator.setBucket(bucket);
+		collaborator.setAccount(account);
+		collaborator.setReadOnly(readOnly);
+
+		bucket.getCollaborators().add(collaborator);
+
+		this.em.persist(collaborator);
+		
+		return collaborator;
 	}
 
 	/**
-	 * @see {@link BucketDao#addCollaborator(Long, User, boolean)}
-	 */
-	public void addCollaborator(Long bucketId, User user, boolean readOnly) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/**
-	 * @see BucketDao#getCollaborators(Long)
+	 * @see BucketDao#getCollaborators(long)
 	 */
 	@SuppressWarnings("unchecked")
-	public Collection<User> getCollaborators(Long bucketId) {
+	public List<BucketCollaborator> getCollaborators(long bucketId) {
 		String hql = "SELECT b.collaborators FROM Bucket b WHERE b.id = ?1";
-		return (List<User>) entityManager.createQuery(hql).setParameter(1, bucketId).getResultList();
+		Query query = em.createQuery(hql);
+		query.setParameter(1, bucketId);
+
+		return (List<BucketCollaborator>)query.getResultList();
 	}
 
 	/**
-	 * @see BucketDao#removeCollaborator(Long, User)
+	 * @see {@link BucketDao#findCollaborator(Long, Long)}
 	 */
-	public void removeCollaborator(Long bucketId, User user) {
-		findById(bucketId).getCollaborators().remove(user);
+	@SuppressWarnings("unchecked")
+	public BucketCollaborator findCollaborator(Long id, Long accountId) {
+		String sql = "FROM BucketCollaborator bc WHERE bc.bucket.id =:bucketId AND bc.account.id = :accountId";
+		
+		Query query = em.createQuery(sql);
+		query.setParameter("bucketId", id);
+		query.setParameter("accountId", accountId);
+
+		List<BucketCollaborator> results = (List<BucketCollaborator>) query.getResultList();
+		return results.isEmpty() ? null : results.get(0);
+	}
+
+	/**
+	 * @see {@link BucketDao#updateCollaborator(BucketCollaborator)}
+	 */
+	public void updateCollaborator(BucketCollaborator collaborator) {
+		this.em.merge(collaborator);
+	}
+
+	/**
+	 * @see {@link BucketDao#deleteCollaborator(BucketCollaborator)}
+	 */
+	public void deleteCollaborator(BucketCollaborator collaborator) {
+		this.em.remove(collaborator);
+	}
+
+	/**
+	 * @see {@link BucketDao#getDrops(Long, Map)}
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Drop> getDrops(Long bucketId, Map<String, Object> requestParams) {
+		CriteriaBuilder cb = this.em.getCriteriaBuilder();
+		CriteriaQuery<Drop> dropsQuery = cb.createQuery(Drop.class);
+		
+		Root<Drop> dropRoot = dropsQuery.from(Drop.class);
+		Path<Long> dropId = dropRoot.get("id");
+
+		// Join drops and buckets
+		Root<Bucket> bucketRoot = dropsQuery.from(Bucket.class);
+		ListJoin<Bucket, Drop> bucketDrops =  bucketRoot.joinList("drops", JoinType.INNER);
+
+		CriteriaQuery<Drop> bucketDropsQuery = dropsQuery.select(bucketDrops);
+
+		// Apply the query parameters
+		Predicate filterPredicates = cb.and(
+				cb.equal(bucketDrops.get("id"), dropId),
+				cb.equal(bucketRoot.get("id"), bucketId));
+
+		// Check for since_id parameter
+		if (requestParams.containsKey("since_id")) {
+			Long sinceId = (Long)requestParams.get("since_id");
+			filterPredicates = cb.and(filterPredicates, cb.gt(dropId, sinceId));
+		}
+		
+		// Check for max_id parameter
+		if (requestParams.containsKey("max_id")) {
+			Long maxId = (Long) requestParams.get("max_id");
+			filterPredicates = cb.and(filterPredicates, cb.le(dropId, maxId));
+		}
+		
+		// Check for channels parameter
+		if (requestParams.containsKey("channels")) {
+			List<String> channelsList = (List<String>) requestParams.get("channels");
+			filterPredicates = cb.and(filterPredicates, 
+					cb.in(dropRoot.get("channel")).value(channelsList));
+		}
+		
+		// Apply the predicates and order the results by drop id in descending order
+		bucketDropsQuery.where(filterPredicates);
+		bucketDropsQuery.orderBy(cb.desc(dropId));
+		TypedQuery<Drop> resultsQuery = this.em.createQuery(bucketDropsQuery);
+
+		Integer dropCount = (Integer) requestParams.get("count");
+		resultsQuery.setMaxResults(dropCount);
+		
+		return resultsQuery.getResultList();
+	}
+
+	/**
+	 * @see {@link BucketDao#deleteDrop(Long, Long)}
+	 */
+	public boolean deleteDrop(Long id, Long dropId) {
+		String sql = "DELETE FROM buckets_droplets " +
+				"WHERE bucket_id = :bucketId " + 
+				"AND droplet_id = :dropId";
+		
+		Query query = this.em.createNativeQuery(sql);
+		query.setParameter("bucketId", id);
+		query.setParameter("dropId", dropId);
+
+		return query.executeUpdate() > 0;
+	}
+
+	/**
+	 * @see {@link BucketDao#findBucketByName(Account, String)}
+	 */
+	@SuppressWarnings("unchecked")
+	public Bucket findBucketByName(Account account, String bucketName) {
+		String jPQL = "FROM Bucket b WHERE account = :account AND name = :name";
+		Query query = this.em.createQuery(jPQL);
+		query.setParameter("account", account);
+		query.setParameter("name", bucketName);
+		
+		List<Bucket> results = (List<Bucket>) query.getResultList();
+		return results.isEmpty() ? null : results.get(0);
 	}
 
 }

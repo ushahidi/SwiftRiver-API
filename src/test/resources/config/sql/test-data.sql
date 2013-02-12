@@ -1,5 +1,3 @@
-START TRANSACTION;
-
 -- -----------------------------------------------------
 -- Date are at UTC
 -- -----------------------------------------------------
@@ -80,6 +78,19 @@ VALUES
 INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`) VALUES 
 (1, 3, 'River 1', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0);
 
+-- ------------------------------------
+-- Data for table `river_collaborators`
+-- -------------------------------------
+INSERT INTO river_collaborators(`id`, `river_id`, `account_id`, `read_only`) VALUES
+(1, 1, 3, 0),
+(2, 1, 4, 1);
+
+-- ------------------------------------
+-- Data for table `river_followers`
+-- -------------------------------------
+INSERT INTO river_followers(`river_id`, `account_id`) VALUES
+(1, 5);
+
 -- -----------------------------------------------------
 -- Data for table `river_channels`
 -- -----------------------------------------------------
@@ -97,6 +108,19 @@ INSERT INTO `river_channel_options` (`id`, `river_channel_id`, `key`, `value`) V
 -- -----------------------------------------------------
 INSERT INTO `buckets` (`id`, `account_id`, `bucket_name`, `bucket_description`, `bucket_publish`, `bucket_date_add`, `drop_count`) VALUES 
 (1, 3, 'Bucket 1', 'A Bucket', 1, '2013-01-02 00:00:02', 13);
+
+-- ------------------------------------
+-- Data for table `bucket_collaborators`
+-- -------------------------------------
+INSERT INTO bucket_collaborators(`id`, `bucket_id`, `account_id`, `read_only`) VALUES
+(1, 1, 3, 0),
+(2, 1, 4, 1);
+
+-- ------------------------------------
+-- Data for table `bucket_collaborators`
+-- -------------------------------------
+INSERT INTO bucket_followers(`bucket_id`, `account_id`) VALUES
+(1, 5);
 
 -- -----------------------------------------------------
 -- Data for table `identities`
@@ -124,6 +148,16 @@ INSERT INTO `droplets` (`id`, `identity_id`, `channel`, `droplet_hash`, `droplet
 -- Data for table `rivers_droplets`
 -- -----------------------------------------------------
 INSERT INTO `rivers_droplets` (`id`, `river_id`, `droplet_id`, `droplet_date_pub`) VALUES
+(1, 1, 1, '2012-11-15 00:00:01'),
+(2, 1, 2, '2012-11-15 00:00:02'),
+(3, 1, 3, '2012-11-15 00:00:03'),
+(4, 1, 4, '2012-11-15 00:00:04'),
+(5, 1, 5, '2012-11-15 00:00:05');
+
+-- -----------------------------------------------------
+-- Data for table `buckets_droplets`
+-- -----------------------------------------------------
+INSERT INTO `buckets_droplets` (`id`, `bucket_id`, `droplet_id`, `droplet_date_added`) VALUES
 (1, 1, 1, '2012-11-15 00:00:01'),
 (2, 1, 2, '2012-11-15 00:00:02'),
 (3, 1, 3, '2012-11-15 00:00:03'),
@@ -256,5 +290,3 @@ INSERT INTO droplets_places(`id`, `droplet_id`, `place_id`) VALUES
 INSERT INTO `account_droplet_places` (`id`, `account_id`, `droplet_id`, `place_id`, `deleted`) VALUES 
 (1, 1, 5, 2, 1),
 (2, 1, 5, 4, 0);
-
-COMMIT;

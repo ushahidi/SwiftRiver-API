@@ -73,14 +73,14 @@ public class Account {
 	private List<River> collaboratingRivers;
 	
 	@OneToMany(cascade=CascadeType.ALL)
-	@JoinTable(name="river_subscriptions", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="river_id"))
+	@JoinTable(name="river_followers", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="river_id"))
 	private List<River> followingRivers;
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
 	private List<Bucket> buckets;
 	
 	@OneToMany(cascade=CascadeType.ALL)
-	@JoinTable(name="bucket_subscriptions", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
+	@JoinTable(name="bucket_followers", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
 	private List<Bucket> followingBuckets;
 	
 	@OneToMany(cascade=CascadeType.ALL)

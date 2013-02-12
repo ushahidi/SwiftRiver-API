@@ -16,14 +16,19 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Place;
 
-public interface PlaceDao extends JpaDao<Place, Long> {
+public interface PlaceDao  {
 	
 	/**
-	 * Finds a place using its hash
-	 * @param hash
+	 * Gets and returns all place entities with the specified
+	 * hash values
+	 * 
+	 * @param placeHashes
 	 * @return
 	 */
-	public Place findByHash(String hash);
+	public List<Place> findByHash(ArrayList<String> placeHashes);
 }

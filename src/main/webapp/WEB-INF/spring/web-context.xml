@@ -22,20 +22,6 @@
 	<!-- post-processors for all standard config annotations -->
 	<context:annotation-config />
 
-	<!-- JPA EntityManagerFactory -->
-	<bean id="entityManagerFactory"
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		<property name="dataSource" ref="dataSource" />
-		<property name="packagesToScan" value="com.ushahidi.swiftriver.core.model" />
-		<property name="jpaVendorAdapter">
-			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-				<property name="showSql" value="false" />
-				<property name="generateDdl" value="false" />
-				<property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
-			</bean>
-		</property>
-	</bean>
-
 	<!-- Imports user-defined @Controller beans that process client requests -->
 	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
 
@@ -43,10 +29,12 @@
 	<bean id="accountDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
 	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
 	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
+	<bean id="bucketDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
 	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService" />
+	<bean id="bucketService" class="com.ushahidi.swiftriver.core.api.service.BucketService" />
 
 	<!-- Bean Mapper -->
 	<bean id="mapper" class="org.dozer.DozerBeanMapper">
@@ -61,8 +49,22 @@
 	<tx:annotation-driven transaction-manager="txManager" />
 
 	<bean id="txManager"
-		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		class="org.springframework.orm.jpa.JpaTransactionManager">
 		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- JPA EntityManagerFactory -->
+	<bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="packagesToScan" value="com.ushahidi.swiftriver.core.model" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="showSql" value="false" />
+				<property name="generateDdl" value="false" />
+				<property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+			</bean>
+		</property>
 	</bean>
 
 	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"

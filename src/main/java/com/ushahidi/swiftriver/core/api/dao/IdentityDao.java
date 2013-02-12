@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Identity;
 
-public interface IdentityDao extends JpaDao<Identity, Long> {
+public interface IdentityDao  {
 	
 	/**
 	 * Returns all identity entities with a hash in @param identityHashes

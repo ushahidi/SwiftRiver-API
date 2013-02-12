@@ -18,10 +18,13 @@ package com.ushahidi.swiftriver.core.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -65,6 +68,9 @@ public class Identity implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="identity_date_modified")
 	private Date dateModified;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="identity")
+	private List<Drop> drops;
 	
 	public Identity() {
 		
@@ -140,6 +146,14 @@ public class Identity implements Serializable {
 
 	public void setDateModified(Date dateModified) {
 		this.dateModified = dateModified;
+	}
+
+	public List<Drop> getDrops() {
+		return drops;
+	}
+
+	public void setDrops(List<Drop> drops) {
+		this.drops = drops;
 	}
 
 	@Override

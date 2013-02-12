@@ -28,12 +28,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 @Transactional(readOnly = true)
 @Service
@@ -110,5 +114,210 @@ public class RiverService {
 			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));
 		}
 		return getDropDTOs; 
+	}
+	
+
+	
+	/**
+	 * Deletes a river
+	 * @param id
+	 */
+	@Transactional(readOnly = false)
+	public boolean deleteRiver(Long id) {
+		River river = riverDao.findById(id);
+
+		// Throw exception if the river doesn't exist
+		if (river == null) {
+			throw new NotFoundException();
+		}
+
+		// Delete the river
+		riverDao.delete(river);
+		return true;
+	}
+
+
+	@Transactional
+	public List<CollaboratorDTO> getCollaborators(Long riverId) throws NotFoundException {
+		River river = riverDao.findById(riverId);
+		if (river == null) {
+			throw new NotFoundException();
+		}
+
+		List<CollaboratorDTO> collaborators = new ArrayList<CollaboratorDTO>();
+
+		for (RiverCollaborator entry: river.getCollaborators()) {
+			CollaboratorDTO dto = new CollaboratorDTO();
+
+			dto.setId(entry.getAccount().getId());
+			dto.setActive(entry.isActive());
+			dto.setReadOnly(entry.isReadOnly());
+			dto.setDateAdded(entry.getDateAdded());
+
+			collaborators.add(dto);
+		}
+
+		return collaborators;
+	}
+
+	/**
+	 * Adds a collaborator to the specified river
+	 * 
+	 * @param riverId
+	 * @param body
+	 * @throws NotFoundException,BadRequestException
+	 */
+	@Transactional
+	public CollaboratorDTO addCollaborator(Long riverId, CollaboratorDTO body) throws NotFoundException,BadRequestException {
+		// Check if the bucket exists
+		River river = riverDao.findById(riverId);
+		if (river == null) {
+			throw new NotFoundException();
+		}
+
+		//Is the account already collaborating on the river
+		if (riverDao.findCollaborator(riverId, body.getId()) != null) {
+			throw new BadRequestException("The account is already collaborating on the river");
+		}
+
+		Account account = accountDao.findById(body.getId());
+		riverDao.addCollaborator(river, account, body.isReadOnly());
+
+		body.setId(account.getId());
+		body.setAccountPath(account.getAccountPath());
+		return body;
+	}
+
+	/**
+	 * Modifies a collaborator
+	 * 
+	 * @param riverId
+	 * @param accountId
+	 * @param body
+	 * @return
+	 */
+	@Transactional
+	public CollaboratorDTO modifyCollaborator(Long riverId,
+			Long accountId, CollaboratorDTO body) {
+
+		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, accountId);
+
+		// Collaborator exists?
+		if (collaborator == null) {
+			throw new NotFoundException();
+		}
+
+		collaborator.setActive(body.isActive());
+		collaborator.setReadOnly(body.isReadOnly());
+
+		// Post changes to the DB
+		riverDao.updateCollaborator(collaborator);
+
+		body.setId(collaborator.getAccount().getId());
+		body.setAccountPath(collaborator.getAccount().getAccountPath());
+
+		return body;		
+	}
+
+	/**
+	 * Removes a collaborator in <code>accountId</code> from the river
+	 * specified in <code>riverId</code>. <code>accountId</code> is the
+	 * {@link Account} id of the collaborator
+	 * 
+	 * @param riverId
+	 * @param accountId
+	 */
+	@Transactional
+	public void deleteCollaborator(Long riverId, Long accountId) {
+		riverDao.deleteCollaborator(riverId, accountId);
+	}
+
+	/**
+	 * Adds a follower to the specified river
+	 * @param id
+	 * @param body
+	 * @return
+	 */
+	@Transactional
+	public void addFollower(Long id, FollowerDTO body) {
+		// Does the river exist?
+		River river = riverDao.findById(id);
+		if (river == null) {
+			throw new NotFoundException();
+		}
+
+		Account account = accountDao.findById(body.getId());
+		if (account == null) {
+			throw new NotFoundException();
+		}
+
+		river.getFollowers().add(account);
+		riverDao.update(river);
+
+	}
+
+	/**
+	 * Gets and returns a list of {@link Account} entities that are following 
+	 * the river identified by <code>id</code>. The entities are transformed
+	 * to DTO for purposes of consumption by {@link RiversController}
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@Transactional
+	public List<FollowerDTO> getFollowers(Long id) {
+		River river = riverDao.findById(id);
+
+		// Does the river exist?
+		if (river == null) {
+			throw new NotFoundException();
+		}
+
+		List<FollowerDTO> followerList = new ArrayList<FollowerDTO>();
+		for (Account account: river.getFollowers()) {
+			FollowerDTO accountDto = mapper.map(account, FollowerDTO.class);
+			accountDto.setName(account.getOwner().getName());
+			accountDto.setEmail(account.getOwner().getEmail());
+
+			followerList.add(accountDto);
+		}
+
+		return followerList;
+	}
+
+	/**
+	 * Deletes the follower whose {@link Account} id is <code>accountId</code>
+	 * from the river specified by <code>riverId</code>
+	 * 
+	 * @param riverId
+	 * @param accountId
+	 */
+	@Transactional
+	public void deleteFollower(Long riverId, Long accountId) {
+		// Load the river and check if it exists
+		River river = riverDao.findById(riverId);		
+		if (river == null) {
+			throw new NotFoundException();
+		}
+
+		// Load the account and check if it exists
+		Account account = accountDao.findById(accountId);
+		if (account == null) {
+			throw new NotFoundException();
+		}
+
+		river.getFollowers().remove(account);
+		riverDao.update(river);
+	}
+
+	/**
+	 * Deletes the drop specified by <code>dropId</code> from the
+	 * river in <code>id</code> 
+	 * @param id
+	 * @param dropId
+	 * @return boolean
+	 */
+	public boolean deleteDrop(Long id, Long dropId) {
+		return riverDao.removeDrop(id, dropId);		
 	}
 }

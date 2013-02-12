@@ -2,10 +2,17 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
+import java.math.BigInteger;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -47,7 +54,6 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		assertEquals("rss", drop.getChannel());
 		assertEquals("droplet_5_title", drop.getTitle());
 		assertEquals("droplet_5_content", drop.getContent());
-		assertEquals("Thu, 15 Nov 2012 00:00:05 +0000", DateUtil.formatRFC822(drop.getDatePublished(), "UTC"));
 		assertEquals("5", drop.getOriginalId());
 		assertEquals(30, drop.getCommentCount());
 		assertEquals(1, drop.getIdentity().getId());
@@ -88,5 +94,40 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		assertEquals(new Float(146.11), place.getLongitude());
 		assertEquals(new Float(-33), place.getLatitude());
 		
+	}
+	
+	@Test
+	@Transactional
+	public void testCreateRiver() {
+		River river = new River();
+		Account account = accountDao.findByUsername("user1");
+
+		river.setRiverName("Test river");
+		river.setAccount(account);
+		river.setRiverPublic(false);
+
+		riverDao.save(river);
+		
+		assertNotNull(river.getId());
+		String sql = "SELECT river_name, account_id FROM `rivers` WHERE `id` = ?";
+		
+		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, river.getId());
+		assertEquals("Test river", (String)r.get("river_name"));
+		assertEquals(BigInteger.valueOf(3L), (BigInteger)r.get("account_id"));
+		
+	}
+
+	@Test
+	@Transactional
+	public void testAddCollaborator() {
+		long riverId = 1;
+
+		River river = riverDao.findById(riverId);
+		int collaboratorCount = river.getCollaborators().size();
+
+		Account account = accountDao.findByUsername("user3");		
+
+		riverDao.addCollaborator(river, account, true);
+		assertEquals(collaboratorCount+1, river.getCollaborators().size());
 	}
 }

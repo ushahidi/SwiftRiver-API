@@ -41,12 +41,16 @@ import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
 @Transactional
-public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
+public class JpaDropDao extends AbstractJpaDao implements DropDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
-
-	public JpaDropDao() {
-		super(Drop.class);
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findById(long)
+	 */
+	public Drop findById(long id) {
+		Drop drop = em.find(Drop.class, id);
+		return drop;
 	}
 
 	/**
@@ -149,7 +153,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 	public List<Drop> findDropsByHash(ArrayList<String> dropHashes) {
 		String sql = "FROM Drop d WHERE d.dropletHash in (?1)";
 
-		Query query = entityManager.createQuery(sql);
+		Query query = em.createQuery(sql);
 		query.setParameter(1, dropHashes);
 
 		return (List<Drop>) query.getResultList();
@@ -199,7 +203,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 		sql += "AND `account_id` = :account_id  ";
 		sql += "AND `deleted` = 0 ";
 
-		Query query = entityManager.createNativeQuery(sql);
+		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIds);
 		query.setParameter("account_id", queryingAccount.getId());
 
@@ -266,7 +270,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 		sql += "AND `account_id` = :account_id ";
 		sql += "AND `deleted` = 0 ";
 
-		Query query = entityManager.createNativeQuery(sql);
+		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIds);
 		query.setParameter("account_id", queryingAccount.getId());
 
@@ -335,7 +339,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 		sql += "AND `account_id` = :account_id ";
 		sql += "AND `deleted` = 0; ";
 
-		Query query = entityManager.createNativeQuery(sql);
+		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
 		query.setParameter("account_id", queryingAccount.getId());
 
@@ -417,7 +421,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop, Long> implements DropDao {
 		sql += "AND `account_id` = :account_id ";
 		sql += "AND `deleted` = 0 ";
 		
-		Query query = entityManager.createNativeQuery(sql);
+		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
 		query.setParameter("account_id", queryingAccount.getId());
 		

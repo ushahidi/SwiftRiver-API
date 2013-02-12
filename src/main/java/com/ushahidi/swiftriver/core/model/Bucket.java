@@ -16,8 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -34,65 +34,48 @@ import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "buckets")
-public class Bucket  {
-	
+public class Bucket {
+
 	@Id
-	@GeneratedValue	
+	@GeneratedValue
 	private long id;
-	
-	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+
+	@ManyToOne
 	@JoinColumn(name = "account_id")
 	private Account account;
-	
-	@Column(name = "bucket_name", nullable=false)
-	private String bucketName;
-	
+
+	@Column(name = "bucket_name", nullable = false)
+	private String name;
+
 	@Column(name = "bucket_description")
 	private String description;
-	
+
 	@Column(name = "bucket_publish")
 	private boolean published;
-	
+
 	@Column(name = "default_layout")
 	private String defaultLayout;
-	
+
 	@Column(name = "bucket_date_add")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateAdded;
-	
+
 	@Column(name = "public_token")
 	private String publicToken;
-	
+
 	@Column(name = "drop_count")
 	private int dropCount;
-	
+
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(
-			name = "buckets_droplets",
-			joinColumns = @JoinColumn(name="bucket_id"),
-			inverseJoinColumns = @JoinColumn(name="droplet_id")
-	)
-	private Collection<Drop> drops = null;
-	
+	@JoinTable(name = "buckets_droplets", joinColumns = @JoinColumn(name = "bucket_id"), inverseJoinColumns = @JoinColumn(name = "droplet_id"))
+	private List<Drop> drops;
+
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "bucket")
+	private List<BucketCollaborator> collaborators;
+
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(
-			name = "bucket_collaborators",
-			joinColumns = @JoinColumn(name = "bucket_id"),
-			inverseJoinColumns = @JoinColumn(name="account_id")
-	)
-	private Collection<Account> collaborators = null;
-	
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(
-			name = "bucket_subscriptions",
-			joinColumns = @JoinColumn(name = "bucket_id"),
-			inverseJoinColumns = @JoinColumn(name="account_id")
-	)
-	private Collection<Account> followers = null;
-	
-	public Bucket() {
-		
-	}
+	@JoinTable(name = "bucket_followers", joinColumns = @JoinColumn(name = "bucket_id"), inverseJoinColumns = @JoinColumn(name = "account_id"))
+	private List<Account> followers;
 
 	public long getId() {
 		return id;
@@ -110,12 +93,12 @@ public class Bucket  {
 		this.account = account;
 	}
 
-	public String getBucketName() {
-		return bucketName;
+	public String getName() {
+		return name;
 	}
 
-	public void setBucketName(String bucketName) {
-		this.bucketName = bucketName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getDescription() {
@@ -158,36 +141,36 @@ public class Bucket  {
 		this.publicToken = publicToken;
 	}
 
-	public Collection<Drop> getDrops() {
-		return drops;
-	}
-
-	public void setDrops(Collection<Drop> drops) {
-		this.drops = drops;
-	}
-
-	public Collection<Account> getCollaborators() {
-		return collaborators;
-	}
-
-	public void setCollaborators(Collection<Account> collaborators) {
-		this.collaborators = collaborators;
-	}
-
-	public Collection<Account> getFollowers() {
-		return followers;
-	}
-
-	public void setFollowers(Collection<Account> followers) {
-		this.followers = followers;
-	}
-
 	public int getDropCount() {
 		return dropCount;
 	}
 
 	public void setDropCount(int dropCount) {
 		this.dropCount = dropCount;
+	}
+
+	public List<Drop> getDrops() {
+		return drops;
+	}
+
+	public void setDrops(List<Drop> drops) {
+		this.drops = drops;
+	}
+
+	public List<BucketCollaborator> getCollaborators() {
+		return collaborators;
+	}
+
+	public void setCollaborators(List<BucketCollaborator> collaborators) {
+		this.collaborators = collaborators;
+	}
+
+	public List<Account> getFollowers() {
+		return followers;
+	}
+
+	public void setFollowers(List<Account> followers) {
+		this.followers = followers;
 	}
 
 }

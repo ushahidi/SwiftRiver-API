@@ -16,14 +16,39 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 
 public interface RiverDao {
+	
+	/**
+	 * Modify a river.
+	 * 
+	 * @param river
+	 */
+	public River update(River river);
+	
+	
+	/**
+	 * Delete a river
+	 * 
+	 * @param river
+	 */
+	public void delete(River river);
+	
+	/**
+	 * Create a river
+	 * 
+	 * @param river
+	 * @return
+	 */
+	public River save(River river);
 	
 	/**
 	 * Get a River by its ID
@@ -43,4 +68,63 @@ public interface RiverDao {
 	 * @return
 	 */
 	public List<Drop> getDrops(Long id, Long maxId, int dropCount, Account queryingAccount);
+	
+	/**
+	 * Adds a drop to a river
+	 * 
+	 * @param riverId
+	 * @param drop
+	 */
+	public void addDrop(long riverId, Drop drop);
+
+	/**
+	 * Adds a collection of drops to a river
+	 * 
+	 * @param riverId
+	 * @param drops
+	 */
+	public void addDrops(long riverId, Collection<Drop> drops);
+
+	/**
+	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
+	 * and the river specified by <code>riverId</code>
+	 * 
+	 * @param riverId
+	 * @param accountId
+	 * @return {@link RiverCollaborator}
+	 */
+	public RiverCollaborator findCollaborator(Long riverId, Long accountId);
+
+	/**
+	 * Adds a collaborator to a river
+	 * @param river
+	 * @param account
+	 * @param readOnly
+	 * @return {@link RiverCollaborator}
+	 */
+	public RiverCollaborator addCollaborator(River river, Account account, boolean readOnly);
+
+	/**
+	 * Updates a collaborator
+	 * 
+	 * @param collaborator
+	 */
+	public void updateCollaborator(RiverCollaborator collaborator);
+
+	/**
+	 * Removes the {@link Account} with id <code>accountId</code>
+	 * from the list of collaborators on river with id <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	public void deleteCollaborator(Long id, Long accountId);
+
+	/**
+	 * Deletes the drop specified by 
+	 * @param id
+	 * @param dropId
+	 * @return
+	 */
+	public boolean removeDrop(Long id, Long dropId);
 }

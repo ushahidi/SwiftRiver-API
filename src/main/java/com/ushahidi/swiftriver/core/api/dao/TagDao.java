@@ -16,15 +16,19 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Tag;
 
-public interface TagDao extends JpaDao<Tag, Long> {
+public interface TagDao  {
 	
 	/**
-	 * Finds a tag using its hash
+	 * Given a list of hashes, finds and returns all tags whose
+	 * hash is contained in the list
 	 * 
-	 * @param hash
+	 * @param tagHashes
 	 * @return
 	 */
-	public Tag findByHash(String hash);
+	public List<Tag> findByHash(ArrayList<String> tagHashes);
 }

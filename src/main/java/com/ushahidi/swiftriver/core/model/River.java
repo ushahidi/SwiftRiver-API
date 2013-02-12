@@ -89,18 +89,18 @@ public class River {
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="droplet_id"))
-	private List<Drop> drops = null;
+	private List<Drop> drops;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
-	private List<Account> collaborators = null;
+	private List<RiverCollaborator> collaborators;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name="river_subscriptions", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
-	private List<Account> followers = null;
+	@JoinTable(name="river_followers", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
+	private List<Account> followers;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="river")
-	private List<Channel> channels = null;
+	private List<Channel> channels;
 	
 	public River() {
 		
@@ -242,11 +242,11 @@ public class River {
 		this.drops = drops;
 	}
 
-	public List<Account> getCollaborators() {
+	public List<RiverCollaborator> getCollaborators() {
 		return collaborators;
 	}
 
-	public void setCollaborators(List<Account> collaborators) {
+	public void setCollaborators(List<RiverCollaborator> collaborators) {
 		this.collaborators = collaborators;
 	}
 

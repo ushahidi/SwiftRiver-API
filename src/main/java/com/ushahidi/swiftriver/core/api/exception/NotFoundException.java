@@ -17,8 +17,29 @@ package com.ushahidi.swiftriver.core.api.exception;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 
+/**
+ * Thrown when a requested resource is not found.
+ *
+ */
 @ResponseStatus(value=HttpStatus.NOT_FOUND, reason="The requested resource was not found.")
-public class NotFoundException extends Exception {
+public class NotFoundException extends RuntimeException {
 
+	private static final long serialVersionUID = 3349560006485856467L;
+
+	public NotFoundException(String message) {
+		super(message);
+	}
+
+	public NotFoundException() {
+		super();
+	}
+
+	public NotFoundException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
+	}
+
+	public NotFoundException(Throwable arg0) {
+		super(arg0);
+	}
 	
 }

@@ -18,7 +18,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DateUtil {
+	
+	final static Logger logger = LoggerFactory.getLogger(DateUtil.class);
 
 	/**
 	 * Format given date as an RFC822 formatted date/time String.

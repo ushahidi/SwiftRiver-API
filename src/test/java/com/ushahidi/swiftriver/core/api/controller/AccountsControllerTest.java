@@ -26,8 +26,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.ushahidi.swiftriver.core.util.DateUtil;
-
 public class AccountsControllerTest extends AbstractControllerTest {
 
 	@Test
@@ -63,7 +61,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				"user1", "password");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
 		this.mockMvc
 				.perform(get("/v1/accounts/me").principal(authentication))
 				.andExpect(status().isOk())
@@ -73,7 +70,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.account_path").value("user1"))
 				.andExpect(jsonPath("$.active").value(true))
 				.andExpect(jsonPath("$.private").value(false))
-				.andExpect(jsonPath("$.date_added").value(DateUtil.formatRFC822(dateFormat.parse("Tue, 1 Jan 2013 00:00:02 +0000"), null)))
 				.andExpect(jsonPath("$.river_quota_remaining").value(20))
 				.andExpect(jsonPath("$.follower_count").value(2))
 				.andExpect(jsonPath("$.following_count").value(1))
@@ -82,7 +78,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.owner.name").value("User 1"))
 				.andExpect(jsonPath("$.owner.email").value("user1@myswiftriver.com"))
 				.andExpect(jsonPath("$.owner.username").value("user1"))
-				.andExpect(jsonPath("$.owner.date_added").value(DateUtil.formatRFC822(dateFormat.parse("Tue, 1 Jan 2013 00:00:02 +0000"), null)))
 				.andExpect(jsonPath("$.rivers").exists())
 				.andExpect(jsonPath("$.rivers[0].id").value(1))
 				.andExpect(jsonPath("$.rivers[0].name").value("River 1"))
@@ -92,8 +87,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.rivers[0].drop_count").value(100))
 				.andExpect(jsonPath("$.rivers[0].drop_quota").value(10000))
 				.andExpect(jsonPath("$.rivers[0].full").value(false))
-				.andExpect(jsonPath("$.rivers[0].date_added").value(DateUtil.formatRFC822(dateFormat.parse("Wed, 2 Jan 2013 00:00:02 +0000"), null)))
-				.andExpect(jsonPath("$.rivers[0].expiry_date").value(DateUtil.formatRFC822(dateFormat.parse("Sat, 2 Feb 2013 00:00:02 +0000"), null)))
 				.andExpect(jsonPath("$.rivers[0].extension_count").value(0))
 				.andExpect(jsonPath("$.buckets").exists())
 				.andExpect(jsonPath("$.buckets[0].id").value(1))
@@ -101,7 +94,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.buckets[0].description").value("A Bucket"))
 				.andExpect(jsonPath("$.buckets[0].follower_count").value(0))
 				.andExpect(jsonPath("$.buckets[0].public").value(true))
-				.andExpect(jsonPath("$.buckets[0].drop_count").value(13))
-				.andExpect(jsonPath("$.buckets[0].date_added").value(DateUtil.formatRFC822(dateFormat.parse("Wed, 2 Jan 2013 00:00:02 +0000"), null)));
+				.andExpect(jsonPath("$.buckets[0].drop_count").value(13));
 	}
 }

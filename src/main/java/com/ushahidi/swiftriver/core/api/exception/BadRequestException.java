@@ -17,7 +17,29 @@ package com.ushahidi.swiftriver.core.api.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Thrown when a malformed request is received.
+ *
+ */
 @ResponseStatus(value=HttpStatus.BAD_REQUEST, reason="Malformed request.")
-public class BadRequestException extends Exception {
+public class BadRequestException extends RuntimeException {
+	
+	private static final long serialVersionUID = 7737582642439602394L;
+
+	public BadRequestException(String message) {
+		super(message);
+	}
+
+	public BadRequestException() {
+		super();
+	}
+
+	public BadRequestException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public BadRequestException(Throwable cause) {
+		super(cause);
+	}
 
 }

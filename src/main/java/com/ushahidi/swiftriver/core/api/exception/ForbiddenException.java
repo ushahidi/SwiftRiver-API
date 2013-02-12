@@ -17,7 +17,29 @@ package com.ushahidi.swiftriver.core.api.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Thrown when the authenticating user does not have permission to perform
+ * an aciton.
+ *
+ */
 @ResponseStatus(value=HttpStatus.NOT_FOUND, reason="Access to the resource was denied.")
-public class ForbiddenException extends Exception {
+public class ForbiddenException extends RuntimeException {
 
+	private static final long serialVersionUID = -4457094948389720427L;
+
+	public ForbiddenException(String message) {
+		super(message);
+	}
+
+	public ForbiddenException() {
+		super();
+	}
+
+	public ForbiddenException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public ForbiddenException(Throwable cause) {
+		super(cause);
+	}
 }

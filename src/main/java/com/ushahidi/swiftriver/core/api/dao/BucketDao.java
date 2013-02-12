@@ -17,10 +17,13 @@
 package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
 
 /**
  * Database operations for a bucket
@@ -28,16 +31,48 @@ import com.ushahidi.swiftriver.core.model.User;
  * @author ekala
  *
  */
-public interface BucketDao extends JpaDao<Bucket, Long>{
+public interface BucketDao {
+	
+	/**
+	 * Create a bucket.
+	 * 
+	 * @param bucket
+	 * @return
+	 */
+	public Bucket save(Bucket bucket);
+	
+	/**
+	 * Modify and existing bucket.
+	 * 
+	 * @param bucket
+	 * @return
+	 */
+	public Bucket update(Bucket bucket);
+	
+	/**
+	 * Get a bucket using its id.
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public Bucket findById(long id);
+	
+	
+	/**
+	 * Delete a bucket.
+	 * 
+	 * @param bucket
+	 */
+	public void delete(Bucket bucket);
 		
 	/**
 	 * Gets a collection of drops from a bucket using the specified parameters
 	 *  
 	 * @param bucketId
-	 * @param dropCount TODO
-	 * @return
+	 * @param requestParams 
+	 * @return {@link LinkDTO}
 	 */
-	public Collection<Drop> getDrops(Long bucketId, int dropCount);
+	public List<Drop> getDrops(Long bucketId, Map<String, Object> requestParams);
 	
 	/**
 	 * Adds a single drop to a bucket
@@ -64,36 +99,56 @@ public interface BucketDao extends JpaDao<Bucket, Long>{
 	public void removeDrop(Long bucketId, Drop drop);
 
 	/**
-	 * Removes a group of drops from a bucket
+	 * Adds a collaborator to the bucket with the specified id
 	 * 
-	 * @param bucketId
-	 * @param drops
-	 */
-	public void removeDrops(Long bucketId, Collection<Drop> drops);
-	
-	/**
-	 * Adds a user as a collaborator to a bucket
-	 * 
-	 * @param bucketId
-	 * @param user
+	 * @param bucket
+	 * @param account
 	 * @param readOnly
+	 * @return TODO
 	 */
-	public void addCollaborator(Long bucketId, User user, boolean readOnly);
-	
+	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly);
+
 	/**
-	 * Gets the users collaborating on the bucket
+	 * Retrieves a {@link BucketCollaborator} record using the bucket id (<code>id</code>
+	 * and the account id (<code>accountId</code>) of the collaborator
 	 * 
-	 * @param bucketId Database ID of the bucket
-	 * @return
+	 * @param id
+	 * @param accountId
+	 * @return {@link BucketCollaborator} on success, null otherwise
 	 */
-	public Collection<User> getCollaborators(Long bucketId);
-	
+	public BucketCollaborator findCollaborator(Long id, Long accountId);
+
 	/**
-	 * Removes a user from the list of users collaborating on a bucket
-	 * 
-	 * @param bucketId
-	 * @param user
+	 * Modifies a bucket collaborator record 
+	 * @param collaborator
 	 */
-	public void removeCollaborator(Long bucketId, User user);
-		
+	public void updateCollaborator(BucketCollaborator collaborator);
+
+	/**
+	 * Deletes a {@link BucketCollaborator} record from the database
+	 * 
+	 * @param collaborator
+	 */
+	public void deleteCollaborator(BucketCollaborator collaborator);
+
+	/**
+	 * Deletes the {@link Drop} with the id in <code>dropId</code> from the list of 
+	 * drops for the {@link Bucket} with the id specified in <code>id</code>
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @return boolean
+	 */
+	public boolean deleteDrop(Long id, Long dropId);
+
+	/**
+	 * Gets and returns the bucket with the name specified in <code>bucketName</code> 
+	 * and is owned by the {@link Account} in <code>account</account>
+	 * 
+	 * @param account
+	 * @param bucketName
+	 * @return {@link Bucket}
+	 */
+	public Bucket findBucketByName(Account account, String bucketName);
+
 }

@@ -1,6 +1,5 @@
 package com.ushahidi.swiftriver.core.model;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -8,7 +7,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "media_thumnails")
+@Table(name = "media_thumbnails")
 public class MediaThumbnail {
 
 	@Id

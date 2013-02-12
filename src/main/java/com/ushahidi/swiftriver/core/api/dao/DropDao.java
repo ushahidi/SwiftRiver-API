@@ -32,15 +32,16 @@ import com.ushahidi.swiftriver.core.model.Tag;
  * @author ekala
  *
  */
-public interface DropDao extends JpaDao<Drop, Long>{
+public interface DropDao {
 	
 	/**
-	 * Creates a collection of drops
+	 * Get a drop using its id.
 	 * 
-	 * @param drops
+	 * @param id
+	 * @return
 	 */
-	public void createDrops(Collection<Drop> drops);
-	
+	public Drop findById(long id);
+
 	/**
 	 * Adds a link to a drop
 	 * @param dropId
