@@ -16,8 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.Date;
-
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.ushahidi.swiftriver.core.model.Bucket;
@@ -27,7 +25,7 @@ import com.ushahidi.swiftriver.core.model.Bucket;
  * @author ekala
  *
  */
-public class BucketDTO {
+public class GetBucketDTO {
 	
 	private long id;
 	
@@ -36,7 +34,7 @@ public class BucketDTO {
 	private String description;
 	
 	@JsonProperty("date_added")
-	private Date dateAdded;
+	private String dateAdded;
 	
 	@JsonProperty("drop_count")
 	private int dropCount;
@@ -45,6 +43,32 @@ public class BucketDTO {
 	private boolean published;
 	
 	private boolean active;
+	
+	private Account account;
+	
+	public static class Account {
+		private long id;
+		
+		@JsonProperty("account_path")
+		private String accountPath;
+
+		public long getId() {
+			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
+		}
+
+		public String getAccountPath() {
+			return accountPath;
+		}
+
+		public void setAccountPath(String accountPath) {
+			this.accountPath = accountPath;
+		}
+		
+	}
 
 	public long getId() {
 		return id;
@@ -70,11 +94,11 @@ public class BucketDTO {
 		this.description = description;
 	}
 
-	public Date getDateAdded() {
+	public String getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDateAdded(Date dateAdded) {
+	public void setDateAdded(String dateAdded) {
 		this.dateAdded = dateAdded;
 	}
 
@@ -100,6 +124,14 @@ public class BucketDTO {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
 	

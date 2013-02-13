@@ -22,7 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
-import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,17 +39,18 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.id").value(1))
-			.andExpect(jsonPath("$.name").value("Bucket 1"));
+			.andExpect(jsonPath("$.name").value("Bucket 1"))
+			.andExpect(jsonPath("$.account.id").exists());
 	}
 	
 	/**
-	 * Test for {@link BucketsController#modifyBucket(com.ushahidi.swiftriver.core.api.dto.BucketDTO, Long)}
+	 * Test for {@link BucketsController#modifyBucket(com.ushahidi.swiftriver.core.api.dto.GetBucketDTO, Long)}
 	 * @throws Exception
 	 */
 	@Test
 	@Transactional
 	public void modifyBucket() throws Exception {
-		BucketDTO bucketData = new BucketDTO();
+		GetBucketDTO bucketData = new GetBucketDTO();
 		bucketData.setName("Modified Test Bucket");
 		bucketData.setPublished(true);
 		

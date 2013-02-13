@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
@@ -49,7 +49,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public BucketDTO createBucket(@RequestBody BucketDTO body) {
+	public GetBucketDTO createBucket(@RequestBody GetBucketDTO body) {
 		return bucketService.createBucket(body);
 	}
 
@@ -61,7 +61,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public BucketDTO getBucket(@PathVariable Long id) {
+	public GetBucketDTO getBucket(@PathVariable Long id) {
 		return bucketService.getBucket(id);
 	}
 
@@ -73,7 +73,7 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public BucketDTO modifyBucket(@RequestBody BucketDTO body,
+	public GetBucketDTO modifyBucket(@RequestBody GetBucketDTO body,
 			@PathVariable Long id) {
 		return bucketService.modifyBucket(id, body);
 	}

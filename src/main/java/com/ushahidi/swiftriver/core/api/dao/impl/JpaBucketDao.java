@@ -39,7 +39,6 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.River;
 
 /**
  * Repository class for buckets

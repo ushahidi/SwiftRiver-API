@@ -52,7 +52,7 @@ public class DropDTO {
 	@JsonProperty("source")
 	private IdentityDTO identity;
 	
-	private List<BucketDTO> buckets;
+	private List<GetBucketDTO> buckets;
 	
 	@JsonProperty("user_score")
 	private int userScore;
@@ -336,11 +336,11 @@ public class DropDTO {
 		this.identity = identity;
 	}
 
-	public List<BucketDTO> getBuckets() {
+	public List<GetBucketDTO> getBuckets() {
 		return buckets;
 	}
 
-	public void setBuckets(List<BucketDTO> buckets) {
+	public void setBuckets(List<GetBucketDTO> buckets) {
 		this.buckets = buckets;
 	}
 

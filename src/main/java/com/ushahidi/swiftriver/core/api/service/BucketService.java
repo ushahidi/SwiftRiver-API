@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dto.BucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
@@ -71,17 +71,17 @@ public class BucketService {
 	 * Creates a new {@link Bucket} and returns its DTO representation
 	 * 
 	 * @param bucketData
-	 * @return {@link BucketDTO}
+	 * @return {@link GetBucketDTO}
 	 */
 	@Transactional(readOnly = false)
-	public BucketDTO createBucket(BucketDTO body) {
+	public GetBucketDTO createBucket(GetBucketDTO body) {
 		Bucket bucket = mapper.map(body, Bucket.class);
 //		bucket.setAccount(account);
 		
 		// Save bucket
 		bucketDao.save(bucket);
 		
-		return mapper.map(bucket, BucketDTO.class);
+		return mapper.map(bucket, GetBucketDTO.class);
 	}
 
 	/**
@@ -90,7 +90,7 @@ public class BucketService {
 	 * @param id
 	 * @return
 	 */
-	public BucketDTO getBucket(Long id) {
+	public GetBucketDTO getBucket(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		
 		// Verify that the bucket exists
@@ -98,7 +98,7 @@ public class BucketService {
 			throw new NotFoundException();
 		}
 		
-		return mapper.map(bucket, BucketDTO.class);
+		return mapper.map(bucket, GetBucketDTO.class);
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public BucketDTO modifyBucket(Long id, BucketDTO body) {
+	public GetBucketDTO modifyBucket(Long id, GetBucketDTO body) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
 			throw new NotFoundException();
@@ -133,7 +133,7 @@ public class BucketService {
 		
 		bucketDao.update(bucket);
 		
-		return mapper.map(bucket, BucketDTO.class);
+		return mapper.map(bucket, GetBucketDTO.class);
 	}
 
 	/**
