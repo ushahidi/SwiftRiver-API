@@ -14,6 +14,7 @@ public class GetDropDTO {
 	
 	private String channel;
 	
+	@JsonProperty("source")
 	private Identity identity;
 	
 	@JsonProperty("date_published")
@@ -30,6 +31,8 @@ public class GetDropDTO {
 	
 	@JsonProperty("comment_count")
 	private int commentCount;
+	
+	private Media image;
 	
 	private List<Bucket> buckets;
 	
@@ -363,6 +366,14 @@ public class GetDropDTO {
 
 	public void setCommentCount(int commentCount) {
 		this.commentCount = commentCount;
+	}
+
+	public Media getImage() {
+		return image;
+	}
+
+	public void setImage(Media image) {
+		this.image = image;
 	}
 
 	public List<Bucket> getBuckets() {

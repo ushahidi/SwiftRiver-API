@@ -167,6 +167,10 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 	 * .List, com.ushahidi.swiftriver.core.model.Account)
 	 */
 	public void populateMetadata(List<Drop> drops, Account queryingAccount) {
+		if (drops.size() == 0) {
+			return;
+		}
+		
 		populateTags(drops, queryingAccount);
 		populateLinks(drops, queryingAccount);
 		populateMedia(drops, queryingAccount);
@@ -318,8 +322,24 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 			dropIndex.put(drop.getId(), i);
 			i++;
 		}
+		
+		// Generate a map for drop images
+		String sql = "SELECT `id`, `droplet_image` ";
+		sql += "FROM `droplets` ";
+		sql += "WHERE `droplet_image` > 0 ";
+		sql += "AND `id` IN :drop_ids ";
 
-		String sql = "SELECT `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("drop_ids", dropIndex.keySet());
+
+		Map<Long, Long> dropImagesMap = new HashMap<Long, Long>();
+		for (Object oRow2 : query.getResultList()) {
+			Object[] r2 = (Object[]) oRow2;
+			dropImagesMap.put(((BigInteger) r2[0]).longValue(),
+					((BigInteger) r2[1]).longValue());
+		}
+
+		sql = "SELECT `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
 		sql += "FROM `droplets_media` ";
 		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
 		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
@@ -339,7 +359,7 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 		sql += "AND `account_id` = :account_id ";
 		sql += "AND `deleted` = 0; ";
 
-		Query query = em.createNativeQuery(sql);
+		query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
 		query.setParameter("account_id", queryingAccount.getId());
 
@@ -381,9 +401,14 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 				thumbnails.add(mt);
 			}
 			
-			// Add media to drop
 			if (!drop.getMedia().contains(m)) {
 				drop.getMedia().add(m);
+				
+				// Set the droplet image if any
+				Long dropImageId = dropImagesMap.get(drop.getId());
+				if (dropImageId != null && dropImageId == m.getId()) {
+					drop.setImage(m);
+				}
 			}
 		}
 	}
