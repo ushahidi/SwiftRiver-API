@@ -239,6 +239,7 @@ public class GetDropDTO {
 		
 		private String type;
 		
+		@JsonProperty("name")
 		private String placeName;
 		
 		private double longitude;
