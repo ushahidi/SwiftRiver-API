@@ -24,27 +24,30 @@ import com.ushahidi.swiftriver.core.model.Bucket;
 
 /**
  * DTO mapping class for {@link Bucket}
+ * 
  * @author ekala
- *
+ * 
  */
 public class BucketDTO {
-	
+
 	private long id;
-	
+
 	private String name;
-	
+
 	private String description;
-	
+
 	@JsonProperty("date_added")
-	private Date dateAdded;
-	
+	private String dateAdded;
+
 	@JsonProperty("drop_count")
 	private int dropCount;
-	
+
 	@JsonProperty("public")
 	private boolean published;
-	
+
 	private boolean active;
+	
+	private Account account;
 
 	public long getId() {
 		return id;
@@ -70,11 +73,11 @@ public class BucketDTO {
 		this.description = description;
 	}
 
-	public Date getDateAdded() {
+	public String getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDateAdded(Date dateAdded) {
+	public void setDateAdded(String dateAdded) {
 		this.dateAdded = dateAdded;
 	}
 
@@ -102,5 +105,35 @@ public class BucketDTO {
 		this.active = active;
 	}
 
-	
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
+	}
+
+	public static class Account {
+
+		private long id;
+
+		@JsonProperty("account_path")
+		private String accountPath;
+
+		public long getId() {
+			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
+		}
+
+		public String getAccountPath() {
+			return accountPath;
+		}
+
+		public void setAccountPath(String accountPath) {
+			this.accountPath = accountPath;
+		}
+	}
 }
