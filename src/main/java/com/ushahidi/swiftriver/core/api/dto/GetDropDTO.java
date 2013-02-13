@@ -14,6 +14,7 @@ public class GetDropDTO {
 	
 	private String channel;
 	
+	@JsonProperty("source")
 	private Identity identity;
 	
 	@JsonProperty("date_published")
