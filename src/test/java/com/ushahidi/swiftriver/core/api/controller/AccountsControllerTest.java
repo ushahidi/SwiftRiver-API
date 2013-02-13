@@ -80,7 +80,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.owner.username").value("user1"))
 				.andExpect(jsonPath("$.rivers").exists())
 				.andExpect(jsonPath("$.rivers[0].id").value(1))
-				.andExpect(jsonPath("$.rivers[0].name").value("River 1"))
+				.andExpect(jsonPath("$.rivers[0].name").value("Public River 1"))
 				.andExpect(jsonPath("$.rivers[0].follower_count").value(0))
 				.andExpect(jsonPath("$.rivers[0].public").value(true))
 				.andExpect(jsonPath("$.rivers[0].active").value(true))

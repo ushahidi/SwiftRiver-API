@@ -39,7 +39,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void findById() {
 		River r = riverDao.findById(1);
 		
-		assertEquals("River 1", r.getRiverName());
+		assertEquals("Public River 1", r.getRiverName());
 	}
 	
 	@Test

@@ -102,6 +102,12 @@ public class RiverService {
 	public List<GetDropDTO> getDrops(Long id, Long maxId, int dropCount, String username) throws NotFoundException {
 		
 		Account queryingAccount = accountDao.findByUsername(username);
+		River river = riverDao.findById(id);
+		
+		if (river == null) {
+			throw new NotFoundException();
+		}
+		
 		List<Drop> drops = riverDao.getDrops(id, maxId, dropCount, queryingAccount);
 		
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
@@ -319,5 +325,9 @@ public class RiverService {
 	 */
 	public boolean deleteDrop(Long id, Long dropId) {
 		return riverDao.removeDrop(id, dropId);		
+	}
+	
+	public boolean isOwner(River river, Account account) {
+		return true; 
 	}
 }
