@@ -242,9 +242,9 @@ public class GetDropDTO {
 		@JsonProperty("name")
 		private String placeName;
 		
-		private double longitude;
+		private float longitude;
 		
-		private double latitude;
+		private float latitude;
 
 		public long getId() {
 			return id;
@@ -270,19 +270,19 @@ public class GetDropDTO {
 			this.placeName = placeName;
 		}
 
-		public double getLongitude() {
+		public float getLongitude() {
 			return longitude;
 		}
 
-		public void setLongitude(double longitude) {
+		public void setLongitude(float longitude) {
 			this.longitude = longitude;
 		}
 
-		public double getLatitude() {
+		public float getLatitude() {
 			return latitude;
 		}
 
-		public void setLatitude(double latitude) {
+		public void setLatitude(float latitude) {
 			this.latitude = latitude;
 		}
 	}
