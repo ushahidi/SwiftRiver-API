@@ -14,36 +14,33 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import com.ushahidi.swiftriver.core.model.Link;
+public class HashUtil {
 
-public interface LinkDao  {
-	
 	/**
-	 * Gets and returns the {@link Link} record with the specified
-	 * <code>id</code>
+	 * Generates and returns an MD5 hash of the provided
+	 * <code>input</code>
 	 * 
-	 * @param id
-	 * @return {@Link} on success, null otherwise
-	 */
-	public Link findById(long id);
-
-	/**
-	 * Gets and returns a list of {@link Link} entities with the
-	 * specified hash values
-	 * 
-	 * @param linkHashes
-	 */
-	public List<Link> findAllByHash(ArrayList<String> linkHashes);
-	
-	/**
-	 * Gets the {@Link} record with the specified <code>hash</code>
-	 * @param hash
+	 * @param input
 	 * @return
 	 */
-	public Link findByHash(String hash);
+	public static String md5(String input) {
+		String md5 = null;
+		try {
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+			digest.update(input.getBytes(), 0, input.length());
+			
+			md5 = new BigInteger(1, digest.digest()).toString(16);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+
+		return md5;
+	}
+
 }

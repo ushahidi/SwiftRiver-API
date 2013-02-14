@@ -730,10 +730,10 @@ CREATE TABLE IF NOT EXISTS `bucket_comment_scores` (
 CREATE TABLE IF NOT EXISTS `droplet_comments` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `droplet_id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
+  `account_id` bigint(20) NOT NULL,
   `comment_text` varchar(1024) NOT NULL DEFAULT '',
   `date_added` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `deleted` tinyint(4) DEFAULT NULL,
+  `deleted` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `droplet_id` (`droplet_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

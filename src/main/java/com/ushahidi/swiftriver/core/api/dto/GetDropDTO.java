@@ -34,13 +34,13 @@ public class GetDropDTO {
 	
 	private List<Bucket> buckets;
 	
-	private List<Tag> tags;
+	private List<GetTagDTO> tags;
 	
-	private List<Link> links;
+	private List<GetLinkDTO> links;
 	
-	private List<Media> media;
+	private List<GetMediaDTO> media;
 	
-	private List<Place> places;
+	private List<GetPlaceDTO> places;
 	
 	public static class Identity {
 		
@@ -110,7 +110,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Tag {
+	public static class GetTagDTO {
 		
 		private long id;
 		
@@ -143,7 +143,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Link {
+	public static class GetLinkDTO {
 		
 		private long id;
 		
@@ -166,7 +166,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Media {
+	public static class GetMediaDTO {
 		
 		private long id;
 		
@@ -233,7 +233,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Place {
+	public static class GetPlaceDTO {
 		
 		private long id;
 		
@@ -375,35 +375,35 @@ public class GetDropDTO {
 		this.buckets = buckets;
 	}
 
-	public List<Tag> getTags() {
+	public List<GetTagDTO> getTags() {
 		return tags;
 	}
 
-	public void setTags(List<Tag> tags) {
+	public void setTags(List<GetTagDTO> tags) {
 		this.tags = tags;
 	}
 
-	public List<Link> getLinks() {
+	public List<GetLinkDTO> getLinks() {
 		return links;
 	}
 
-	public void setLinks(List<Link> links) {
+	public void setLinks(List<GetLinkDTO> links) {
 		this.links = links;
 	}
 
-	public List<Media> getMedia() {
+	public List<GetMediaDTO> getMedia() {
 		return media;
 	}
 
-	public void setMedia(List<Media> media) {
+	public void setMedia(List<GetMediaDTO> media) {
 		this.media = media;
 	}
 
-	public List<Place> getPlaces() {
+	public List<GetPlaceDTO> getPlaces() {
 		return places;
 	}
 
-	public void setPlaces(List<Place> places) {
+	public void setPlaces(List<GetPlaceDTO> places) {
 		this.places = places;
 	}
 }
