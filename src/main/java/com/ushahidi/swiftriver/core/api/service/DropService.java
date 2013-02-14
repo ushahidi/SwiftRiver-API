@@ -30,6 +30,8 @@ import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -137,28 +139,26 @@ public class DropService {
 	  * username in <code>username</code>
 	  * 
 	  * @param id
+	  * @param dto
 	  * @param username
-	  * @param body
 	  * @return
 	  */
 	 @Transactional
-	 public GetLinkDTO addLink(Long id, String username, Map<String, Object> body) {
+	 public GetLinkDTO addLink(Long id, CreateLinkDTO dto, String username) {
 		Drop drop = dropDao.findById(id);
 		if (drop == null) {
 			throw new NotFoundException();
 		}
 		
-		// Validate input parameters
-		if (!body.containsKey("url")) {
+		if (dto.getUrl() == null || dto.getUrl().trim().length() == 0) {
 			throw new BadRequestException();
 		}
 
-		String url = (String)body.get("url");
-		String hash = HashUtil.md5(url);
+		String hash = HashUtil.md5(dto.getUrl());
 		Link link = linkDao.findByHash(hash);
 		if (link == null) {
 			link = new Link();
-			link.setUrl(url);
+			link.setUrl(dto.getUrl());
 			link.setHash(hash);
 			
 			linkDao.save(link);
@@ -205,41 +205,28 @@ public class DropService {
 	  * to <code>username</code>
 	  * 
 	  * @param id
+	  * @param dto
 	  * @param principal
-	  * @param body
 	  * @return
 	  */
 	 @Transactional
-	 public GetPlaceDTO addPlace(long id, String username, Map<String, Object> body) {
+	 public GetPlaceDTO addPlace(long id, CreatePlaceDTO dto, String username) {
 		 Drop drop = dropDao.findById(id);
 		 if (drop == null) {
 			 throw new NotFoundException();
 		 }
 
-		 // Validate the input data
-		 String[] keys = {"name", "latitude", "longitude"};
-		 for (String key: keys) {
-			 if (!body.containsKey(key)) {
-				 throw new BadRequestException();
-			 }
-		 }
-
-		 // Extract the properties
-		 String placeName = (String)body.get("name");
-		 Float latitude = Float.parseFloat(((Double) body.get("latitude")).toString());
-		 Float longitude = Float.parseFloat(((Double) body.get("longitude")).toString());
-
-		 String hash = HashUtil.md5(placeName + longitude.toString() + latitude.toString());
+		 String hash = HashUtil.md5(dto.getName() + Float.toString(dto.getLongitude()) +  Float.toString(dto.getLatitude()));
 
 		 // Generate a hash for the place name
 		 Place place = placeDao.findByHash(hash);
 		 if (place == null) {
 			 place = new Place();
-			 place.setPlaceName(placeName);
-			 place.setPlaceNameCanonical(placeName.toLowerCase());
+			 place.setPlaceName(dto.getName());
+			 place.setPlaceNameCanonical(dto.getName().toLowerCase());
 			 place.setHash(hash);
-			 place.setLatitude(latitude);
-			 place.setLongitude(longitude);
+			 place.setLatitude(dto.getLatitude());
+			 place.setLongitude(dto.getLongitude());
 
 			 placeDao.save(place);
 		 }

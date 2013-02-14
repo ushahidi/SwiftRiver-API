@@ -26,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -94,8 +97,8 @@ public class DropsController {
 	 */
 	@RequestMapping(value = "/{id}/links", method = RequestMethod.POST)
 	@ResponseBody
-	public GetLinkDTO addLink(@RequestBody Map<String, Object> body, @PathVariable Long id, Principal principal) {
-		return dropService.addLink(id, principal.getName(), body);
+	public GetLinkDTO addLink(@RequestBody CreateLinkDTO link, @PathVariable Long id, Principal principal) {
+		return dropService.addLink(id, link, principal.getName());
 	}
 	
 	/**
@@ -117,8 +120,8 @@ public class DropsController {
 	 */
 	@RequestMapping(value = "/{id}/places", method = RequestMethod.POST)
 	@ResponseBody
-	public GetPlaceDTO addPlace(@RequestBody Map<String, Object> body, @PathVariable long id, Principal principal) {
-		return dropService.addPlace(id, principal.getName(), body);
+	public GetPlaceDTO addPlace(@RequestBody CreatePlaceDTO place, @PathVariable long id, Principal principal) {
+		return dropService.addPlace(id, place, principal.getName());
 	}
 	
 	/**
@@ -140,7 +143,7 @@ public class DropsController {
 	 */
 	@RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
 	@ResponseBody
-	public GetTagDTO addTag(@RequestBody Map<String, Object> body, @PathVariable Long id, Principal principal) {
+	public GetTagDTO addTag(@RequestBody CreateTagDTO tag, @PathVariable Long id, Principal principal) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 	
@@ -150,7 +153,7 @@ public class DropsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)	
 	public Map<String, Object> deleteTag(@PathVariable long id, @PathVariable long tagId, Principal principal) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
