@@ -35,16 +35,42 @@ import com.ushahidi.swiftriver.core.model.Tag;
 public class JpaTagDao extends AbstractJpaDao implements TagDao {
 
 	/**
-	 * @see TagDao#findByHash(ArrayList)
+	 * @see TagDao#findAllByHash(ArrayList)
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Tag> findByHash(ArrayList<String> tagHashes) {
+	public List<Tag> findAllByHash(ArrayList<String> tagHashes) {
 		String sql = "FROM Tag WHERE hash IN (?1)";
 
 		Query query = em.createQuery(sql);
 		query.setParameter(1, tagHashes);
 		
 		return (List<Tag>) query.getResultList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.TagDao#findByHash(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	public Tag findByHash(String hash) {
+		String sql = "FROM Tag WHERE hash = :hash";
+		List<Tag> tags = (List<Tag>)em.createQuery(sql).setParameter("hash", hash).getResultList();
+		return tags.isEmpty() ? null : tags.get(0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.TagDao#save(com.ushahidi.swiftriver.core.model.Tag)
+	 */
+	public void save(Tag tag) {
+		this.em.persist(tag);		
+	}
+
+	/**
+	 * 
+	 */
+	public Tag findById(long tagId) {
+		return this.em.find(Tag.class, tagId);
 	}
 
 }

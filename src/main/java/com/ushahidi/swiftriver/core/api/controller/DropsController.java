@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
@@ -61,9 +62,9 @@ public class DropsController {
 	 */
 	@RequestMapping(value = "/{id}/comments", method = RequestMethod.POST)
 	@ResponseBody
-	public GetCommentDTO addComment(@RequestBody Map<String, Object> body,
+	public GetCommentDTO addComment(@RequestBody CreateCommentDTO comment,
 			@PathVariable Long id, Principal principal) {
-		return dropService.addComment(id, body, principal.getName());
+		return dropService.addComment(id, comment, principal.getName());
 	}
 
 	/**
@@ -144,7 +145,7 @@ public class DropsController {
 	@RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
 	@ResponseBody
 	public GetTagDTO addTag(@RequestBody CreateTagDTO tag, @PathVariable Long id, Principal principal) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return dropService.addTag(id, tag, principal.getName());
 	}
 	
 	/**
@@ -154,8 +155,8 @@ public class DropsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)	
-	public Map<String, Object> deleteTag(@PathVariable long id, @PathVariable long tagId, Principal principal) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void deleteTag(@PathVariable long id, @PathVariable long tagId, Principal principal) {
+		dropService.deleteTag(id, tagId, principal.getName());
 	}
 	
 	/**

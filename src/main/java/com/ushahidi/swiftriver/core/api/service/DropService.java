@@ -26,15 +26,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.controller.DropsController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -42,6 +47,7 @@ import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
 
@@ -70,9 +76,12 @@ public class DropService {
 
 	@Autowired
 	private PlaceDao placeDao;
+
+	@Autowired
+	private TagDao tagDao;
 	
 	@Transactional
-	public GetCommentDTO addComment(long id, Map<String, Object> body,
+	public GetCommentDTO addComment(long id, CreateCommentDTO dto,
 			String username) {
 		Drop drop = dropDao.findById(id);
 		if (drop == null) {
@@ -80,9 +89,8 @@ public class DropService {
 		}
 
 		Account account = accountDao.findByUsername(username);
-		String commentText = (String) body.get("comment_text");
 
-		DropComment comment = dropDao.addComment(drop, account, commentText);
+		DropComment comment = dropDao.addComment(drop, account, dto.getCommentText());
 		return mapper.map(comment, GetCommentDTO.class);
 	}
 
@@ -240,8 +248,8 @@ public class DropService {
 	 /**
 	  * Deletes the place with the specified <code>placeId</code>
 	  * from the drop specified in <code>id</code> by marking
-	  * it (the link) as removed for the {@link Account} with the username
-	  * in <code>username</code>
+	  * it (the place) as removed for the {@link Account} associated
+	  * with <code>username</code>
 	  * 
 	  * @param id
 	  * @param placeId
@@ -261,6 +269,70 @@ public class DropService {
 		 
 		 Account account = accountDao.findByUsername(username);
 		 dropDao.removePlace(drop, place, account);
+	 }
+
+	 /**
+	  * Creates a {@link Tag} entity from <code>tag</code> and adds it
+	  * to the list of tags visible to the {@link Account} associated
+	  * with <code>username</code> whenever they access the drop specified
+	  * in <code>id</code>. The created entity is transforme to DTO for
+	  * purposes of consumption by {@link DropsController}
+	  * 
+	  * @param id
+	  * @param dto
+	  * @param username
+	  * @return
+	  */
+	 @Transactional
+	 public GetTagDTO addTag(Long id, CreateTagDTO dto, String username) {
+		 Drop drop = dropDao.findById(id);
+		 if (drop == null) {
+			 throw new NotFoundException();
+		 }
+		 
+		 String hash = HashUtil.md5(dto.getTag() + dto.getTagType());
+		 Tag tag = tagDao.findByHash(hash);
+		 if (tag == null) {
+			 tag = new Tag();
+			 tag.setTag(dto.getTag());
+			 tag.setTagCanonical(dto.getTag().toLowerCase());
+			 tag.setType(dto.getTagType());
+			 tag.setHash(hash);
+			 
+			 tagDao.save(tag);
+		 }
+		 
+		 Account account = accountDao.findByUsername(username);
+		 dropDao.addTag(drop, tag, account);
+		 
+		 return mapper.map(tag, GetTagDTO.class);
+	 }
+
+	 /**
+	  * Deletes the {@link Tag} from the list of tags for the drop
+	  * specified in <code>id</code> by leaving it out of the list
+	  * of tags (for this drop) accessible to the {@link Account}
+	  * associated with <code>username</code>
+	  *  
+	  * @param id
+	  * @param tagId
+	  * @param username
+	  */
+	 @Transactional
+	 public void deleteTag(long id, long tagId, String username) {
+		 Drop drop = dropDao.findById(id);
+		 
+		 if (drop == null) {
+			 throw new NotFoundException();
+		 }
+		 
+		 Tag tag = tagDao.findById(tagId);
+		 if (tag == null) {
+			 throw new NotFoundException();
+		 }
+		 
+		 Account account = accountDao.findByUsername(username);
+		 dropDao.addTag(drop, tag, account);
 	 }
 	 
 	 

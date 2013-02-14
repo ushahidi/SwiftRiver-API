@@ -25,7 +25,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 
 /**
  * Tests for {@link DropsController}
@@ -89,17 +93,16 @@ public class DropsControllerTest extends AbstractControllerTest {
 	 * Tests {@link DropsController#addComment(java.util.Map, Long, java.security.Principal)}
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void addComment() throws Exception {
-		Object[][] commentData = {{"comment_text", "Drop 10 comment"}};
-		Map<String, Object> commentText = ArrayUtils.toMap(commentData);
+		CreateCommentDTO dto = new CreateCommentDTO();
+		dto.setCommentText("Drop 10 comment");
 
 		this.mockMvc.perform(post("/v1/drops/10/comments")
 				.principal(authentication)
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsBytes(commentText )))
+				.content(new ObjectMapper().writeValueAsBytes(dto)))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.account.account_path").value("user1"));
@@ -109,17 +112,16 @@ public class DropsControllerTest extends AbstractControllerTest {
 	 * Tests {@link DropsController#addLink(Map, Long, java.security.Principal)}
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void addLink() throws Exception {
-		Object[][] linkData = {{"url", "http://www.nation.co.ke/Tech/Airtel+could+drop+low+cost+strategy+/-/1017288/1355924/-/lpa7uez/-/"}};
-		Map<String, Object> link = ArrayUtils.toMap(linkData);
-		
+		CreateLinkDTO dto = new CreateLinkDTO();
+		dto.setUrl("http://www.nation.co.ke/Tech/Airtel+could+drop+low+cost+strategy+/-/1017288/1355924/-/lpa7uez/-/");
+
 		this.mockMvc.perform(post("/v1/drops/10/links")
 				.principal(authentication)
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsBytes(link)))
+				.content(new ObjectMapper().writeValueAsBytes(dto)))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.url").value("http://www.nation.co.ke/Tech/Airtel+could+drop+low+cost+strategy+/-/1017288/1355924/-/lpa7uez/-/"));
@@ -152,20 +154,17 @@ public class DropsControllerTest extends AbstractControllerTest {
 	 * Test for {@link DropsController#addPlace(Map, long, java.security.Principal)}
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	@Test
 	public void addPlace() throws Exception {
-		Object[][] placeData = {
-				{"name", "Amsterdam"},
-				{"latitude", 52.3667},
-				{"longitude", 4.88333}
-		};
-		Map<String, Object> place = ArrayUtils.toMap(placeData);
-		
+		CreatePlaceDTO dto = new CreatePlaceDTO();
+		dto.setName("Amsterdam");
+		dto.setLatitude(52.3667f);
+		dto.setLongitude(4.88333f);
+
 		this.mockMvc.perform(post("/v1/drops/1/places")
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsBytes(place))
+				.content(new ObjectMapper().writeValueAsBytes(dto))
 				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
@@ -184,5 +183,36 @@ public class DropsControllerTest extends AbstractControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.principal(authentication))
 			.andExpect(status().isOk());
+	}
+	
+	/**
+	 * Test for {@link DropsController#addTag(CreateTagDTO, Long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void addTag() throws Exception {
+		CreateTagDTO dto = new CreateTagDTO();
+		dto.setTag("Precious Blood Riruta");
+		dto.setTagType("organisation");
+		
+		this.mockMvc.perform(post("/v1/drops/1/tags")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsBytes(dto))
+				.principal(authentication))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType("application/json;charset=UTF-8"))
+			.andExpect(jsonPath("$.tag").value("Precious Blood Riruta"));
+	}
+	
+	/**
+	 * Test for {@link DropsController#deleteTag(long, long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteTag() throws Exception {
+		this.mockMvc.perform(delete("/v1/drops/5/tags/1")
+				.principal(authentication))
+				.andExpect(status().isOk());
 	}
 }

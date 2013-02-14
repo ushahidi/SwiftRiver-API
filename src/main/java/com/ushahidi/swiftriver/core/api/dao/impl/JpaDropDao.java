@@ -484,33 +484,6 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	public void removeTag(Drop drop, Tag tag, Account account) {
-		String sql = "DELETE FROM account_droplet_tags ";
-		sql += "WHERE tag_id = :tag_id ";
-		sql += "AND droplet_id = :droplet_id ";
-		sql += "AND account_id = :account_id";
-		
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("tag_id", tag.getId());
-		query.setParameter("droplet_id", drop.getId());
-		query.setParameter("account_id", account.getId());
-		
-		if (query.executeUpdate() == 0) {
-			// No records found
-			AccountDropTag accountDropTag = new AccountDropTag();
-			accountDropTag.setAccount(account);
-			accountDropTag.setDrop(drop);
-			accountDropTag.setTag(tag);
-			accountDropTag.setDeleted(true);
-			
-			this.em.persist(accountDropTag);
-		}		
-	}
-
-	/*
-	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addPlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public void addPlace(Drop drop, Account account, Place place) {
@@ -548,6 +521,47 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 			this.em.persist(accountDropPlace);
 		}
 		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public void addTag(Drop drop, Tag tag, Account account) {
+		AccountDropTag accountDropTag = new AccountDropTag();
+		accountDropTag.setDrop(drop);
+		accountDropTag.setAccount(account);
+		accountDropTag.setTag(tag);
+		accountDropTag.setDeleted(false);
+		
+		this.em.persist(accountDropTag);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public void removeTag(Drop drop, Tag tag, Account account) {
+		String sql = "DELETE FROM account_droplet_tags ";
+		sql += "WHERE tag_id = :tag_id ";
+		sql += "AND droplet_id = :droplet_id ";
+		sql += "AND account_id = :account_id";
+		
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("tag_id", tag.getId());
+		query.setParameter("droplet_id", drop.getId());
+		query.setParameter("account_id", account.getId());
+		
+		if (query.executeUpdate() == 0) {
+			// No records found
+			AccountDropTag accountDropTag = new AccountDropTag();
+			accountDropTag.setAccount(account);
+			accountDropTag.setDrop(drop);
+			accountDropTag.setTag(tag);
+			accountDropTag.setDeleted(true);
+			
+			this.em.persist(accountDropTag);
+		}		
 	}
 
 }

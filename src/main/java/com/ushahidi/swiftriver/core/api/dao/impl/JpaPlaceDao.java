@@ -49,8 +49,8 @@ public class JpaPlaceDao extends AbstractJpaDao implements PlaceDao{
 	@SuppressWarnings("unchecked")
 	public Place findByHash(String hash) {
 		String sql = "FROM Place WHERE hash = :hash";
-		List<Place> links = (List<Place>)em.createQuery(sql).setParameter("hash", hash).getResultList();
-		return links.isEmpty() ? null : links.get(0);
+		List<Place> places = (List<Place>)em.createQuery(sql).setParameter("hash", hash).getResultList();
+		return places.isEmpty() ? null : places.get(0);
 	}
 
 	/*

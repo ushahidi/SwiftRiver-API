@@ -158,5 +158,15 @@ public interface DropDao {
 	 * @param place
 	 */
 	public void addPlace(Drop drop, Account account, Place place);
+
+	/**
+	 * Adds the {@link Tag} entity in <code>tag</code> to the list of places
+	 * for the {@link Drop} in <code>drop</code> but only accessible to the
+	 * {@link Account} in <code>account</code>
+	 * @param drop
+	 * @param tag
+	 * @param account
+	 */
+	public void addTag(Drop drop, Tag tag, Account account);
 	
 }
