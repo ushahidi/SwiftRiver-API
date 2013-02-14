@@ -57,10 +57,9 @@ public interface DropDao {
 	 * 
 	 * @param drop
 	 * @param account
-	 * @param url
-	 * @return
+	 * @param link
 	 */
-	public Link addLink(Drop drop, Account account, String url);
+	public void addLink(Drop drop, Account account, Link link);
 
 	/**
 	 * Removes a link from the list of a drop's links
@@ -148,5 +147,16 @@ public interface DropDao {
 	 * @return {@link DropComment}
 	 */
 	public DropComment addComment(Drop drop, Account account, String commentText);
+
+	/**
+	 * Adds the {@link Place} entity in <code>place</code> to the list of places
+	 * for the {@link Drop} in <code>drop</code> but only accessible to the
+	 * {@link Account} in <code>account</code>
+	 *  
+	 * @param drop
+	 * @param account
+	 * @param place
+	 */
+	public void addPlace(Drop drop, Account account, Place place);
 	
 }

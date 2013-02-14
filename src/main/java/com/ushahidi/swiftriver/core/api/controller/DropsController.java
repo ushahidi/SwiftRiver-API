@@ -118,7 +118,7 @@ public class DropsController {
 	@RequestMapping(value = "/{id}/places", method = RequestMethod.POST)
 	@ResponseBody
 	public GetPlaceDTO addPlace(@RequestBody Map<String, Object> body, @PathVariable long id, Principal principal) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return dropService.addPlace(id, principal.getName(), body);
 	}
 	
 	/**
@@ -129,7 +129,7 @@ public class DropsController {
 	 */
 	@RequestMapping(value = "/{id}/places/{placeId}", method = RequestMethod.DELETE)
 	public void deletePlace(@PathVariable long id, @PathVariable long placeId, Principal principal) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		dropService.deletePlace(id, placeId, principal.getName());
 	}
 	
 	/**

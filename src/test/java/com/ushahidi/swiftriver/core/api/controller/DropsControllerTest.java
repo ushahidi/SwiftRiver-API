@@ -147,4 +147,42 @@ public class DropsControllerTest extends AbstractControllerTest {
 				.principal(authentication))
 			.andExpect(status().isNotFound());
 	}
+	
+	/**
+	 * Test for {@link DropsController#addPlace(Map, long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void addPlace() throws Exception {
+		Object[][] placeData = {
+				{"name", "Amsterdam"},
+				{"latitude", 52.3667},
+				{"longitude", 4.88333}
+		};
+		Map<String, Object> place = ArrayUtils.toMap(placeData);
+		
+		this.mockMvc.perform(post("/v1/drops/1/places")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(new ObjectMapper().writeValueAsBytes(place))
+				.principal(authentication))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType("application/json;charset=UTF-8"))
+			.andExpect(jsonPath("$.name").value("Amsterdam"))
+			.andExpect(jsonPath("$.longitude").value(4.88333));		                     
+	}
+	
+	/**
+	 * Test for {@link DropsController#deletePlace(long, long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deletePlace() throws Exception {
+		this.mockMvc.perform(delete("/v1/drops/1/places/5")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(authentication))
+			.andExpect(status().isOk());
+	}
 }

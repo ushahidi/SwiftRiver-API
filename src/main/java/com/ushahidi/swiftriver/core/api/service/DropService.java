@@ -29,14 +29,18 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 
 /**
@@ -61,6 +65,9 @@ public class DropService {
 
 	@Autowired
 	private LinkDao linkDao;
+
+	@Autowired
+	private PlaceDao placeDao;
 	
 	@Transactional
 	public GetCommentDTO addComment(long id, Map<String, Object> body,
@@ -147,8 +154,18 @@ public class DropService {
 		}
 
 		String url = (String)body.get("url");
+		String hash = HashUtil.md5(url);
+		Link link = linkDao.findByHash(hash);
+		if (link == null) {
+			link = new Link();
+			link.setUrl(url);
+			link.setHash(hash);
+			
+			linkDao.save(link);
+		}
+
 		Account account = accountDao.findByUsername(username);
-		Link link = dropDao.addLink(drop, account, url);
+		dropDao.addLink(drop, account, link);
 
 		return mapper.map(link, GetLinkDTO.class);
 	}
@@ -181,6 +198,83 @@ public class DropService {
 		Account account = accountDao.findByUsername(username);
 		dropDao.removeLink(drop, link, account);
 	}
+
+	 /**
+	  * Adds a {@link Place} to the drop specified in <code>id</code> with
+	  * the place only accessible to the {@link Account} that is tied 
+	  * to <code>username</code>
+	  * 
+	  * @param id
+	  * @param principal
+	  * @param body
+	  * @return
+	  */
+	 @Transactional
+	 public GetPlaceDTO addPlace(long id, String username, Map<String, Object> body) {
+		 Drop drop = dropDao.findById(id);
+		 if (drop == null) {
+			 throw new NotFoundException();
+		 }
+
+		 // Validate the input data
+		 String[] keys = {"name", "latitude", "longitude"};
+		 for (String key: keys) {
+			 if (!body.containsKey(key)) {
+				 throw new BadRequestException();
+			 }
+		 }
+
+		 // Extract the properties
+		 String placeName = (String)body.get("name");
+		 Float latitude = Float.parseFloat(((Double) body.get("latitude")).toString());
+		 Float longitude = Float.parseFloat(((Double) body.get("longitude")).toString());
+
+		 String hash = HashUtil.md5(placeName + longitude.toString() + latitude.toString());
+
+		 // Generate a hash for the place name
+		 Place place = placeDao.findByHash(hash);
+		 if (place == null) {
+			 place = new Place();
+			 place.setPlaceName(placeName);
+			 place.setPlaceNameCanonical(placeName.toLowerCase());
+			 place.setHash(hash);
+			 place.setLatitude(latitude);
+			 place.setLongitude(longitude);
+
+			 placeDao.save(place);
+		 }
+
+		 Account account = accountDao.findByUsername(username);
+		 dropDao.addPlace(drop, account, place);
+
+		 return mapper.map(place, GetPlaceDTO.class);
+	 }
+
+	 /**
+	  * Deletes the place with the specified <code>placeId</code>
+	  * from the drop specified in <code>id</code> by marking
+	  * it (the link) as removed for the {@link Account} with the username
+	  * in <code>username</code>
+	  * 
+	  * @param id
+	  * @param placeId
+	  * @param username
+	  */
+	 @Transactional
+	 public void deletePlace(long id, long placeId, String username) {
+		 Drop drop = dropDao.findById(id);
+		 if (drop == null) {
+			 throw new NotFoundException();
+		 }
+		 
+		 Place place = placeDao.findById(placeId);
+		 if (place == null) {
+			 throw new NotFoundException();
+		 }
+		 
+		 Account account = accountDao.findByUsername(username);
+		 dropDao.removePlace(drop, place, account);
+	 }
 	 
 	 
 }

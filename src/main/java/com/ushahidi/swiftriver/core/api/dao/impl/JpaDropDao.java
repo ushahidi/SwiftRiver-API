@@ -28,11 +28,9 @@ import javax.persistence.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
-import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountDropLink;
 import com.ushahidi.swiftriver.core.model.AccountDropPlace;
@@ -44,7 +42,6 @@ import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
  * @author ekala
@@ -54,9 +51,6 @@ import com.ushahidi.swiftriver.core.util.HashUtil;
 public class JpaDropDao extends AbstractJpaDao implements DropDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
-	
-	@Autowired
-	private LinkDao linkDao;
 	
 	/* (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findById(long)
@@ -449,19 +443,7 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addLink(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
 	 */
-	public Link addLink(Drop drop, Account account, String url) {
-		String hash = HashUtil.md5(url);
-		
-		Link link = linkDao.findByHash(hash);
-		if (link == null) {
-			// Create new link
-			link = new Link();
-
-			link.setUrl(url);
-			link.setHash(hash);		
-			this.em.persist(link);
-		}
-		
+	public void addLink(Drop drop, Account account, Link link) {
 		// Add the link to the account
 		AccountDropLink accountDropLink = new AccountDropLink();
 		accountDropLink.setLink(link);
@@ -470,8 +452,6 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 		accountDropLink.setDeleted(false);
 
 		this.em.persist(accountDropLink);
-
-		return link;
 	}
 
 	/*
@@ -504,17 +484,57 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 
 	/*
 	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public void removeTag(Drop drop, Tag tag, Account account) {
+		String sql = "DELETE FROM account_droplet_tags ";
+		sql += "WHERE tag_id = :tag_id ";
+		sql += "AND droplet_id = :droplet_id ";
+		sql += "AND account_id = :account_id";
+		
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("tag_id", tag.getId());
+		query.setParameter("droplet_id", drop.getId());
+		query.setParameter("account_id", account.getId());
+		
+		if (query.executeUpdate() == 0) {
+			// No records found
+			AccountDropTag accountDropTag = new AccountDropTag();
+			accountDropTag.setAccount(account);
+			accountDropTag.setDrop(drop);
+			accountDropTag.setTag(tag);
+			accountDropTag.setDeleted(true);
+			
+			this.em.persist(accountDropTag);
+		}		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addPlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Place)
+	 */
+	public void addPlace(Drop drop, Account account, Place place) {
+		AccountDropPlace accountDropPlace = new AccountDropPlace();
+		accountDropPlace.setDrop(drop);
+		accountDropPlace.setPlace(place);
+		accountDropPlace.setAccount(account);
+		
+		this.em.persist(accountDropPlace);
+	}
+
+	/*
+	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removePlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Place, com.ushahidi.swiftriver.core.model.Account)
 	 */
 	public void removePlace(Drop drop, Place place, Account account) {
-		String sql = "DELETE FROM accounts_droplet_places ";
+		String sql = "DELETE FROM account_droplet_places ";
 		sql += "WHERE place_id = :place_id ";
-		sql += "AND drop_id = :drop_id ";
+		sql += "AND droplet_id = :droplet_id ";
 		sql += "AND account_id = :account_id";
 		
-		Query query = em.createNamedQuery(sql);
+		Query query = em.createNativeQuery(sql);
 		query.setParameter("place_id", place.getId());
-		query.setParameter("drop_id", drop.getId());
+		query.setParameter("droplet_id", drop.getId());
 		query.setParameter("account_id", account.getId());
 		
 		if (query.executeUpdate() == 0) {
@@ -528,33 +548,6 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 			this.em.persist(accountDropPlace);
 		}
 		
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	public void removeTag(Drop drop, Tag tag, Account account) {
-		String sql = "DELETE FROM accounts_droplet_tags ";
-		sql += "WHERE tag_id = :tag_id ";
-		sql += "AND drop_id = :drop_id ";
-		sql += "AND account_id = :account_id";
-		
-		Query query = em.createNamedQuery(sql);
-		query.setParameter("tag_id", tag.getId());
-		query.setParameter("drop_id", drop.getId());
-		query.setParameter("account_id", account.getId());
-		
-		if (query.executeUpdate() == 0) {
-			// No records found
-			AccountDropTag accountDropTag = new AccountDropTag();
-			accountDropTag.setAccount(account);
-			accountDropTag.setDrop(drop);
-			accountDropTag.setTag(tag);
-			accountDropTag.setDeleted(true);
-			
-			this.em.persist(accountDropTag);
-		}		
 	}
 
 }

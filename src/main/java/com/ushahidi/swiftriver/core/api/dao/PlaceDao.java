@@ -30,5 +30,28 @@ public interface PlaceDao  {
 	 * @param placeHashes
 	 * @return
 	 */
-	public List<Place> findByHash(ArrayList<String> placeHashes);
+	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+
+	/**
+	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
+	 * @param hash
+	 * @return
+	 */
+	public Place findByHash(String hash);
+	
+	/**
+	 * Creates a new {@link Place} record in the database
+	 * 
+	 * @param place
+	 */
+	public void save(Place place);
+
+	/**
+	 * Gets and returns a {@link Place} record using its 
+	 * unique <code>placeId</code>
+	 * 
+	 * @param placeId
+	 * @return
+	 */
+	public Place findById(long placeId);
 }

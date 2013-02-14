@@ -46,4 +46,11 @@ public interface LinkDao  {
 	 * @return
 	 */
 	public Link findByHash(String hash);
+
+	/**
+	 * Creates a new {@link Link} record in the database
+	 * 
+	 * @param link
+	 */
+	public void save(Link link);
 }
