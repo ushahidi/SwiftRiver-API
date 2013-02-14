@@ -31,10 +31,49 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import static org.hamcrest.Matchers.*;
 
 public class RiversControllerTest extends AbstractControllerTest {
+
+	@Test
+	@Transactional
+	public void createRiver() throws Exception {
+		String postBody = "{\"name\":\"Viva Riva\",\"description\":\"Like the movie\",\"public\":true}";
+		
+		this.mockMvc
+				.perform(
+						post("/v1/rivers").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(3));
+	}
+	
+	@Test
+	@Transactional
+	public void createRiverWithoutQuota() throws Exception {
+		String postBody = "{\"name\":\"Viva Riva\",\"description\":\"Like the movie\",\"public\":true}";
+		
+		this.mockMvc
+				.perform(
+						post("/v1/rivers").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user2")))
+				.andExpect(status().isForbidden());
+	}
+	
+	@Test
+	@Transactional
+	public void createRiverWithoutDuplicateName() throws Exception {
+		String postBody = "{\"name\":\"Public River 1\",\"description\":\"Like the movie\",\"public\":true}";
+		
+		this.mockMvc
+				.perform(
+						post("/v1/rivers").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest());
+	}
 
 	@Test
 	public void getRiverWithNonExistentId() throws Exception {
@@ -62,18 +101,18 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.extension_count").value(0))
 				.andExpect(jsonPath("$.channels").isArray());
 	}
-	
+
 	@Test
 	public void getDropsFromNonExistentRiver() throws Exception {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 				"user1", "password");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		this.mockMvc
-				.perform(get("/v1/rivers/9999/drops").principal(authentication))
+		this.mockMvc.perform(
+				get("/v1/rivers/9999/drops").principal(authentication))
 				.andExpect(status().isNotFound());
 	}
-	
+
 	@Test
 	public void getDropsFromEmptyRiver() throws Exception {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
@@ -82,8 +121,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 		this.mockMvc
 				.perform(get("/v1/rivers/2/drops").principal(authentication))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$").isArray())
+				.andExpect(status().isOk()).andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$").value(empty()));
 	}
 
@@ -103,12 +141,12 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].channel").exists())
 				.andExpect(jsonPath("$[0].original_id").exists())
 				.andExpect(jsonPath("$[0].original_url").exists())
-				//FIXME:.andExpect(jsonPath("$[0].original_place").exists())
+				// FIXME:.andExpect(jsonPath("$[0].original_place").exists())
 				.andExpect(jsonPath("$[0].source").exists())
 				.andExpect(jsonPath("$[0].date_published").exists())
-				//FIXME:.andExpect(jsonPath("$[0].user_score").exists())
+				// FIXME:.andExpect(jsonPath("$[0].user_score").exists())
 				.andExpect(jsonPath("$[0].comment_count").exists())
-				//FIXME: .andExpect(jsonPath("$[0].buckets").isArray())
+				// FIXME: .andExpect(jsonPath("$[0].buckets").isArray())
 				.andExpect(jsonPath("$[0].tags").isArray())
 				.andExpect(jsonPath("$[0].links").isArray())
 				.andExpect(jsonPath("$[0].media").isArray())

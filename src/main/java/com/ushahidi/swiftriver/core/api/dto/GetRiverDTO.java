@@ -29,6 +29,8 @@ public class GetRiverDTO {
 	@JsonProperty("name")
 	private String riverName;
 	
+	private String description;
+	
 	private String category;
 	
 	private Account account;
@@ -175,6 +177,14 @@ public class GetRiverDTO {
 
 	public void setRiverName(String riverName) {
 		this.riverName = riverName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public String getCategory() {

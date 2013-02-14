@@ -57,6 +57,14 @@ public interface RiverDao {
 	 * @return
 	 */
 	public River findById(long id);	
+	
+	/**
+	 * Get a River by its name
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public River findByName(String name);	
 
 	/**
 	 * Get list of drops from the given river.

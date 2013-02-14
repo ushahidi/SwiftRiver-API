@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
@@ -40,6 +41,7 @@ import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Repository
 @Transactional(readOnly = true)
@@ -60,23 +62,35 @@ public class JpaRiverDao implements RiverDao {
 	public void setEm(EntityManager em) {
 		this.em = em;
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#delete(com.ushahidi.swiftriver.core.model.River)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#delete(com.ushahidi.swiftriver
+	 * .core.model.River)
 	 */
 	public void delete(River river) {
 		em.remove(river);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#update(com.ushahidi.swiftriver.core.model.River)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#update(com.ushahidi.swiftriver
+	 * .core.model.River)
 	 */
 	public River update(River river) {
 		return em.merge(river);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#save(com.ushahidi.swiftriver.core.model.River)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#save(com.ushahidi.swiftriver
+	 * .core.model.River)
 	 */
 	@Transactional(readOnly = false)
 	public River save(River river) {
@@ -87,6 +101,26 @@ public class JpaRiverDao implements RiverDao {
 	@Override
 	public River findById(long id) {
 		River river = em.find(River.class, id);
+		return river;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findByName(java.lang.String)
+	 */
+	@Override
+	public River findByName(String name) {
+		String canonicalRiverName = TextUtil.getURLSlug(name);
+		String query = "SELECT r FROM River r WHERE r.riverNameCanonical = :river_name_canonical";
+
+		River river = null;
+		try {
+			river = (River) em.createQuery(query)
+					.setParameter("river_name_canonical", canonicalRiverName)
+					.getSingleResult();
+		} catch (NoResultException e) {
+			// Do nothing
+		}
+		
 		return river;
 	}
 

@@ -46,6 +46,11 @@ public class River {
 	@Column(name="river_name", nullable=false)
 	private String riverName;
 	
+	@Column(name="river_name_canonical", nullable=false)
+	private String riverNameCanonical;
+	
+	private String description;
+	
 	@Column(name="river_active")
 	private boolean active;
 	
@@ -128,6 +133,22 @@ public class River {
 
 	public void setRiverName(String riverName) {
 		this.riverName = riverName;
+	}
+
+	public String getRiverNameCanonical() {
+		return riverNameCanonical;
+	}
+
+	public void setRiverNameCanonical(String riverNameCanonical) {
+		this.riverNameCanonical = riverNameCanonical;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public boolean isActive() {

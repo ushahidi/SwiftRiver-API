@@ -117,5 +117,5 @@ public class AccountService {
 		accountDTO.setFollowingCount(account.getFollowing().size());
 		
 		return accountDTO;
-	}
+	}	
 }

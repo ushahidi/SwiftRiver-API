@@ -23,6 +23,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Version;
 
 @Entity
 @Table(name = "accounts")
@@ -86,6 +87,9 @@ public class Account {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinTable(name="bucket_collaborators", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
 	private List<Bucket> collaboratingBuckets;
+	
+	@Version
+	private long version;
 	
 	public Account() {
 
@@ -217,6 +221,14 @@ public class Account {
 
 	public void setFollowing(List<Account> following) {
 		this.following = following;
+	}
+
+	public long getVersion() {
+		return version;
+	}
+
+	protected void setVersion(long version) {
+		this.version = version;
 	}
 
 }

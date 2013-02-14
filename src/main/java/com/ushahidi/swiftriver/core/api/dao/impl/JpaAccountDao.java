@@ -14,6 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import javax.persistence.NoResultException;
+
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -41,9 +43,15 @@ public class JpaAccountDao extends AbstractJpaDao implements AccountDao {
 	 */
 	public Account findByUsername(String username) {
 		String query = "SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username";
-		return (Account) em.createQuery(query)
-				.setParameter("username", username)
-				.getSingleResult();
+		
+		Account account = null;
+		try {
+			account = (Account) em.createQuery(query)
+					.setParameter("username", username).getSingleResult();
+		} catch (NoResultException e) {
+			// Do nothing
+		}
+		return account;
 	}
 
 	/* (non-Javadoc)
@@ -51,8 +59,34 @@ public class JpaAccountDao extends AbstractJpaDao implements AccountDao {
 	 */
 	public Account findByName(String accountPath) {
 		String query = "SELECT a FROM Account a WHERE a.accountPath = :account_path";
-		return (Account) em.createQuery(query)
-				.setParameter("account_path", accountPath)
-				.getSingleResult();
+		
+		Account account = null;
+		try {
+			account = (Account) em.createQuery(query)
+					.setParameter("account_path", accountPath)
+					.getSingleResult();
+		} catch (NoResultException e) {
+			// Do nothing;
+		}
+		return account;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#decreaseRiverQuota(com.ushahidi.swiftriver.core.model.Account, int)
+	 */
+	public void decreaseRiverQuota(Account account, int decrement) {
+		account.setRiverQuotaRemaining(account.getRiverQuotaRemaining() - decrement);
+		update(account);
+	}
+
+	@Override
+	public Account update(Account account) {
+		return em.merge(account);
+	}
+
+	@Override
+	public Account save(Account account) {
+		em.persist(account);
+		return account;
 	}
 }

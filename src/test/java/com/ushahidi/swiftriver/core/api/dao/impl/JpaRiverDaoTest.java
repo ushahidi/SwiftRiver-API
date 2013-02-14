@@ -43,6 +43,20 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	}
 	
 	@Test
+	public void findByName() {
+		River r = riverDao.findByName("Private River 1");
+		
+		assertEquals(2, r.getId());
+	}
+	
+	@Test
+	public void findNonExistentByName() {
+		River r = riverDao.findByName("Private River 1");
+		
+		assertNull(r);
+	}
+
+	@Test
 	public void getDrops() {
 		Account account = accountDao.findById(1);
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 10, account);
@@ -103,6 +117,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		Account account = accountDao.findByUsername("user1");
 
 		river.setRiverName("Test river");
+		river.setRiverNameCanonical("test-river");
 		river.setAccount(account);
 		river.setRiverPublic(false);
 

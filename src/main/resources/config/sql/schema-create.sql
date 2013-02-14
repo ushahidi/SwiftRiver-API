@@ -85,6 +85,8 @@ CREATE TABLE IF NOT EXISTS `rivers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `river_name` varchar(255) NOT NULL DEFAULT '',
+  `river_name_canonical` varchar(255) NOT NULL DEFAULT '',
+  `description` varchar(255),
   `river_active` tinyint(4) NOT NULL DEFAULT '1',
   `river_public` tinyint(4) NOT NULL DEFAULT '0',
   `river_current` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Identifies if this is the last River that  was worked on',
@@ -100,7 +102,8 @@ CREATE TABLE IF NOT EXISTS `rivers` (
   `extension_count` int(11) NOT NULL DEFAULT '0' COMMENT 'The no. of times the expiry date has been extended',
   `public_token` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `account_id_idx` (`account_id`)
+  KEY `account_id_idx` (`account_id`),
+  UNIQUE KEY `un_river_name` (`account_id`,`river_name_canonical`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -519,6 +522,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `account_date_modified` timestamp,
   `account_active` tinyint(4) NOT NULL DEFAULT '1',
   `river_quota_remaining` INT  NULL  DEFAULT '1',
+  `version` bigint(20) unsigned  DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_path` (`account_path`),
   KEY `user_id` (`user_id`)

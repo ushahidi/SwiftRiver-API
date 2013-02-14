@@ -16,19 +16,21 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.security.core.userdetails.User;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.River;
 
 public class RiverServiceTest {
@@ -36,7 +38,7 @@ public class RiverServiceTest {
 	private River river;
 	
 	private GetRiverDTO getRiverDTO;
-
+	
 	private RiverService riverService;
 
 	private RiverDao mockedRiverDao;
@@ -66,6 +68,38 @@ public class RiverServiceTest {
 		verify(mockedRiverDao).findById(22);
 		assertEquals(getRiverDTO, actualGetRiverDTO);
 	}
-
 	
+	@Test
+	public void createRiver() {		
+		CreateRiverDTO mockedRiverTO = mock(CreateRiverDTO.class);
+		AccountDao mockedAccountDao = mock(AccountDao.class);
+		RiverDao mockedRiverDao = mock(RiverDao.class);
+		Account mockedAccount = mock(Account.class);
+		River mockedRiver = mock(River.class);
+		User mockedUser = mock(User.class);
+		Mapper mockedMapper = mock(Mapper.class);
+		GetRiverDTO mockedGetRiverTO = mock(GetRiverDTO.class);
+		
+		when(mockedUser.getUsername()).thenReturn("");
+		when(mockedAccountDao.findByUsername(anyString())).thenReturn(mockedAccount);
+		when(mockedAccount.getRiverQuotaRemaining()).thenReturn(1);
+		when(mockedRiverDao.findByName(anyString())).thenReturn(null);
+		when(mockedMapper.map(mockedRiverTO, River.class)).thenReturn(mockedRiver);
+		when(mockedRiver.getRiverName()).thenReturn("");
+		when(mockedMapper.map(mockedRiver, GetRiverDTO.class)).thenReturn(mockedGetRiverTO);
+		
+		RiverService riverService = new RiverService();
+		riverService.setAccountDao(mockedAccountDao);
+		riverService.setRiverDao(mockedRiverDao);
+		riverService.setMapper(mockedMapper);
+		
+		GetRiverDTO actualGetRiverTO = riverService.createRiver(mockedUser, mockedRiverTO);
+		
+		verify(mockedRiverDao).save(mockedRiver);
+		verify(mockedAccountDao).decreaseRiverQuota(mockedAccount, 1);
+		verify(mockedMapper).map(mockedRiver, GetRiverDTO.class);
+		
+		assertEquals(mockedGetRiverTO, actualGetRiverTO);
+		
+	}
 }

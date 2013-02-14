@@ -32,7 +32,7 @@ INSERT INTO `settings` (`id`, `key`, `value`) VALUES
 -- -----------------------------------------------------
 -- Data for table `users`
 -- -----------------------------------------------------
-INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`, created_date) VALUES 
+INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`, `created_date`) VALUES 
 (1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', 'c2bac288881c7dd9531c607e73b3af798499917760023656e9847b10b8e75542', 0, NULL, md5(rand()), '2013-01-01 00:00:00'),
 (2, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, '', '2013-01-01 00:00:01'),
 (3, 'user1@myswiftriver.com', 'User 1', 'user1', 'user1_password', 0, NULL, 'user1', '2013-01-01 00:00:02'),
@@ -53,7 +53,7 @@ INSERT INTO `accounts` (`user_id`, `account_path`, `account_private`, `account_d
 (1, 'default', 0, '2013-01-01 00:00:00', '2013-01-02 00:00:00', 1, 10),
 (2, 'public', 0, '2013-01-01 00:00:01', '2013-01-02 00:00:01', 1, 15),
 (3, 'user1', 0, '2013-01-01 00:00:02', '2013-01-02 00:00:02', 1, 20),
-(4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 25),
+(4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 0),
 (5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30);
 
 -- -----------------------------------------------------
@@ -75,9 +75,9 @@ VALUES
 -- -----------------------------------------------------
 -- Data for table `rivers`
 -- -----------------------------------------------------
-INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`) VALUES 
-(1, 3, 'Public River 1', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0),
-(2, 3, 'Private River 1', 1, 0, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0);
+INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_name_canonical`, `description`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`) VALUES 
+(1, 3, 'Public River 1', 'public-river-1', 'Just a public river', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0),
+(2, 3, 'Private River 1', 'private-river-1', NULL, 1, 0, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0);
 
 -- ------------------------------------
 -- Data for table `river_collaborators`

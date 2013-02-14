@@ -17,6 +17,21 @@ package com.ushahidi.swiftriver.core.api.dao;
 import com.ushahidi.swiftriver.core.model.Account;
 
 public interface AccountDao {
+	
+	/**
+	 * Modify an account
+	 * 
+	 * @param river
+	 */
+	public Account update(Account account);
+	
+	/**
+	 * Create an account
+	 * 
+	 * @param river
+	 * @return
+	 */
+	public Account save(Account account);
 
 	/**
 	 * Get an account by its ID
@@ -41,4 +56,12 @@ public interface AccountDao {
 	 * @return
 	 */
 	public Account findByName(String accountPath);
+	
+	/**
+	 * Reduce an account's quota by the given decrement
+	 * 
+	 * @param account
+	 * @param decrement
+	 */
+	public void decreaseRiverQuota(Account account, int decrement);
 }
