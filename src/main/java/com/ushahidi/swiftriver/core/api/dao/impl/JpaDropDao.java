@@ -458,26 +458,28 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeLink(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Link, com.ushahidi.swiftriver.core.model.Account)
 	 */
+	@SuppressWarnings("unchecked")
 	public void removeLink(Drop drop, Link link, Account account) {
-		String sql = "DELETE FROM account_droplet_links ";
-		sql += "WHERE link_id = :link_id ";
-		sql += "AND droplet_id = :droplet_id ";
-		sql += "AND account_id = :account_id";
+		String sql = "FROM AccountDropLink WHERE account = :account ";
+		sql += "AND drop = :drop AND link = :link";
 		
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("link_id", link.getId());
-		query.setParameter("droplet_id", drop.getId());
-		query.setParameter("account_id", account.getId());
+		Query query = em.createQuery(sql);
+		query.setParameter("link", link);
+		query.setParameter("drop", drop);
+		query.setParameter("account", account);
 		
-		if (query.executeUpdate() == 0) {
+		List<AccountDropLink> links = (List<AccountDropLink>) query.getResultList();
+		AccountDropLink accountDropLink = links.isEmpty() ? null : links.get(0); 
+		
+		if (accountDropLink == null || !accountDropLink.isDeleted()) {
 			// No records found
-			AccountDropLink dropLink = new AccountDropLink();
-			dropLink.setAccount(account);
-			dropLink.setDrop(drop);
-			dropLink.setLink(link);
-			dropLink.setDeleted(true);
+			accountDropLink = new AccountDropLink();
+			accountDropLink.setAccount(account);
+			accountDropLink.setDrop(drop);
+			accountDropLink.setLink(link);
+			accountDropLink.setDeleted(true);
 			
-			this.em.persist(dropLink);
+			this.em.persist(accountDropLink);
 		}
 		
 	}
@@ -499,20 +501,21 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removePlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Place, com.ushahidi.swiftriver.core.model.Account)
 	 */
+	@SuppressWarnings("unchecked")
 	public void removePlace(Drop drop, Place place, Account account) {
-		String sql = "DELETE FROM account_droplet_places ";
-		sql += "WHERE place_id = :place_id ";
-		sql += "AND droplet_id = :droplet_id ";
-		sql += "AND account_id = :account_id";
+		String sql = "FROM AccountDropPlace WHERE account = :account ";
+		sql += "AND drop = :drop and place = :place";
 		
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("place_id", place.getId());
-		query.setParameter("droplet_id", drop.getId());
-		query.setParameter("account_id", account.getId());
-		
-		if (query.executeUpdate() == 0) {
+		Query query = em.createQuery(sql);
+		query.setParameter("place", place);
+		query.setParameter("drop", drop);
+		query.setParameter("account", account);
+
+		List<AccountDropPlace> places = (List<AccountDropPlace>) query.getResultList();
+		AccountDropPlace accountDropPlace = (places.isEmpty()) ? null : places.get(0);
+		if (accountDropPlace == null || !accountDropPlace.isDeleted()) {
 			// No records found
-			AccountDropPlace accountDropPlace = new AccountDropPlace();
+			accountDropPlace = new AccountDropPlace();
 			accountDropPlace.setAccount(account);
 			accountDropPlace.setDrop(drop);
 			accountDropPlace.setPlace(place);
@@ -541,27 +544,29 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
 	 */
+	@SuppressWarnings("unchecked")
 	public void removeTag(Drop drop, Tag tag, Account account) {
-		String sql = "DELETE FROM account_droplet_tags ";
-		sql += "WHERE tag_id = :tag_id ";
-		sql += "AND droplet_id = :droplet_id ";
-		sql += "AND account_id = :account_id";
+		String sql = "FROM AccountDropTag a WHERE a.account = :account ";
+		sql += "AND a.drop = :drop AND a.tag = :tag";
+
+		Query query = em.createQuery(sql);
+		query.setParameter("account", account);
+		query.setParameter("drop", drop);
+		query.setParameter("tag", tag);
+
+		List<AccountDropTag> tags = (List<AccountDropTag>)query.getResultList();
+		AccountDropTag accountDropTag = tags.isEmpty() ? null : tags.get(0); 
 		
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("tag_id", tag.getId());
-		query.setParameter("droplet_id", drop.getId());
-		query.setParameter("account_id", account.getId());
-		
-		if (query.executeUpdate() == 0) {
+		if (accountDropTag == null || !accountDropTag.isDeleted()) {
 			// No records found
-			AccountDropTag accountDropTag = new AccountDropTag();
+			accountDropTag = new AccountDropTag();
 			accountDropTag.setAccount(account);
 			accountDropTag.setDrop(drop);
 			accountDropTag.setTag(tag);
 			accountDropTag.setDeleted(true);
 			
 			this.em.persist(accountDropTag);
-		}		
+		}
 	}
 
 }
