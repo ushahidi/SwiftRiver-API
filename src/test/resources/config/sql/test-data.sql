@@ -40,6 +40,19 @@ INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `l
 (5, 'user3@myswiftriver.com', 'User 3', 'user3', 'user3_password', 0, NULL, 'user3', '2013-01-01 00:00:04');
 
 -- -----------------------------------------------------
+-- Data for table `seq`
+-- -----------------------------------------------------
+INSERT INTO `seq` (`name`, `id`) VALUES 
+('droplets', 1),
+('tags', 1),
+('places', 1),
+('links', 1),
+('identities', 1),
+('media', 1),
+('river_tag_trends', 1),
+('rivers_droplets', 1);
+
+-- -----------------------------------------------------
 -- Data for table `roles_users`
 -- -----------------------------------------------------
 INSERT INTO `roles_users` (`user_id`, `role_id`, `account_id`) VALUES 
@@ -178,6 +191,7 @@ INSERT INTO `links` (`id`, `hash`, `url`) VALUES
 (8, '03c4313cb296f3877449f06608cd1f67', 'http://www.bbc.co.uk/news/world-asia-20337183#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa'),
 (9, '0a979780e77621d9617665dd029498cd', 'http://www.bbc.co.uk/news/uk-england-london-20339209#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa'),
 (10, 'bb9c7adf48c1f205807b92afb2034bc3', 'http://www.bbc.co.uk/sport/0/football/20319573');
+SELECT NEXTVAL('links', 10);
 
 -- -----------------------------------------------------
 -- Data for table `tags`
@@ -194,6 +208,7 @@ INSERT INTO `tags` (`id`, `hash`, `tag`, `tag_canonical`, `tag_type`) VALUES
 (9, '75005f5248fdf77037062fe6ef8a581e', 'Dave Whelan', 'dave whelan', 'person'),
 (10, '5e1223d4589aa77990c5b3b761365179', 'David Cameron', 'david cameron', 'person'),
 (11, '6e9588e3abeaf043e72036a9386add41', 'Custom Tag', 'custom tag', 'user_generated');
+SELECT NEXTVAL('tags', 11);
 
 -- -----------------------------------------------------
 -- Data for table `droplets_tags`
@@ -237,6 +252,7 @@ INSERT INTO `media` (`id`, `hash`, `url`, `type`) VALUES
 (8, '11fe4020a183598a53bac2b7ff976e8b', 'http://gigaom2.files.wordpress.com/2012/11/screen-shot-2012-11-14-at-4-25-17-am.png?w=604&#038;h=398', 'image'),
 (9, '75d74004034ed0a83f350d28e41a47a8', 'http://gigaom2.files.wordpress.com/2012/11/percolate.jpg', 'image'),
 (10, '01c656316cdc6b1db8079972e067d645', 'http://gigaom2.files.wordpress.com/2012/11/percolate.jpg?w=604&#038;h=203', 'image');
+SELECT NEXTVAL('media', 10);
 
 -- -----------------------------------------------------
 -- Data for table `media_thumbnails`
@@ -275,6 +291,7 @@ INSERT INTO `places` (`id`, `hash`, `place_name`, `place_name_canonical`, `longi
 (8, 'a03122d00783b59d218abbee8061129d', 'Pakistani', 'pakistani', 70, 30),
 (9, '7a17c2a0d99f5f274d882bdc3acc5e79', 'Heathrow', 'heathrow', -81.3722, 28.7633),
 (10, '6747703539026b8cd9bba1c68803bfe6', 'London City', 'london city', -0.09184, 51.5128);
+SELECT NEXTVAL('places', 10);
 
 -- -----------------------------------------------------
 -- Data for table `droplets_links`

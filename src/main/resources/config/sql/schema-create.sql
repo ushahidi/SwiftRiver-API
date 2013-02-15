@@ -765,3 +765,12 @@ CREATE TABLE IF NOT EXISTS `account_channel_quotas` (
   UNIQUE KEY `un_channel_option` (`account_id`, `channel`,`channel_option`),
   KEY `idx_user_id` (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- TABLE 'sequence'
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `seq` (
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `id` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

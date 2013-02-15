@@ -61,7 +61,8 @@ public class JpaLinkDao extends AbstractJpaDao implements LinkDao {
 	 * @see com.ushahidi.swiftriver.core.api.dao.LinkDao#save(com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public void save(Link link) {
-		this.em.persist(link);
+		link.setId(getSequenceNumber("links", 1));
+		this.em.merge(link);
 	}
 
 }

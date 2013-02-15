@@ -63,7 +63,8 @@ public class JpaTagDao extends AbstractJpaDao implements TagDao {
 	 * @see com.ushahidi.swiftriver.core.api.dao.TagDao#save(com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public void save(Tag tag) {
-		this.em.persist(tag);		
+		tag.setId(getSequenceNumber("tags", 1));
+		this.em.persist(tag);
 	}
 
 	/**

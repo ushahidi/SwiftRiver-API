@@ -58,6 +58,7 @@ public class JpaPlaceDao extends AbstractJpaDao implements PlaceDao{
 	 * @see com.ushahidi.swiftriver.core.api.dao.PlaceDao#save(com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public void save(Place place) {
+		place.setId(getSequenceNumber("places", 1));
 		this.em.persist(place);
 	}
 
