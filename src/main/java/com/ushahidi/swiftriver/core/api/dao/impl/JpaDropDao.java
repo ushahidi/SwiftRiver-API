@@ -471,7 +471,10 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 		List<AccountDropLink> links = (List<AccountDropLink>) query.getResultList();
 		AccountDropLink accountDropLink = links.isEmpty() ? null : links.get(0); 
 		
-		if (accountDropLink == null || !accountDropLink.isDeleted()) {
+		if (accountDropLink != null && !accountDropLink.isDeleted()) {
+			accountDropLink.setDeleted(true);
+			this.em.merge(accountDropLink);
+		} else if (accountDropLink == null) {
 			// No records found
 			accountDropLink = new AccountDropLink();
 			accountDropLink.setAccount(account);
@@ -513,7 +516,11 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 
 		List<AccountDropPlace> places = (List<AccountDropPlace>) query.getResultList();
 		AccountDropPlace accountDropPlace = (places.isEmpty()) ? null : places.get(0);
-		if (accountDropPlace == null || !accountDropPlace.isDeleted()) {
+
+		if (accountDropPlace != null && !accountDropPlace.isDeleted()) {
+			accountDropPlace.setDeleted(true);
+			this.em.merge(accountDropPlace);
+		} else if (accountDropPlace == null) {
 			// No records found
 			accountDropPlace = new AccountDropPlace();
 			accountDropPlace.setAccount(account);
@@ -557,7 +564,10 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 		List<AccountDropTag> tags = (List<AccountDropTag>)query.getResultList();
 		AccountDropTag accountDropTag = tags.isEmpty() ? null : tags.get(0); 
 		
-		if (accountDropTag == null || !accountDropTag.isDeleted()) {
+		if (accountDropTag != null && !accountDropTag.isDeleted()) {
+			accountDropTag.setDeleted(true);
+			this.em.merge(accountDropTag);
+		} else if (accountDropTag == null) {
 			// No records found
 			accountDropTag = new AccountDropTag();
 			accountDropTag.setAccount(account);
@@ -567,6 +577,7 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 			
 			this.em.persist(accountDropTag);
 		}
+		
 	}
 
 }
