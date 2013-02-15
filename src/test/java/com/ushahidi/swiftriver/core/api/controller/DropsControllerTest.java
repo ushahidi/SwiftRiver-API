@@ -63,7 +63,7 @@ public class DropsControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.[*]").isArray())
-			.andExpect(jsonPath("$.[0].account.account_path").value("user1"));
+			.andExpect(jsonPath("$.[0].account.email").value("user1@myswiftriver.com"));
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class DropsControllerTest extends AbstractControllerTest {
 				.content(new ObjectMapper().writeValueAsBytes(dto)))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
-			.andExpect(jsonPath("$.account.account_path").value("user1"));
+			.andExpect(jsonPath("$.account.email").value("user1@myswiftriver.com"));
 	}
 	
 	/**

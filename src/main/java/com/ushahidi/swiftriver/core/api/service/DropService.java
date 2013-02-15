@@ -79,6 +79,18 @@ public class DropService {
 	@Autowired
 	private TagDao tagDao;
 	
+	/**
+	 * Adds the {@link DropComment} in <code>dto</code> to the list of
+	 * comments for the drop in <code>id</code> and associates
+	 * it with the {@link Account} owned by <code>username</code>.
+	 * The created entity is transformed to DTO for purposes of consumption
+	 * by {@link DropsController}
+	 * 
+	 * @param id
+	 * @param dto
+	 * @param username
+	 * @return
+	 */
 	@Transactional
 	public GetCommentDTO addComment(long id, CreateCommentDTO dto,
 			String username) {
@@ -86,8 +98,14 @@ public class DropService {
 
 		Account account = accountDao.findByUsername(username);
 
+		// Post the comment to the database
 		DropComment comment = dropDao.addComment(drop, account, dto.getCommentText());
-		return mapper.map(comment, GetCommentDTO.class);
+
+		GetCommentDTO commentDTO =  mapper.map(comment, GetCommentDTO.class);
+		commentDTO.getAccount().setEmail(comment.getAccount().getOwner().getEmail());
+		commentDTO.getAccount().setName(comment.getAccount().getOwner().getName());
+
+		return commentDTO;
 	}
 
 	/**
@@ -104,7 +122,11 @@ public class DropService {
 		List<GetCommentDTO> dropComments = new ArrayList<GetCommentDTO>();
 		
 		for (DropComment comment: drop.getComments()) {
-			dropComments.add(mapper.map(comment, GetCommentDTO.class));
+			GetCommentDTO commentDTO = mapper.map(comment, GetCommentDTO.class);
+			commentDTO.getAccount().setEmail(comment.getAccount().getOwner().getEmail());
+			commentDTO.getAccount().setName(comment.getAccount().getOwner().getName());
+
+			dropComments.add(commentDTO);
 		}
 		
 		return dropComments;
@@ -250,7 +272,7 @@ public class DropService {
 	  * Creates a {@link Tag} entity from <code>tag</code> and adds it
 	  * to the list of tags visible to the {@link Account} associated
 	  * with <code>username</code> whenever they access the drop specified
-	  * in <code>id</code>. The created entity is transforme to DTO for
+	  * in <code>id</code>. The created entity is transformed to DTO for
 	  * purposes of consumption by {@link DropsController}
 	  * 
 	  * @param id
