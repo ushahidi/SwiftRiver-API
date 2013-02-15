@@ -98,7 +98,7 @@ public class DropsController {
 	 */
 	@RequestMapping(value = "/{id}/links", method = RequestMethod.POST)
 	@ResponseBody
-	public GetLinkDTO addLink(@RequestBody CreateLinkDTO link, @PathVariable Long id, Principal principal) {
+	public GetLinkDTO addLink(@RequestBody CreateLinkDTO link, @PathVariable long id, Principal principal) {
 		return dropService.addLink(id, link, principal.getName());
 	}
 	
@@ -109,6 +109,7 @@ public class DropsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteLink(@PathVariable long id, @PathVariable long linkId, Principal principal) {
 		dropService.deleteLink(id, linkId, principal.getName());
 	}
@@ -132,6 +133,7 @@ public class DropsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/places/{placeId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deletePlace(@PathVariable long id, @PathVariable long placeId, Principal principal) {
 		dropService.deletePlace(id, placeId, principal.getName());
 	}
@@ -154,7 +156,8 @@ public class DropsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)	
+	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteTag(@PathVariable long id, @PathVariable long tagId, Principal principal) {
 		dropService.deleteTag(id, tagId, principal.getName());
 	}

@@ -17,7 +17,6 @@
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.dozer.Mapper;
 import org.slf4j.Logger;
@@ -83,10 +82,7 @@ public class DropService {
 	@Transactional
 	public GetCommentDTO addComment(long id, CreateCommentDTO dto,
 			String username) {
-		Drop drop = dropDao.findById(id);
-		if (drop == null) {
-			throw new NotFoundException();
-		}
+		Drop drop = getDropById(id);
 
 		Account account = accountDao.findByUsername(username);
 
@@ -103,10 +99,7 @@ public class DropService {
 	 */
 	@Transactional
 	public List<GetCommentDTO> getComments(long id) {
-		Drop drop = dropDao.findById(id);
-		if (drop == null) {
-			throw new NotFoundException();
-		}
+		Drop drop = getDropById(id);
 
 		List<GetCommentDTO> dropComments = new ArrayList<GetCommentDTO>();
 		
@@ -125,12 +118,6 @@ public class DropService {
 	  */
 	 @Transactional
 	 public void deleteComment(long id, long commentId) {
-		 Drop drop = dropDao.findById(id);
-		 // Check if the drop exists
-		 if (drop == null) {
-			 throw new NotFoundException();
-		 }
-
 		 // Does the comment exist
 		 DropComment dropComment = dropDao.findCommentById(commentId);
 		 if (dropComment == null || dropComment.isDeleted() || dropComment.getDrop().getId() != id) {
@@ -153,11 +140,8 @@ public class DropService {
 	  */
 	 @Transactional
 	 public GetLinkDTO addLink(Long id, CreateLinkDTO dto, String username) {
-		Drop drop = dropDao.findById(id);
-		if (drop == null) {
-			throw new NotFoundException();
-		}
-		
+		Drop drop = getDropById(id);
+
 		if (dto.getUrl() == null || dto.getUrl().trim().length() == 0) {
 			throw new BadRequestException();
 		}
@@ -191,15 +175,12 @@ public class DropService {
 	  */
 	 @Transactional
 	 public void deleteLink(long id, long linkId, String username) {
-		Drop drop = dropDao.findById(linkId);
-		if (drop == null) {
-			throw new NotFoundException();
-		}
+		Drop drop = getDropById(linkId);
 		
 		// Does the link exist?
 		Link link = linkDao.findById(linkId);
 		if (link == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("The requested link does not exist");
 		}		
 		
 		
@@ -219,10 +200,7 @@ public class DropService {
 	  */
 	 @Transactional
 	 public GetPlaceDTO addPlace(long id, CreatePlaceDTO dto, String username) {
-		 Drop drop = dropDao.findById(id);
-		 if (drop == null) {
-			 throw new NotFoundException();
-		 }
+		 Drop drop = getDropById(id);
 
 		 String hash = HashUtil.md5(dto.getName() + Float.toString(dto.getLongitude()) +  Float.toString(dto.getLatitude()));
 
@@ -257,11 +235,8 @@ public class DropService {
 	  */
 	 @Transactional
 	 public void deletePlace(long id, long placeId, String username) {
-		 Drop drop = dropDao.findById(id);
-		 if (drop == null) {
-			 throw new NotFoundException();
-		 }
-		 
+		 Drop drop = getDropById(placeId);
+
 		 Place place = placeDao.findById(placeId);
 		 if (place == null) {
 			 throw new NotFoundException();
@@ -285,10 +260,7 @@ public class DropService {
 	  */
 	 @Transactional
 	 public GetTagDTO addTag(Long id, CreateTagDTO dto, String username) {
-		 Drop drop = dropDao.findById(id);
-		 if (drop == null) {
-			 throw new NotFoundException();
-		 }
+		 Drop drop = getDropById(id);
 		 
 		 String hash = HashUtil.md5(dto.getTag() + dto.getTagType());
 		 Tag tag = tagDao.findByHash(hash);
@@ -320,19 +292,30 @@ public class DropService {
 	  */
 	 @Transactional
 	 public void deleteTag(long id, long tagId, String username) {
-		 Drop drop = dropDao.findById(id);
-		 
-		 if (drop == null) {
-			 throw new NotFoundException();
-		 }
+		 Drop drop = getDropById(id);
 		 
 		 Tag tag = tagDao.findById(tagId);
 		 if (tag == null) {
-			 throw new NotFoundException();
+			 throw new NotFoundException("The requested tag does not exist");
 		 }
 		 
 		 Account account = accountDao.findByUsername(username);
-		 dropDao.addTag(drop, tag, account);
+		 dropDao.removeTag(drop, tag, account);
+	 }
+	 
+	 /**
+	  * Internal helper method to locate the drop in the
+	  * database
+	  * 
+	  * @param id
+	  * @return
+	  */
+	 private Drop getDropById(long id) {
+		 Drop drop = dropDao.findById(id);
+		 if (drop == null) {
+			 throw new NotFoundException("The requested drop does not exist");
+		 }
+		 return drop;
 	 }
 	 
 	 

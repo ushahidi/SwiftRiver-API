@@ -85,6 +85,7 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteBucket(@PathVariable Long id) {
 		bucketService.deleteBucket(id);
 	}
@@ -134,6 +135,7 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long accountId) {
 		bucketService.deleteCollaborator(id, accountId);
 	}
@@ -145,6 +147,7 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
+	@ResponseBody
 	public void addFollower(@RequestBody FollowerDTO body,
 			@PathVariable Long id) {
 		bucketService.addFollower(id, body);
@@ -169,6 +172,7 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteFollower(@PathVariable Long id, @PathVariable Long accountId) {
 		bucketService.deleteFollower(id, accountId);
 	}
