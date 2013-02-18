@@ -2,6 +2,9 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -13,6 +16,9 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 
 	@Autowired
 	JpaAccountDao accountDao;
+	
+	@PersistenceContext
+	protected EntityManager em;
 
 	@Test
 	public void findById() {
@@ -56,10 +62,10 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 	public void decreaseRiverQuota() {
 		Account account = accountDao.findById(1);
 		accountDao.decreaseRiverQuota(account, 3);
-		
+		em.flush();
 		String sql = "SELECT river_quota_remaining FROM `accounts` WHERE `id` = 1";
 		int quotaAfter = this.jdbcTemplate.queryForInt(sql);
 		
-		assertEquals(6, quotaAfter);
+		assertEquals(7, quotaAfter);
 	}
 }
