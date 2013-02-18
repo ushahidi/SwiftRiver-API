@@ -17,16 +17,13 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.sql.Timestamp;
-import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -52,8 +49,7 @@ public class Channel {
 	@Column(name = "date_modified")
 	private Timestamp dateModified;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="channel")
-	private List<ChannelOption> options;
+	private String parameters;
 	
 	public Channel() {
 		
@@ -107,13 +103,12 @@ public class Channel {
 		this.dateModified = dateModified;
 	}
 
-	public List<ChannelOption> getOptions() {
-		return options;
+	public String getParameters() {
+		return parameters;
 	}
 
-	public void setOptions(List<ChannelOption> options) {
-		this.options = options;
+	public void setParameters(String parameters) {
+		this.parameters = parameters;
 	}
 
-	
 }

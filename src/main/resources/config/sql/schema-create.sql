@@ -369,25 +369,11 @@ CREATE TABLE IF NOT EXISTS `river_channels` (
   `river_id` int(11) unsigned NOT NULL DEFAULT '0',
   `channel` varchar(100) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '1',
+  `parameters` TEXT,
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `date_modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
--- -----------------------------------------------------
--- Table `river_channel_options`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `river_channel_options` (
-  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `river_channel_id` BIGINT(11) UNSIGNED NOT NULL DEFAULT 0 ,
-  `key` VARCHAR(255) NOT NULL ,
-  `value` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `river_channel_id_idx` (`river_channel_id` ASC) ,
-  INDEX `key_idx` (`key` ASC) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------

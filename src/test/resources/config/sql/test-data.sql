@@ -95,14 +95,11 @@ INSERT INTO river_followers(`river_id`, `account_id`) VALUES
 -- -----------------------------------------------------
 -- Data for table `river_channels`
 -- -----------------------------------------------------
-INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `date_added`, `date_modified`) VALUES 
-(1, 1, 'rss', 1, '2013-01-02 00:00:02', '2013-02-02 00:00:02');
-
--- -----------------------------------------------------
--- Data for table `river_channel_options`
--- -----------------------------------------------------
-INSERT INTO `river_channel_options` (`id`, `river_channel_id`, `key`, `value`) VALUES
-(1, 1, 'url', '{"value":"http:\/\/www.engadget.com\/rss.xml","title":"Engadget","quota_usage":1}');
+INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `parameters`, `date_added`, `date_modified`) VALUES 
+(1, 1, 'rss', 1, '{"key":"url","value":"http:\\\/\\\/feeds.bbci.co.uk\\\/news\\\/rss.xml","title":"BBC News - Home","quota_usage":1}', '2013-01-02 00:00:01', '2013-02-02 00:00:01'),
+(2, 1, 'twitter', 1, '{"key":"track","value":"{\"keyword\":\"kenya, uganda, tanzania\",\"user\":\"69mb, @ushahidi\",\"location\":\"Nairobi\"}","quota_usage":1}', '2013-01-02 00:00:02', '2013-02-02 00:00:02'),
+(3, 1, 'facebook', 1, '{"key":"page","value":"Safaricom Kenya Facebook Page","quota_usage":1}', '2013-01-02 00:00:03', '2013-02-02 00:00:03'),
+(4, 1, 'sms', 1, NULL, '2013-01-02 00:00:04', '2013-02-02 00:00:04');
 
 -- -----------------------------------------------------
 -- Data for table `buckets`

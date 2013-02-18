@@ -3,15 +3,11 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import static org.junit.Assert.*;
 
 import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
@@ -25,7 +21,6 @@ import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.util.DateUtil;
 
 public class JpaRiverDaoTest extends AbstractDaoTest {
 	
@@ -51,7 +46,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	
 	@Test
 	public void findNonExistentByName() {
-		River r = riverDao.findByName("Private River 1");
+		River r = riverDao.findByName("River That Doesn't Exist");
 		
 		assertNull(r);
 	}
@@ -111,7 +106,6 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	}
 	
 	@Test
-	@Transactional
 	public void testCreateRiver() {
 		River river = new River();
 		Account account = accountDao.findByUsername("user1");
