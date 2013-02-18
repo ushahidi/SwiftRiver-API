@@ -16,38 +16,29 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.util.List;
-
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.model.Channel;
-import com.ushahidi.swiftriver.core.model.ChannelOption;
 
 @Repository
 public class JpaChannelDao extends AbstractJpaDao implements ChannelDao {
 
-	/**
-	 * @see {@link ChannelDao#addChannelOptions(Channel, List)}
-	 */
-	public void addChannelOptions(Channel channel, List<ChannelOption> channelOptions) {
-		for (ChannelOption option: channelOptions) {
-			option.setChannel(channel);
-			em.persist(option);
-		}
-
-		// Refresh the state of the channel
-		em.refresh(channel);
+	@Override
+	public Channel update(Channel channel) {
+		return em.merge(channel);
 	}
 
-	/**
-	 * @see {@link ChannelDao#deleteAllChannelOptions(Channel)}
-	 */
-	public void deleteAllChannelOptions(Channel channel) {
-		// Bulk delete
-		em.createQuery("DELETE FROM ChannelOption WHERE channel = ?1")
-			.setParameter(1, channel)
-			.executeUpdate();
+	@Override
+	public void delete(Channel channel) {
+		em.remove(channel);
+
+	}
+
+	@Override
+	public Channel save(Channel channel) {
+		em.persist(channel);
+		return channel;
 	}
 
 }

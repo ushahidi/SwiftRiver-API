@@ -254,4 +254,18 @@ public class RiversControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(delete("/v1/rivers/1/followers/4")).andExpect(
 				status().isOk());
 	}
+	
+	@Test
+	@Transactional
+	public void createChannel() throws Exception {
+		String postBody = "{\"channel\":\"rss\",\"parameters\":\"Like the movie\"}";
+		
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/channels").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(5));
+	}
 }

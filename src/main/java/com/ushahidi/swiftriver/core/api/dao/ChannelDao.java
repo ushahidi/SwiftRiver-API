@@ -16,24 +16,32 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.List;
-
 import com.ushahidi.swiftriver.core.model.Channel;
-import com.ushahidi.swiftriver.core.model.ChannelOption;
+
 
 public interface ChannelDao  {
 
 	/**
-	 * Adds a collection of channel options to the specified channel
+	 * Modify a channel.
+	 * 
 	 * @param channel
-	 * @param channelOptions
 	 */
-	public void addChannelOptions(Channel channel, List<ChannelOption> channelOptions);
-
+	public Channel update(Channel channel);
+	
+	
 	/**
-	 * Deletes all the channel options for the specified channel
+	 * Delete a channel
+	 * 
 	 * @param channel
 	 */
-	public void deleteAllChannelOptions(Channel channel);
+	public void delete(Channel channel);
+	
+	/**
+	 * Create a channel
+	 * 
+	 * @param channel
+	 * @return
+	 */
+	public Channel save(Channel channel);
 	
 }

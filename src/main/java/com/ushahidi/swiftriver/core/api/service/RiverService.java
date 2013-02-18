@@ -29,16 +29,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.controller.RiversController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
@@ -56,6 +60,9 @@ public class RiverService {
 
 	@Autowired
 	private AccountDao accountDao;
+	
+	@Autowired
+	private ChannelDao channelDao;
 
 	@Autowired
 	private Mapper mapper;
@@ -74,6 +81,14 @@ public class RiverService {
 
 	public void setAccountDao(AccountDao accountDao) {
 		this.accountDao = accountDao;
+	}
+
+	public ChannelDao getChannelDao() {
+		return channelDao;
+	}
+
+	public void setChannelDao(ChannelDao channelDao) {
+		this.channelDao = channelDao;
 	}
 
 	public Mapper getMapper() {
@@ -127,6 +142,28 @@ public class RiverService {
 		}
 
 		return mapper.map(river, GetRiverDTO.class);
+	}
+	
+	/**
+	 * Add a channel to the given river.
+	 * 
+	 * @param riverId
+	 * @param createChannelTO
+	 * @return
+	 */
+	public GetChannelDTO createChannel(Long riverId, CreateChannelDTO createChannelTO)
+	{
+		River river = riverDao.findById(riverId);
+
+		if (river == null) {
+			throw new NotFoundException();
+		}
+		
+		Channel channel = mapper.map(createChannelTO, Channel.class);
+		channel.setRiver(river);
+		channelDao.save(channel);
+		
+		return mapper.map(channel, GetChannelDTO.class);
 	}
 
 	/**

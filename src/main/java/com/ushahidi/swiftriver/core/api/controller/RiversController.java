@@ -33,8 +33,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -108,9 +110,9 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/channels", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<String, Object> addChannel(@RequestBody Map<String, Object> body,
+	public GetChannelDTO createChannel(@RequestBody CreateChannelDTO createChannelTO,
 			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return riverService.createChannel(id, createChannelTO);
 	}
 
 	/**

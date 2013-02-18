@@ -26,11 +26,15 @@ import org.junit.Test;
 import org.springframework.security.core.userdetails.User;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.River;
 
 public class RiverServiceTest {
@@ -101,5 +105,33 @@ public class RiverServiceTest {
 		
 		assertEquals(mockedGetRiverTO, actualGetRiverTO);
 		
+	}
+	
+	@Test
+	public void createChannel() {
+		CreateChannelDTO mockedCreateChannelTO = mock(CreateChannelDTO.class);
+		RiverDao mockedRiverDao = mock(RiverDao.class);
+		ChannelDao mockedChannelDao = mock(ChannelDao.class);
+		River mockedRiver = mock(River.class);
+		Channel mockedChannel = mock(Channel.class);
+		Mapper mockedMapper = mock(Mapper.class);
+		GetChannelDTO mockedGetChannelTO = mock(GetChannelDTO.class);
+		
+		when(mockedRiverDao.findById(1)).thenReturn(mockedRiver);
+		when(mockedMapper.map(mockedCreateChannelTO, Channel.class)).thenReturn(mockedChannel);
+		when(mockedMapper.map(mockedChannel, GetChannelDTO.class)).thenReturn(mockedGetChannelTO);
+		
+		RiverService riverService = new RiverService();
+		riverService.setMapper(mockedMapper);
+		riverService.setRiverDao(mockedRiverDao);
+		riverService.setChannelDao(mockedChannelDao);
+		
+		GetChannelDTO actualChannelTO = riverService.createChannel(1L, mockedCreateChannelTO);
+		
+		verify(mockedRiverDao).findById(1L);
+		verify(mockedChannel).setRiver(mockedRiver);
+		verify(mockedChannelDao).save(mockedChannel);
+		
+		assertEquals(mockedGetChannelTO, actualChannelTO);
 	}
 }
