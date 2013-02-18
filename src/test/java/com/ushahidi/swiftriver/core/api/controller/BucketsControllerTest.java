@@ -16,18 +16,56 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 
 public class BucketsControllerTest extends AbstractControllerTest {
+
+	private Authentication authentication;
+	
+	@Before
+	public void before() {
+		authentication = new UsernamePasswordAuthenticationToken("user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+	}
+	
+	/**
+	 * Test for {@link BucketsController#createBucket(CreateBucketDTO, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void createBucket() throws Exception {
+		CreateBucketDTO createDTO = new CreateBucketDTO();
+		createDTO.setName("Test Bucket 4");
+		createDTO.setPublished(false);
+
+		this.mockMvc.perform(post("/v1/buckets/")
+				.accept(MediaType.APPLICATION_JSON)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(authentication)
+				.content(new ObjectMapper().writeValueAsBytes(createDTO)))
+			.andExpect(status().isOk())
+			.andExpect(content().contentType("application/json;charset=UTF-8"))
+			.andExpect(jsonPath("$.name").value("Test Bucket 4"));
+	}
 
 	/**
 	 * Test for {@link BucketsController#getBucket(Long)}
@@ -35,7 +73,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void getBucket() throws Exception {
-		this.mockMvc.perform(get("/v1/buckets/1"))
+		this.mockMvc.perform(get("/v1/buckets/1")
+				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.id").value(1))
@@ -50,13 +89,14 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	@Transactional
 	public void modifyBucket() throws Exception {
-		GetBucketDTO bucketData = new GetBucketDTO();
+		CreateBucketDTO bucketData = new CreateBucketDTO();
 		bucketData.setName("Modified Test Bucket");
 		bucketData.setPublished(true);
 		
 		this.mockMvc.perform(put("/v1/buckets/1")
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
+				.principal(authentication)
 				.content(new ObjectMapper().writeValueAsBytes(bucketData)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.name").value("Modified Test Bucket"))
@@ -72,7 +112,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	@Transactional
 	public void deleteBucket() throws Exception {
-		this.mockMvc.perform(delete("/v1/buckets/1"))
+		this.mockMvc.perform(delete("/v1/buckets/1")
+				.principal(authentication))
 			.andExpect(status().isOk());
 	}
 	
@@ -84,29 +125,31 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteNonExistentBucket() throws Exception {
-		this.mockMvc.perform(delete("/v1/buckets/5000"))
+		this.mockMvc.perform(delete("/v1/buckets/5000")
+				.principal(authentication))
 			.andExpect(status().isNotFound());
 	}
 	
 	/**
-	 * Test for {@link BucketsController#addCollaborator(CollaboratorDTO, Long)}
+	 * Test for {@link BucketsController#addCollaborator(CreateCollaboratorDTO, Long)}
 	 * @throws Exception
 	 */
 	@Test
 	@Transactional
 	public void addCollaborator() throws Exception {
-		CollaboratorDTO collaborator = new CollaboratorDTO();
+		CreateCollaboratorDTO collaborator = new CreateCollaboratorDTO();
 
-		collaborator.setId(1);
+		collaborator.setId(5);
 		collaborator.setActive(false);
 		collaborator.setReadOnly(true);
 		
 		this.mockMvc.perform(post("/v1/buckets/1/collaborators")
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsBytes(collaborator)))
+				.content(new ObjectMapper().writeValueAsBytes(collaborator))
+				.principal(authentication))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.id").value(1))
+			.andExpect(jsonPath("$.id").value(5))
 			.andExpect(jsonPath("$.active").value(false))
 			.andExpect(jsonPath("$.read_only").value(true));
 	}
@@ -123,20 +166,21 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	}
 
 	/**
-	 * Test for {@link BucketsController#modifyCollaborator(CollaboratorDTO, Long, Long)}
+	 * Test for {@link BucketsController#modifyCollaborator(GetCollaboratorDTO, Long, Long)}
 	 * @throws Exception
 	 */
 	@Test
 	@Transactional
 	public void modifyCollaborator() throws Exception {
-		CollaboratorDTO collaborator = new CollaboratorDTO();
+		CreateCollaboratorDTO collaborator = new CreateCollaboratorDTO();
 		collaborator.setActive(true);
 		collaborator.setReadOnly(false);
 
 		this.mockMvc.perform(put("/v1/buckets/1/collaborators/3")
 				.accept(MediaType.APPLICATION_JSON)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsBytes(collaborator)))
+				.content(new ObjectMapper().writeValueAsBytes(collaborator))
+				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.read_only").value(false));
 	}
@@ -147,7 +191,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void getDrops() throws Exception {
-		this.mockMvc.perform(get("/v1/buckets/1/drops"))
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.[0].tags").isArray())
@@ -165,7 +210,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getDropsByMaxId() throws Exception {
 		this.mockMvc.perform(get("/v1/buckets/1/drops")
-				.param("max_id", "31"))
+				.param("max_id", "31")
+				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[0].id").value(5));
 	}
@@ -179,7 +225,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getDropsBySinceId() throws Exception {
 		this.mockMvc.perform(get("/v1/buckets/1/drops")
-				.param("since_id", "4"))
+				.param("since_id", "4")
+				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[0].id").value(5));
 	}
@@ -193,7 +240,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getDropsByChannel() throws Exception {
 		this.mockMvc.perform(get("/v1/buckets/1/drops")
-				.param("channels", "instagram,facebook"))
+				.param("channels", "instagram,facebook")
+				.principal(authentication))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[0].id").doesNotExist());
 	}

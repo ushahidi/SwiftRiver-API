@@ -66,13 +66,16 @@ public interface BucketDao {
 	public void delete(Bucket bucket);
 		
 	/**
-	 * Gets a collection of drops from a bucket using the specified parameters
+	 * Gets and returns a list of drops for the bucket specified in <code>bucketId</code>
+	 * using the request parameters in <code>requestParams</code>. The {@link Account}
+	 * in <code>account</code> is used to fetch account-specific metadata (tags, links, places etc)
 	 *  
 	 * @param bucketId
+	 * @param account
 	 * @param requestParams 
 	 * @return {@link LinkDTO}
 	 */
-	public List<Drop> getDrops(Long bucketId, Map<String, Object> requestParams);
+	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams);
 	
 	/**
 	 * Adds a single drop to a bucket
@@ -109,14 +112,15 @@ public interface BucketDao {
 	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly);
 
 	/**
-	 * Retrieves a {@link BucketCollaborator} record using the bucket id (<code>id</code>
-	 * and the account id (<code>accountId</code>) of the collaborator
+	 * Retrieves the {@link BucketCollaborator} record associated with the
+	 * {@link Account} in <code>account</code> for the {@link Bucket} specified
+	 * in <code>bucket</code>
 	 * 
-	 * @param id
-	 * @param accountId
+	 * @param bucket
+	 * @param account
 	 * @return {@link BucketCollaborator} on success, null otherwise
 	 */
-	public BucketCollaborator findCollaborator(Long id, Long accountId);
+	public BucketCollaborator findCollaborator(Bucket bucket, Account account);
 
 	/**
 	 * Modifies a bucket collaborator record 

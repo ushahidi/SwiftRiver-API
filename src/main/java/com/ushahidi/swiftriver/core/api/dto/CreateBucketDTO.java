@@ -14,34 +14,34 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+package com.ushahidi.swiftriver.core.api.dto;
 
 /**
- * Thrown when the authenticating user does not have permission to perform
- * an action.
+ * DTO mapping class for creating {@link Bucket} entities
+ * 
+ * @author ekala
  *
  */
-@ResponseStatus(value=HttpStatus.FORBIDDEN, reason="Access to the resource was denied.")
-public class ForbiddenException extends RuntimeException {
-
-	private static final long serialVersionUID = -4457094948389720427L;
-
-	public ForbiddenException(String message) {
-		super(message);
+public class CreateBucketDTO {
+	
+	private String name;
+	
+	private boolean published;
+	
+	public String getName() {
+		return name;
 	}
 
-	public ForbiddenException() {
-		super();
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public ForbiddenException(String message, Throwable cause) {
-		super(message, cause);
+	public boolean isPublished() {
+		return published;
 	}
 
-	public ForbiddenException(Throwable cause) {
-		super(cause);
+	public void setPublished(boolean published) {
+		this.published = published;
 	}
+
 }
