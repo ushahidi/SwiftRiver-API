@@ -30,7 +30,7 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
  * @author ekala
  *
  */
-public class CollaboratorDTO {
+public class GetCollaboratorDTO {
 	
 	private long id;
 	

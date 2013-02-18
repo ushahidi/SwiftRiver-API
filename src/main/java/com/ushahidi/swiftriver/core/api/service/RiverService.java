@@ -26,10 +26,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.controller.RiversController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
-import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
@@ -138,16 +140,16 @@ public class RiverService {
 
 
 	@Transactional
-	public List<CollaboratorDTO> getCollaborators(Long riverId) throws NotFoundException {
+	public List<GetCollaboratorDTO> getCollaborators(Long riverId) throws NotFoundException {
 		River river = riverDao.findById(riverId);
 		if (river == null) {
 			throw new NotFoundException();
 		}
 
-		List<CollaboratorDTO> collaborators = new ArrayList<CollaboratorDTO>();
+		List<GetCollaboratorDTO> collaborators = new ArrayList<GetCollaboratorDTO>();
 
 		for (RiverCollaborator entry: river.getCollaborators()) {
-			CollaboratorDTO dto = new CollaboratorDTO();
+			GetCollaboratorDTO dto = new GetCollaboratorDTO();
 
 			dto.setId(entry.getAccount().getId());
 			dto.setActive(entry.isActive());
@@ -168,7 +170,7 @@ public class RiverService {
 	 * @throws NotFoundException,BadRequestException
 	 */
 	@Transactional
-	public CollaboratorDTO addCollaborator(Long riverId, CollaboratorDTO body) throws NotFoundException,BadRequestException {
+	public GetCollaboratorDTO addCollaborator(Long riverId, GetCollaboratorDTO body) throws NotFoundException,BadRequestException {
 		// Check if the bucket exists
 		River river = riverDao.findById(riverId);
 		if (river == null) {
@@ -197,8 +199,8 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public CollaboratorDTO modifyCollaborator(Long riverId,
-			Long accountId, CollaboratorDTO body) {
+	public GetCollaboratorDTO modifyCollaborator(Long riverId,
+			Long accountId, CreateCollaboratorDTO body) {
 
 		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, accountId);
 
@@ -213,10 +215,7 @@ public class RiverService {
 		// Post changes to the DB
 		riverDao.updateCollaborator(collaborator);
 
-		body.setId(collaborator.getAccount().getId());
-		body.setAccountPath(collaborator.getAccount().getAccountPath());
-
-		return body;		
+		return mapCollaboratorDTO(collaborator);		
 	}
 
 	/**
@@ -319,5 +318,25 @@ public class RiverService {
 	 */
 	public boolean deleteDrop(Long id, Long dropId) {
 		return riverDao.removeDrop(id, dropId);		
+	}
+
+	/**
+	 * Maps a {@link RiverCollaborator} entity to {@link GetCollaboratorDTO}
+	 * 
+	 * @param collaborator
+	 * @return {@link GetCollaboratorDTO}
+	 */
+	private GetCollaboratorDTO mapCollaboratorDTO(RiverCollaborator collaborator) {
+
+		Account account = collaborator.getAccount();
+
+		GetCollaboratorDTO collaboratorDTO = new GetCollaboratorDTO();
+		collaboratorDTO.setId(account.getId());
+		collaboratorDTO.setAccountPath(account.getAccountPath());
+		collaboratorDTO.setActive(collaborator.isActive());
+		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
+		collaboratorDTO.setDateAdded(collaborator.getDateAdded());
+		
+		return collaboratorDTO;
 	}
 }

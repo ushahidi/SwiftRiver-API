@@ -14,14 +14,14 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -33,8 +33,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ushahidi.swiftriver.core.util.DateUtil;
-
 public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
@@ -43,6 +41,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 				status().isNotFound());
 	}
 
+	@SuppressWarnings("unused")
 	@Test
 	public void getRiverById() throws Exception {
 		SimpleDateFormat dateFormat = new SimpleDateFormat(
