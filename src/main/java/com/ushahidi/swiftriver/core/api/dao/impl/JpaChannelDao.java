@@ -41,4 +41,10 @@ public class JpaChannelDao extends AbstractJpaDao implements ChannelDao {
 		return channel;
 	}
 
+	@Override
+	public Channel findById(long id) {
+		Channel channel = em.find(Channel.class, id);
+		return channel;
+	}
+	
 }

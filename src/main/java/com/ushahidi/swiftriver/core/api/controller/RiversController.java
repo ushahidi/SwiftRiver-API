@@ -147,9 +147,10 @@ public class RiversController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/channels/{channelId}", method = RequestMethod.DELETE)
-	public void deleteChannel(@PathVariable Long id, @PathVariable Integer channelId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{riverId}/channels/{channelId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteChannel(Principal principal, @PathVariable Long riverId, @PathVariable Long channelId) {
+		riverService.deleteChannel(riverId, channelId, principal.getName());
 	}
 
 	/**

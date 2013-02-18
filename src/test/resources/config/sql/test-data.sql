@@ -49,12 +49,12 @@ INSERT INTO `roles_users` (`user_id`, `role_id`, `account_id`) VALUES
 -- -----------------------------------------------------
 -- Data for table `accounts`
 -- -----------------------------------------------------
-INSERT INTO `accounts` (`user_id`, `account_path`, `account_private`, `account_date_add`, `account_date_modified`, `account_active`, `river_quota_remaining`) VALUES 
-(1, 'default', 0, '2013-01-01 00:00:00', '2013-01-02 00:00:00', 1, 10),
-(2, 'public', 0, '2013-01-01 00:00:01', '2013-01-02 00:00:01', 1, 15),
-(3, 'user1', 0, '2013-01-01 00:00:02', '2013-01-02 00:00:02', 1, 20),
-(4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 0),
-(5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30);
+INSERT INTO `accounts` (`id`, `user_id`, `account_path`, `account_private`, `account_date_add`, `account_date_modified`, `account_active`, `river_quota_remaining`) VALUES 
+(1, 1, 'default', 0, '2013-01-01 00:00:00', '2013-01-02 00:00:00', 1, 10),
+(2, 2, 'public', 0, '2013-01-01 00:00:01', '2013-01-02 00:00:01', 1, 15),
+(3, 3, 'user1', 0, '2013-01-01 00:00:02', '2013-01-02 00:00:02', 1, 20),
+(4, 4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 0),
+(5, 5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30);
 
 -- -----------------------------------------------------
 -- Data for table `account_followers`

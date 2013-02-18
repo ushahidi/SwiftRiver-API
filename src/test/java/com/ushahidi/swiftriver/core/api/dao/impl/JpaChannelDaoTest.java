@@ -4,8 +4,14 @@ import static org.junit.Assert.*;
 
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
@@ -14,6 +20,11 @@ import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.River;
 
 public class JpaChannelDaoTest extends AbstractDaoTest {
+	
+	final Logger logger = LoggerFactory.getLogger(JpaChannelDaoTest.class);
+	
+	@PersistenceContext
+	protected EntityManager em;
 
 	@Autowired
 	RiverDao riverDao;
@@ -42,5 +53,16 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 		assertEquals(1, r.get("active"));
 		assertEquals("test parameters", r.get("parameters"));
 		
+	}
+	
+	@Test(expected=IncorrectResultSizeDataAccessException .class)
+	public void testDelete() {
+		Channel channel = channelDao.findById(3);
+		channelDao.delete(channel);
+		em.flush();
+		
+		String sql = "SELECT * FROM `river_channels` WHERE `id` = ?";
+		
+		this.jdbcTemplate.queryForMap(sql, 3);
 	}
 }

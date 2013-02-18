@@ -268,4 +268,15 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(5));
 	}
+	
+	@Test
+	@Transactional
+	public void deleteChannel() throws Exception {
+		this.mockMvc
+		.perform(
+				delete("/v1/rivers/1/channels/3")
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1")))
+		.andExpect(status().isOk());
+	}
 }

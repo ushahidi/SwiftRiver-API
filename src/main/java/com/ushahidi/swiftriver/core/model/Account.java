@@ -25,6 +25,9 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 @Entity
 @Table(name = "accounts")
 public class Account {
@@ -231,4 +234,25 @@ public class Account {
 		this.version = version;
 	}
 
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31).
+	            append(accountPath).
+	            toHashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        Account other = (Account) obj;
+        return new EqualsBuilder().
+            append(accountPath, other.accountPath).
+            isEquals();
+	}
 }

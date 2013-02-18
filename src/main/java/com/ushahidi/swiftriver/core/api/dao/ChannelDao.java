@@ -44,4 +44,12 @@ public interface ChannelDao  {
 	 */
 	public Channel save(Channel channel);
 	
+	/**
+	 * Get an account by its ID
+	 * 
+	 * @param id
+	 * @return
+	 */
+	public Channel findById(long id);
+	
 }

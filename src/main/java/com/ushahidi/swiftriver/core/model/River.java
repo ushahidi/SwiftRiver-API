@@ -31,6 +31,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 @Entity
 @Table(name="rivers")
 public class River {
@@ -287,4 +290,27 @@ public class River {
 		this.channels = channels;
 	}
 	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31).
+	            append(account).
+	            append(riverNameCanonical).
+	            toHashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        River other = (River) obj;
+        return new EqualsBuilder().
+            append(account, other.account).
+            append(riverNameCanonical, other.riverNameCanonical).
+            isEquals();
+	}
 }

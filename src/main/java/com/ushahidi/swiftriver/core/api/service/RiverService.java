@@ -60,7 +60,7 @@ public class RiverService {
 
 	@Autowired
 	private AccountDao accountDao;
-	
+
 	@Autowired
 	private ChannelDao channelDao;
 
@@ -108,7 +108,7 @@ public class RiverService {
 	@Transactional(readOnly = false)
 	public GetRiverDTO createRiver(User user, CreateRiverDTO riverTO) {
 		Account account = accountDao.findByUsername(user.getUsername());
-		
+
 		if (!(account.getRiverQuotaRemaining() > 0))
 			throw new ForbiddenException("River quota exceeded");
 
@@ -123,7 +123,7 @@ public class RiverService {
 		riverDao.save(river);
 
 		accountDao.decreaseRiverQuota(account, 1);
-		
+
 		return mapper.map(river, GetRiverDTO.class);
 	}
 
@@ -143,7 +143,7 @@ public class RiverService {
 
 		return mapper.map(river, GetRiverDTO.class);
 	}
-	
+
 	/**
 	 * Add a channel to the given river.
 	 * 
@@ -151,19 +151,42 @@ public class RiverService {
 	 * @param createChannelTO
 	 * @return
 	 */
-	public GetChannelDTO createChannel(Long riverId, CreateChannelDTO createChannelTO)
-	{
+	public GetChannelDTO createChannel(Long riverId,
+			CreateChannelDTO createChannelTO) {
 		River river = riverDao.findById(riverId);
 
 		if (river == null) {
 			throw new NotFoundException();
 		}
-		
+
 		Channel channel = mapper.map(createChannelTO, Channel.class);
 		channel.setRiver(river);
 		channelDao.save(channel);
-		
+
 		return mapper.map(channel, GetChannelDTO.class);
+	}
+
+	/**
+	 * @param riverId
+	 * @param channelId
+	 */
+	@Transactional(readOnly = false)
+	public void deleteChannel(Long riverId, Long channelId, String authUser) {
+		Channel channel = channelDao.findById(channelId);
+
+		if (channel == null)
+			throw new NotFoundException("The given channel was not found");
+
+		River river = channel.getRiver();
+		if (river.getId() != riverId)
+			throw new NotFoundException("The given river does not countain the given channel.");
+
+		Account account = accountDao.findByUsername(authUser);
+		
+		if (!isOwner(river, account))
+			throw new ForbiddenException("Logged in user does not own the bucket.");
+
+		channelDao.delete(channel);
 	}
 
 	/**
@@ -416,6 +439,7 @@ public class RiverService {
 	}
 
 	public boolean isOwner(River river, Account account) {
-		return true;
+		return river.getAccount() == account
+				|| account.getCollaboratingRivers().contains(river);
 	}
 }
