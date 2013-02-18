@@ -78,12 +78,14 @@ public interface BucketDao {
 	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams);
 	
 	/**
-	 * Adds a single drop to a bucket
+	 * Adds the {@link Drop} specified in <code>dropId</code> to the
+	 * {@link Bucket} in <code>bucket</code>
 	 * 
-	 * @param bucketId
-	 * @param drop
+	 * @param bucket
+	 * @param dropId
+	 * @return 
 	 */
-	public void addDrop(Long bucketId, Drop drop);
+	public boolean addDrop(Bucket bucket, long dropId);
 	
 	/**
 	 * Adds a collection of drops to a buckets

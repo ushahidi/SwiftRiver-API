@@ -31,6 +31,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "droplets")
@@ -99,6 +100,9 @@ public class Drop {
 	
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="drop")
 	private List<DropComment> comments;
+	
+	@Transient
+	private List<Bucket> buckets;
 
 	public Drop() {
 
@@ -246,6 +250,14 @@ public class Drop {
 
 	public void setComments(List<DropComment> comments) {
 		this.comments = comments;
+	}
+
+	public List<Bucket> getBuckets() {
+		return buckets;
+	}
+
+	public void setBuckets(List<Bucket> buckets) {
+		this.buckets = buckets;
 	}
 
 }

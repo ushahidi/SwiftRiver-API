@@ -35,6 +35,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountDropLink;
 import com.ushahidi.swiftriver.core.model.AccountDropPlace;
 import com.ushahidi.swiftriver.core.model.AccountDropTag;
+import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.Link;
@@ -120,6 +121,7 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 		populateLinks(drops, queryingAccount);
 		populateMedia(drops, queryingAccount);
 		populatePlaces(drops, queryingAccount);
+		populateBuckets(drops);
 	}
 
 	/**
@@ -375,34 +377,85 @@ public class JpaDropDao extends AbstractJpaDao implements DropDao {
 		query.setParameter("account_id", queryingAccount.getId());
 		
 		// Group the media by drop id
-				Map<Long, Place> places = new HashMap<Long, Place>();
-				for (Object oRow : query.getResultList()) {
-					Object[] r = (Object[]) oRow;
+		Map<Long, Place> places = new HashMap<Long, Place>();
+		for (Object oRow : query.getResultList()) {
+			Object[] r = (Object[]) oRow;
 
-					Long dropId = ((BigInteger) r[0]).longValue();
-					Drop drop = drops.get(dropIndex.get(dropId));
-					if (drop.getPlaces() == null) {
-						drop.setPlaces(new ArrayList<Place>());
-					}
+			Long dropId = ((BigInteger) r[0]).longValue();
+			Drop drop = drops.get(dropIndex.get(dropId));
+			if (drop.getPlaces() == null) {
+				drop.setPlaces(new ArrayList<Place>());
+			}
+
+			Long placeId = ((BigInteger) r[1]).longValue();
+			Place p = places.get(placeId);
+
+			if (p == null) {
+				p = new Place();
+				p.setId(placeId);
+				p.setPlaceName((String) r[2]);
+				p.setLatitude((Float)r[5]);
+				p.setLongitude((Float)r[6]);
+
+				places.put(placeId, p);
+			} 
+
+			// Add place to drop
+			if (!drop.getPlaces().contains(p)) {
+				drop.getPlaces().add(p);
+			}
+		}
+	}
+	
+	/**
+	 * Populates the buckets for each of the {@link Drop} 
+	 * in <code>drops</code>
+	 * 
+	 * @param drops
+	 */
+	public void populateBuckets(List<Drop> drops) {
+		Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
+		int i = 0;
+		for (Drop drop: drops) {
+			dropsIndex.put(drop.getId(), i);
+			i++;
+		}
+
+		// Query to fetch the buckets
+		String sql = "SELECT `buckets_droplets`.`droplet_id`, `buckets`.`id`, `buckets`.`bucket_name` ";
+		sql += "FROM `buckets` ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
+		sql += "WHERE `buckets_droplets`.`droplet_id` IN :dropIds ";
+		
+		Query query = this.em.createNativeQuery(sql);
+		query.setParameter("dropIds", dropsIndex.keySet());
+		
+		// Group the buckets by bucket id
+		Map<Long, Bucket> buckets = new HashMap<Long, Bucket>();
+		for (Object row: query.getResultList()) {
+			Object[] rowArray = (Object[]) row;
+			
+			Long dropId = ((BigInteger)rowArray[0]).longValue();
+			Drop drop = drops.get(dropsIndex.get(dropId));
+			if (drop.getBuckets() == null) {
+				drop.setBuckets(new ArrayList<Bucket>());
+			}
+
+			Long bucketId = ((BigInteger) rowArray[1]).longValue();
+			Bucket bucket = buckets.get(bucketId);
+			if (bucket == null) {
+				bucket = new Bucket();
+				bucket.setId(bucketId);
+				bucket.setName((String) rowArray[2]);
 				
-					Long placeId = ((BigInteger) r[1]).longValue();
-					Place p = places.get(placeId);
-					
-					if (p == null) {
-						p = new Place();
-						p.setId(placeId);
-						p.setPlaceName((String) r[2]);
-						p.setLatitude((Float)r[5]);
-						p.setLongitude((Float)r[6]);
-						
-						places.put(placeId, p);
-					} 
-					
-					// Add media to drop
-					if (!drop.getPlaces().contains(p)) {
-						drop.getPlaces().add(p);
-					}
-				}
+				buckets.put(bucketId, bucket);
+			}
+			
+			// Add bucket to the list of buckets
+			if (!drop.getBuckets().contains(bucket)) {
+				drop.getBuckets().add(bucket);
+			}
+		}
 	}
 	
 	/*

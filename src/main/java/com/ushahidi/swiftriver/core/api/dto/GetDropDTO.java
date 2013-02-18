@@ -106,8 +106,7 @@ public class GetDropDTO {
 		
 		private long id;
 		
-		@JsonProperty("name")
-		private String bucketName;
+		private String name;
 
 		public long getId() {
 			return id;
@@ -117,12 +116,12 @@ public class GetDropDTO {
 			this.id = id;
 		}
 
-		public String getBucketName() {
-			return bucketName;
+		public String getName() {
+			return name;
 		}
 
-		public void setBucketName(String bucketName) {
-			this.bucketName = bucketName;
+		public void setName(String name) {
+			this.name = name;
 		}
 	}
 	

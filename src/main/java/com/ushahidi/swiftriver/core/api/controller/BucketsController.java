@@ -152,10 +152,10 @@ public class BucketsController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
+	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public void addFollower(@PathVariable Long id, Principal principal) {
-		bucketService.addFollower(id, principal.getName());
+	public void addFollower(@PathVariable long id, @PathVariable long accountId, Principal principal) {
+		bucketService.addFollower(id, accountId, principal.getName());
 	}
 
 	/**
@@ -276,7 +276,22 @@ public class BucketsController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
 		bucketService.deleteDrop(id, dropId);
+	}
+	
+	/**
+	 * Handler for adding a drop to a bucket
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public void addDrop(@PathVariable long id, @PathVariable long dropId, Principal principal) {
+		bucketService.addDrop(id, dropId, principal.getName());
 	}
 }

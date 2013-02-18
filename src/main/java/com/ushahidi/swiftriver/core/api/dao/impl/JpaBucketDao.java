@@ -35,6 +35,7 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
@@ -82,11 +83,24 @@ public class JpaBucketDao extends AbstractJpaDao implements BucketDao {
 		return bucket;
 	}
 	
-	/**
-	 * @see BucketDao#addDrop(Long, Drop)
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addDrop(com.ushahidi.swiftriver.core.model.Bucket, long)
 	 */
-	public void addDrop(Long bucketId, Drop drop) {
-		findById(bucketId).getDrops().add(drop);
+	public boolean addDrop(Bucket bucket, long dropId) {
+		Drop drop = dropDao.findById(dropId);
+		if (drop == null) {
+			return false;
+		}
+		
+		BucketDrop bucketDrop = new BucketDrop();
+		bucketDrop.setDrop(drop);
+		bucketDrop.setBucket(bucket);
+		bucketDrop.setDateAdded(new Date());
+		
+		this.em.persist(bucketDrop);
+
+		return true;
 	}
 
 	/**
@@ -254,7 +268,7 @@ public class JpaBucketDao extends AbstractJpaDao implements BucketDao {
 		query.setParameter("bucketId", id);
 		query.setParameter("dropId", dropId);
 
-		return query.executeUpdate() > 0;
+		return query.executeUpdate() == 1;
 	}
 
 	/**
@@ -262,8 +276,8 @@ public class JpaBucketDao extends AbstractJpaDao implements BucketDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public Bucket findBucketByName(Account account, String bucketName) {
-		String jPQL = "FROM Bucket b WHERE account = :account AND name = :name";
-		Query query = this.em.createQuery(jPQL);
+		String sql = "FROM Bucket b WHERE account = :account AND name = :name";
+		Query query = this.em.createQuery(sql);
 		query.setParameter("account", account);
 		query.setParameter("name", bucketName);
 		

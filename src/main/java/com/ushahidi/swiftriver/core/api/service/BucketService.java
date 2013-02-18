@@ -65,7 +65,7 @@ public class BucketService {
 
 	@Autowired
 	private AccountDao accountDao;
-	
+
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
 
@@ -129,8 +129,7 @@ public class BucketService {
 
 		if (!bucket.isPublished() && !queryingAccount.equals(bucket.getAccount())) {
 			// Is the querying account a collaborator?
-			BucketCollaborator collaborator = bucketDao.findCollaborator(bucket, queryingAccount);
-			if (collaborator == null) {
+			if (!isCollaborator(bucket, queryingAccount, true)) {
 				throw new NotFoundException();
 			}
 		}
@@ -338,26 +337,33 @@ public class BucketService {
 	}
 
 	/**
-	 * Adds the {@link Account} with the associated with <code>username</code>
+	 * Adds the {@link Account} specified in <code>accountId</code>
 	 * to the list of followers for the {@link Bucket} identified by
 	 * <code>id</code>
 	 * 
 	 * @param id
+	 * @param accountId
 	 * @param username
 	 */
 	@Transactional(readOnly = false)
-	public void addFollower(Long id, String username) {
+	public void addFollower(long id, long accountId, String username) {
 		Bucket bucket = getBucketById(id);
 		
-		Account account = accountDao.findByUsername(username);
+		Account account = accountDao.findById(accountId);
 		if (account == null) {
 			throw new NotFoundException();
 		}
 		
+		// Verify that the account following the bucket is tied to the
+		// currently logged in user
+		if (!account.getOwner().getUsername().equals(username)) {
+			throw new UnauthorizedExpection();
+		}
+
 		// Is the account already following the bucket
 		if (bucket.getFollowers().contains(account)) {
 			LOG.error(String.format("%s  is already following bucket %d", 
-					username, id));
+					accountId, id));
 			throw new BadRequestException();
 		}
 		
@@ -409,7 +415,6 @@ public class BucketService {
 
 		bucket.getFollowers().remove(account);
 		bucketDao.update(bucket);
-		
 	}
 
 	/**
@@ -470,6 +475,30 @@ public class BucketService {
 	}
 	
 	/**
+	 * Adds the {@link Drop} specified in <code>dropId</code> to the {@link Bucket}
+	 * in <code>id</code>. The {@link Account} associated with <code>username</code>
+	 * is used to verify whether the user submitting the request is authorized
+	 *  
+	 * @param id
+	 * @param dropId
+	 * @param username
+	 */
+	@Transactional
+	public void addDrop(long id, long dropId, String username) {
+		Bucket bucket = getBucketById(id);		
+		Account account = accountDao.findByUsername(username);
+	
+		if (!isOwner(bucket, account)) {
+			throw new UnauthorizedExpection();
+		}
+		
+		if (!bucketDao.addDrop(bucket, dropId)) {
+			throw new BadRequestException();
+		}
+		
+	}
+
+	/**
 	 * Internal helper method to retrieve a bucket using its <code>id</code>
 	 * in the database
 	 * 
@@ -498,10 +527,30 @@ public class BucketService {
 	 * @return
 	 */
 	private boolean isOwner(Bucket bucket, Account account) {
-		BucketCollaborator collaborator = bucketDao.findCollaborator(bucket, account);
+		if (account.equals(bucket.getAccount())) {
+			return true;
+		}
 		
-		return (account.equals(bucket.getAccount()) || 
-				(collaborator != null && !collaborator.isReadOnly()));
+		return isCollaborator(bucket, account, false);
+
+	}
+
+	/**
+	 * Verifies whether the {@link Account} in <code>account</code> is collaborating
+	 * on the {@link Bucket} in <code>bucket</code>
+	 * 
+	 * @param bucket
+	 * @param account
+	 * @param readOnly
+	 * @return
+	 */
+	private boolean isCollaborator(Bucket bucket, Account account, boolean readOnly) {
+		BucketCollaborator collaborator = bucketDao.findCollaborator(bucket, account);
+		if (collaborator == null) {
+			return false;
+		}
+		
+		return (readOnly && collaborator.isReadOnly()); 
 	}
 
 	/**

@@ -198,7 +198,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$.[0].tags").isArray())
 			.andExpect(jsonPath("$.[0].places").isArray())
 			.andExpect(jsonPath("$.[0].media").isArray())
-			.andExpect(jsonPath("$.[0].links").isArray());
+			.andExpect(jsonPath("$.[0].links").isArray())
+			.andExpect(jsonPath("$.[0].buckets[0].name").exists());
 	}
 	
 	/**
@@ -268,5 +269,16 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	public void deleteNonExistentDrop() throws Exception {
 		this.mockMvc.perform(delete("/v1/buckets/1/drops/500000"))
 			.andExpect(status().isNotFound());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#addDrop(long, long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void addDrop() throws Exception {
+		this.mockMvc.perform(put("/v1/buckets/1/drops/10")
+				.principal(authentication))
+		.andExpect(status().isOk());
 	}
 }
