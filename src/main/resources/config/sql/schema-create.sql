@@ -369,7 +369,7 @@ CREATE TABLE IF NOT EXISTS `river_channels` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `river_id` int(11) unsigned NOT NULL DEFAULT '0',
   `channel` varchar(100) NOT NULL,
-  `active` tinyint(4) NOT NULL DEFAULT '1',
+  `active` tinyint(1) DEFAULT '1',
   `parameters` TEXT,
   `drop_count` int(11) NOT NULL DEFAULT '0',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',

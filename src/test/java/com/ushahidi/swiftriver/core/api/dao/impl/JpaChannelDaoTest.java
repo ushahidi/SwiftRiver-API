@@ -50,7 +50,7 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 				channel.getId());
 		assertEquals(2L, r.get("river_id"));
 		assertEquals("test channel", r.get("channel"));
-		assertEquals(1, r.get("active"));
+		assertEquals(true, r.get("active"));
 		assertEquals("test parameters", r.get("parameters"));
 		
 	}

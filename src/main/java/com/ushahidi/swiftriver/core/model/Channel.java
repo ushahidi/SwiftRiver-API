@@ -41,7 +41,7 @@ public class Channel {
 	@Column(name = "channel")
 	private String channel;	
 	
-	private boolean active;
+	private Boolean active;
 
 	@Column(name = "date_added")
 	private Timestamp dateAdded;
@@ -82,11 +82,11 @@ public class Channel {
 		this.channel = channel;
 	}
 
-	public boolean isActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 

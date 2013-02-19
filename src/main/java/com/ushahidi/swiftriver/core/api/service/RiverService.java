@@ -181,9 +181,7 @@ public class RiverService {
 	public GetChannelDTO modifyChannel(Long riverId, Long channelId, ModifyChannelDTO modifyChannelTO, String authUser)
 	{
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
-		channel.setActive(modifyChannelTO.isActive());
-		channel.setChannel(modifyChannelTO.getChannel());
-		channel.setParameters(modifyChannelTO.getParameters());
+		mapper.map(modifyChannelTO, channel);
 		channelDao.update(channel);
 		
 		return mapper.map(channel, GetChannelDTO.class);

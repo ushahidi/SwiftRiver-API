@@ -4,7 +4,7 @@ public class ModifyChannelDTO {
 	
 	private String channel;
 	
-	private boolean active;
+	private Boolean active;
 	
 	private String parameters;
 
@@ -16,11 +16,11 @@ public class ModifyChannelDTO {
 		this.channel = channel;
 	}
 
-	public boolean isActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
