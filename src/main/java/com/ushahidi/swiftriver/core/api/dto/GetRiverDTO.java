@@ -95,6 +95,9 @@ public class GetRiverDTO {
 		private boolean active;
 		
 		private String parameters;
+		
+		@JsonProperty("drop_count")
+		private int dropCount;
 
 		public long getId() {
 			return id;

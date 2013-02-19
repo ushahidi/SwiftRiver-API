@@ -1,5 +1,7 @@
 package com.ushahidi.swiftriver.core.api.dto;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 public class GetChannelDTO {
 
 	private long id;
@@ -9,6 +11,9 @@ public class GetChannelDTO {
 	private boolean active;
 	
 	private String parameters;
+	
+	@JsonProperty("drop_count")
+	private int dropCount;
 
 	public long getId() {
 		return id;

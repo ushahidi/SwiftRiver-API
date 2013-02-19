@@ -51,6 +51,9 @@ public class Channel {
 	
 	private String parameters;
 	
+	@Column(name = "drop_count")
+	private int dropCount;
+	
 	public Channel() {
 		
 	}
@@ -109,6 +112,14 @@ public class Channel {
 
 	public void setParameters(String parameters) {
 		this.parameters = parameters;
+	}
+
+	public int getDropCount() {
+		return dropCount;
+	}
+
+	public void setDropCount(int dropCount) {
+		this.dropCount = dropCount;
 	}
 
 }

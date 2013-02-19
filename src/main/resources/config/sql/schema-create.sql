@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS  `account_droplet_media` (
 CREATE TABLE IF NOT EXISTS `rivers_droplets` (
   `id` bigint(20) unsigned NOT NULL,
   `river_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `channel_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_date_pub` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
@@ -370,6 +371,7 @@ CREATE TABLE IF NOT EXISTS `river_channels` (
   `channel` varchar(100) NOT NULL,
   `active` tinyint(4) NOT NULL DEFAULT '1',
   `parameters` TEXT,
+  `drop_count` int(11) NOT NULL DEFAULT '0',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `date_modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
