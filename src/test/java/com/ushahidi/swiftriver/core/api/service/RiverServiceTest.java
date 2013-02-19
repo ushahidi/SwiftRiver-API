@@ -34,6 +34,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -250,5 +251,37 @@ public class RiverServiceTest {
 		riverService.deleteChannel(1L, 1L, "user");
 		
 		verify(mockChannelDao).delete(mockChannel);
+	}
+	
+	@Test
+	public void modifyChannel() {
+		ChannelDao mockChannelDao = mock(ChannelDao.class);
+		AccountDao mockAccountDao = mock(AccountDao.class);
+		Channel mockChannel = mock(Channel.class);
+		ModifyChannelDTO modifyChannelTo = mock(ModifyChannelDTO.class);
+		GetChannelDTO mockGetChannelTO = mock(GetChannelDTO.class);
+		Mapper mockMapper = mock(Mapper.class);
+		Account account = new Account();
+		account.setAccountPath("other-account");
+		account.setCollaboratingRivers(new ArrayList<River>());
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(account);
+		
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
+		when(mockChannel.getRiver()).thenReturn(river);
+		when(mockMapper.map(mockChannel, GetChannelDTO.class)).thenReturn(mockGetChannelTO);
+		
+		
+		RiverService riverService = new RiverService();
+		riverService.setChannelDao(mockChannelDao);
+		riverService.setAccountDao(mockAccountDao);
+		riverService.setMapper(mockMapper);
+		
+		GetChannelDTO actualGetChannelDTO = riverService.modifyChannel(1L, 1L, modifyChannelTo, "user");
+		
+		verify(mockChannelDao).update(mockChannel);
+		assertEquals(mockGetChannelTO, actualGetChannelDTO);
 	}
 }

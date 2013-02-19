@@ -39,6 +39,7 @@ import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -116,29 +117,17 @@ public class RiversController {
 	}
 
 	/**
-	 * Handler for getting channels defined a river.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/channels", method = RequestMethod.GET)
-	@ResponseBody
-	public List<Map<String, Object>> getChannels(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
-	}
-
-	/**
 	 * Handler for modifying an existing channel.
 	 * @param body
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/channels/{channelId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{riverId}/channels/{channelId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Map<String, Object> modifyChannel(@PathVariable Long id,
-			@PathVariable Integer channelId,
-			@RequestBody Map<String, Object> body) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetChannelDTO modifyChannel(Principal principal, @PathVariable Long riverId,
+			@PathVariable Long channelId,
+			@RequestBody ModifyChannelDTO modifyChannelTO) {
+		return riverService.modifyChannel(riverId, channelId, modifyChannelTO, principal.getName());
 	}
 
 	/**

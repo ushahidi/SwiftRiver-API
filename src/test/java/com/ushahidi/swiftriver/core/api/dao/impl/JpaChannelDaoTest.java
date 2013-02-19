@@ -65,4 +65,20 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 		
 		this.jdbcTemplate.queryForMap(sql, 3);
 	}
+	
+	@Test
+	public void updateChannel()
+	{
+		Channel channel = channelDao.findById(1L);
+		channel.setChannel("updated-channel");
+		channel.setParameters("updated-parameters");
+		channelDao.update(channel);
+		em.flush();
+		
+		String sql = "SELECT `channel`, `parameters` FROM `river_channels` WHERE `id` = ?";
+		
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1);
+		assertEquals("updated-channel", (String)results.get("channel"));
+		assertEquals("updated-parameters", (String)results.get("parameters"));
+	}
 }

@@ -279,4 +279,21 @@ public class RiversControllerTest extends AbstractControllerTest {
 						.principal(getAuthentication("user1")))
 		.andExpect(status().isOk());
 	}
+	
+	@Test
+	@Transactional
+	public void modifyChannel() throws Exception {
+		String putBody = "{\"channel\":\"rss\",\"active\":true,\"parameters\":\"Rike the movie\"}";
+		
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1/channels/1").content(putBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(jsonPath("$.channel").value("rss"))
+				.andExpect(jsonPath("$.active").value(true))
+				.andExpect(jsonPath("$.parameters").value("Rike the movie"));
+	}
 }
