@@ -14,6 +14,10 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.List;
+
+import javax.persistence.Query;
+
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -49,10 +53,13 @@ public class JpaAccountDao extends AbstractJpaDao implements AccountDao {
 	/* (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#findByName(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	public Account findByName(String accountPath) {
-		String query = "SELECT a FROM Account a WHERE a.accountPath = :account_path";
-		return (Account) em.createQuery(query)
-				.setParameter("account_path", accountPath)
-				.getSingleResult();
+		String sql = "SELECT a FROM Account a WHERE a.accountPath = :account_path";
+		Query query = em.createQuery(sql);
+		query.setParameter("account_path", accountPath);
+		List<Account> accounts = (List<Account>) query.getResultList();
+		
+		return accounts.isEmpty() ? null : accounts.get(0);
 	}
 }
