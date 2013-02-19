@@ -49,7 +49,7 @@ public class RiverServiceTest {
 
 		RiverDao mockedRiverDao = mock(RiverDao.class);
 
-		when(mockedRiverDao.findById(anyInt())).thenReturn(river);
+		when(mockedRiverDao.findById(anyLong())).thenReturn(river);
 
 		Mapper mockedMapper = mock(Mapper.class);
 		GetRiverDTO getRiverDTO = mock(GetRiverDTO.class);
@@ -62,7 +62,7 @@ public class RiverServiceTest {
 
 		GetRiverDTO actualGetRiverDTO = riverService.getRiverById(22L);
 
-		verify(mockedRiverDao).findById(22);
+		verify(mockedRiverDao).findById(22L);
 		assertEquals(getRiverDTO, actualGetRiverDTO);
 	}
 
@@ -96,7 +96,7 @@ public class RiverServiceTest {
 		GetRiverDTO actualGetRiverTO = riverService.createRiver(mockedUser,
 				mockedRiverTO);
 
-		verify(mockedRiverDao).save(mockedRiver);
+		verify(mockedRiverDao).create(mockedRiver);
 		verify(mockedAccountDao).decreaseRiverQuota(mockedAccount, 1);
 		verify(mockedMapper).map(mockedRiver, GetRiverDTO.class);
 
@@ -114,7 +114,7 @@ public class RiverServiceTest {
 		Mapper mockedMapper = mock(Mapper.class);
 		GetChannelDTO mockedGetChannelTO = mock(GetChannelDTO.class);
 
-		when(mockedRiverDao.findById(1)).thenReturn(mockedRiver);
+		when(mockedRiverDao.findById(1L)).thenReturn(mockedRiver);
 		when(mockedMapper.map(mockedCreateChannelTO, Channel.class))
 				.thenReturn(mockedChannel);
 		when(mockedMapper.map(mockedChannel, GetChannelDTO.class)).thenReturn(
@@ -130,7 +130,7 @@ public class RiverServiceTest {
 
 		verify(mockedRiverDao).findById(1L);
 		verify(mockedChannel).setRiver(mockedRiver);
-		verify(mockedChannelDao).save(mockedChannel);
+		verify(mockedChannelDao).create(mockedChannel);
 
 		assertEquals(mockedGetChannelTO, actualChannelTO);
 	}

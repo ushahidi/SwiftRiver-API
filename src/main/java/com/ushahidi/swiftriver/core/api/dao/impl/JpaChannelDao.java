@@ -22,29 +22,6 @@ import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.model.Channel;
 
 @Repository
-public class JpaChannelDao extends AbstractJpaDao implements ChannelDao {
+public class JpaChannelDao extends AbstractJpaDao<Channel> implements ChannelDao {
 
-	@Override
-	public Channel update(Channel channel) {
-		return em.merge(channel);
-	}
-
-	@Override
-	public void delete(Channel channel) {
-		em.remove(channel);
-
-	}
-
-	@Override
-	public Channel save(Channel channel) {
-		em.persist(channel);
-		return channel;
-	}
-
-	@Override
-	public Channel findById(long id) {
-		Channel channel = em.find(Channel.class, id);
-		return channel;
-	}
-	
 }

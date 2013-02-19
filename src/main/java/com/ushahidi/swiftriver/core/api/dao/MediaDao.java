@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Media;
 
-public interface MediaDao  {
+public interface MediaDao extends GenericDao<Media> {
 	
 	/**
 	 * Gets and returns a list of media entities with the

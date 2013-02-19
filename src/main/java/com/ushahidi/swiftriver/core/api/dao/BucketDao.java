@@ -25,46 +25,8 @@ import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
 
-/**
- * Database operations for a bucket
- * 
- * @author ekala
- *
- */
-public interface BucketDao {
+public interface BucketDao extends GenericDao<Bucket> {
 	
-	/**
-	 * Create a bucket.
-	 * 
-	 * @param bucket
-	 * @return
-	 */
-	public Bucket save(Bucket bucket);
-	
-	/**
-	 * Modify and existing bucket.
-	 * 
-	 * @param bucket
-	 * @return
-	 */
-	public Bucket update(Bucket bucket);
-	
-	/**
-	 * Get a bucket using its id.
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public Bucket findById(long id);
-	
-	
-	/**
-	 * Delete a bucket.
-	 * 
-	 * @param bucket
-	 */
-	public void delete(Bucket bucket);
-		
 	/**
 	 * Gets a collection of drops from a bucket using the specified parameters
 	 *  

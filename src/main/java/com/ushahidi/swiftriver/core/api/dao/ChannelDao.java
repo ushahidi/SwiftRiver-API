@@ -19,37 +19,8 @@ package com.ushahidi.swiftriver.core.api.dao;
 import com.ushahidi.swiftriver.core.model.Channel;
 
 
-public interface ChannelDao  {
 
-	/**
-	 * Modify a channel.
-	 * 
-	 * @param channel
-	 */
-	public Channel update(Channel channel);
-	
-	
-	/**
-	 * Delete a channel
-	 * 
-	 * @param channel
-	 */
-	public void delete(Channel channel);
-	
-	/**
-	 * Create a channel
-	 * 
-	 * @param channel
-	 * @return
-	 */
-	public Channel save(Channel channel);
-	
-	/**
-	 * Get an account by its ID
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public Channel findById(long id);
+public interface ChannelDao  extends GenericDao<Channel> {
+
 	
 }

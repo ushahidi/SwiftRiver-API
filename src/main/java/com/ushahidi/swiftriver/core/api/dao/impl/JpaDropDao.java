@@ -41,18 +41,10 @@ import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
 @Transactional
-public class JpaDropDao extends AbstractJpaDao implements DropDao {
+public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
 	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findById(long)
-	 */
-	public Drop findById(long id) {
-		Drop drop = em.find(Drop.class, id);
-		return drop;
-	}
-
 	/**
 	 * @see DropDao#createDrops(Collection)
 	 */

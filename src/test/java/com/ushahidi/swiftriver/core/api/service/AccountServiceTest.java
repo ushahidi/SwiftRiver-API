@@ -15,8 +15,7 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,7 +55,7 @@ public class AccountServiceTest {
 		getAccountDTO = new GetAccountDTO();
 		
 		mockedAccountDao = mock(AccountDao.class);		
-		when(mockedAccountDao.findById(anyInt())).thenReturn(account);
+		when(mockedAccountDao.findById(anyLong())).thenReturn(account);
 		when(mockedAccountDao.findByUsername(anyString())).thenReturn(account);
 		when(mockedAccountDao.findByName(anyString())).thenReturn(account);
 		
@@ -70,9 +69,9 @@ public class AccountServiceTest {
 
 	@Test
 	public void findById() throws NotFoundException {
-		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13);
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13L);
 
-		verify(mockedAccountDao).findById(13);
+		verify(mockedAccountDao).findById(13L);
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 

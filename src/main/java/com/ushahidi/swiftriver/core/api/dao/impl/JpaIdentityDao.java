@@ -27,7 +27,7 @@ import com.ushahidi.swiftriver.core.api.dao.IdentityDao;
 import com.ushahidi.swiftriver.core.model.Identity;
 
 @Repository
-public class JpaIdentityDao extends AbstractJpaDao implements IdentityDao {
+public class JpaIdentityDao extends AbstractJpaDao<Identity> implements IdentityDao {
 
 	/**
 	 * @see IdentityDao#findIdentitiesByHash(ArrayList)

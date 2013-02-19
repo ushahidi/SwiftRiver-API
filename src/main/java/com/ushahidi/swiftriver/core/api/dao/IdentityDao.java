@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Identity;
 
-public interface IdentityDao  {
+public interface IdentityDao  extends GenericDao<Identity> {
 	
 	/**
 	 * Returns all identity entities with a hash in @param identityHashes

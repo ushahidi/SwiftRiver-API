@@ -16,8 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.Date;
-
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.ushahidi.swiftriver.core.model.Bucket;

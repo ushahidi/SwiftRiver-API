@@ -30,7 +30,7 @@ import com.ushahidi.swiftriver.core.model.Media;
  *
  */
 @Repository
-public class JpaMediaDao extends AbstractJpaDao implements MediaDao {
+public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 
 	/**
 	 * @see MediaDao#findByHash(ArrayList) 

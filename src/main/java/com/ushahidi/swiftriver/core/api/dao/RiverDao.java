@@ -25,38 +25,7 @@ import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 
-public interface RiverDao {
-	
-	/**
-	 * Modify a river.
-	 * 
-	 * @param river
-	 */
-	public River update(River river);
-	
-	
-	/**
-	 * Delete a river
-	 * 
-	 * @param river
-	 */
-	public void delete(River river);
-	
-	/**
-	 * Create a river
-	 * 
-	 * @param river
-	 * @return
-	 */
-	public River save(River river);
-	
-	/**
-	 * Get a River by its ID
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public River findById(long id);	
+public interface RiverDao extends GenericDao<River> {
 	
 	/**
 	 * Get a River by its name

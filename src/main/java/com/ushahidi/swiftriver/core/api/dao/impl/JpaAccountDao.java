@@ -22,17 +22,7 @@ import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Repository
-public class JpaAccountDao extends AbstractJpaDao implements AccountDao {
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.ushahidi.swiftriver.core.data.dao.AccountDao#findById(long)
-	 */
-	public Account findById(long id) {
-		Account account = em.find(Account.class, id);
-		return account;
-	}
+public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao {
 
 	/*
 	 * (non-Javadoc)
@@ -77,14 +67,5 @@ public class JpaAccountDao extends AbstractJpaDao implements AccountDao {
 	public void decreaseRiverQuota(Account account, int decrement) {
 		account.setRiverQuotaRemaining(account.getRiverQuotaRemaining() - decrement);
 		update(account);
-	}
-
-	public Account update(Account account) {
-		return em.merge(account);
-	}
-
-	public Account save(Account account) {
-		em.persist(account);
-		return account;
 	}
 }

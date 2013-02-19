@@ -120,7 +120,7 @@ public class RiverService {
 		River river = mapper.map(riverTO, River.class);
 		river.setRiverNameCanonical(TextUtil.getURLSlug(river.getRiverName()));
 		river.setAccount(account);
-		riverDao.save(river);
+		riverDao.create(river);
 
 		accountDao.decreaseRiverQuota(account, 1);
 
@@ -161,7 +161,7 @@ public class RiverService {
 
 		Channel channel = mapper.map(createChannelTO, Channel.class);
 		channel.setRiver(river);
-		channelDao.save(channel);
+		channelDao.create(channel);
 
 		return mapper.map(channel, GetChannelDTO.class);
 	}

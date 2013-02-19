@@ -34,14 +34,14 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 
 	@Test
 	public void testCreateChannel() {
-		River river = riverDao.findById(2);
+		River river = riverDao.findById(2L);
 
 		Channel channel = new Channel();
 		channel.setChannel("test channel");
 		channel.setParameters("test parameters");
 		channel.setActive(true);
 		channel.setRiver(river);
-		channelDao.save(channel);
+		channelDao.create(channel);
 
 		assertNotNull(channel.getId());
 		String sql = "SELECT `river_id`, `channel`, `active`, `parameters` FROM `river_channels` WHERE `id` = ?";
@@ -57,7 +57,7 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 	
 	@Test(expected=IncorrectResultSizeDataAccessException .class)
 	public void testDelete() {
-		Channel channel = channelDao.findById(3);
+		Channel channel = channelDao.findById(3L);
 		channelDao.delete(channel);
 		em.flush();
 		

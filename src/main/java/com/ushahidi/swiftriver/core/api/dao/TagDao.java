@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Tag;
 
-public interface TagDao  {
+public interface TagDao extends GenericDao<Tag> {
 	
 	/**
 	 * Given a list of hashes, finds and returns all tags whose

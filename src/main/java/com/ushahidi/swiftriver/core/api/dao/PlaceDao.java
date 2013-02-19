@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Place;
 
-public interface PlaceDao  {
+public interface PlaceDao extends GenericDao<Place> {
 	
 	/**
 	 * Gets and returns all place entities with the specified

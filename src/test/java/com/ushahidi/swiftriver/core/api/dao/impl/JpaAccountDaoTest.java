@@ -22,7 +22,7 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 
 	@Test
 	public void findById() {
-		Account account = accountDao.findById(5);
+		Account account = accountDao.findById(5L);
 
 		assertNotNull(account);
 		assertEquals("user3", account.getAccountPath());
@@ -60,7 +60,7 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 	
 	@Test
 	public void decreaseRiverQuota() {
-		Account account = accountDao.findById(1);
+		Account account = accountDao.findById(1L);
 		accountDao.decreaseRiverQuota(account, 3);
 		em.flush();
 		String sql = "SELECT river_quota_remaining FROM `accounts` WHERE `id` = 1";

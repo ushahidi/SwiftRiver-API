@@ -79,7 +79,7 @@ public class BucketService {
 //		bucket.setAccount(account);
 		
 		// Save bucket
-		bucketDao.save(bucket);
+		bucketDao.create(bucket);
 		
 		return mapper.map(bucket, BucketDTO.class);
 	}

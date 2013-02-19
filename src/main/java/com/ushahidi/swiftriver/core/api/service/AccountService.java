@@ -61,7 +61,7 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException 
 	 */
-	public GetAccountDTO getAccountById(long id) throws NotFoundException {
+	public GetAccountDTO getAccountById(Long id) throws NotFoundException {
 		Account account = accountDao.findById(id);
 		
 		if (account == null) {

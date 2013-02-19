@@ -16,31 +16,8 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import com.ushahidi.swiftriver.core.model.Account;
 
-public interface AccountDao {
-	
-	/**
-	 * Modify an account
-	 * 
-	 * @param river
-	 */
-	public Account update(Account account);
-	
-	/**
-	 * Create an account
-	 * 
-	 * @param river
-	 * @return
-	 */
-	public Account save(Account account);
-
-	/**
-	 * Get an account by its ID
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public Account findById(long id);
-	
+public interface AccountDao extends GenericDao<Account> {
+		
 	/**
 	 * Get an account by its username
 	 * 

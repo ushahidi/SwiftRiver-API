@@ -30,7 +30,7 @@ import com.ushahidi.swiftriver.core.model.Place;
  *
  */
 @Repository
-public class JpaPlaceDao extends AbstractJpaDao implements PlaceDao{
+public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao{
 
 	/**
 	 * @see PlaceDao#findByHash(ArrayList)

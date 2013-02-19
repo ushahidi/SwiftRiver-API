@@ -32,7 +32,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 	@Test
 	public void findById() {
-		River r = riverDao.findById(1);
+		River r = riverDao.findById(1L);
 		
 		assertEquals("Public River 1", r.getRiverName());
 	}
@@ -53,7 +53,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 	@Test
 	public void getDrops() {
-		Account account = accountDao.findById(1);
+		Account account = accountDao.findById(1L);
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 10, account);
 		
 		assertEquals(5, drops.size());
@@ -115,7 +115,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		river.setAccount(account);
 		river.setRiverPublic(false);
 
-		riverDao.save(river);
+		riverDao.create(river);
 		
 		assertNotNull(river.getId());
 		String sql = "SELECT river_name, account_id FROM `rivers` WHERE `id` = ?";

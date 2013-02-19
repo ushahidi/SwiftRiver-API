@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.slf4j.Logger;
@@ -45,64 +43,12 @@ import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Repository
 @Transactional(readOnly = true)
-public class JpaRiverDao implements RiverDao {
+public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaRiverDao.class);
 
-	@PersistenceContext
-	private EntityManager em;
-
 	@Autowired
 	private DropDao dropsDao;
-
-	public EntityManager getEm() {
-		return em;
-	}
-
-	public void setEm(EntityManager em) {
-		this.em = em;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#delete(com.ushahidi.swiftriver
-	 * .core.model.River)
-	 */
-	public void delete(River river) {
-		em.remove(river);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#update(com.ushahidi.swiftriver
-	 * .core.model.River)
-	 */
-	public River update(River river) {
-		return em.merge(river);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#save(com.ushahidi.swiftriver
-	 * .core.model.River)
-	 */
-	@Transactional(readOnly = false)
-	public River save(River river) {
-		em.persist(river);
-		return river;
-	}
-
-	@Override
-	public River findById(long id) {
-		River river = em.find(River.class, id);
-		return river;
-	}
 
 	/* (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findByName(java.lang.String)
