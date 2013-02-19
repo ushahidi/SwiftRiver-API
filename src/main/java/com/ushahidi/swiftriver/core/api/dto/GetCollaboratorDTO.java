@@ -39,6 +39,8 @@ public class GetCollaboratorDTO {
 	@JsonProperty("account_path")
 	private String accountPath;
 	
+	private String email;
+	
 	private boolean active;
 	
 	@JsonProperty("read_only")
@@ -69,6 +71,14 @@ public class GetCollaboratorDTO {
 
 	public void setAccountPath(String accountPath) {
 		this.accountPath = accountPath;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public boolean isActive() {

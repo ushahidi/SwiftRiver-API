@@ -41,8 +41,9 @@ public class GetBucketDTO {
 	
 	@JsonProperty("public")
 	private boolean published;
-	
-	private boolean active;
+
+	@JsonProperty("default_layout")
+	private String defaultLayout;
 	
 	private Account account;
 	
@@ -118,12 +119,12 @@ public class GetBucketDTO {
 		this.published = published;
 	}
 
-	public boolean isActive() {
-		return active;
+	public String getDefaultLayout() {
+		return defaultLayout;
 	}
 
-	public void setActive(boolean active) {
-		this.active = active;
+	public void setDefaultLayout(String defaultLayout) {
+		this.defaultLayout = defaultLayout;
 	}
 
 	public Account getAccount() {

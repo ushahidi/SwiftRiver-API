@@ -88,6 +88,10 @@ public class BucketService {
 		// Get the bucket name
 		String bucketName = createDTO.getName();
 		
+		if (bucketName == null) {
+			throw new BadRequestException("The bucket name must be specified");
+		}
+		
 		Account account = accountDao.findByUsername(username);
 		
 		// Check if a bucket with the specified name already exists
@@ -95,10 +99,12 @@ public class BucketService {
 			throw new BadRequestException(String.format("User %s already has a bucket named %s",
 					username, bucketName));
 		}
-
+		
 		Bucket bucket = new Bucket();
-		bucket.setName(createDTO.getName());
-		bucket.setPublished(createDTO.isPublished());
+		bucket.setName(bucketName);
+		if (createDTO.isPublished() != null) {
+			bucket.setPublished(createDTO.isPublished());
+		}
 		bucket.setAccount(account);
 		bucket.setDateAdded(new Date());
 		
@@ -139,7 +145,7 @@ public class BucketService {
 
 	/**
 	 * Modifies a bucket with the specified <code>id</code> using
-	 * the information provided in <code>createDTO</code>
+	 * the information provided in <code>modifiedBucket</code>
 	 * If the {@link Account} associated with <code>username</code>
 	 * is not the creator of the bucket or is not a collaborator with
 	 * edit privileges, an {@link UnauthorizedExpection} is throw.
@@ -148,17 +154,17 @@ public class BucketService {
 	 * of consumption by {@link BucketsController}
 	 * 
 	 * @param id
-	 * @param createDTO
+	 * @param modifiedBucket
 	 * @param username
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public GetBucketDTO modifyBucket(Long id, CreateBucketDTO createDTO, String username) {
+	public GetBucketDTO modifyBucket(Long id, CreateBucketDTO modifiedBucket, String username) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
 			throw new NotFoundException();
 		}
-		
+
 		Account account = accountDao.findByUsername(username);
 
 		// Is the account the creator of the bucket or a collaborator with edit privileges?
@@ -168,18 +174,33 @@ public class BucketService {
 		}
 
 		// Get the submitted name
-		String bucketName = createDTO.getName();
+		String bucketName = modifiedBucket.getName();
+
+		if (bucketName == null) {
+			throw new BadRequestException("The bucket name must be specified");
+		}
 
 		// Check if the owner already has a bucket with the
 		// specified name
-		if (!bucket.getName().equals(bucketName) && 
-				bucketDao.findBucketByName(bucket.getAccount(), bucketName) != null) {
-			throw new BadRequestException();
+		Bucket existingBucket = bucketDao.findBucketByName(bucket.getAccount(), bucketName); 
+		if (!bucket.getName().equals(bucketName) && existingBucket != null && 
+				existingBucket.getId() != bucket.getId()) {
+			throw new BadRequestException(String.format("Another bucket named %s already exists", bucketName));
+		}
+
+		bucket.setName(bucketName);
+
+		// Have the privacy settings changed?
+		if (modifiedBucket.isPublished() != null) {
+			bucket.setPublished(modifiedBucket.isPublished());
+		}
+
+		// Has the layout changed?
+		if (modifiedBucket.getDefaultLayout() != null) {
+			bucket.setDefaultLayout(modifiedBucket.getDefaultLayout());
 		}
 		
-		bucket.setName(bucketName);
-		bucket.setPublished(createDTO.isPublished());
-		
+		// Update the bucket
 		bucketDao.update(bucket);
 		
 		return mapper.map(bucket, GetBucketDTO.class);
@@ -213,7 +234,7 @@ public class BucketService {
 	 *  
 	 * @param id
 	 * @param createDTO
-	 * @param username TODO
+	 * @param username
 	 * @return
 	 */
 	@Transactional(readOnly = false)
@@ -567,6 +588,7 @@ public class BucketService {
 		GetCollaboratorDTO collaboratorDTO = new GetCollaboratorDTO();
 		collaboratorDTO.setId(account.getId());
 		collaboratorDTO.setAccountPath(account.getAccountPath());
+		collaboratorDTO.setEmail(account.getOwner().getEmail());
 		collaboratorDTO.setActive(collaborator.isActive());
 		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
 		collaboratorDTO.setDateAdded(collaborator.getDateAdded());

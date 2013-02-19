@@ -79,9 +79,9 @@ public class BucketsController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public GetBucketDTO modifyBucket(@RequestBody CreateBucketDTO createDTO,
+	public GetBucketDTO modifyBucket(@RequestBody CreateBucketDTO modifiedBucket,
 			@PathVariable Long id, Principal principal) {
-		return bucketService.modifyBucket(id, createDTO, principal.getName());
+		return bucketService.modifyBucket(id, modifiedBucket, principal.getName());
 	}
 
 	/**

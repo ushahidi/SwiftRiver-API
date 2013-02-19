@@ -16,6 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * DTO mapping class for creating {@link Bucket} entities
  * 
@@ -26,7 +28,10 @@ public class CreateBucketDTO {
 	
 	private String name;
 	
-	private boolean published;
+	private Boolean published;
+	
+	@JsonProperty("default_layout")
+	private String defaultLayout;
 	
 	public String getName() {
 		return name;
@@ -36,12 +41,20 @@ public class CreateBucketDTO {
 		this.name = name;
 	}
 
-	public boolean isPublished() {
+	public Boolean isPublished() {
 		return published;
 	}
 
-	public void setPublished(boolean published) {
+	public void setPublished(Boolean published) {
 		this.published = published;
+	}
+
+	public String getDefaultLayout() {
+		return defaultLayout;
+	}
+
+	public void setDefaultLayout(String defaultLayout) {
+		this.defaultLayout = defaultLayout;
 	}
 
 }
