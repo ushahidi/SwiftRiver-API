@@ -200,6 +200,10 @@ public class JpaBucketDao extends AbstractJpaDao implements BucketDao {
 			sql += "AND droplets.channel IN :channels ";
 		}
 		
+		if (requestParams.containsKey("photos")) {
+			sql += "AND droplets.droplet_image > 0 ";
+		}
+
 		sql += "ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
 		
 		Integer dropCount = (Integer) requestParams.get("count");

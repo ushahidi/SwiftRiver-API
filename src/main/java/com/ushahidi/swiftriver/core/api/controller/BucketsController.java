@@ -249,6 +249,7 @@ public class BucketsController {
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "location", required = false) String location,
+			@RequestParam(value = "photos", required = false) Boolean photos,
 			Principal principal) {
 
 		if (principal == null) {
@@ -265,6 +266,7 @@ public class BucketsController {
 		if (keywords != null) requestParams.put("keywords", keywords);
 		if (channels != null) requestParams.put("channels", channels);
 		if (location != null) requestParams.put("location", location);
+		if (photos != null && photos == true) requestParams.put("photos", photos);
 
 		return bucketService.getDrops(id, principal.getName(), requestParams);
 	}
