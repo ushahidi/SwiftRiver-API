@@ -28,6 +28,7 @@ public class CreateBucketDTO {
 	
 	private String name;
 	
+	@JsonProperty("public")
 	private Boolean published;
 	
 	@JsonProperty("default_layout")
