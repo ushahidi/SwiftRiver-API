@@ -60,6 +60,9 @@ public class GetRiverDTO {
 	@JsonProperty("extension_count")
 	private int extensionCount;
 	
+	@JsonProperty("max_drop_id")
+	private long maxDropId;
+	
 	private List<Channel> channels;
 	
 	public static class Account {
@@ -243,6 +246,14 @@ public class GetRiverDTO {
 
 	public void setExtensionCount(int extensionCount) {
 		this.extensionCount = extensionCount;
+	}
+
+	public long getMaxDropId() {
+		return maxDropId;
+	}
+
+	public void setMaxDropId(long maxDropId) {
+		this.maxDropId = maxDropId;
 	}
 
 	public List<Channel> getChannels() {

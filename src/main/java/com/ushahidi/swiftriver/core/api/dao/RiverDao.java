@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Account;
@@ -44,24 +43,8 @@ public interface RiverDao extends GenericDao<River> {
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Long maxId, int dropCount, Account queryingAccount);
+	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, Account queryingAccount);
 	
-	/**
-	 * Adds a drop to a river
-	 * 
-	 * @param riverId
-	 * @param drop
-	 */
-	public void addDrop(long riverId, Drop drop);
-
-	/**
-	 * Adds a collection of drops to a river
-	 * 
-	 * @param riverId
-	 * @param drops
-	 */
-	public void addDrops(long riverId, Collection<Drop> drops);
-
 	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
 	 * and the river specified by <code>riverId</code>

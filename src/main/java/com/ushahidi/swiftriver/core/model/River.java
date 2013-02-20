@@ -96,10 +96,6 @@ public class River {
 	private Boolean full;
 	
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="droplet_id"))
-	private List<Drop> drops;
-	
-	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
 	private List<RiverCollaborator> collaborators;
 	
@@ -256,14 +252,6 @@ public class River {
 
 	public void setFull(Boolean full) {
 		this.full = full;
-	}
-
-	public List<Drop> getDrops() {
-		return drops;
-	}
-
-	public void setDrops(List<Drop> drops) {
-		this.drops = drops;
 	}
 
 	public List<RiverCollaborator> getCollaborators() {

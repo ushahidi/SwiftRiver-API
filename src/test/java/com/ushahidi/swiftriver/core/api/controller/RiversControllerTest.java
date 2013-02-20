@@ -101,6 +101,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.drop_count").value(100))
 				.andExpect(jsonPath("$.drop_quota").value(10000))
 				.andExpect(jsonPath("$.extension_count").value(0))
+				.andExpect(jsonPath("$.max_drop_id").value(100))
 				.andExpect(jsonPath("$.channels").isArray());
 	}
 

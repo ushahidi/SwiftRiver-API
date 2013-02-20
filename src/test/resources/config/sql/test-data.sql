@@ -75,9 +75,9 @@ VALUES
 -- -----------------------------------------------------
 -- Data for table `rivers`
 -- -----------------------------------------------------
-INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_name_canonical`, `description`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`) VALUES 
-(1, 3, 'Public River 1', 'public-river-1', 'Just a public river', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0),
-(2, 3, 'Private River 1', 'private-river-1', NULL, 1, 0, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0);
+INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_name_canonical`, `description`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`, `max_drop_id`) VALUES 
+(1, 3, 'Public River 1', 'public-river-1', 'Just a public river', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 100),
+(2, 3, 'Private River 1', 'private-river-1', NULL, 1, 0, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 1000);
 
 -- ------------------------------------
 -- Data for table `river_collaborators`

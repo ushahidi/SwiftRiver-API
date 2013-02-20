@@ -61,7 +61,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	@Test
 	public void getDrops() {
 		Account account = accountDao.findById(1L);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 10, account);
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, account);
 		
 		assertEquals(5, drops.size());
 		

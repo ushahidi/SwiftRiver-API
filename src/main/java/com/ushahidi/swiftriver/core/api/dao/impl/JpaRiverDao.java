@@ -18,16 +18,18 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +51,13 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 	@Autowired
 	private DropDao dropsDao;
+	
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+    }
 	
 	/* (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.lang.Object)
@@ -88,9 +97,9 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		return river;
 	}
 
-	public List<Drop> getDrops(Long riverId, Long maxId, int dropCount,
+	public List<Drop> getDrops(Long riverId, Long maxId, int page, int dropCount,
 			Account queryingAccount) {
-		String sql = "SELECT `droplets`.`id` AS `id`, `rivers_droplets`.`id` AS `sort_id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
+		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
 		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count` ";
 		sql += "FROM `rivers_droplets` ";
@@ -99,43 +108,40 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = 3) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
 		sql += "WHERE `rivers_droplets`.`droplet_date_pub` > '0000-00-00 00:00:00' ";
-		sql += "AND `rivers_droplets`.`river_id` = :riverId ";
-		sql += "AND `rivers_droplets`.`id` <= :maxId ";
-		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC";
+		sql += "AND `rivers_droplets`.`river_id` = ? ";
+		sql += "AND `rivers_droplets`.`id` <= ? ";
+		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
+		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
 
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("riverId", riverId);
-		query.setParameter("maxId", maxId);
-		query.setMaxResults(dropCount);
+		
+		List<Map<String, Object>> results= this.jdbcTemplate.queryForList(sql, riverId, maxId);
 
 		List<Drop> drops = new ArrayList<Drop>();
-		for (Object oRow : query.getResultList()) {
-			Object[] r = (Object[]) oRow;
-
+		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
 
 			// Set drop details
-			drop.setId(((BigInteger) r[0]).longValue());
-			drop.setChannel((String) r[4]);
-			drop.setTitle((String) r[2]);
-			drop.setContent((String) r[3]);
-			drop.setDatePublished((Date) r[8]);
-			drop.setOriginalId((String) r[9]);
-			drop.setCommentCount((Integer) r[13]);
+			drop.setId(((BigInteger)result.get("id")).longValue());
+			drop.setChannel((String)result.get("channel"));
+			drop.setTitle((String)result.get("droplet_title"));
+			drop.setContent((String)result.get("droplet_content"));
+			drop.setDatePublished((Date)result.get("droplet_date_pub"));
+			drop.setOriginalId((String)result.get("droplet_orig_id"));
+			drop.setCommentCount((Integer)result.get("comment_count"));
 			drops.add(drop);
 
-			if (r[11] != null) {
+			if (result.get("original_url_id") != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger) r[11]).longValue());
-				originalUrl.setUrl((String) r[12]);
+				originalUrl.setId(((BigInteger)result.get("original_url_id")).longValue());
+				originalUrl.setUrl((String)result.get("original_url"));
 				drop.setOriginalUrl(originalUrl);
 			}
 
 			// Set identity
 			Identity identity = new Identity();
-			identity.setId(((BigInteger) r[5]).longValue());
-			identity.setName((String) r[6]);
-			identity.setAvatar((String) r[7]);
+			identity.setId(((BigInteger)result.get("identity_id")).longValue());
+			identity.setName((String)result.get("identity_name"));
+			identity.setAvatar((String)result.get("identity_avatar"));
 			drop.setIdentity(identity);
 		}
 
@@ -143,20 +149,6 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		dropsDao.populateMetadata(drops, queryingAccount);
 
 		return drops;
-	}
-
-	/**
-	 * @see RiverDao#addDrop(long, Drop)
-	 */
-	public void addDrop(long riverId, Drop drop) {
-		findById(riverId).getDrops().add(drop);
-	}
-
-	/**
-	 * @see RiverDao#addDrops(long, Collection)
-	 */
-	public void addDrops(long riverId, Collection<Drop> drops) {
-		findById(riverId).getDrops().addAll(drops);
 	}
 
 	/**

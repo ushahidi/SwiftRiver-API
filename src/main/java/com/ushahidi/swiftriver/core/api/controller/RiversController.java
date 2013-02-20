@@ -292,6 +292,7 @@ public class RiversController extends AbstractController {
 			Principal principal,
 			@RequestParam(value = "count", required = false, defaultValue = "10") int count,
 			@RequestParam(value = "max_id", required = false) Long maxId,
+			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
 			@RequestParam(value = "date_from", required = false) Date dateFrom,
 			@RequestParam(value = "date_to", required = false) Date dateTo,
@@ -304,7 +305,7 @@ public class RiversController extends AbstractController {
 			maxId = Long.MAX_VALUE;
 		}
 
-		return riverService.getDrops(id, maxId, count, principal.getName());
+		return riverService.getDrops(id, maxId, page, count, principal.getName());
 	}
 
 	/**
