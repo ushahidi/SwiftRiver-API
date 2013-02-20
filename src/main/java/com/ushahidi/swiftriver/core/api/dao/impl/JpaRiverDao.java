@@ -49,6 +49,24 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 	@Autowired
 	private DropDao dropsDao;
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.lang.Object)
+	 */
+	@Override
+	public River create(River river) {
+		river.setRiverNameCanonical(TextUtil.getURLSlug(river.getRiverName()));
+		return super.create(river);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#update(java.lang.Object)
+	 */
+	@Override
+	public River update(River river) {
+		river.setRiverNameCanonical(TextUtil.getURLSlug(river.getRiverName()));
+		return super.update(river);
+	}
 
 	/* (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findByName(java.lang.String)

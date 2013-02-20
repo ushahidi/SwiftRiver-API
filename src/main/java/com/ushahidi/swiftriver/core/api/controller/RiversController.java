@@ -22,8 +22,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,6 +38,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -62,8 +61,7 @@ public class RiversController {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public GetRiverDTO createRiver(Principal principal, @RequestBody CreateRiverDTO riverTO) {
-		User user = (User)((Authentication)principal).getPrincipal();
-		return riverService.createRiver(user, riverTO);
+		return riverService.createRiver(riverTO, principal.getName());
 	}
 
 	/**
@@ -82,14 +80,14 @@ public class RiversController {
 	/**
 	 * Handler for modifying an existing river.
 	 * 
-	 * @param id
+	 * @param riverId
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{riverId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Map<String, Object> modifyRiver(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetRiverDTO modifyRiver(Principal principal,
+			@PathVariable Long riverId, @RequestBody ModifyRiverDTO modifyRiverTO) {
+		return riverService.modifyRiver(riverId, modifyRiverTO, principal.getName());
 	}
 
 	/**

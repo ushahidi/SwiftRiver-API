@@ -6,6 +6,9 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,7 @@ import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 public class JpaRiverDaoTest extends AbstractDaoTest {
 	
@@ -29,6 +33,9 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	
 	@Autowired
 	AccountDao accountDao;
+	
+	@PersistenceContext
+	protected EntityManager em;
 
 	@Test
 	public void findById() {
@@ -41,7 +48,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void findByName() {
 		River r = riverDao.findByName("Private River 1");
 		
-		assertEquals(2, r.getId());
+		assertEquals(2, (long)r.getId());
 	}
 	
 	@Test
@@ -111,19 +118,21 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		Account account = accountDao.findByUsername("user1");
 
 		river.setRiverName("Test river");
-		river.setRiverNameCanonical("test-river");
+		river.setDescription("test description");
 		river.setAccount(account);
 		river.setRiverPublic(false);
 
 		riverDao.create(river);
 		
 		assertNotNull(river.getId());
-		String sql = "SELECT river_name, account_id FROM `rivers` WHERE `id` = ?";
+		String sql = "SELECT account_id, river_name, description, river_public, river_name_canonical FROM `rivers` WHERE `id` = ?";
 		
-		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, river.getId());
-		assertEquals("Test river", (String)r.get("river_name"));
-		assertEquals(BigInteger.valueOf(3L), (BigInteger)r.get("account_id"));
-		
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, river.getId());
+		assertEquals("Test river", (String)results.get("river_name"));
+		assertEquals(BigInteger.valueOf(3L), (BigInteger)results.get("account_id"));
+		assertEquals(TextUtil.getURLSlug("Test river"), (String)results.get("river_name_canonical"));
+		assertEquals("test description", (String)results.get("description"));
+		assertEquals(false, results.get("river_public"));
 	}
 
 	@Test
@@ -138,5 +147,23 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		riverDao.addCollaborator(river, account, true);
 		assertEquals(collaboratorCount+1, river.getCollaborators().size());
+	}
+	
+	@Test
+	public void updateRiver() {
+		River river = riverDao.findById(2L);
+		river.setRiverName("updated river name");
+		river.setDescription("updated description");
+		river.setRiverPublic(true);
+		
+		riverDao.update(river);
+		em.flush();
+		
+		String sql = "SELECT `river_name`, `river_name_canonical`, `description`, `river_public` FROM `rivers` WHERE `id` = ?";
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 2);
+		assertEquals("updated river name", (String)results.get("river_name"));
+		assertEquals(TextUtil.getURLSlug("updated river name"), (String)results.get("river_name_canonical"));
+		assertEquals("updated description", (String)results.get("description"));
+		assertEquals(true, results.get("river_public"));
 	}
 }

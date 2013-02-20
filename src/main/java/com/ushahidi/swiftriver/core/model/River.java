@@ -40,7 +40,7 @@ public class River {
 
 	@Id
 	@GeneratedValue
-	private long id;
+	private Long id;
 	
 	@ManyToOne
 	@JoinColumn(name = "account_id")
@@ -55,10 +55,10 @@ public class River {
 	private String description;
 	
 	@Column(name="river_active")
-	private boolean active;
+	private Boolean active;
 	
 	@Column(name="river_public", nullable=false)
-	private boolean riverPublic;
+	private Boolean riverPublic;
 	
 	@Column(name="default_layout")
 	private String defaultLayout;
@@ -68,32 +68,32 @@ public class River {
 	private Date dateAdded;
 	
 	@Column(name="max_drop_id")
-	private long maxDropId;
+	private Long maxDropId;
 	
 	@Column(name="drop_count")
-	private int dropCount;
+	private Integer dropCount;
 	
 	@Column(name="river_date_expiry")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date expiryDate;
 	
 	@Column(name="river_expired")
-	private boolean expired;
+	private Boolean expired;
 	
 	@Column(name="extension_count")
-	private int extensionCount;
+	private Integer extensionCount;
 	
 	@Column(name="expiry_notification_sent")
-	private boolean expiryNotificationSent;
+	private Boolean expiryNotificationSent;
 	
 	@Column(name="public_token")
 	private String publicToken;
 	
 	@Column(name="drop_quota")
-	private int dropQuota;
+	private Integer dropQuota;
 	
 	@Column(name = "river_full")
-	private boolean full;
+	private Boolean full;
 	
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "rivers_droplets", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="droplet_id"))
@@ -113,12 +113,12 @@ public class River {
 	public River() {
 		
 	}
-
-	public long getId() {
+	
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -154,19 +154,19 @@ public class River {
 		this.description = description;
 	}
 
-	public boolean isActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
-	public boolean isRiverPublic() {
+	public Boolean getRiverPublic() {
 		return riverPublic;
 	}
 
-	public void setRiverPublic(boolean riverPublic) {
+	public void setRiverPublic(Boolean riverPublic) {
 		this.riverPublic = riverPublic;
 	}
 
@@ -186,19 +186,19 @@ public class River {
 		this.dateAdded = dateAdded;
 	}
 
-	public long getMaxDropId() {
+	public Long getMaxDropId() {
 		return maxDropId;
 	}
 
-	public void setMaxDropId(long maxDropId) {
+	public void setMaxDropId(Long maxDropId) {
 		this.maxDropId = maxDropId;
 	}
 
-	public int getDropCount() {
+	public Integer getDropCount() {
 		return dropCount;
 	}
 
-	public void setDropCount(int dropCount) {
+	public void setDropCount(Integer dropCount) {
 		this.dropCount = dropCount;
 	}
 
@@ -210,27 +210,27 @@ public class River {
 		this.expiryDate = expiryDate;
 	}
 
-	public boolean isExpired() {
+	public Boolean getExpired() {
 		return expired;
 	}
 
-	public void setExpired(boolean expired) {
+	public void setExpired(Boolean expired) {
 		this.expired = expired;
 	}
 
-	public int getExtensionCount() {
+	public Integer getExtensionCount() {
 		return extensionCount;
 	}
 
-	public void setExtensionCount(int extensionCount) {
+	public void setExtensionCount(Integer extensionCount) {
 		this.extensionCount = extensionCount;
 	}
 
-	public boolean isExpiryNotificationSent() {
+	public Boolean getExpiryNotificationSent() {
 		return expiryNotificationSent;
 	}
 
-	public void setExpiryNotificationSent(boolean expiryNotificationSent) {
+	public void setExpiryNotificationSent(Boolean expiryNotificationSent) {
 		this.expiryNotificationSent = expiryNotificationSent;
 	}
 
@@ -242,19 +242,19 @@ public class River {
 		this.publicToken = publicToken;
 	}
 
-	public int getDropQuota() {
+	public Integer getDropQuota() {
 		return dropQuota;
 	}
 
-	public void setDropQuota(int dropQuota) {
+	public void setDropQuota(Integer dropQuota) {
 		this.dropQuota = dropQuota;
 	}
 
-	public boolean isFull() {
+	public Boolean getFull() {
 		return full;
 	}
 
-	public void setFull(boolean full) {
+	public void setFull(Boolean full) {
 		this.full = full;
 	}
 
@@ -289,7 +289,7 @@ public class River {
 	public void setChannels(List<Channel> channels) {
 		this.channels = channels;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return new HashCodeBuilder(17, 31).

@@ -39,7 +39,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 	@Transactional
 	public void createRiver() throws Exception {
 		String postBody = "{\"name\":\"Viva Riva\",\"description\":\"Like the movie\",\"public\":true}";
-		
+
 		this.mockMvc
 				.perform(
 						post("/v1/rivers").content(postBody)
@@ -48,31 +48,29 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(3));
 	}
-	
+
 	@Test
 	@Transactional
 	public void createRiverWithoutQuota() throws Exception {
 		String postBody = "{\"name\":\"Viva Riva\",\"description\":\"Like the movie\",\"public\":true}";
-		
-		this.mockMvc
-				.perform(
-						post("/v1/rivers").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user2")))
-				.andExpect(status().isForbidden());
+
+		this.mockMvc.perform(
+				post("/v1/rivers").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user2"))).andExpect(
+				status().isForbidden());
 	}
-	
+
 	@Test
 	@Transactional
 	public void createRiverWithoutDuplicateName() throws Exception {
 		String postBody = "{\"name\":\"Public River 1\",\"description\":\"Like the movie\",\"public\":true}";
-		
-		this.mockMvc
-				.perform(
-						post("/v1/rivers").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user1")))
-				.andExpect(status().isBadRequest());
+
+		this.mockMvc.perform(
+				post("/v1/rivers").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isBadRequest());
 	}
 
 	@Test
@@ -254,12 +252,12 @@ public class RiversControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(delete("/v1/rivers/1/followers/4")).andExpect(
 				status().isOk());
 	}
-	
+
 	@Test
 	@Transactional
 	public void createChannel() throws Exception {
 		String postBody = "{\"channel\":\"rss\",\"parameters\":\"Like the movie\"}";
-		
+
 		this.mockMvc
 				.perform(
 						post("/v1/rivers/1/channels").content(postBody)
@@ -268,23 +266,21 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(5));
 	}
-	
+
 	@Test
 	@Transactional
 	public void deleteChannel() throws Exception {
-		this.mockMvc
-		.perform(
-				delete("/v1/rivers/1/channels/3")
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user1")))
-		.andExpect(status().isOk());
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/channels/3").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	@Transactional
 	public void modifyChannel() throws Exception {
 		String putBody = "{\"channel\":\"rss\",\"active\":true,\"parameters\":\"Rike the movie\"}";
-		
+
 		this.mockMvc
 				.perform(
 						put("/v1/rivers/1/channels/1").content(putBody)
@@ -295,5 +291,62 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.channel").value("rss"))
 				.andExpect(jsonPath("$.active").value(true))
 				.andExpect(jsonPath("$.parameters").value("Rike the movie"));
+	}
+
+	@Test
+	@Transactional
+	public void modifyRiver() throws Exception {
+		String putBody = "{\"name\":\"doof twaf\",\"description\":\"asi asi\",\"public\":true}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1").content(putBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(jsonPath("$.name").value("doof twaf"))
+				.andExpect(jsonPath("$.description").value("asi asi"))
+				.andExpect(jsonPath("$.public").value(true));
+	}
+
+	@Test
+	@Transactional
+	public void modifyRiverPartially() throws Exception {
+		String putBody = "{\"public\":false}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1").content(putBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(jsonPath("$.name").value("Public River 1"))
+				.andExpect(
+						jsonPath("$.description").value("Just a public river"))
+				.andExpect(jsonPath("$.public").value(false));
+	}
+
+	@Test
+	public void modifyRiverWithoutPermission() throws Exception {
+		String putBody = "{\"public\":false}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1").content(putBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void modifyRiverToExistingRiverName() throws Exception {
+		String putBody = "{\"name\":\"Private River 1\"}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1").content(putBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isBadRequest());
 	}
 }

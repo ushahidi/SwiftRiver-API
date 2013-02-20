@@ -23,7 +23,6 @@ import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +38,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -47,7 +47,6 @@ import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
-import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Transactional(readOnly = true)
 @Service
@@ -107,8 +106,8 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public GetRiverDTO createRiver(User user, CreateRiverDTO riverTO) {
-		Account account = accountDao.findByUsername(user.getUsername());
+	public GetRiverDTO createRiver(CreateRiverDTO riverTO, String authUser) {
+		Account account = accountDao.findByUsername(authUser);
 
 		if (!(account.getRiverQuotaRemaining() > 0))
 			throw new ForbiddenException("River quota exceeded");
@@ -119,11 +118,42 @@ public class RiverService {
 					riverTO.getRiverName()));
 
 		River river = mapper.map(riverTO, River.class);
-		river.setRiverNameCanonical(TextUtil.getURLSlug(river.getRiverName()));
 		river.setAccount(account);
 		riverDao.create(river);
 
 		accountDao.decreaseRiverQuota(account, 1);
+
+		return mapper.map(river, GetRiverDTO.class);
+	}
+
+	/**
+	 * Modify an existing river.
+	 * 
+	 * @param riverId
+	 * @param modifyRiverTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public GetRiverDTO modifyRiver(Long riverId, ModifyRiverDTO modifyRiverTO,
+			String authUser) {
+		Account account = accountDao.findByUsername(authUser);
+		River river = riverDao.findById(riverId);
+
+		if (!isOwner(river, account))
+			throw new ForbiddenException(
+					"Authenticated user does not own the river");
+
+		if (modifyRiverTO.getRiverName() != null
+				&& !modifyRiverTO.getRiverName().equals(river.getRiverName())) {
+			if (riverDao.findByName(modifyRiverTO.getRiverName()) != null)
+				throw new BadRequestException(String.format(
+						"River with the name %s already exists",
+						modifyRiverTO.getRiverName()));
+		}
+
+		mapper.map(modifyRiverTO, river);
+		riverDao.update(river);
 
 		return mapper.map(river, GetRiverDTO.class);
 	}
@@ -176,32 +206,34 @@ public class RiverService {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
 		channelDao.delete(channel);
 	}
-	
+
 	@Transactional(readOnly = false)
-	public GetChannelDTO modifyChannel(Long riverId, Long channelId, ModifyChannelDTO modifyChannelTO, String authUser)
-	{
+	public GetChannelDTO modifyChannel(Long riverId, Long channelId,
+			ModifyChannelDTO modifyChannelTO, String authUser) {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
 		mapper.map(modifyChannelTO, channel);
 		channelDao.update(channel);
-		
+
 		return mapper.map(channel, GetChannelDTO.class);
 	}
-	
+
 	public Channel getRiverChannel(Long riverId, long channelId, String authUser) {
 		Channel channel = channelDao.findById(channelId);
 
 		if (channel == null)
 			throw new NotFoundException("The given channel was not found");
-		
+
 		River river = channel.getRiver();
-		if (river.getId() != riverId)
-			throw new NotFoundException("The given river does not countain the given channel.");
+		if (!river.getId().equals(riverId))
+			throw new NotFoundException(
+					"The given river does not countain the given channel.");
 
 		Account account = accountDao.findByUsername(authUser);
-		
+
 		if (!isOwner(river, account))
-			throw new ForbiddenException("Logged in user does not own the river.");
-		
+			throw new ForbiddenException(
+					"Logged in user does not own the river.");
+
 		return channel;
 	}
 
