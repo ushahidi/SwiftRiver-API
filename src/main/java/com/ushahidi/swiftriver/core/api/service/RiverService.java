@@ -40,6 +40,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -112,10 +113,14 @@ public class RiverService {
 		if (!(account.getRiverQuotaRemaining() > 0))
 			throw new ForbiddenException("River quota exceeded");
 
-		if (riverDao.findByName(riverTO.getRiverName()) != null)
-			throw new BadRequestException(String.format(
-					"River with the name %s already exists",
-					riverTO.getRiverName()));
+		if (riverDao.findByName(riverTO.getRiverName()) != null) {
+			BadRequestException ex = new BadRequestException(
+					"Duplicate river name");
+			List<ErrorField> errors = new ArrayList<ErrorField>();
+			errors.add(new ErrorField("name", "duplicate"));
+			ex.setErrors(errors);
+			throw ex;
+		}
 
 		River river = mapper.map(riverTO, River.class);
 		river.setAccount(account);
@@ -146,10 +151,14 @@ public class RiverService {
 
 		if (modifyRiverTO.getRiverName() != null
 				&& !modifyRiverTO.getRiverName().equals(river.getRiverName())) {
-			if (riverDao.findByName(modifyRiverTO.getRiverName()) != null)
-				throw new BadRequestException(String.format(
-						"River with the name %s already exists",
-						modifyRiverTO.getRiverName()));
+			if (riverDao.findByName(modifyRiverTO.getRiverName()) != null) {
+				BadRequestException ex = new BadRequestException(
+						"Duplicate river name");
+				List<ErrorField> errors = new ArrayList<ErrorField>();
+				errors.add(new ErrorField("name", "duplicate"));
+				ex.setErrors(errors);
+				throw ex;
+			}
 		}
 
 		mapper.map(modifyRiverTO, river);
@@ -169,7 +178,8 @@ public class RiverService {
 		River river = riverDao.findById(id);
 
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(String.format(
+					"River with id %d not found", id));
 		}
 
 		return mapper.map(river, GetRiverDTO.class);
@@ -187,7 +197,7 @@ public class RiverService {
 		River river = riverDao.findById(riverId);
 
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		Channel channel = mapper.map(createChannelTO, Channel.class);
@@ -258,7 +268,7 @@ public class RiverService {
 		River river = riverDao.findById(id);
 
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		List<Drop> drops = riverDao.getDrops(id, maxId, dropCount,
@@ -267,7 +277,7 @@ public class RiverService {
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
 		if (drops == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("No drops found");
 		}
 
 		for (Drop drop : drops) {
@@ -287,7 +297,7 @@ public class RiverService {
 
 		// Throw exception if the river doesn't exist
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		// Delete the river
@@ -300,7 +310,7 @@ public class RiverService {
 			throws NotFoundException {
 		River river = riverDao.findById(riverId);
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		List<CollaboratorDTO> collaborators = new ArrayList<CollaboratorDTO>();
@@ -367,7 +377,7 @@ public class RiverService {
 
 		// Collaborator exists?
 		if (collaborator == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("Collaborator not found");
 		}
 
 		collaborator.setActive(body.isActive());
@@ -407,12 +417,12 @@ public class RiverService {
 		// Does the river exist?
 		River river = riverDao.findById(id);
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		Account account = accountDao.findById(body.getId());
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("Account not found");
 		}
 
 		river.getFollowers().add(account);
@@ -434,7 +444,7 @@ public class RiverService {
 
 		// Does the river exist?
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		List<FollowerDTO> followerList = new ArrayList<FollowerDTO>();
@@ -461,13 +471,13 @@ public class RiverService {
 		// Load the river and check if it exists
 		River river = riverDao.findById(riverId);
 		if (river == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("River not found");
 		}
 
 		// Load the account and check if it exists
 		Account account = accountDao.findById(accountId);
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("Account not found");
 		}
 
 		river.getFollowers().remove(account);

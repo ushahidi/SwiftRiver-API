@@ -66,17 +66,21 @@ public class RiversControllerTest extends AbstractControllerTest {
 	public void createRiverWithoutDuplicateName() throws Exception {
 		String postBody = "{\"name\":\"Public River 1\",\"description\":\"Like the movie\",\"public\":true}";
 
-		this.mockMvc.perform(
-				post("/v1/rivers").content(postBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user1"))).andExpect(
-				status().isBadRequest());
+		this.mockMvc
+				.perform(
+						post("/v1/rivers").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").isArray());
 	}
 
 	@Test
 	public void getRiverWithNonExistentId() throws Exception {
-		this.mockMvc.perform(get("/v1/rivers/9999")).andExpect(
-				status().isNotFound());
+		this.mockMvc.perform(get("/v1/rivers/9999"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").exists());
 	}
 
 	@Test
@@ -106,9 +110,10 @@ public class RiversControllerTest extends AbstractControllerTest {
 				"user1", "password");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		this.mockMvc.perform(
-				get("/v1/rivers/9999/drops").principal(authentication))
-				.andExpect(status().isNotFound());
+		this.mockMvc
+				.perform(get("/v1/rivers/9999/drops").principal(authentication))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").exists());
 	}
 
 	@Test
@@ -170,8 +175,9 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteNonExistentRiver() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/500")).andExpect(
-				status().isNotFound());
+		this.mockMvc.perform(delete("/v1/rivers/500"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").exists());
 	}
 
 	/**
@@ -332,21 +338,26 @@ public class RiversControllerTest extends AbstractControllerTest {
 	public void modifyRiverWithoutPermission() throws Exception {
 		String putBody = "{\"public\":false}";
 
-		this.mockMvc.perform(
-				put("/v1/rivers/1").content(putBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user3"))).andExpect(
-				status().isForbidden());
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1").content(putBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user3")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").exists());
 	}
 
 	@Test
 	public void modifyRiverToExistingRiverName() throws Exception {
 		String putBody = "{\"name\":\"Private River 1\"}";
 
-		this.mockMvc.perform(
-				put("/v1/rivers/1").content(putBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user1"))).andExpect(
-				status().isBadRequest());
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1").content(putBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").isArray());
 	}
 }

@@ -45,10 +45,10 @@ import com.ushahidi.swiftriver.core.model.Account;
 
 @Controller
 @RequestMapping("/v1/rivers")
-public class RiversController {
-	
+public class RiversController extends AbstractController {
+
 	final Logger logger = LoggerFactory.getLogger(RiversController.class);
-	
+
 	@Autowired
 	private RiverService riverService;
 
@@ -60,7 +60,8 @@ public class RiversController {
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public GetRiverDTO createRiver(Principal principal, @RequestBody CreateRiverDTO riverTO) {
+	public GetRiverDTO createRiver(Principal principal,
+			@RequestBody CreateRiverDTO riverTO) {
 		return riverService.createRiver(riverTO, principal.getName());
 	}
 
@@ -69,7 +70,7 @@ public class RiversController {
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
@@ -86,8 +87,10 @@ public class RiversController {
 	@RequestMapping(value = "/{riverId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public GetRiverDTO modifyRiver(Principal principal,
-			@PathVariable Long riverId, @RequestBody ModifyRiverDTO modifyRiverTO) {
-		return riverService.modifyRiver(riverId, modifyRiverTO, principal.getName());
+			@PathVariable Long riverId,
+			@RequestBody ModifyRiverDTO modifyRiverTO) {
+		return riverService.modifyRiver(riverId, modifyRiverTO,
+				principal.getName());
 	}
 
 	/**
@@ -96,7 +99,7 @@ public class RiversController {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)	
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
 	public void deleteRiver(@PathVariable Long id) {
 		riverService.deleteRiver(id);
 	}
@@ -109,23 +112,25 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{id}/channels", method = RequestMethod.POST)
 	@ResponseBody
-	public GetChannelDTO createChannel(@RequestBody CreateChannelDTO createChannelTO,
-			@PathVariable Long id) {
+	public GetChannelDTO createChannel(
+			@RequestBody CreateChannelDTO createChannelTO, @PathVariable Long id) {
 		return riverService.createChannel(id, createChannelTO);
 	}
 
 	/**
 	 * Handler for modifying an existing channel.
+	 * 
 	 * @param body
 	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/{riverId}/channels/{channelId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public GetChannelDTO modifyChannel(Principal principal, @PathVariable Long riverId,
-			@PathVariable Long channelId,
+	public GetChannelDTO modifyChannel(Principal principal,
+			@PathVariable Long riverId, @PathVariable Long channelId,
 			@RequestBody ModifyChannelDTO modifyChannelTO) {
-		return riverService.modifyChannel(riverId, channelId, modifyChannelTO, principal.getName());
+		return riverService.modifyChannel(riverId, channelId, modifyChannelTO,
+				principal.getName());
 	}
 
 	/**
@@ -136,7 +141,8 @@ public class RiversController {
 	 */
 	@RequestMapping(value = "/{riverId}/channels/{channelId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteChannel(Principal principal, @PathVariable Long riverId, @PathVariable Long channelId) {
+	public void deleteChannel(Principal principal, @PathVariable Long riverId,
+			@PathVariable Long channelId) {
 		riverService.deleteChannel(riverId, channelId, principal.getName());
 	}
 
@@ -167,6 +173,7 @@ public class RiversController {
 
 	/**
 	 * Handler for modifying an existing collaborator.
+	 * 
 	 * @param body
 	 * 
 	 * @return
@@ -185,7 +192,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
-	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long collaboratorId) {
+	public void deleteCollaborator(@PathVariable Long id,
+			@PathVariable Long collaboratorId) {
 		riverService.deleteCollaborator(id, collaboratorId);
 	}
 
@@ -196,8 +204,7 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
-	public void addFollower(@RequestBody FollowerDTO body,
-			@PathVariable Long id) {
+	public void addFollower(@RequestBody FollowerDTO body, @PathVariable Long id) {
 		riverService.addFollower(id, body);
 	}
 
@@ -220,7 +227,8 @@ public class RiversController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers/{followerId}", method = RequestMethod.DELETE)
-	public void deleteFollower(@PathVariable Long id, @PathVariable Long followerId) {
+	public void deleteFollower(@PathVariable Long id,
+			@PathVariable Long followerId) {
 		riverService.deleteFollower(id, followerId);
 	}
 
@@ -275,7 +283,7 @@ public class RiversController {
 	 * Get drops in the river.
 	 * 
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
 	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET)
 	@ResponseBody
@@ -289,26 +297,27 @@ public class RiversController {
 			@RequestParam(value = "date_to", required = false) Date dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "count", required = false) String location) throws NotFoundException {
-		
+			@RequestParam(value = "count", required = false) String location)
+			throws NotFoundException {
+
 		if (maxId == null) {
 			maxId = Long.MAX_VALUE;
 		}
-		
+
 		return riverService.getDrops(id, maxId, count, principal.getName());
 	}
-	
+
 	/**
 	 * Stream a river.
 	 * 
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/drops", method=RequestMethod.GET, headers="X-Stream")
+	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET, headers = "X-Stream")
 	public Account getDropsStream(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
-	
+
 	/**
 	 * Handler for deleting a drop from a river.
 	 * 
@@ -319,5 +328,4 @@ public class RiversController {
 	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
 		riverService.deleteDrop(id, dropId);
 	}
-
 }

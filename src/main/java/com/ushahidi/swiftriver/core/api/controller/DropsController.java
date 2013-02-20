@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 @RequestMapping("/v1/drops")
-public class DropsController {
+public class DropsController extends AbstractController {
 
 	/**
 	 * Handler for creating a drop.

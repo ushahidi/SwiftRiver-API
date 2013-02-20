@@ -35,7 +35,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 
 @Controller
 @RequestMapping("/v1/accounts")
-public class AccountsController {
+public class AccountsController extends AbstractController {
 
 	final Logger logger = LoggerFactory.getLogger(AccountsController.class);
 
