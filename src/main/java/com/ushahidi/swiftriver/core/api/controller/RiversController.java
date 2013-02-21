@@ -290,7 +290,7 @@ public class RiversController extends AbstractController {
 	public List<GetDropDTO> getDrops(
 			@PathVariable Long id,
 			Principal principal,
-			@RequestParam(value = "count", required = false, defaultValue = "10") int count,
+			@RequestParam(value = "count", required = false, defaultValue = "10") Integer count,
 			@RequestParam(value = "max_id", required = false) Long maxId,
 			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
@@ -298,14 +298,14 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "date_to", required = false) Date dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "count", required = false) String location)
+			@RequestParam(value = "locations", required = false) String location)
 			throws NotFoundException {
 
 		if (maxId == null) {
 			maxId = Long.MAX_VALUE;
 		}
 
-		return riverService.getDrops(id, maxId, page, count, principal.getName());
+		return riverService.getDrops(id, maxId, sinceId, page, count, principal.getName());
 	}
 
 	/**

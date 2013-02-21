@@ -356,7 +356,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		query.setParameter("account_id", queryingAccount.getId());
 
 		// Group the media by drop id
-		Map<Long, Media> media = new HashMap<Long, Media>();
 		for (Object oRow : query.getResultList()) {
 			Object[] r = (Object[]) oRow;
 
@@ -367,14 +366,18 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		
 			Long mediaId = ((BigInteger) r[1]).longValue();
-			Media m = media.get(mediaId);
+			Media m = null;
+			for (Media x : drop.getMedia()) {
+				if (x.getId() == mediaId) {
+					m = x;
+				}
+			}
 			
 			if (m == null) {
 				m = new Media();
 				m.setId(mediaId);
 				m.setUrl((String) r[2]);
 				m.setType((String) r[3]);
-				media.put(mediaId, m);
 			} 
 			
 			// Add thumbnails
@@ -389,7 +392,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 					thumbnails = new ArrayList<MediaThumbnail>();
 					m.setThumbnails(thumbnails);
 				}
-				
 				thumbnails.add(mt);
 			}
 			
@@ -401,7 +403,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				if (dropImageId != null && dropImageId == m.getId()) {
 					drop.setImage(m);
 				}
-			}
+			}			
 		}
 	}
 

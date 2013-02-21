@@ -46,6 +46,17 @@ public interface RiverDao extends GenericDao<River> {
 	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, Account queryingAccount);
 	
 	/**
+	 * Get list of drops from the given river with an id after the the given since_id
+	 * 
+	 * @param id
+	 * @param maxId
+	 * @param dropCount
+	 * @param queryingAccount
+	 * @return
+	 */
+	public List<Drop> getDropsSince(Long id, Long sinceId, int dropCount, Account queryingAccount);
+	
+	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
 	 * and the river specified by <code>riverId</code>
 	 * 

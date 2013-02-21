@@ -134,7 +134,7 @@ INSERT INTO `droplets` (`id`, `identity_id`, `channel`, `droplet_hash`, `droplet
 (1, 1, 'rss', '1', '1', 'original', 'droplet_1_title', 'droplet_1_content', 'en', NULL, '2012-11-15 00:00:01', '2012-12-15 00:00:01', NULL, 10),
 (2, 2, 'twitter', '2', '2', 'original', 'droplet_2_title', 'droplet_2_content', 'en', NULL, '2012-11-15 00:00:02', '2012-12-15 00:00:02', NULL, 15),
 (3, 1, 'rss', '3', '3', 'original', 'droplet_3_title', 'droplet_3_content', 'en', NULL, '2012-11-15 00:00:03', '2012-12-15 00:00:03', NULL, 20),
-(4, 2, 'twitter', '4', '4', 'original', 'droplet_4_title', 'droplet_4_content', 'en', NULL, '2012-11-15 00:00:04', '2012-12-15 00:00:04', NULL, 25),
+(4, 2, 'twitter', '4', '4', 'original', 'droplet_4_title', 'droplet_4_content', 'en', NULL, '2012-11-15 00:00:04', '2012-12-15 00:00:04', 3, 25),
 (5, 1, 'rss', '5', '5', 'original', 'droplet_5_title', 'droplet_5_content', 'en', NULL, '2012-11-15 00:00:05', '2012-12-15 00:00:05', 3, 30),
 (6, 2, 'twitter', '6', '6', 'original', 'droplet_6_title', 'droplet_6_content', 'en', NULL, '2012-11-15 00:00:06', '2012-12-15 00:00:06', NULL, 35),
 (7, 1, 'rss', '7', '7', 'original', 'droplet_7_title', 'droplet_7_content', 'en', NULL, '2012-11-15 00:00:07', '2012-12-15 00:00:07', NULL, 40),
@@ -199,7 +199,8 @@ INSERT INTO `tags` (`id`, `hash`, `tag`, `tag_canonical`, `tag_type`) VALUES
 -- -----------------------------------------------------
 INSERT INTO `droplets_tags` (`id`, `droplet_id`, `tag_id`) VALUES
 (1, 5, 1),
-(2, 5, 2);
+(2, 4, 1),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `account_droplet_tags`
@@ -213,7 +214,8 @@ INSERT INTO `account_droplet_tags` (`id`, `account_id`, `droplet_id`, `tag_id`, 
 -- -----------------------------------------------------
 INSERT INTO droplets_links(`id`, `droplet_id`, `link_id`) VALUES
 (1, 5, 10),
-(2, 5, 2);
+(2, 4, 10),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `account_droplet_links`
@@ -258,7 +260,8 @@ INSERT INTO `media_thumbnails` (`id`, `media_id`, `size`, `url`) VALUES
 -- -----------------------------------------------------
 INSERT INTO `droplets_media` (`id`, `droplet_id`, `media_id`) VALUES
 (1, 5, 1),
-(2, 5, 2);
+(2, 4, 1),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `places`
@@ -280,7 +283,8 @@ INSERT INTO `places` (`id`, `hash`, `place_name`, `place_name_canonical`, `longi
 -- -----------------------------------------------------
 INSERT INTO droplets_places(`id`, `droplet_id`, `place_id`) VALUES
 (1, 5, 1),
-(2, 5, 2);
+(2, 4, 1),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `account_droplet_links`

@@ -51,25 +51,33 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 	@Autowired
 	private DropDao dropsDao;
-	
+
 	private JdbcTemplate jdbcTemplate;
 
 	@Autowired
-    public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.lang.Object)
+	public void setDataSource(DataSource dataSource) {
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.
+	 * lang.Object)
 	 */
 	@Override
 	public River create(River river) {
 		river.setRiverNameCanonical(TextUtil.getURLSlug(river.getRiverName()));
 		return super.create(river);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#update(java.lang.Object)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#update(java.
+	 * lang.Object)
 	 */
 	@Override
 	public River update(River river) {
@@ -77,8 +85,12 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		return super.update(river);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findByName(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#findByName(java.lang.String
+	 * )
 	 */
 	@Override
 	public River findByName(String name) {
@@ -93,19 +105,19 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		} catch (NoResultException e) {
 			// Do nothing
 		}
-		
+
 		return river;
 	}
 
-	public List<Drop> getDrops(Long riverId, Long maxId, int page, int dropCount,
-			Account queryingAccount) {
+	public List<Drop> getDrops(Long riverId, Long maxId, int page,
+			int dropCount, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
-		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
+		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count` ";
 		sql += "FROM `rivers_droplets` ";
 		sql += "INNER JOIN `droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = 3) ";
+		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = ?) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
 		sql += "WHERE `rivers_droplets`.`droplet_date_pub` > '0000-00-00 00:00:00' ";
 		sql += "AND `rivers_droplets`.`river_id` = ? ";
@@ -113,41 +125,81 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
 
-		
-		List<Map<String, Object>> results= this.jdbcTemplate.queryForList(sql, riverId, maxId);
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
+				queryingAccount.getOwner().getId(), riverId, maxId);
 
+		return formatDrops(results, queryingAccount);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#getDropsSince(java.lang
+	 * .Long, java.lang.Long, int, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	@Override
+	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
+			Account queryingAccount) {
+		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
+		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
+		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
+		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
+		sql += "`links`.`url` AS `original_url`, `comment_count` ";
+		sql += "FROM `droplets` ";
+		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
+		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
+		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = ?) ";
+		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
+		sql += "WHERE `rivers_droplets`.`river_id` = ? AND `rivers_droplets`.`id` > ? ";
+		sql += "ORDER BY `rivers_droplets`.`id` ASC LIMIT " + dropCount;
+
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
+				queryingAccount.getOwner().getId(), riverId, sinceId);
+
+		return formatDrops(results, queryingAccount);
+	}
+	
+	/**
+	 * Generate a Drop entity list for the given drop result map.
+	 * 
+	 * @param results
+	 * @return
+	 */
+	private List<Drop> formatDrops(List<Map<String, Object>> results, Account queryingAccount) {
 		List<Drop> drops = new ArrayList<Drop>();
 		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
 
 			// Set drop details
-			drop.setId(((BigInteger)result.get("id")).longValue());
-			drop.setChannel((String)result.get("channel"));
-			drop.setTitle((String)result.get("droplet_title"));
-			drop.setContent((String)result.get("droplet_content"));
-			drop.setDatePublished((Date)result.get("droplet_date_pub"));
-			drop.setOriginalId((String)result.get("droplet_orig_id"));
-			drop.setCommentCount((Integer)result.get("comment_count"));
+			drop.setId(((BigInteger) result.get("id")).longValue());
+			drop.setChannel((String) result.get("channel"));
+			drop.setTitle((String) result.get("droplet_title"));
+			drop.setContent((String) result.get("droplet_content"));
+			drop.setDatePublished((Date) result.get("droplet_date_pub"));
+			drop.setOriginalId((String) result.get("droplet_orig_id"));
+			drop.setCommentCount((Integer) result.get("comment_count"));
 			drops.add(drop);
 
 			if (result.get("original_url_id") != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger)result.get("original_url_id")).longValue());
-				originalUrl.setUrl((String)result.get("original_url"));
+				originalUrl.setId(((BigInteger) result.get("original_url_id"))
+						.longValue());
+				originalUrl.setUrl((String) result.get("original_url"));
 				drop.setOriginalUrl(originalUrl);
 			}
 
 			// Set identity
 			Identity identity = new Identity();
-			identity.setId(((BigInteger)result.get("identity_id")).longValue());
-			identity.setName((String)result.get("identity_name"));
-			identity.setAvatar((String)result.get("identity_avatar"));
+			identity.setId(((BigInteger) result.get("identity_id")).longValue());
+			identity.setName((String) result.get("identity_name"));
+			identity.setAvatar((String) result.get("identity_avatar"));
 			drop.setIdentity(identity);
 		}
 
 		// Populate metadata
 		dropsDao.populateMetadata(drops, queryingAccount);
-
+		
 		return drops;
 	}
 
