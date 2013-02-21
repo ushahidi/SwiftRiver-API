@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.text.SimpleDateFormat;
 
 import org.junit.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,21 +78,21 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.owner.email").value("user1@myswiftriver.com"))
 				.andExpect(jsonPath("$.owner.username").value("user1"))
 				.andExpect(jsonPath("$.rivers").exists())
-				.andExpect(jsonPath("$.rivers[0].id").value(1))
-				.andExpect(jsonPath("$.rivers[0].name").value("River 1"))
-				.andExpect(jsonPath("$.rivers[0].follower_count").value(0))
-				.andExpect(jsonPath("$.rivers[0].public").value(true))
-				.andExpect(jsonPath("$.rivers[0].active").value(true))
-				.andExpect(jsonPath("$.rivers[0].drop_count").value(100))
-				.andExpect(jsonPath("$.rivers[0].drop_quota").value(10000))
-				.andExpect(jsonPath("$.rivers[0].full").value(false))
-				.andExpect(jsonPath("$.rivers[0].extension_count").value(0))
+				.andExpect(jsonPath("$.rivers[0].id").exists())
+				.andExpect(jsonPath("$.rivers[0].name").exists())
+				.andExpect(jsonPath("$.rivers[0].follower_count").exists())
+				.andExpect(jsonPath("$.rivers[0].public").exists())
+				.andExpect(jsonPath("$.rivers[0].active").exists())
+				.andExpect(jsonPath("$.rivers[0].drop_count").exists())
+				.andExpect(jsonPath("$.rivers[0].drop_quota").exists())
+				.andExpect(jsonPath("$.rivers[0].full").exists())
+				.andExpect(jsonPath("$.rivers[0].extension_count").exists())
 				.andExpect(jsonPath("$.buckets").exists())
-				.andExpect(jsonPath("$.buckets[0].id").value(1))
-				.andExpect(jsonPath("$.buckets[0].name").value("Bucket 1"))
-				.andExpect(jsonPath("$.buckets[0].description").value("A Bucket"))
-				.andExpect(jsonPath("$.buckets[0].follower_count").value(0))
-				.andExpect(jsonPath("$.buckets[0].public").value(true))
-				.andExpect(jsonPath("$.buckets[0].drop_count").value(13));
+				.andExpect(jsonPath("$.buckets[0].id").exists())
+				.andExpect(jsonPath("$.buckets[0].name").exists())
+				.andExpect(jsonPath("$.buckets[0].description").exists())
+				.andExpect(jsonPath("$.buckets[0].follower_count").exists())
+				.andExpect(jsonPath("$.buckets[0].public").exists())
+				.andExpect(jsonPath("$.buckets[0].drop_count").exists());
 	}
 }

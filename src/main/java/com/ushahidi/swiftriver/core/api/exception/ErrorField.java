@@ -12,15 +12,36 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ushahidi.swiftriver.core.util;
+package com.ushahidi.swiftriver.core.api.exception;
 
-import java.util.Collections;
-import java.util.List;
-
-public class CollectionUtil {
+public class ErrorField {
 	
-	public static List safe(List other) {
-		return other == null ? Collections.EMPTY_LIST : other;
+	private String field;
+	
+	private String code;
+
+	public ErrorField() {
 	}
 
+	public ErrorField(String field, String code) {
+		super();
+		this.field = field;
+		this.code = code;
+	}
+
+	public String getField() {
+		return field;
+	}
+
+	public void setField(String field) {
+		this.field = field;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
 }

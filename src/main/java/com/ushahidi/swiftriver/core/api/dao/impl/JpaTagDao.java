@@ -32,7 +32,7 @@ import com.ushahidi.swiftriver.core.model.Tag;
  *
  */
 @Repository
-public class JpaTagDao extends AbstractJpaDao implements TagDao {
+public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 
 	/**
 	 * @see TagDao#findByHash(ArrayList)

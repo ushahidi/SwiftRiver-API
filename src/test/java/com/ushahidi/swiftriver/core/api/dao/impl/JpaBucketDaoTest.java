@@ -54,7 +54,7 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		bucket.setPublished(true);
 		bucket.setAccount(account);
 		
-		bucketDao.save(bucket);
+		bucketDao.create(bucket);
 		
 		assertTrue(bucket.getId() > 0);
 		assertEquals("Test Bucket Number 2", bucket.getName());

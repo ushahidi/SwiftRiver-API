@@ -17,4 +17,14 @@
 		</field>
 	</mapping>
 
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.Channel</class-b>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.River</class-b>
+	</mapping>
+
 </mappings> 

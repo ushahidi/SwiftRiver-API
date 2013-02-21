@@ -85,22 +85,25 @@ CREATE TABLE IF NOT EXISTS `rivers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `river_name` varchar(255) NOT NULL DEFAULT '',
-  `river_active` tinyint(4) NOT NULL DEFAULT '1',
-  `river_public` tinyint(4) NOT NULL DEFAULT '0',
+  `river_name_canonical` varchar(255) NOT NULL DEFAULT '',
+  `description` varchar(255),
+  `river_active` tinyint(1) DEFAULT '1',
+  `river_public` tinyint(1) DEFAULT '0',
   `river_current` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Identifies if this is the last River that  was worked on',
   `default_layout` varchar(10) DEFAULT 'list',
-  `max_drop_id` bigint(20) NOT NULL DEFAULT '0',
-  `drop_count` int(11) NOT NULL DEFAULT '0',
+  `max_drop_id` bigint(20) DEFAULT '0',
+  `drop_count` int(11) DEFAULT '0',
   `drop_quota` int(11) DEFAULT '10000',
-  `river_full` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Whether the river has expired',
+  `river_full` tinyint(1) DEFAULT '0' COMMENT 'Whether the river has expired',
   `river_date_add` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `river_date_expiry` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Date when the river shall expire',
-  `river_expired` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Whether the river has expired',
-  `expiry_notification_sent` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Flags whether the river has been marked for expiry',
-  `extension_count` int(11) NOT NULL DEFAULT '0' COMMENT 'The no. of times the expiry date has been extended',
+  `river_expired` tinyint(1) DEFAULT '0' COMMENT 'Whether the river has expired',
+  `expiry_notification_sent` tinyint(1) DEFAULT '0' COMMENT 'Flags whether the river has been marked for expiry',
+  `extension_count` int(11) DEFAULT '0' COMMENT 'The no. of times the expiry date has been extended',
   `public_token` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `account_id_idx` (`account_id`)
+  KEY `account_id_idx` (`account_id`),
+  UNIQUE KEY `un_river_name` (`account_id`,`river_name_canonical`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -165,6 +168,7 @@ CREATE TABLE IF NOT EXISTS  `account_droplet_media` (
 CREATE TABLE IF NOT EXISTS `rivers_droplets` (
   `id` bigint(20) unsigned NOT NULL,
   `river_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `channel_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_date_pub` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
@@ -365,26 +369,13 @@ CREATE TABLE IF NOT EXISTS `river_channels` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `river_id` int(11) unsigned NOT NULL DEFAULT '0',
   `channel` varchar(100) NOT NULL,
-  `active` tinyint(4) NOT NULL DEFAULT '1',
+  `active` tinyint(1) DEFAULT '1',
+  `parameters` TEXT,
+  `drop_count` int(11) NOT NULL DEFAULT '0',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `date_modified` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
--- -----------------------------------------------------
--- Table `river_channel_options`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `river_channel_options` (
-  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `river_channel_id` BIGINT(11) UNSIGNED NOT NULL DEFAULT 0 ,
-  `key` VARCHAR(255) NOT NULL ,
-  `value` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `river_channel_id_idx` (`river_channel_id` ASC) ,
-  INDEX `key_idx` (`key` ASC) )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -519,6 +510,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `account_date_modified` timestamp,
   `account_active` tinyint(4) NOT NULL DEFAULT '1',
   `river_quota_remaining` INT  NULL  DEFAULT '1',
+  `version` bigint(20) unsigned  DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_path` (`account_path`),
   KEY `user_id` (`user_id`)

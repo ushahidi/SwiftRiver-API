@@ -23,6 +23,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Entity
 @Table(name = "accounts")
@@ -86,6 +90,9 @@ public class Account {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinTable(name="bucket_collaborators", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
 	private List<Bucket> collaboratingBuckets;
+	
+	@Version
+	private long version;
 	
 	public Account() {
 
@@ -219,4 +226,33 @@ public class Account {
 		this.following = following;
 	}
 
+	public long getVersion() {
+		return version;
+	}
+
+	protected void setVersion(long version) {
+		this.version = version;
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31).
+	            append(accountPath).
+	            toHashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        Account other = (Account) obj;
+        return new EqualsBuilder().
+            append(accountPath, other.accountPath).
+            isEquals();
+	}
 }

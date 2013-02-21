@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Link;
 
-public interface LinkDao  {
+public interface LinkDao  extends GenericDao<Link> {
 	
 	/**
 	 * Gets and returns a list of {@link Link} entities with the

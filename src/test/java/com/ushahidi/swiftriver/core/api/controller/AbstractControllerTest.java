@@ -16,9 +16,18 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -37,9 +46,19 @@ public abstract class AbstractControllerTest {
 	protected WebApplicationContext wac;
 
 	protected MockMvc mockMvc;
-
+	
 	@Before
 	public void setup() throws Exception {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.wac).build();
+	}
+	
+	protected Authentication getAuthentication(String username) {
+		List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+		authorities.add(new SimpleGrantedAuthority("user"));
+		User user = new User(username, "password", true, false, false, false,
+				authorities);
+		Authentication authentication = new UsernamePasswordAuthenticationToken(user, null);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		return authentication;
 	}
 }

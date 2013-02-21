@@ -29,6 +29,8 @@ public class GetRiverDTO {
 	@JsonProperty("name")
 	private String riverName;
 	
+	private String description;
+	
 	private String category;
 	
 	private Account account;
@@ -57,6 +59,9 @@ public class GetRiverDTO {
 	
 	@JsonProperty("extension_count")
 	private int extensionCount;
+	
+	@JsonProperty("max_drop_id")
+	private long maxDropId;
 	
 	private List<Channel> channels;
 	
@@ -88,12 +93,14 @@ public class GetRiverDTO {
 		
 		private long id;
 		
-		@JsonProperty("name")
 		private String channel;
 		
 		private boolean active;
 		
-		private List<ChannelOption> options;
+		private String parameters;
+		
+		@JsonProperty("drop_count")
+		private int dropCount;
 
 		public long getId() {
 			return id;
@@ -119,46 +126,14 @@ public class GetRiverDTO {
 			this.active = active;
 		}
 
-		public List<ChannelOption> getOptions() {
-			return options;
+		public String getParameters() {
+			return parameters;
 		}
 
-		public void setOptions(List<ChannelOption> options) {
-			this.options = options;
-		}
-	}
-	
-	public static class ChannelOption {
-		
-		private long id;
-		
-		private String key;
-		
-		private String value;
-
-		public long getId() {
-			return id;
+		public void setParameters(String parameters) {
+			this.parameters = parameters;
 		}
 
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getKey() {
-			return key;
-		}
-
-		public void setKey(String key) {
-			this.key = key;
-		}
-
-		public String getValue() {
-			return value;
-		}
-
-		public void setValue(String value) {
-			this.value = value;
-		}
 	}
 
 	public long getId() {
@@ -175,6 +150,14 @@ public class GetRiverDTO {
 
 	public void setRiverName(String riverName) {
 		this.riverName = riverName;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public String getCategory() {
@@ -263,6 +246,14 @@ public class GetRiverDTO {
 
 	public void setExtensionCount(int extensionCount) {
 		this.extensionCount = extensionCount;
+	}
+
+	public long getMaxDropId() {
+		return maxDropId;
+	}
+
+	public void setMaxDropId(long maxDropId) {
+		this.maxDropId = maxDropId;
 	}
 
 	public List<Channel> getChannels() {

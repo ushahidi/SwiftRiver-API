@@ -16,56 +16,298 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.dozer.Mapper;
-import org.junit.Before;
 import org.junit.Test;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
+import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.River;
 
 public class RiverServiceTest {
-	
-	private River river;
-	
-	private GetRiverDTO getRiverDTO;
 
-	private RiverService riverService;
 
-	private RiverDao mockedRiverDao;
-	
-	private Mapper mockedMapper;
-
-	@Before
-	public void setup() {
-		river = new River();
-		
-		mockedRiverDao = mock(RiverDao.class);
-		
-		when(mockedRiverDao.findById(anyInt())).thenReturn(river);
-		
-		mockedMapper = mock(Mapper.class);
-		when(mockedMapper.map(river, GetRiverDTO.class)).thenReturn(getRiverDTO);
-		
-		riverService = new RiverService();
-		riverService.setRiverDao(mockedRiverDao);
-		riverService.setMapper(mockedMapper);
-	}
-	
 	@Test
 	public void findById() throws NotFoundException {
+		River river = new River();
+
+		RiverDao mockedRiverDao = mock(RiverDao.class);
+
+		when(mockedRiverDao.findById(anyLong())).thenReturn(river);
+
+		Mapper mockedMapper = mock(Mapper.class);
+		GetRiverDTO getRiverDTO = mock(GetRiverDTO.class);
+		when(mockedMapper.map(river, GetRiverDTO.class))
+				.thenReturn(getRiverDTO);
+
+		RiverService riverService = new RiverService();
+		riverService.setRiverDao(mockedRiverDao);
+		riverService.setMapper(mockedMapper);
+
 		GetRiverDTO actualGetRiverDTO = riverService.getRiverById(22L);
 
-		verify(mockedRiverDao).findById(22);
+		verify(mockedRiverDao).findById(22L);
 		assertEquals(getRiverDTO, actualGetRiverDTO);
 	}
 
+	@Test
+	public void createRiver() {
+		CreateRiverDTO mockedRiverTO = mock(CreateRiverDTO.class);
+		AccountDao mockedAccountDao = mock(AccountDao.class);
+		RiverDao mockedRiverDao = mock(RiverDao.class);
+		Account mockedAccount = mock(Account.class);
+		River mockedRiver = mock(River.class);
+		Mapper mockedMapper = mock(Mapper.class);
+		GetRiverDTO mockedGetRiverTO = mock(GetRiverDTO.class);
+
+		when(mockedAccountDao.findByUsername(anyString())).thenReturn(
+				mockedAccount);
+		when(mockedAccount.getRiverQuotaRemaining()).thenReturn(1);
+		when(mockedRiverDao.findByName(anyString())).thenReturn(null);
+		when(mockedMapper.map(mockedRiverTO, River.class)).thenReturn(
+				mockedRiver);
+		when(mockedRiver.getRiverName()).thenReturn("");
+		when(mockedMapper.map(mockedRiver, GetRiverDTO.class)).thenReturn(
+				mockedGetRiverTO);
+
+		RiverService riverService = new RiverService();
+		riverService.setAccountDao(mockedAccountDao);
+		riverService.setRiverDao(mockedRiverDao);
+		riverService.setMapper(mockedMapper);
+
+		GetRiverDTO actualGetRiverTO = riverService.createRiver(mockedRiverTO, "username");
+
+		verify(mockedRiverDao).create(mockedRiver);
+		verify(mockedAccountDao).decreaseRiverQuota(mockedAccount, 1);
+		verify(mockedMapper).map(mockedRiver, GetRiverDTO.class);
+
+		assertEquals(mockedGetRiverTO, actualGetRiverTO);
+
+	}
+
+	@Test
+	public void createChannel() {
+		CreateChannelDTO mockedCreateChannelTO = mock(CreateChannelDTO.class);
+		RiverDao mockedRiverDao = mock(RiverDao.class);
+		ChannelDao mockedChannelDao = mock(ChannelDao.class);
+		River mockedRiver = mock(River.class);
+		Channel mockedChannel = mock(Channel.class);
+		Mapper mockedMapper = mock(Mapper.class);
+		GetChannelDTO mockedGetChannelTO = mock(GetChannelDTO.class);
+
+		when(mockedRiverDao.findById(1L)).thenReturn(mockedRiver);
+		when(mockedMapper.map(mockedCreateChannelTO, Channel.class))
+				.thenReturn(mockedChannel);
+		when(mockedMapper.map(mockedChannel, GetChannelDTO.class)).thenReturn(
+				mockedGetChannelTO);
+
+		RiverService riverService = new RiverService();
+		riverService.setMapper(mockedMapper);
+		riverService.setRiverDao(mockedRiverDao);
+		riverService.setChannelDao(mockedChannelDao);
+
+		GetChannelDTO actualChannelTO = riverService.createChannel(1L,
+				mockedCreateChannelTO);
+
+		verify(mockedRiverDao).findById(1L);
+		verify(mockedChannel).setRiver(mockedRiver);
+		verify(mockedChannelDao).create(mockedChannel);
+
+		assertEquals(mockedGetChannelTO, actualChannelTO);
+	}
+
+	@Test
+	public void isOwnerForOwnerAccount() {
+		Account account = new Account();
+		account.setAccountPath("owner_account");
+
+		River river = new River();
+		river.setAccount(account);
+
+		RiverService riverService = new RiverService();
+		
+		assertTrue(riverService.isOwner(river, account));
+	}
+
+	@Test
+	public void isOwnerForCollaboratingAccount() {
+		River river = new River();
+
+		Account account = new Account();
+		List<River> collaboratingRivers = new ArrayList<River>();
+		collaboratingRivers.add(river);
+		account.setCollaboratingRivers(collaboratingRivers);
+		
+		RiverService riverService = new RiverService();
+
+		assertTrue(riverService.isOwner(river, account));
+	}
+
+	@Test
+	public void isOwnerForNoneOwnerAccount() {
+		River river = new River();
+		river.setAccount(new Account());
+
+		Account account = new Account();
+		List<River> collaboratingRivers = new ArrayList<River>();
+		account.setCollaboratingRivers(collaboratingRivers);
+		
+		RiverService riverService = new RiverService();
+
+		assertFalse(riverService.isOwner(river, account));
+	}
+
+	@Test(expected = NotFoundException.class)
+	public void deleteNonExistentChannel() {
+		
+		ChannelDao mockChannelDao = mock(ChannelDao.class);
+		when(mockChannelDao.findById(anyLong())).thenReturn(null);
+		
+		RiverService riverService = new RiverService();
+		riverService.setChannelDao(mockChannelDao);
+		
+		riverService.deleteChannel(1L, 1L, null);
+	}
 	
+	@Test(expected = NotFoundException.class)
+	public void deleteNonExistentChannelInRiver() {
+		ChannelDao mockChannelDao = mock(ChannelDao.class);
+		Channel mockChannel = mock(Channel.class);
+		River mockRiver = mock(River.class);
+		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
+		when(mockChannel.getRiver()).thenReturn(mockRiver);
+		
+		RiverService riverService = new RiverService();
+		riverService.setChannelDao(mockChannelDao);
+		
+		riverService.deleteChannel(1L, 1L, null);
+	}
+	
+	@Test(expected = ForbiddenException.class)
+	public void deleteOtherUserChannel() {
+		ChannelDao mockChannelDao = mock(ChannelDao.class);
+		AccountDao mockAccountDao = mock(AccountDao.class);
+		Channel mockChannel = mock(Channel.class);
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(new Account());
+		Account account = new Account();
+		account.setAccountPath("other-account");
+		account.setCollaboratingRivers(new ArrayList<River>());
+		
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
+		when(mockChannel.getRiver()).thenReturn(river);
+		
+		
+		RiverService riverService = new RiverService();
+		riverService.setChannelDao(mockChannelDao);
+		riverService.setAccountDao(mockAccountDao);
+		
+		riverService.deleteChannel(1L, 1L, "user");
+	}
+	
+	@Test
+	public void deleteChannel() {
+		ChannelDao mockChannelDao = mock(ChannelDao.class);
+		AccountDao mockAccountDao = mock(AccountDao.class);
+		Channel mockChannel = mock(Channel.class);
+		Account account = new Account();
+		account.setAccountPath("other-account");
+		account.setCollaboratingRivers(new ArrayList<River>());
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(account);
+		
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
+		when(mockChannel.getRiver()).thenReturn(river);
+		
+		
+		RiverService riverService = new RiverService();
+		riverService.setChannelDao(mockChannelDao);
+		riverService.setAccountDao(mockAccountDao);
+		
+		riverService.deleteChannel(1L, 1L, "user");
+		
+		verify(mockChannelDao).delete(mockChannel);
+	}
+	
+	@Test
+	public void modifyChannel() {
+		ChannelDao mockChannelDao = mock(ChannelDao.class);
+		AccountDao mockAccountDao = mock(AccountDao.class);
+		Channel mockChannel = mock(Channel.class);
+		ModifyChannelDTO modifyChannelTo = mock(ModifyChannelDTO.class);
+		GetChannelDTO mockGetChannelTO = mock(GetChannelDTO.class);
+		Mapper mockMapper = mock(Mapper.class);
+		Account account = new Account();
+		account.setAccountPath("other-account");
+		account.setCollaboratingRivers(new ArrayList<River>());
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(account);
+		
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
+		when(mockChannel.getRiver()).thenReturn(river);
+		when(mockMapper.map(mockChannel, GetChannelDTO.class)).thenReturn(mockGetChannelTO);
+		
+		
+		RiverService riverService = new RiverService();
+		riverService.setChannelDao(mockChannelDao);
+		riverService.setAccountDao(mockAccountDao);
+		riverService.setMapper(mockMapper);
+		
+		GetChannelDTO actualGetChannelDTO = riverService.modifyChannel(1L, 1L, modifyChannelTo, "user");
+		
+		verify(mockChannelDao).update(mockChannel);
+		assertEquals(mockGetChannelTO, actualGetChannelDTO);
+	}
+	
+	@Test
+	public void modifyRiver() {
+		Account mockAccount = mock(Account.class);
+		River mockRiver = mock(River.class);
+		AccountDao mockAccountDao = mock(AccountDao.class);
+		RiverDao mockRiverDao = mock(RiverDao.class);
+		Mapper mockMapper = mock(Mapper.class);
+		ModifyRiverDTO modifyRiverTO = mock(ModifyRiverDTO.class);
+		GetRiverDTO expectedGetRiverDTO = mock(GetRiverDTO.class);
+		
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAccount);
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockRiver.getAccount()).thenReturn(mockAccount);
+		when(mockMapper.map(mockRiver, GetRiverDTO.class)).thenReturn(expectedGetRiverDTO);
+		
+		RiverService riverService = new RiverService();
+		riverService.setAccountDao(mockAccountDao);
+		riverService.setRiverDao(mockRiverDao);
+		riverService.setMapper(mockMapper);
+		
+		GetRiverDTO actualGetRiverDTO = riverService.modifyRiver(1L, modifyRiverTO, "");
+		
+		verify(mockMapper).map(modifyRiverTO, mockRiver);
+		verify(mockRiverDao).update(mockRiver);
+		verify(mockMapper).map(mockRiver, GetRiverDTO.class);
+		
+		assertEquals(expectedGetRiverDTO, actualGetRiverDTO);
+	}
 }

@@ -36,7 +36,7 @@ import com.ushahidi.swiftriver.core.api.service.BucketService;
 
 @Controller
 @RequestMapping("/v1/buckets")
-public class BucketsController {
+public class BucketsController extends AbstractController {
 
 	@Autowired
 	private BucketService bucketService;

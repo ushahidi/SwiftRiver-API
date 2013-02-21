@@ -16,20 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-/**
- * Base DAO implementation class for all DAO implementations
- * @author ekala
- *
- * @param <T>
- * @param <ID>
- */
-public abstract class AbstractJpaDao {
-	
+import com.ushahidi.swiftriver.core.api.dao.GenericDao;
+
+public abstract class AbstractJpaDao<T> implements GenericDao<T> {
+
 	@PersistenceContext
 	protected EntityManager em;
+
+	private Class<T> type;
 
 	public EntityManager getEm() {
 		return em;
@@ -38,5 +38,32 @@ public abstract class AbstractJpaDao {
 	public void setEm(EntityManager em) {
 		this.em = em;
 	}
-		 
+	
+	public AbstractJpaDao() {
+        Type t = getClass().getGenericSuperclass();
+        ParameterizedType pt = (ParameterizedType) t;
+        type = (Class) pt.getActualTypeArguments()[0];
+    }
+
+	@Override
+	public T create(T t) {
+		em.persist(t);
+		return t;
+	}
+
+	@Override
+	public void delete(T t) {
+		em.remove(t);
+	}
+
+	@Override
+	public T findById(Object id) {
+		return (T) em.find(type, id);
+	}
+
+	@Override
+	public T update(final T t) {
+		return em.merge(t);
+	}
+
 }

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * an aciton.
  *
  */
-@ResponseStatus(value=HttpStatus.NOT_FOUND, reason="Access to the resource was denied.")
+@ResponseStatus(value=HttpStatus.FORBIDDEN, reason="Access to the resource was denied.")
 public class ForbiddenException extends RuntimeException {
 
 	private static final long serialVersionUID = -4457094948389720427L;

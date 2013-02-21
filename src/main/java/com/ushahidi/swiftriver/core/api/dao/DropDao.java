@@ -27,21 +27,8 @@ import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
 
-/**
- * 
- * @author ekala
- *
- */
-public interface DropDao {
+public interface DropDao extends GenericDao<Drop> {
 	
-	/**
-	 * Get a drop using its id.
-	 * 
-	 * @param id
-	 * @return
-	 */
-	public Drop findById(long id);
-
 	/**
 	 * Adds a link to a drop
 	 * @param dropId

@@ -61,11 +61,11 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException 
 	 */
-	public GetAccountDTO getAccountById(long id) throws NotFoundException {
+	public GetAccountDTO getAccountById(Long id) throws NotFoundException {
 		Account account = accountDao.findById(id);
 		
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(String.format("Account not found", id));
 		}
 		
 		return mapGetAccountDTO(account);
@@ -82,7 +82,7 @@ public class AccountService {
 		Account account = accountDao.findByUsername(username);
 		
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("Account not found");
 		}
 		
 		return mapGetAccountDTO(account);
@@ -99,7 +99,7 @@ public class AccountService {
 		Account account = accountDao.findByName(accountPath);
 		
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("Account not found");
 		}
 		
 		return mapGetAccountDTO(account);
@@ -117,5 +117,5 @@ public class AccountService {
 		accountDTO.setFollowingCount(account.getFollowing().size());
 		
 		return accountDTO;
-	}
+	}	
 }

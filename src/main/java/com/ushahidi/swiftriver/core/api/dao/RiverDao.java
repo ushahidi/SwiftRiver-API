@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Account;
@@ -25,38 +24,15 @@ import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
 
-public interface RiverDao {
+public interface RiverDao extends GenericDao<River> {
 	
 	/**
-	 * Modify a river.
-	 * 
-	 * @param river
-	 */
-	public River update(River river);
-	
-	
-	/**
-	 * Delete a river
-	 * 
-	 * @param river
-	 */
-	public void delete(River river);
-	
-	/**
-	 * Create a river
-	 * 
-	 * @param river
-	 * @return
-	 */
-	public River save(River river);
-	
-	/**
-	 * Get a River by its ID
+	 * Get a River by its name
 	 * 
 	 * @param id
 	 * @return
 	 */
-	public River findById(long id);	
+	public River findByName(String name);	
 
 	/**
 	 * Get list of drops from the given river.
@@ -67,24 +43,19 @@ public interface RiverDao {
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Long maxId, int dropCount, Account queryingAccount);
+	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, Account queryingAccount);
 	
 	/**
-	 * Adds a drop to a river
+	 * Get list of drops from the given river with an id after the the given since_id
 	 * 
-	 * @param riverId
-	 * @param drop
+	 * @param id
+	 * @param maxId
+	 * @param dropCount
+	 * @param queryingAccount
+	 * @return
 	 */
-	public void addDrop(long riverId, Drop drop);
-
-	/**
-	 * Adds a collection of drops to a river
-	 * 
-	 * @param riverId
-	 * @param drops
-	 */
-	public void addDrops(long riverId, Collection<Drop> drops);
-
+	public List<Drop> getDropsSince(Long id, Long sinceId, int dropCount, Account queryingAccount);
+	
 	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
 	 * and the river specified by <code>riverId</code>

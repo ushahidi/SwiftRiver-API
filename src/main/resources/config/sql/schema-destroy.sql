@@ -15,7 +15,6 @@ DROP TABLE IF EXISTS `bucket_comments`;
 DROP TABLE IF EXISTS `bucket_followers`;
 DROP TABLE IF EXISTS `buckets`;
 DROP TABLE IF EXISTS `buckets_droplets`;
-DROP TABLE IF EXISTS `river_channel_options`;
 DROP TABLE IF EXISTS `river_channels`;
 DROP TABLE IF EXISTS `channel_quotas`;
 DROP TABLE IF EXISTS `comment_scores`;

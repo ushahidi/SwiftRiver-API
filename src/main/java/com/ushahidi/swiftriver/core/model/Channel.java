@@ -17,16 +17,13 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.sql.Timestamp;
-import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -35,7 +32,7 @@ public class Channel {
 	
 	@Id
 	@GeneratedValue
-	private int id;
+	private long id;
 	
 	@ManyToOne
 	@JoinColumn(name = "river_id")
@@ -44,7 +41,7 @@ public class Channel {
 	@Column(name = "channel")
 	private String channel;	
 	
-	private boolean active;
+	private Boolean active;
 
 	@Column(name = "date_added")
 	private Timestamp dateAdded;
@@ -52,18 +49,20 @@ public class Channel {
 	@Column(name = "date_modified")
 	private Timestamp dateModified;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="channel")
-	private List<ChannelOption> options;
+	private String parameters;
+	
+	@Column(name = "drop_count")
+	private int dropCount;
 	
 	public Channel() {
 		
 	}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
 
@@ -83,11 +82,11 @@ public class Channel {
 		this.channel = channel;
 	}
 
-	public boolean isActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
@@ -107,13 +106,20 @@ public class Channel {
 		this.dateModified = dateModified;
 	}
 
-	public List<ChannelOption> getOptions() {
-		return options;
+	public String getParameters() {
+		return parameters;
 	}
 
-	public void setOptions(List<ChannelOption> options) {
-		this.options = options;
+	public void setParameters(String parameters) {
+		this.parameters = parameters;
 	}
 
-	
+	public int getDropCount() {
+		return dropCount;
+	}
+
+	public void setDropCount(int dropCount) {
+		this.dropCount = dropCount;
+	}
+
 }

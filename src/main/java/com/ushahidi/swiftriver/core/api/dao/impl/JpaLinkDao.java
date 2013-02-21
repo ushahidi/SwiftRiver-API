@@ -25,7 +25,7 @@ import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Link;
 
 @Repository
-public class JpaLinkDao extends AbstractJpaDao implements LinkDao {
+public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 
 	/**
 	 * @see LinkDao#findByHash(ArrayList)

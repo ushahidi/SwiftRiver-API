@@ -32,7 +32,7 @@ INSERT INTO `settings` (`id`, `key`, `value`) VALUES
 -- -----------------------------------------------------
 -- Data for table `users`
 -- -----------------------------------------------------
-INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`, created_date) VALUES 
+INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`, `created_date`) VALUES 
 (1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', 'c2bac288881c7dd9531c607e73b3af798499917760023656e9847b10b8e75542', 0, NULL, md5(rand()), '2013-01-01 00:00:00'),
 (2, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, '', '2013-01-01 00:00:01'),
 (3, 'user1@myswiftriver.com', 'User 1', 'user1', 'user1_password', 0, NULL, 'user1', '2013-01-01 00:00:02'),
@@ -49,12 +49,12 @@ INSERT INTO `roles_users` (`user_id`, `role_id`, `account_id`) VALUES
 -- -----------------------------------------------------
 -- Data for table `accounts`
 -- -----------------------------------------------------
-INSERT INTO `accounts` (`user_id`, `account_path`, `account_private`, `account_date_add`, `account_date_modified`, `account_active`, `river_quota_remaining`) VALUES 
-(1, 'default', 0, '2013-01-01 00:00:00', '2013-01-02 00:00:00', 1, 10),
-(2, 'public', 0, '2013-01-01 00:00:01', '2013-01-02 00:00:01', 1, 15),
-(3, 'user1', 0, '2013-01-01 00:00:02', '2013-01-02 00:00:02', 1, 20),
-(4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 25),
-(5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30);
+INSERT INTO `accounts` (`id`, `user_id`, `account_path`, `account_private`, `account_date_add`, `account_date_modified`, `account_active`, `river_quota_remaining`) VALUES 
+(1, 1, 'default', 0, '2013-01-01 00:00:00', '2013-01-02 00:00:00', 1, 10),
+(2, 2, 'public', 0, '2013-01-01 00:00:01', '2013-01-02 00:00:01', 1, 15),
+(3, 3, 'user1', 0, '2013-01-01 00:00:02', '2013-01-02 00:00:02', 1, 20),
+(4, 4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 0),
+(5, 5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30);
 
 -- -----------------------------------------------------
 -- Data for table `account_followers`
@@ -75,8 +75,9 @@ VALUES
 -- -----------------------------------------------------
 -- Data for table `rivers`
 -- -----------------------------------------------------
-INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`) VALUES 
-(1, 3, 'River 1', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0);
+INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_name_canonical`, `description`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`, `max_drop_id`) VALUES 
+(1, 3, 'Public River 1', 'public-river-1', 'Just a public river', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 100),
+(2, 3, 'Private River 1', 'private-river-1', NULL, 1, 0, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 1000);
 
 -- ------------------------------------
 -- Data for table `river_collaborators`
@@ -94,14 +95,11 @@ INSERT INTO river_followers(`river_id`, `account_id`) VALUES
 -- -----------------------------------------------------
 -- Data for table `river_channels`
 -- -----------------------------------------------------
-INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `date_added`, `date_modified`) VALUES 
-(1, 1, 'rss', 1, '2013-01-02 00:00:02', '2013-02-02 00:00:02');
-
--- -----------------------------------------------------
--- Data for table `river_channel_options`
--- -----------------------------------------------------
-INSERT INTO `river_channel_options` (`id`, `river_channel_id`, `key`, `value`) VALUES
-(1, 1, 'url', '{"value":"http:\/\/www.engadget.com\/rss.xml","title":"Engadget","quota_usage":1}');
+INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `parameters`, `date_added`, `date_modified`) VALUES 
+(1, 1, 'rss', 1, '{"key":"url","value":"http:\\\/\\\/feeds.bbci.co.uk\\\/news\\\/rss.xml","title":"BBC News - Home","quota_usage":1}', '2013-01-02 00:00:01', '2013-02-02 00:00:01'),
+(2, 1, 'twitter', 1, '{"key":"track","value":"{\"keyword\":\"kenya, uganda, tanzania\",\"user\":\"69mb, @ushahidi\",\"location\":\"Nairobi\"}","quota_usage":1}', '2013-01-02 00:00:02', '2013-02-02 00:00:02'),
+(3, 1, 'facebook', 1, '{"key":"page","value":"Safaricom Kenya Facebook Page","quota_usage":1}', '2013-01-02 00:00:03', '2013-02-02 00:00:03'),
+(4, 1, 'sms', 1, NULL, '2013-01-02 00:00:04', '2013-02-02 00:00:04');
 
 -- -----------------------------------------------------
 -- Data for table `buckets`
@@ -136,7 +134,7 @@ INSERT INTO `droplets` (`id`, `identity_id`, `channel`, `droplet_hash`, `droplet
 (1, 1, 'rss', '1', '1', 'original', 'droplet_1_title', 'droplet_1_content', 'en', NULL, '2012-11-15 00:00:01', '2012-12-15 00:00:01', NULL, 10),
 (2, 2, 'twitter', '2', '2', 'original', 'droplet_2_title', 'droplet_2_content', 'en', NULL, '2012-11-15 00:00:02', '2012-12-15 00:00:02', NULL, 15),
 (3, 1, 'rss', '3', '3', 'original', 'droplet_3_title', 'droplet_3_content', 'en', NULL, '2012-11-15 00:00:03', '2012-12-15 00:00:03', NULL, 20),
-(4, 2, 'twitter', '4', '4', 'original', 'droplet_4_title', 'droplet_4_content', 'en', NULL, '2012-11-15 00:00:04', '2012-12-15 00:00:04', NULL, 25),
+(4, 2, 'twitter', '4', '4', 'original', 'droplet_4_title', 'droplet_4_content', 'en', NULL, '2012-11-15 00:00:04', '2012-12-15 00:00:04', 3, 25),
 (5, 1, 'rss', '5', '5', 'original', 'droplet_5_title', 'droplet_5_content', 'en', NULL, '2012-11-15 00:00:05', '2012-12-15 00:00:05', 3, 30),
 (6, 2, 'twitter', '6', '6', 'original', 'droplet_6_title', 'droplet_6_content', 'en', NULL, '2012-11-15 00:00:06', '2012-12-15 00:00:06', NULL, 35),
 (7, 1, 'rss', '7', '7', 'original', 'droplet_7_title', 'droplet_7_content', 'en', NULL, '2012-11-15 00:00:07', '2012-12-15 00:00:07', NULL, 40),
@@ -201,7 +199,8 @@ INSERT INTO `tags` (`id`, `hash`, `tag`, `tag_canonical`, `tag_type`) VALUES
 -- -----------------------------------------------------
 INSERT INTO `droplets_tags` (`id`, `droplet_id`, `tag_id`) VALUES
 (1, 5, 1),
-(2, 5, 2);
+(2, 4, 1),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `account_droplet_tags`
@@ -215,7 +214,8 @@ INSERT INTO `account_droplet_tags` (`id`, `account_id`, `droplet_id`, `tag_id`, 
 -- -----------------------------------------------------
 INSERT INTO droplets_links(`id`, `droplet_id`, `link_id`) VALUES
 (1, 5, 10),
-(2, 5, 2);
+(2, 4, 10),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `account_droplet_links`
@@ -260,7 +260,8 @@ INSERT INTO `media_thumbnails` (`id`, `media_id`, `size`, `url`) VALUES
 -- -----------------------------------------------------
 INSERT INTO `droplets_media` (`id`, `droplet_id`, `media_id`) VALUES
 (1, 5, 1),
-(2, 5, 2);
+(2, 4, 1),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `places`
@@ -282,7 +283,8 @@ INSERT INTO `places` (`id`, `hash`, `place_name`, `place_name_canonical`, `longi
 -- -----------------------------------------------------
 INSERT INTO droplets_places(`id`, `droplet_id`, `place_id`) VALUES
 (1, 5, 1),
-(2, 5, 2);
+(2, 4, 1),
+(3, 5, 2);
 
 -- -----------------------------------------------------
 -- Data for table `account_droplet_links`
