@@ -14,29 +14,32 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.ushahidi.swiftriver.core.model.Place;
-
-public interface PlaceDao extends GenericDao<Place> {
+public class CreateTagDTO {
 	
-	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
-	 * 
-	 * @param placeHashes
-	 * @return
-	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+	private String tag;
+	
+	@JsonProperty("tag_type")
+	private String tagType;
 
-	/**
-	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Place findByHash(String hash);
+	public String getTag() {
+		return tag;
+	}
+
+	public void setTag(String tag) {
+		this.tag = tag;
+	}
+
+	public String getTagType() {
+		return tagType;
+	}
+
+	public void setTagType(String tagType) {
+		this.tagType = tagType;
+	}
+	
 	
 }

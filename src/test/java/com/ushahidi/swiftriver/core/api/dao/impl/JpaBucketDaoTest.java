@@ -13,7 +13,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
- */package com.ushahidi.swiftriver.core.api.dao.impl;
+ */
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

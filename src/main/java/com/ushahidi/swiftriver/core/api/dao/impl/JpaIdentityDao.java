@@ -29,6 +29,12 @@ import com.ushahidi.swiftriver.core.model.Identity;
 @Repository
 public class JpaIdentityDao extends AbstractJpaDao<Identity> implements IdentityDao {
 
+	@Override
+	public Identity create(Identity t) {
+		t.setId(this.getSequenceNumber("identities", 1));
+		return this.em.merge(t);
+	}
+
 	/**
 	 * @see IdentityDao#findIdentitiesByHash(ArrayList)
 	 */

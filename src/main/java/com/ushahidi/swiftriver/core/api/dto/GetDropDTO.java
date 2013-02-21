@@ -1,3 +1,19 @@
+/**
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
+ */
 package com.ushahidi.swiftriver.core.api.dto;
 
 import java.util.List;
@@ -32,17 +48,17 @@ public class GetDropDTO {
 	@JsonProperty("comment_count")
 	private int commentCount;
 	
-	private Media image;
+	private GetMediaDTO image;
 	
 	private List<Bucket> buckets;
 	
-	private List<Tag> tags;
+	private List<GetTagDTO> tags;
 	
-	private List<Link> links;
+	private List<GetLinkDTO> links;
 	
-	private List<Media> media;
+	private List<GetMediaDTO> media;
 	
-	private List<Place> places;
+	private List<GetPlaceDTO> places;
 	
 	public static class Identity {
 		
@@ -92,8 +108,7 @@ public class GetDropDTO {
 		
 		private long id;
 		
-		@JsonProperty("name")
-		private String bucketName;
+		private String name;
 
 		public long getId() {
 			return id;
@@ -103,16 +118,16 @@ public class GetDropDTO {
 			this.id = id;
 		}
 
-		public String getBucketName() {
-			return bucketName;
+		public String getName() {
+			return name;
 		}
 
-		public void setBucketName(String bucketName) {
-			this.bucketName = bucketName;
+		public void setName(String name) {
+			this.name = name;
 		}
 	}
 	
-	public static class Tag {
+	public static class GetTagDTO {
 		
 		private long id;
 		
@@ -145,7 +160,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Link {
+	public static class GetLinkDTO {
 		
 		private long id;
 		
@@ -168,7 +183,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Media {
+	public static class GetMediaDTO {
 		
 		private long id;
 		
@@ -235,7 +250,7 @@ public class GetDropDTO {
 		}
 	}
 	
-	public static class Place {
+	public static class GetPlaceDTO {
 		
 		private long id;
 		
@@ -244,9 +259,9 @@ public class GetDropDTO {
 		@JsonProperty("name")
 		private String placeName;
 		
-		private double longitude;
+		private float longitude;
 		
-		private double latitude;
+		private float latitude;
 
 		public long getId() {
 			return id;
@@ -272,19 +287,19 @@ public class GetDropDTO {
 			this.placeName = placeName;
 		}
 
-		public double getLongitude() {
+		public float getLongitude() {
 			return longitude;
 		}
 
-		public void setLongitude(double longitude) {
+		public void setLongitude(float longitude) {
 			this.longitude = longitude;
 		}
 
-		public double getLatitude() {
+		public float getLatitude() {
 			return latitude;
 		}
 
-		public void setLatitude(double latitude) {
+		public void setLatitude(float latitude) {
 			this.latitude = latitude;
 		}
 	}
@@ -369,11 +384,11 @@ public class GetDropDTO {
 		this.commentCount = commentCount;
 	}
 
-	public Media getImage() {
+	public GetMediaDTO getImage() {
 		return image;
 	}
 
-	public void setImage(Media image) {
+	public void setImage(GetMediaDTO image) {
 		this.image = image;
 	}
 
@@ -385,35 +400,35 @@ public class GetDropDTO {
 		this.buckets = buckets;
 	}
 
-	public List<Tag> getTags() {
+	public List<GetTagDTO> getTags() {
 		return tags;
 	}
 
-	public void setTags(List<Tag> tags) {
+	public void setTags(List<GetTagDTO> tags) {
 		this.tags = tags;
 	}
 
-	public List<Link> getLinks() {
+	public List<GetLinkDTO> getLinks() {
 		return links;
 	}
 
-	public void setLinks(List<Link> links) {
+	public void setLinks(List<GetLinkDTO> links) {
 		this.links = links;
 	}
 
-	public List<Media> getMedia() {
+	public List<GetMediaDTO> getMedia() {
 		return media;
 	}
 
-	public void setMedia(List<Media> media) {
+	public void setMedia(List<GetMediaDTO> media) {
 		this.media = media;
 	}
 
-	public List<Place> getPlaces() {
+	public List<GetPlaceDTO> getPlaces() {
 		return places;
 	}
 
-	public void setPlaces(List<Place> places) {
+	public void setPlaces(List<GetPlaceDTO> places) {
 		this.places = places;
 	}
 }

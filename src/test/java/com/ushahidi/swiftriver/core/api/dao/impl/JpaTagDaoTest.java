@@ -16,36 +16,43 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.assertTrue;
 
-import org.springframework.stereotype.Repository;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.MediaDao;
-import com.ushahidi.swiftriver.core.model.Media;
+import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
- * Repository class for Media
+ * {@link TagDao} unit tests 
  * @author ekala
  *
  */
-@Repository
-public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
+public class JpaTagDaoTest extends AbstractDaoTest {
 
-	@Override
-	public Media create(Media t) {
-		t.setId(this.getSequenceNumber("media", 1));
-		return this.em.merge(t);
-	}
+	@Autowired
+	private TagDao tagDao;
 
 	/**
-	 * @see MediaDao#findByHash(ArrayList) 
+	 * Test for {@link TagDao#save(Tag)} 
 	 */
-	@SuppressWarnings("unchecked")
-	public List<Media> findByHash(ArrayList<String> mediaHashes) {
-		String sql = "FROM Media WHERE hash IN (?1)";
-		
-		return (List<Media>) em.createQuery(sql).setParameter(1, sql).getResultList();
-	}
+	@Test
+	public void testSave() {
+		Tag tag = new Tag();
 
+		String tagName = "Ushahidi Inc";
+		String hash = HashUtil.md5(tagName + "oragnization");
+
+		tag.setTag(tagName);
+		tag.setType(tagName.toLowerCase());
+		tag.setType("organization");
+		tag.setHash(hash);
+		
+		tagDao.create(tag);
+		
+		assertTrue(tag.getId() > 0);
+	}
 }

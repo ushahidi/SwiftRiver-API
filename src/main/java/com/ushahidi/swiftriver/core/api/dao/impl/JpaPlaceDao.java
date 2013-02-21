@@ -32,14 +32,48 @@ import com.ushahidi.swiftriver.core.model.Place;
 @Repository
 public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao{
 
+	@Override
+	public Place create(Place t) {
+		t.setId(this.getSequenceNumber("places", 1));
+		return this.em.merge(t);
+	}
+
 	/**
-	 * @see PlaceDao#findByHash(ArrayList)
+	 * @see PlaceDao#findAllByHash(ArrayList)
 	 */
 	@SuppressWarnings("unchecked")
-	public List<Place> findByHash(ArrayList<String> placeHashes) {
+	public List<Place> findAllByHash(ArrayList<String> placeHashes) {
 		String sql = "FROM Place WHERE hash IN (?1)";
 		
 		return (List<Place>) em.createQuery(sql).setParameter(1, placeHashes).getResultList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.PlaceDao#findByHash(java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	public Place findByHash(String hash) {
+		String sql = "FROM Place WHERE hash = :hash";
+		List<Place> places = (List<Place>)em.createQuery(sql).setParameter("hash", hash).getResultList();
+		return places.isEmpty() ? null : places.get(0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.PlaceDao#save(com.ushahidi.swiftriver.core.model.Place)
+	 */
+	public void save(Place place) {
+		place.setId(getSequenceNumber("places", 1));
+		this.em.persist(place);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.PlaceDao#findById(long)
+	 */
+	public Place findById(long placeId) {
+		return this.em.find(Place.class, placeId);
 	}
 
 }

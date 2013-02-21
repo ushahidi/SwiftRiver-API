@@ -14,34 +14,48 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.exception;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpStatus;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Thrown when a requested resource is not found.
+ * DTO mapping class for creating {@link Bucket} entities
+ * 
+ * @author ekala
  *
  */
-@ResponseStatus(value=HttpStatus.NOT_FOUND, reason="The requested resource was not found.")
-public class NotFoundException extends RuntimeException {
-
-	private static final long serialVersionUID = 3349560006485856467L;
-
-	public NotFoundException(String message) {
-		super(message);
-	}
-
-	public NotFoundException() {
-		super();
-	}
-
-	public NotFoundException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-	}
-
-	public NotFoundException(Throwable arg0) {
-		super(arg0);
-	}
+public class CreateBucketDTO {
 	
+	private String name;
+	
+	@JsonProperty("public")
+	private Boolean published;
+	
+	@JsonProperty("default_layout")
+	private String defaultLayout;
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Boolean isPublished() {
+		return published;
+	}
+
+	public void setPublished(Boolean published) {
+		this.published = published;
+	}
+
+	public String getDefaultLayout() {
+		return defaultLayout;
+	}
+
+	public void setDefaultLayout(String defaultLayout) {
+		this.defaultLayout = defaultLayout;
+	}
+
 }

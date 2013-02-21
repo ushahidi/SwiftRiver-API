@@ -14,29 +14,47 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.ushahidi.swiftriver.core.model.Place;
-
-public interface PlaceDao extends GenericDao<Place> {
+/**
+ * DTO class for creating collaborators
+ * @author ekala
+ *
+ */
+public class CreateCollaboratorDTO {
 	
-	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
-	 * 
-	 * @param placeHashes
-	 * @return
-	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+	private long id;
+	
+	@JsonProperty("read_only")
+	private boolean readOnly;
+	
+	private boolean active;
 
-	/**
-	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Place findByHash(String hash);
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(boolean readOnly) {
+		this.readOnly = readOnly;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	
 	
 }

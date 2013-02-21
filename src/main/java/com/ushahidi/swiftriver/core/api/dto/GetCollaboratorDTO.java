@@ -30,7 +30,7 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
  * @author ekala
  *
  */
-public class CollaboratorDTO {
+public class GetCollaboratorDTO {
 	
 	private long id;
 	
@@ -38,6 +38,8 @@ public class CollaboratorDTO {
 	
 	@JsonProperty("account_path")
 	private String accountPath;
+	
+	private String email;
 	
 	private boolean active;
 	
@@ -69,6 +71,14 @@ public class CollaboratorDTO {
 
 	public void setAccountPath(String accountPath) {
 		this.accountPath = accountPath;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public boolean isActive() {

@@ -18,40 +18,34 @@ package com.ushahidi.swiftriver.core.api.dto;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.ushahidi.swiftriver.core.model.Bucket;
-
 /**
- * DTO mapping class for {@link Bucket}
+ * DTO mapping class for getting drop comments
+ * 
  * @author ekala
  *
  */
-public class GetBucketDTO {
+public class GetCommentDTO {
 	
 	private long id;
 	
-	private String name;
-	
-	private String description;
+	@JsonProperty("comment_text")
+	private String commentText;
 	
 	@JsonProperty("date_added")
 	private String dateAdded;
 	
-	@JsonProperty("drop_count")
-	private int dropCount;
-	
-	@JsonProperty("public")
-	private boolean published;
-
-	@JsonProperty("default_layout")
-	private String defaultLayout;
-	
 	private Account account;
 	
 	public static class Account {
+		
 		private long id;
+		
+		private String name;
 		
 		@JsonProperty("account_path")
 		private String accountPath;
+		
+		private String email;
 
 		public long getId() {
 			return id;
@@ -61,6 +55,14 @@ public class GetBucketDTO {
 			this.id = id;
 		}
 
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
 		public String getAccountPath() {
 			return accountPath;
 		}
@@ -68,6 +70,14 @@ public class GetBucketDTO {
 		public void setAccountPath(String accountPath) {
 			this.accountPath = accountPath;
 		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}		
 		
 	}
 
@@ -79,20 +89,12 @@ public class GetBucketDTO {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getCommentText() {
+		return commentText;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
+	public void setCommentText(String commentText) {
+		this.commentText = commentText;
 	}
 
 	public String getDateAdded() {
@@ -103,30 +105,6 @@ public class GetBucketDTO {
 		this.dateAdded = dateAdded;
 	}
 
-	public int getDropCount() {
-		return dropCount;
-	}
-
-	public void setDropCount(int dropCount) {
-		this.dropCount = dropCount;
-	}
-
-	public boolean isPublished() {
-		return published;
-	}
-
-	public void setPublished(boolean published) {
-		this.published = published;
-	}
-
-	public String getDefaultLayout() {
-		return defaultLayout;
-	}
-
-	public void setDefaultLayout(String defaultLayout) {
-		this.defaultLayout = defaultLayout;
-	}
-
 	public Account getAccount() {
 		return account;
 	}
@@ -134,6 +112,6 @@ public class GetBucketDTO {
 	public void setAccount(Account account) {
 		this.account = account;
 	}
-
+	
 	
 }

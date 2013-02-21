@@ -14,17 +14,34 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
+import com.ushahidi.swiftriver.core.api.service.DropService;
 
 @Controller
 @RequestMapping("/v1/drops")
 public class DropsController extends AbstractController {
+
+	@Autowired
+	private DropService dropService;
 
 	/**
 	 * Handler for creating a drop.
@@ -44,9 +61,10 @@ public class DropsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/comments", method = RequestMethod.POST)
-	public Map<String, Object> addComment(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public GetCommentDTO addComment(@RequestBody CreateCommentDTO comment,
+			@PathVariable Long id, Principal principal) {
+		return dropService.addComment(id, comment, principal.getName());
 	}
 
 	/**
@@ -56,8 +74,9 @@ public class DropsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/comments", method = RequestMethod.GET)
-	public Map<String, Object> getComments(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public List<GetCommentDTO> getComments(@PathVariable long id) {
+		return dropService.getComments(id);
 	}
 
 	/**
@@ -66,9 +85,9 @@ public class DropsController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/comments", method = RequestMethod.DELETE)
-	public Map<String, Object> deleteComment(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/comments/{commentId}", method = RequestMethod.DELETE)
+	public void deleteComment(@PathVariable long id, @PathVariable long commentId, Principal principal) {
+		dropService.deleteComment(id, commentId);
 	}
 	
 	/**
@@ -78,8 +97,9 @@ public class DropsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/links", method = RequestMethod.POST)
-	public Map<String, Object> addLink(@RequestBody Map<String, Object> body, @PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public GetLinkDTO addLink(@RequestBody CreateLinkDTO link, @PathVariable long id, Principal principal) {
+		return dropService.addLink(id, link, principal.getName());
 	}
 	
 	/**
@@ -88,9 +108,10 @@ public class DropsController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/links", method = RequestMethod.DELETE)
-	public Map<String, Object> deleteLink(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteLink(@PathVariable long id, @PathVariable long linkId, Principal principal) {
+		dropService.deleteLink(id, linkId, principal.getName());
 	}
 	
 	/**
@@ -100,8 +121,9 @@ public class DropsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/places", method = RequestMethod.POST)
-	public Map<String, Object> addPlace(@RequestBody Map<String, Object> body, @PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public GetPlaceDTO addPlace(@RequestBody CreatePlaceDTO place, @PathVariable long id, Principal principal) {
+		return dropService.addPlace(id, place, principal.getName());
 	}
 	
 	/**
@@ -110,9 +132,10 @@ public class DropsController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/places", method = RequestMethod.DELETE)
-	public Map<String, Object> deletePlace(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/places/{placeId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deletePlace(@PathVariable long id, @PathVariable long placeId, Principal principal) {
+		dropService.deletePlace(id, placeId, principal.getName());
 	}
 	
 	/**
@@ -122,8 +145,9 @@ public class DropsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
-	public Map<String, Object> addTag(@RequestBody Map<String, Object> body, @PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public GetTagDTO addTag(@RequestBody CreateTagDTO tag, @PathVariable Long id, Principal principal) {
+		return dropService.addTag(id, tag, principal.getName());
 	}
 	
 	/**
@@ -132,9 +156,10 @@ public class DropsController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/tags", method = RequestMethod.DELETE)
-	public Map<String, Object> deleteTag(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteTag(@PathVariable long id, @PathVariable long tagId, Principal principal) {
+		dropService.deleteTag(id, tagId, principal.getName());
 	}
 	
 	/**
