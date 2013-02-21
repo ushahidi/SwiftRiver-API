@@ -262,7 +262,8 @@ public class RiverService {
 	 * @throws NotFoundException
 	 */
 	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
-			int page, int dropCount, String username) throws NotFoundException {
+			int page, int dropCount, List<Long> channels, String username)
+			throws NotFoundException {
 
 		Account queryingAccount = accountDao.findByUsername(username);
 		River river = riverDao.findById(id);
@@ -273,10 +274,10 @@ public class RiverService {
 
 		List<Drop> drops = null;
 		if (sinceId != null) {
-			drops = riverDao.getDropsSince(id, sinceId, dropCount,
+			drops = riverDao.getDropsSince(id, sinceId, dropCount, channels,
 					queryingAccount);
 		} else {
-			drops = riverDao.getDrops(id, maxId, page, dropCount,
+			drops = riverDao.getDrops(id, maxId, page, dropCount, channels,
 					queryingAccount);
 		}
 

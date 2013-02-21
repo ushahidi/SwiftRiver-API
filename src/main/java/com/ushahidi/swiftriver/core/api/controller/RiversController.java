@@ -15,6 +15,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,8 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -305,7 +308,24 @@ public class RiversController extends AbstractController {
 			maxId = Long.MAX_VALUE;
 		}
 
-		return riverService.getDrops(id, maxId, sinceId, page, count, principal.getName());
+		List<Long> channel = new ArrayList<Long>();
+		if (channels != null) {
+			for (String channelId : channels.split(",")) {
+				try {
+					channel.add(Long.parseLong(channelId));
+				} catch (NumberFormatException ex) {
+					BadRequestException e = new BadRequestException(
+							"Invalid channels.");
+					List<ErrorField> errors = new ArrayList<ErrorField>();
+					errors.add(new ErrorField("channel", "invalid"));
+					e.setErrors(errors);
+					throw e;
+				}
+			}
+		}
+
+		return riverService.getDrops(id, maxId, sinceId, page, count, channel,
+				principal.getName());
 	}
 
 	/**
@@ -316,6 +336,7 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops", method = RequestMethod.GET, headers = "X-Stream")
 	public Account getDropsStream(@PathVariable Long id) {
+		// TODO: redirect to streaming server.
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 

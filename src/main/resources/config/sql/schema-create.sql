@@ -175,7 +175,8 @@ CREATE TABLE IF NOT EXISTS `rivers_droplets` (
   UNIQUE KEY `rivers_droplet_un_river_droplet` (`river_id`,`droplet_id`),
   KEY `river_id_idx` (`river_id`),
   KEY `droplet_id_idx` (`droplet_id`),
-  KEY `droplet_date_pub` (`droplet_date_pub`)
+  KEY `droplet_date_pub` (`droplet_date_pub`),
+  KEY `channel_id` (`channel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

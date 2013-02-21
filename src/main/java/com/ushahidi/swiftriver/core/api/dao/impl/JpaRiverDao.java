@@ -30,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,11 +54,11 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	@Autowired
 	private DropDao dropsDao;
 
-	private JdbcTemplate jdbcTemplate;
+	private NamedParameterJdbcTemplate jdbcTemplate;
 
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new JdbcTemplate(dataSource);
+		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 	}
 
 	/*
@@ -110,23 +112,41 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	}
 
 	public List<Drop> getDrops(Long riverId, Long maxId, int page,
-			int dropCount, Account queryingAccount) {
+			int dropCount, List<Long> channels, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
 		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count` ";
 		sql += "FROM `rivers_droplets` ";
 		sql += "INNER JOIN `droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = ?) ";
+
+		if (channels.size() > 0) {
+			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
+		}
+
+		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
 		sql += "WHERE `rivers_droplets`.`droplet_date_pub` > '0000-00-00 00:00:00' ";
-		sql += "AND `rivers_droplets`.`river_id` = ? ";
-		sql += "AND `rivers_droplets`.`id` <= ? ";
+		sql += "AND `rivers_droplets`.`river_id` = :riverId ";
+		sql += "AND `rivers_droplets`.`id` <= :maxId ";
+
+		if (channels.size() > 0) {
+			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
+		}
+
 		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
 
-		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
-				queryingAccount.getOwner().getId(), riverId, maxId);
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("userId", queryingAccount.getOwner().getId());
+		params.addValue("riverId", riverId);
+		params.addValue("maxId", maxId);
+
+		if (channels.size() > 0) {
+			params.addValue("channels", channels);
+		}
+		
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
 
 		return formatDrops(results, queryingAccount);
 	}
@@ -140,7 +160,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 */
 	@Override
 	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
-			Account queryingAccount) {
+			List<Long> channels, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
 		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
@@ -149,24 +169,43 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "FROM `droplets` ";
 		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = ?) ";
+		
+		if (channels.size() > 0) {
+			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
+		}
+		
+		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
-		sql += "WHERE `rivers_droplets`.`river_id` = ? AND `rivers_droplets`.`id` > ? ";
+		sql += "WHERE `rivers_droplets`.`river_id` = :riverId AND `rivers_droplets`.`id` > :sinceId ";
+		
+		if (channels.size() > 0) {
+			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
+		}
+		
 		sql += "ORDER BY `rivers_droplets`.`id` ASC LIMIT " + dropCount;
 
-		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
-				queryingAccount.getOwner().getId(), riverId, sinceId);
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("userId", queryingAccount.getOwner().getId());
+		params.addValue("riverId", riverId);
+		params.addValue("sinceId", sinceId);
+		
+		if (channels.size() > 0) {
+			params.addValue("channels", channels);
+		}
+		
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
 
 		return formatDrops(results, queryingAccount);
 	}
-	
+
 	/**
 	 * Generate a Drop entity list for the given drop result map.
 	 * 
 	 * @param results
 	 * @return
 	 */
-	private List<Drop> formatDrops(List<Map<String, Object>> results, Account queryingAccount) {
+	private List<Drop> formatDrops(List<Map<String, Object>> results,
+			Account queryingAccount) {
 		List<Drop> drops = new ArrayList<Drop>();
 		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
@@ -199,7 +238,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 		// Populate metadata
 		dropsDao.populateMetadata(drops, queryingAccount);
-		
+
 		return drops;
 	}
 
