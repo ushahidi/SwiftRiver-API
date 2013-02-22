@@ -29,7 +29,6 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -112,7 +111,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	}
 
 	public List<Drop> getDrops(Long riverId, Long maxId, int page,
-			int dropCount, List<Long> channels, Account queryingAccount) {
+			int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
 		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count` ";
@@ -120,18 +119,35 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "INNER JOIN `droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
 
-		if (channels.size() > 0) {
+		if (channelIds.size() > 0) {
 			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
 		}
 
 		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
+		
+		if (isRead != null) {
+			sql += "LEFT JOIN `account_read_drops` ON (`account_read_drops`.`droplet_id` = `rivers_droplets`.`droplet_id` AND `account_read_drops`.`account_id` = :accountId) ";
+		}
+		
 		sql += "WHERE `rivers_droplets`.`droplet_date_pub` > '0000-00-00 00:00:00' ";
 		sql += "AND `rivers_droplets`.`river_id` = :riverId ";
 		sql += "AND `rivers_droplets`.`id` <= :maxId ";
+		
+		if (channelList.size() > 0) {
+			sql += "AND `rivers_droplets`.`channel` IN (:channels) ";
+		}
 
-		if (channels.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
+		if (channelIds.size() > 0) {
+			sql += "AND `rivers_droplets`.`channel_id` IN (:channel_ids) ";
+		}
+		
+		if (isRead != null) {
+			if (isRead) {
+				sql += "AND `account_read_drops`.`droplet_id` IS NOT NULL ";
+			} else {
+				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
+			}
 		}
 
 		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
@@ -139,11 +155,16 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userId", queryingAccount.getOwner().getId());
+		params.addValue("accountId", queryingAccount.getId());
 		params.addValue("riverId", riverId);
 		params.addValue("maxId", maxId);
+		
+		if (channelList.size() > 0) {
+			params.addValue("channels", channelList);
+		}
 
-		if (channels.size() > 0) {
-			params.addValue("channels", channels);
+		if (channelIds.size() > 0) {
+			params.addValue("channel_ids", channelIds);
 		}
 		
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
@@ -160,7 +181,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 */
 	@Override
 	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
-			List<Long> channels, Account queryingAccount) {
+			List<String> channelList, List<Long> channelIds, Boolean state, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
 		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
@@ -170,7 +191,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
 		
-		if (channels.size() > 0) {
+		if (channelIds.size() > 0) {
 			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
 		}
 		
@@ -178,7 +199,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
 		sql += "WHERE `rivers_droplets`.`river_id` = :riverId AND `rivers_droplets`.`id` > :sinceId ";
 		
-		if (channels.size() > 0) {
+		if (channelIds.size() > 0) {
 			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
 		}
 		
@@ -189,8 +210,8 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		params.addValue("riverId", riverId);
 		params.addValue("sinceId", sinceId);
 		
-		if (channels.size() > 0) {
-			params.addValue("channels", channels);
+		if (channelIds.size() > 0) {
+			params.addValue("channels", channelIds);
 		}
 		
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);

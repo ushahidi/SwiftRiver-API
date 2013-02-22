@@ -316,3 +316,10 @@ INSERT INTO `droplet_comments` (`droplet_id`, `account_id`, `comment_text`, `dat
 (3, 5, 'Account 5 comment 1', '2012-06-28 21:20:44'),
 (3, 5, 'Account 5 comment 2', '2012-05-12 10:20:44'),
 (3, 5, 'Account 5 comment 3', '2012-04-19 08:20:44');
+
+-- -----------------------------------------------------
+-- Data for table `account_read_drops`
+-- -----------------------------------------------------
+INSERT INTO `account_read_drops` (`account_id`, `droplet_id`) VALUES
+(3, 2),
+(3, 5);

@@ -171,6 +171,7 @@ CREATE TABLE IF NOT EXISTS `rivers_droplets` (
   `channel_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_date_pub` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `channel` varchar(20) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `rivers_droplet_un_river_droplet` (`river_id`,`droplet_id`),
   KEY `river_id_idx` (`river_id`),
@@ -766,4 +767,13 @@ CREATE TABLE IF NOT EXISTS `seq` (
   `name` varchar(30) NOT NULL DEFAULT '',
   `id` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- TABLE 'account_read_drops'
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `account_read_drops` (
+  `account_id` bigint(20) NOT NULL,
+  `droplet_id` bigint(20) NOT NULL,
+  UNIQUE KEY `droplet_id` (`droplet_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

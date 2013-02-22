@@ -263,8 +263,8 @@ public class RiverService {
 	 * @throws NotFoundException
 	 */
 	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
-			int page, int dropCount, List<Long> channels, String username)
-			throws NotFoundException {
+			int page, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead,
+			String username) throws NotFoundException {
 
 		Account queryingAccount = accountDao.findByUsername(username);
 		River river = riverDao.findById(id);
@@ -275,11 +275,11 @@ public class RiverService {
 
 		List<Drop> drops = null;
 		if (sinceId != null) {
-			drops = riverDao.getDropsSince(id, sinceId, dropCount, channels,
-					queryingAccount);
+			drops = riverDao.getDropsSince(id, sinceId, dropCount, channelList, channelIds,
+					isRead, queryingAccount);
 		} else {
-			drops = riverDao.getDrops(id, maxId, page, dropCount, channels,
-					queryingAccount);
+			drops = riverDao.getDrops(id, maxId, page, dropCount, channelList, channelIds,
+					isRead, queryingAccount);
 		}
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
@@ -314,7 +314,8 @@ public class RiverService {
 	}
 
 	@Transactional
-	public List<GetCollaboratorDTO> getCollaborators(Long riverId) throws NotFoundException {
+	public List<GetCollaboratorDTO> getCollaborators(Long riverId)
+			throws NotFoundException {
 		River river = riverDao.findById(riverId);
 		if (river == null) {
 			throw new NotFoundException("River not found");
@@ -322,7 +323,7 @@ public class RiverService {
 
 		List<GetCollaboratorDTO> collaborators = new ArrayList<GetCollaboratorDTO>();
 
-		for (RiverCollaborator entry: river.getCollaborators()) {
+		for (RiverCollaborator entry : river.getCollaborators()) {
 			GetCollaboratorDTO dto = new GetCollaboratorDTO();
 
 			dto.setId(entry.getAccount().getId());
@@ -345,8 +346,9 @@ public class RiverService {
 	 *             ,BadRequestException
 	 */
 	@Transactional
-	public GetCollaboratorDTO addCollaborator(Long riverId, CreateCollaboratorDTO body) 
-			throws NotFoundException,BadRequestException {
+	public GetCollaboratorDTO addCollaborator(Long riverId,
+			CreateCollaboratorDTO body) throws NotFoundException,
+			BadRequestException {
 
 		// Check if the bucket exists
 		River river = riverDao.findById(riverId);
@@ -361,7 +363,8 @@ public class RiverService {
 		}
 
 		Account account = accountDao.findById(body.getId());
-		RiverCollaborator collaborator = riverDao.addCollaborator(river, account, body.isReadOnly());
+		RiverCollaborator collaborator = riverDao.addCollaborator(river,
+				account, body.isReadOnly());
 
 		return mapCollaboratorDTO(collaborator);
 	}
@@ -375,8 +378,8 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public GetCollaboratorDTO modifyCollaborator(Long riverId,
-			Long accountId, CreateCollaboratorDTO body) {
+	public GetCollaboratorDTO modifyCollaborator(Long riverId, Long accountId,
+			CreateCollaboratorDTO body) {
 
 		RiverCollaborator collaborator = riverDao.findCollaborator(riverId,
 				accountId);
@@ -392,7 +395,7 @@ public class RiverService {
 		// Post changes to the DB
 		riverDao.updateCollaborator(collaborator);
 
-		return mapCollaboratorDTO(collaborator);		
+		return mapCollaboratorDTO(collaborator);
 	}
 
 	/**
@@ -520,7 +523,7 @@ public class RiverService {
 		collaboratorDTO.setActive(collaborator.isActive());
 		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
 		collaboratorDTO.setDateAdded(collaborator.getDateAdded());
-		
+
 		return collaboratorDTO;
 	}
 }

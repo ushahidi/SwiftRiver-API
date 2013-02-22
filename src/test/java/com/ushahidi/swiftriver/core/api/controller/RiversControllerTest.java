@@ -157,7 +157,75 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].media").isArray())
 				.andExpect(jsonPath("$[0].places").isArray());
 	}
+	
+	@Test
+	public void getDropsWithInvalidChannels() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?channel_ids=meow").principal(authentication))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("channel_ids"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+	
+	@Test
+	public void getDropsForSpecificChannel() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?channel_ids=2").principal(authentication))
+				.andExpect(status().isOk())
+		
+				.andExpect(jsonPath("$[1].id").value(4));
+	}
+	
+	@Test
+	public void getDropsWithInvalidState() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?state=meow").principal(authentication))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("state"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+	
+	@Test
+	public void getReadDrops() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?state=read").principal(authentication))
+				.andExpect(status().isOk())
+		
+				.andExpect(jsonPath("$[1].id").value(2));
+	}
+	
+	@Test
+	public void getUnreadDrops() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?state=unread").principal(authentication))
+				.andExpect(status().isOk())
+		
+				.andExpect(jsonPath("$[1].id").value(3));
+	}
+	
 	/**
 	 * Test for {@link RiversController#deleteRiver(Long)}
 	 * 

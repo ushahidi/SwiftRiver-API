@@ -16,6 +16,7 @@ package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -158,8 +159,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
 	@ResponseBody
-	public GetCollaboratorDTO addCollaborator(@RequestBody CreateCollaboratorDTO body,
-			@PathVariable Long id) {
+	public GetCollaboratorDTO addCollaborator(
+			@RequestBody CreateCollaboratorDTO body, @PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -185,7 +186,8 @@ public class RiversController extends AbstractController {
 	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public GetCollaboratorDTO modifyCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId, @RequestBody CreateCollaboratorDTO body) {
+			@PathVariable Long collaboratorId,
+			@RequestBody CreateCollaboratorDTO body) {
 		return riverService.modifyCollaborator(id, collaboratorId, body);
 	}
 
@@ -302,31 +304,51 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "date_to", required = false) Date dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "locations", required = false) String location)
+			@RequestParam(value = "channel_ids", required = false) String cIds,
+			@RequestParam(value = "locations", required = false) String location,
+			@RequestParam(value = "state", required = false) String state)
 			throws NotFoundException {
 
 		if (maxId == null) {
 			maxId = Long.MAX_VALUE;
 		}
 
-		List<Long> channel = new ArrayList<Long>();
-		if (channels != null) {
-			for (String channelId : channels.split(",")) {
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+
+		List<Long> channelIds = new ArrayList<Long>();
+		if (cIds != null) {
+			for (String cId : cIds.split(",")) {
 				try {
-					channel.add(Long.parseLong(channelId));
+					channelIds.add(Long.parseLong(cId));
 				} catch (NumberFormatException ex) {
-					BadRequestException e = new BadRequestException(
-							"Invalid channels.");
-					List<ErrorField> errors = new ArrayList<ErrorField>();
-					errors.add(new ErrorField("channel", "invalid"));
-					e.setErrors(errors);
-					throw e;
+					errors.add(new ErrorField("channel_ids", "invalid"));
 				}
 			}
 		}
 
-		return riverService.getDrops(id, maxId, sinceId, page, count, channel,
-				principal.getName());
+		List<String> channelList = new ArrayList<String>();
+		if (channels != null) {
+			channelList.addAll(Arrays.asList(channels.split(",")));
+		}
+
+		Boolean isRead = null;
+		if (state != null) {
+			if (!state.equals("read") && !state.equals("unread")) {
+				errors.add(new ErrorField("state", "invalid"));
+			} else {
+				isRead = state.equals("read");
+			}
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return riverService.getDrops(id, maxId, sinceId, page, count,
+				channelList, channelIds, isRead, principal.getName());
 	}
 
 	/**

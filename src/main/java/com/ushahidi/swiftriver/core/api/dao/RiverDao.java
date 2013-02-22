@@ -43,7 +43,7 @@ public interface RiverDao extends GenericDao<River> {
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, List<Long> channels, Account queryingAccount);
+	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Account queryingAccount);
 	
 	/**
 	 * Get list of drops from the given river with an id after the the given since_id
@@ -54,7 +54,7 @@ public interface RiverDao extends GenericDao<River> {
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDropsSince(Long id, Long sinceId, int dropCount, List<Long> channels, Account queryingAccount);
+	public List<Drop> getDropsSince(Long id, Long sinceId, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Account queryingAccount);
 	
 	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>

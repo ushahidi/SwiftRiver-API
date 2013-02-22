@@ -62,7 +62,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getDrops() {
 		Account account = accountDao.findById(1L);
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<Long>(), account);
+				new ArrayList<String>(), new ArrayList<Long>(), null, account);
 
 		assertEquals(5, drops.size());
 
@@ -124,7 +124,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(1L);
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				channels, account);
+				new ArrayList<String>(), channels, null, account);
 
 		assertEquals(2, drops.size());
 
@@ -136,7 +136,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getDropsSince() {
 		Account account = accountDao.findById(1L);
 		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1,
-				new ArrayList<Long>(), account);
+				new ArrayList<String>(), new ArrayList<Long>(), null, account);
 
 		assertEquals(1, drops.size());
 
@@ -197,12 +197,39 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(2L);
-		List<Drop> drops = riverDao.getDropsSince(1L, 4L, 1, channels, account);
+		List<Drop> drops = riverDao.getDropsSince(1L, 4L, 1,
+				new ArrayList<String>(), channels, null, account);
 
 		assertEquals(1, drops.size());
 
 		Drop drop = drops.get(0);
 		assertEquals(5, drop.getId());
+	}
+
+	@Test
+	public void getReadDrops() {
+		Account account = accountDao.findById(3L);
+
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
+				new ArrayList<String>(), new ArrayList<Long>(), true, account);
+
+		assertEquals(2, drops.size());
+
+		Drop drop = drops.get(1);
+		assertEquals(2, drop.getId());
+	}
+
+	@Test
+	public void getUnreadDrops() {
+		Account account = accountDao.findById(3L);
+
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
+				new ArrayList<String>(), new ArrayList<Long>(), false, account);
+
+		assertEquals(3, drops.size());
+
+		Drop drop = drops.get(1);
+		assertEquals(3, drop.getId());
 	}
 
 	@Test
