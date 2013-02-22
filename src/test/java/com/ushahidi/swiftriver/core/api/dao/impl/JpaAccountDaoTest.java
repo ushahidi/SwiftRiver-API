@@ -2,6 +2,8 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -67,5 +69,32 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 		int quotaAfter = this.jdbcTemplate.queryForInt(sql);
 		
 		assertEquals(7, quotaAfter);
+	}
+	
+	@Test
+	public void searchAccountPath() {
+		List<Account> accounts = accountDao.search("def");
+		
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(1, accounts.get(0).getId());
+	}
+	
+	@Test
+	public void searchName() {
+		List<Account> accounts = accountDao.search("Admi");
+		
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(1, accounts.get(0).getId());
+	}
+	
+	@Test
+	public void searchEmail() {
+		List<Account> accounts = accountDao.search("my");
+		
+		assertNotNull(accounts);
+		assertEquals(1, accounts.size());
+		assertEquals(1, accounts.get(0).getId());
 	}
 }

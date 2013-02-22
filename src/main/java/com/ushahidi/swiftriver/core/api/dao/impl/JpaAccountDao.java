@@ -14,6 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.List;
+
 import javax.persistence.NoResultException;
 
 import org.springframework.stereotype.Repository;
@@ -22,7 +24,8 @@ import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
 @Repository
-public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao {
+public class JpaAccountDao extends AbstractJpaDao<Account> implements
+		AccountDao {
 
 	/*
 	 * (non-Javadoc)
@@ -33,7 +36,7 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 	 */
 	public Account findByUsername(String username) {
 		String query = "SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username";
-		
+
 		Account account = null;
 		try {
 			account = (Account) em.createQuery(query)
@@ -44,12 +47,16 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 		return account;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#findByName(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#findByName(java.lang.
+	 * String)
 	 */
 	public Account findByName(String accountPath) {
 		String query = "SELECT a FROM Account a WHERE a.accountPath = :account_path";
-		
+
 		Account account = null;
 		try {
 			account = (Account) em.createQuery(query)
@@ -60,12 +67,36 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 		}
 		return account;
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#decreaseRiverQuota(com.ushahidi.swiftriver.core.model.Account, int)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#decreaseRiverQuota(com
+	 * .ushahidi.swiftriver.core.model.Account, int)
 	 */
 	public void decreaseRiverQuota(Account account, int decrement) {
-		account.setRiverQuotaRemaining(account.getRiverQuotaRemaining() - decrement);
+		account.setRiverQuotaRemaining(account.getRiverQuotaRemaining()
+				- decrement);
 		update(account);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#search(java.lang.String)
+	 */
+	public List<Account> search(String query) {
+		String sql = "SELECT a FROM Account a WHERE a.accountPath like :q or a.owner.name like :q or a.owner.email like :q";
+
+		List<Account> accounts = null;
+		try {
+			accounts = em.createQuery(sql)
+					.setParameter("q", query + "%").getResultList();
+		} catch (NoResultException e) {
+			// Do nothing;
+		}
+		return accounts;
 	}
 }

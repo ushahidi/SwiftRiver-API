@@ -21,6 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.dozer.Mapper;
 import org.junit.Before;
@@ -98,5 +99,21 @@ public class AccountServiceTest {
 
 		verify(mockedMapper).map(account, GetAccountDTO.class);
 		assertEquals(getAccountDTO, actualGetAccountDTO);
+	}
+	
+	@Test
+	public void search() {
+		AccountDao mockAccountDao = mock(AccountDao.class);
+		List<Account> accounts = new ArrayList<Account>();
+		accounts.add(account);
+		when(mockAccountDao.search(anyString())).thenReturn(accounts);
+		
+		AccountService accountService = new AccountService();
+		accountService.setAccountDao(mockAccountDao);
+		accountService.setMapper(mockedMapper);
+		List<GetAccountDTO> getAccountDTOs = accountService.searchAccounts("abcd");
+		
+		verify(mockAccountDao).search("abcd");
+		assertEquals(1, getAccountDTOs.size());
 	}
 }

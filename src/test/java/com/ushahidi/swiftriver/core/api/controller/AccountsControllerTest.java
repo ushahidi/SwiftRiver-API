@@ -53,6 +53,17 @@ public class AccountsControllerTest extends AbstractControllerTest {
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value(3));
 	}
+	
+	@Test
+	public void searchAccounts() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/accounts?q=my"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$[0].id").value(1));
+	}
 
 	@Test
 	public void getAuthenticatedUserAccount() throws Exception {		

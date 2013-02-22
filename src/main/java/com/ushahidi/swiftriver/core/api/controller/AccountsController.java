@@ -15,6 +15,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -77,6 +78,19 @@ public class AccountsController extends AbstractController {
 	@ResponseBody
 	public GetAccountDTO getAccountByName(@RequestParam("account_path") String accountPath) throws NotFoundException {
 		return accountService.getAccountByName(accountPath);
+	}
+	
+	/**
+	 * Get account details for the specified id.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws NotFoundException 
+	 */
+	@RequestMapping(method = RequestMethod.GET, params="q")
+	@ResponseBody
+	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query) throws NotFoundException {
+		return accountService.searchAccounts(query);
 	}
 
 	/**

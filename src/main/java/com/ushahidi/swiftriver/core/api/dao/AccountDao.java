@@ -14,6 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Account;
 
 public interface AccountDao extends GenericDao<Account> {
@@ -41,4 +43,11 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param decrement
 	 */
 	public void decreaseRiverQuota(Account account, int decrement);
+	
+	/**
+	 * Search accounts matching the given query
+	 * 
+	 * @param query
+	 */
+	public List<Account> search(String query);
 }
