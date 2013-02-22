@@ -181,7 +181,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 */
 	@Override
 	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
-			List<String> channelList, List<Long> channelIds, Boolean state, Account queryingAccount) {
+			List<String> channelList, List<Long> channelIds, Boolean isRead, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
 		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
@@ -197,18 +197,40 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		
 		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
+		
+		if (isRead != null) {
+			sql += "LEFT JOIN `account_read_drops` ON (`account_read_drops`.`droplet_id` = `rivers_droplets`.`droplet_id` AND `account_read_drops`.`account_id` = :accountId) ";
+		}
+		
 		sql += "WHERE `rivers_droplets`.`river_id` = :riverId AND `rivers_droplets`.`id` > :sinceId ";
+		
+		if (channelList.size() > 0) {
+			sql += "AND `rivers_droplets`.`channel` IN (:channels) ";
+		}
 		
 		if (channelIds.size() > 0) {
 			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
+		}
+		
+		if (isRead != null) {
+			if (isRead) {
+				sql += "AND `account_read_drops`.`droplet_id` IS NOT NULL ";
+			} else {
+				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
+			}
 		}
 		
 		sql += "ORDER BY `rivers_droplets`.`id` ASC LIMIT " + dropCount;
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userId", queryingAccount.getOwner().getId());
+		params.addValue("accountId", queryingAccount.getId());
 		params.addValue("riverId", riverId);
 		params.addValue("sinceId", sinceId);
+		
+		if (channelList.size() > 0) {
+			params.addValue("channels", channelList);
+		}
 		
 		if (channelIds.size() > 0) {
 			params.addValue("channels", channelIds);

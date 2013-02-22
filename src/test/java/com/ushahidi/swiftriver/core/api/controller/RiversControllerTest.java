@@ -159,7 +159,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
-	public void getDropsWithInvalidChannels() throws Exception {
+	public void getDropsWithInvalidChannelIds() throws Exception {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 				"user1", "password");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -175,7 +175,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
-	public void getDropsForSpecificChannel() throws Exception {
+	public void getDropsForSpecificChannelId() throws Exception {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 				"user1", "password");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -184,6 +184,18 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 		
 				.andExpect(jsonPath("$[1].id").value(4));
+	}
+	
+	@Test
+	public void getDropsForSpecificChannelName() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?channels=rss").principal(authentication))
+				.andExpect(status().isOk())
+		
+				.andExpect(jsonPath("$[1].id").value(1));
 	}
 	
 	@Test
