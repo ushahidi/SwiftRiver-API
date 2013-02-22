@@ -3,7 +3,11 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import static org.junit.Assert.*;
 
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +66,8 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getDrops() {
 		Account account = accountDao.findById(1L);
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), null, account);
+				new ArrayList<String>(), new ArrayList<Long>(), null, null,
+				null, account);
 
 		assertEquals(5, drops.size());
 
@@ -124,7 +129,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(1L);
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), channels, null, account);
+				new ArrayList<String>(), channels, null, null, null, account);
 
 		assertEquals(2, drops.size());
 
@@ -136,7 +141,8 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getDropsSince() {
 		Account account = accountDao.findById(1L);
 		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1,
-				new ArrayList<String>(), new ArrayList<Long>(), null, account);
+				new ArrayList<String>(), new ArrayList<Long>(), null, null,
+				null, account);
 
 		assertEquals(1, drops.size());
 
@@ -198,7 +204,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(2L);
 		List<Drop> drops = riverDao.getDropsSince(1L, 4L, 1,
-				new ArrayList<String>(), channels, null, account);
+				new ArrayList<String>(), channels, null, null, null, account);
 
 		assertEquals(1, drops.size());
 
@@ -207,24 +213,56 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	}
 
 	@Test
+	public void getDropsFromDate() throws Exception {
+		Account account = accountDao.findById(1L);
+
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
+				new ArrayList<String>(), new ArrayList<Long>(), null,
+				dateFormat.parse("01/01/2013"), null, account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(5, drop.getId());
+	}
+
+	@Test
+	public void getDropsToDate() throws Exception {
+		Account account = accountDao.findById(1L);
+
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
+				new ArrayList<String>(), new ArrayList<Long>(), null, null,
+				dateFormat.parse("01/01/2012"), account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(1, drop.getId());
+	}
+
+	@Test
 	public void getReadDrops() {
 		Account account = accountDao.findById(3L);
 
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), true, account);
+				new ArrayList<String>(), new ArrayList<Long>(), true, null,
+				null, account);
 
 		assertEquals(2, drops.size());
 
 		Drop drop = drops.get(1);
 		assertEquals(2, drop.getId());
 	}
-	
+
 	@Test
 	public void getReadDropsSince() {
 		Account account = accountDao.findById(3L);
 
 		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1,
-				new ArrayList<String>(), new ArrayList<Long>(), true, account);
+				new ArrayList<String>(), new ArrayList<Long>(), true, null,
+				null, account);
 
 		assertEquals(1, drops.size());
 
@@ -237,14 +275,15 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		Account account = accountDao.findById(3L);
 
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), false, account);
+				new ArrayList<String>(), new ArrayList<Long>(), false, null,
+				null, account);
 
 		assertEquals(3, drops.size());
 
 		Drop drop = drops.get(1);
 		assertEquals(3, drop.getId());
 	}
-	
+
 	@Test
 	public void getDropsForChannelName() {
 		Account account = accountDao.findById(3L);
@@ -252,22 +291,22 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		List<String> channels = new ArrayList<String>();
 		channels.add("rss");
 		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				channels, new ArrayList<Long>(), false, account);
+				channels, new ArrayList<Long>(), false, null, null, account);
 
 		assertEquals(2, drops.size());
 
 		Drop drop = drops.get(1);
 		assertEquals(1, drop.getId());
 	}
-	
+
 	@Test
 	public void getDropsSinceForChannelName() {
 		Account account = accountDao.findById(3L);
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("twitter");
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1,
-				channels, new ArrayList<Long>(), null, account);
+		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, channels,
+				new ArrayList<Long>(), null, null, null, account);
 
 		assertEquals(1, drops.size());
 

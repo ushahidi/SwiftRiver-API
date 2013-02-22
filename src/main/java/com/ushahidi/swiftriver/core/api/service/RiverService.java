@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.dozer.Mapper;
@@ -263,7 +264,8 @@ public class RiverService {
 	 * @throws NotFoundException
 	 */
 	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
-			int page, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead,
+			int page, int dropCount, List<String> channelList,
+			List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo,
 			String username) throws NotFoundException {
 
 		Account queryingAccount = accountDao.findByUsername(username);
@@ -275,11 +277,11 @@ public class RiverService {
 
 		List<Drop> drops = null;
 		if (sinceId != null) {
-			drops = riverDao.getDropsSince(id, sinceId, dropCount, channelList, channelIds,
-					isRead, queryingAccount);
+			drops = riverDao.getDropsSince(id, sinceId, dropCount, channelList,
+					channelIds, isRead, dateFrom, dateTo, queryingAccount);
 		} else {
-			drops = riverDao.getDrops(id, maxId, page, dropCount, channelList, channelIds,
-					isRead, queryingAccount);
+			drops = riverDao.getDrops(id, maxId, page, dropCount, channelList,
+					channelIds, isRead, dateFrom, dateTo, queryingAccount);
 		}
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();

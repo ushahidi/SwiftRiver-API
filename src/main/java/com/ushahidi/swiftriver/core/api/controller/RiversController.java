@@ -15,6 +15,9 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -300,8 +303,8 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "max_id", required = false) Long maxId,
 			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
-			@RequestParam(value = "date_from", required = false) Date dateFrom,
-			@RequestParam(value = "date_to", required = false) Date dateTo,
+			@RequestParam(value = "date_from", required = false) String dateFromS,
+			@RequestParam(value = "date_to", required = false) String dateToS,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "channel_ids", required = false) String cIds,
@@ -340,6 +343,25 @@ public class RiversController extends AbstractController {
 			}
 		}
 
+		DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
+		Date dateFrom = null;
+		if (dateFromS != null) {
+			try {
+				dateFrom = dateFormat.parse(dateFromS);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("date_from", "invalid"));
+			}
+		}
+
+		Date dateTo = null;
+		if (dateToS != null) {
+			try {
+				dateTo = dateFormat.parse(dateToS);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("date_to", "invalid"));
+			}
+		}
+
 		if (!errors.isEmpty()) {
 			BadRequestException e = new BadRequestException(
 					"Invalid parameter.");
@@ -348,7 +370,8 @@ public class RiversController extends AbstractController {
 		}
 
 		return riverService.getDrops(id, maxId, sinceId, page, count,
-				channelList, channelIds, isRead, principal.getName());
+				channelList, channelIds, isRead, dateFrom, dateTo,
+				principal.getName());
 	}
 
 	/**

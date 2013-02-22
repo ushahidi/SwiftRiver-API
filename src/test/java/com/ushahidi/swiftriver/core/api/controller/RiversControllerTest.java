@@ -238,6 +238,18 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[1].id").value(3));
 	}
 	
+	@Test
+	public void getDropsWithinRange() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(get("/v1/rivers/1/drops?date_from=01-JAN-12&date_to=01-JAN-13").principal(authentication))
+				.andExpect(status().isOk())
+		
+				.andExpect(jsonPath("$[0].id").value(4));
+	}
+	
 	/**
 	 * Test for {@link RiversController#deleteRiver(Long)}
 	 * 

@@ -111,7 +111,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	}
 
 	public List<Drop> getDrops(Long riverId, Long maxId, int page,
-			int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Account queryingAccount) {
+			int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
 		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count` ";
@@ -149,6 +149,14 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
 			}
 		}
+		
+		if (dateFrom != null) {
+			sql += "AND `rivers_droplets`.`droplet_date_pub` >= :date_from ";
+		}
+		
+		if (dateTo != null) {
+			sql += "AND `rivers_droplets`.`droplet_date_pub` <= :date_to ";
+		}
 
 		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
@@ -167,6 +175,16 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			params.addValue("channel_ids", channelIds);
 		}
 		
+		if (dateFrom != null)
+		{
+			params.addValue("date_from", dateFrom);
+		}
+		
+		if (dateTo != null)
+		{
+			params.addValue("date_to", dateTo);
+		}
+		
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
 
 		return formatDrops(results, queryingAccount);
@@ -181,7 +199,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 */
 	@Override
 	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
-			List<String> channelList, List<Long> channelIds, Boolean isRead, Account queryingAccount) {
+			List<String> channelList, List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount) {
 		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
 		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
