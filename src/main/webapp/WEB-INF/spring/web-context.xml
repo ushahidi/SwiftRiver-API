@@ -103,7 +103,7 @@
 
 	<!-- Data Sources -->
 	<beans profile="prod">
-		<context:property-placeholder location="classpath:db-prod.properties" />
+		<context:property-placeholder location="file://${database.config}" />
 	</beans>
 
 	<beans profile="test">
