@@ -43,14 +43,14 @@ INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `l
 -- Data for table `seq`
 -- -----------------------------------------------------
 INSERT INTO `seq` (`name`, `id`) VALUES 
-('droplets', 1),
-('tags', 1),
-('places', 1),
-('links', 1),
-('identities', 1),
-('media', 1),
+('droplets', 10),
+('tags', 11),
+('places', 10),
+('links', 10),
+('identities', 2),
+('media', 10),
 ('river_tag_trends', 1),
-('rivers_droplets', 1);
+('rivers_droplets', 5);
 
 -- -----------------------------------------------------
 -- Data for table `roles_users`
@@ -178,7 +178,6 @@ INSERT INTO `buckets_droplets` (`id`, `bucket_id`, `droplet_id`, `droplet_date_a
 -- -----------------------------------------------------
 -- Data for table `links`
 -- -----------------------------------------------------
-SELECT NEXTVAL('links', 10);
 INSERT INTO `links` (`id`, `hash`, `url`) VALUES
 (1, '287006f11be17e8acb59666e034ec9bb', 'http://www.bbc.co.uk/news/uk-wales-south-east-wales-20312645#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa'),
 (2, 'fe9af873eb942ffe0bc1f6591c01b2c1', 'http://news.bbc.co.uk/democracylive/hi/house_of_commons/newsid_9769000/9769109.stm#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa&quot;'),
@@ -194,7 +193,6 @@ INSERT INTO `links` (`id`, `hash`, `url`) VALUES
 -- -----------------------------------------------------
 -- Data for table `tags`
 -- -----------------------------------------------------
-SELECT NEXTVAL('tags', 11);
 INSERT INTO `tags` (`id`, `hash`, `tag`, `tag_canonical`, `tag_type`) VALUES
 (1, '4a89e0631472a4dd72e36608c36a9ee8', 'Jeremy Hunt', 'jeremy hunt', 'person'),
 (2, '7936b26688ae5eb79fa41aa19fa1bad9', 'NHS', 'nhs', 'organization'),
@@ -241,7 +239,6 @@ INSERT INTO `account_droplet_links` (`id`, `account_id`, `droplet_id`, `link_id`
 -- -----------------------------------------------------
 -- Data for table `medi`
 -- -----------------------------------------------------
-SELECT NEXTVAL('media', 10);
 INSERT INTO `media` (`id`, `hash`, `url`, `type`) VALUES
 (1, 'f0807c04135cf82a482bb24eca691ed4', 'http://gigaom2.files.wordpress.com/2012/10/datacapspercentage.jpeg', 'image'),
 (2, '69804fcea636991422759116c46a7a77', 'http://gigaom2.files.wordpress.com/2012/10/datacapspercentage.jpeg?w=604', 'image'),
@@ -281,7 +278,6 @@ INSERT INTO `droplets_media` (`id`, `droplet_id`, `media_id`) VALUES
 -- -----------------------------------------------------
 -- Data for table `places`
 -- -----------------------------------------------------
-SELECT NEXTVAL('places', 10);
 INSERT INTO `places` (`id`, `hash`, `place_name`, `place_name_canonical`, `longitude`, `latitude`) VALUES
 (1, '867da1cf4e6bd9fc5512a19a90e0141f', 'Wales', 'wales', 146.11, -33),
 (2, '5f1823c378ecb68558282f7462e3fd87', 'England', 'england', -4, 54),

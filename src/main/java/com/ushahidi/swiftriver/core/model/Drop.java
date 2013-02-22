@@ -23,12 +23,14 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -38,7 +40,10 @@ import javax.persistence.Transient;
 public class Drop {
 
 	@Id
-	@GeneratedValue
+    @GeneratedValue(strategy=GenerationType.TABLE, generator="Seq") 
+    @TableGenerator(name="Seq", table="seq", 
+        pkColumnName="name", valueColumnName="id", 
+        pkColumnValue="droplets") 
 	private long id;
 	
 	@Column(name = "channel", nullable = false)

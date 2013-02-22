@@ -23,9 +23,12 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -41,6 +44,10 @@ public class Identity implements Serializable {
 	private static final long serialVersionUID = -8738305639598973112L;
 
 	@Id
+    @GeneratedValue(strategy=GenerationType.TABLE, generator="Seq") 
+    @TableGenerator(name="Seq", table="seq", 
+        pkColumnName="name", valueColumnName="id", 
+        pkColumnValue="identities") 
 	private long id;
 	
 	@Column(name="hash")

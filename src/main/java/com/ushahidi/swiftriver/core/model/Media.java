@@ -21,9 +21,12 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -33,6 +36,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class Media  {
 	
 	@Id
+    @GeneratedValue(strategy=GenerationType.TABLE, generator="Seq") 
+    @TableGenerator(name="Seq", table="seq", 
+        pkColumnName="name", valueColumnName="id", 
+        pkColumnValue="media") 
 	private long id;
 	
 	@Column(name = "hash", nullable = false)

@@ -32,12 +32,6 @@ import com.ushahidi.swiftriver.core.model.Media;
 @Repository
 public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 
-	@Override
-	public Media create(Media t) {
-		t.setId(this.getSequenceNumber("media", 1));
-		return this.em.merge(t);
-	}
-
 	/**
 	 * @see MediaDao#findByHash(ArrayList) 
 	 */

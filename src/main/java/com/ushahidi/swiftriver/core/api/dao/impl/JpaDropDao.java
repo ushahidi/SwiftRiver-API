@@ -54,12 +54,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
 
 	
-	@Override
-	public Drop create(Drop t) {
-		t.setId(this.getSequenceNumber("droplets", 1));
-		return this.em.merge(t);
-	}
-
 	/**
 	 * @see DropDao#createDrops(Collection)
 	 */

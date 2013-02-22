@@ -27,12 +27,6 @@ import com.ushahidi.swiftriver.core.model.Link;
 @Repository
 public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 
-	@Override
-	public Link create(Link t) {
-		t.setId(this.getSequenceNumber("links", 1));
-		return this.em.merge(t);
-	}
-
 	/**
 	 * @see LinkDao#findAllByHash(ArrayList)
 	 */
@@ -60,15 +54,6 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		String sql = "FROM Link WHERE hash = :hash";
 		List<Link> links = (List<Link>)em.createQuery(sql).setParameter("hash", hash).getResultList();
 		return links.isEmpty() ? null : links.get(0);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.LinkDao#save(com.ushahidi.swiftriver.core.model.Link)
-	 */
-	public void save(Link link) {
-		link.setId(getSequenceNumber("links", 1));
-		this.em.merge(link);
 	}
 
 }

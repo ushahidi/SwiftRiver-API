@@ -34,12 +34,6 @@ import com.ushahidi.swiftriver.core.model.Tag;
 @Repository
 public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 
-	@Override
-	public Tag create(Tag t) {
-		t.setId(this.getSequenceNumber("tags", 1));
-		return this.em.merge(t);
-	}
-
 	/**
 	 * @see TagDao#findAllByHash(ArrayList)
 	 */
@@ -62,15 +56,6 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		String sql = "FROM Tag WHERE hash = :hash";
 		List<Tag> tags = (List<Tag>)em.createQuery(sql).setParameter("hash", hash).getResultList();
 		return tags.isEmpty() ? null : tags.get(0);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.TagDao#save(com.ushahidi.swiftriver.core.model.Tag)
-	 */
-	public void save(Tag tag) {
-		tag.setId(getSequenceNumber("tags", 1));
-		this.em.persist(tag);
 	}
 
 	/**
