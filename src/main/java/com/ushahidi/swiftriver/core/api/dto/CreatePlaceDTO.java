@@ -14,29 +14,39 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.ushahidi.swiftriver.core.model.Place;
-
-public interface PlaceDao extends GenericDao<Place> {
+public class CreatePlaceDTO {
 	
-	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
-	 * 
-	 * @param placeHashes
-	 * @return
-	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+	private String name;
+	
+	private float latitude;
+	
+	private float longitude;
 
-	/**
-	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Place findByHash(String hash);
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public float getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(float latitude) {
+		this.latitude = latitude;
+	}
+
+	public float getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(float longitude) {
+		this.longitude = longitude;
+	}
+	
 	
 }

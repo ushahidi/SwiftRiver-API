@@ -31,10 +31,11 @@ import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
-import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
@@ -313,17 +314,16 @@ public class RiverService {
 	}
 
 	@Transactional
-	public List<CollaboratorDTO> getCollaborators(Long riverId)
-			throws NotFoundException {
+	public List<GetCollaboratorDTO> getCollaborators(Long riverId) throws NotFoundException {
 		River river = riverDao.findById(riverId);
 		if (river == null) {
 			throw new NotFoundException("River not found");
 		}
 
-		List<CollaboratorDTO> collaborators = new ArrayList<CollaboratorDTO>();
+		List<GetCollaboratorDTO> collaborators = new ArrayList<GetCollaboratorDTO>();
 
-		for (RiverCollaborator entry : river.getCollaborators()) {
-			CollaboratorDTO dto = new CollaboratorDTO();
+		for (RiverCollaborator entry: river.getCollaborators()) {
+			GetCollaboratorDTO dto = new GetCollaboratorDTO();
 
 			dto.setId(entry.getAccount().getId());
 			dto.setActive(entry.isActive());
@@ -345,8 +345,9 @@ public class RiverService {
 	 *             ,BadRequestException
 	 */
 	@Transactional
-	public CollaboratorDTO addCollaborator(Long riverId, CollaboratorDTO body)
-			throws NotFoundException, BadRequestException {
+	public GetCollaboratorDTO addCollaborator(Long riverId, CreateCollaboratorDTO body) 
+			throws NotFoundException,BadRequestException {
+
 		// Check if the bucket exists
 		River river = riverDao.findById(riverId);
 		if (river == null) {
@@ -360,11 +361,9 @@ public class RiverService {
 		}
 
 		Account account = accountDao.findById(body.getId());
-		riverDao.addCollaborator(river, account, body.isReadOnly());
+		RiverCollaborator collaborator = riverDao.addCollaborator(river, account, body.isReadOnly());
 
-		body.setId(account.getId());
-		body.setAccountPath(account.getAccountPath());
-		return body;
+		return mapCollaboratorDTO(collaborator);
 	}
 
 	/**
@@ -376,8 +375,8 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public CollaboratorDTO modifyCollaborator(Long riverId, Long accountId,
-			CollaboratorDTO body) {
+	public GetCollaboratorDTO modifyCollaborator(Long riverId,
+			Long accountId, CreateCollaboratorDTO body) {
 
 		RiverCollaborator collaborator = riverDao.findCollaborator(riverId,
 				accountId);
@@ -393,10 +392,7 @@ public class RiverService {
 		// Post changes to the DB
 		riverDao.updateCollaborator(collaborator);
 
-		body.setId(collaborator.getAccount().getId());
-		body.setAccountPath(collaborator.getAccount().getAccountPath());
-
-		return body;
+		return mapCollaboratorDTO(collaborator);		
 	}
 
 	/**
@@ -506,5 +502,25 @@ public class RiverService {
 	public boolean isOwner(River river, Account account) {
 		return river.getAccount() == account
 				|| account.getCollaboratingRivers().contains(river);
+	}
+
+	/**
+	 * Maps a {@link RiverCollaborator} entity to {@link GetCollaboratorDTO}
+	 * 
+	 * @param collaborator
+	 * @return {@link GetCollaboratorDTO}
+	 */
+	private GetCollaboratorDTO mapCollaboratorDTO(RiverCollaborator collaborator) {
+
+		Account account = collaborator.getAccount();
+
+		GetCollaboratorDTO collaboratorDTO = new GetCollaboratorDTO();
+		collaboratorDTO.setId(account.getId());
+		collaboratorDTO.setAccountPath(account.getAccountPath());
+		collaboratorDTO.setActive(collaborator.isActive());
+		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
+		collaboratorDTO.setDateAdded(collaborator.getDateAdded());
+		
+		return collaboratorDTO;
 	}
 }

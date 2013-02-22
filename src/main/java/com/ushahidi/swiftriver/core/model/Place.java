@@ -18,8 +18,11 @@ package com.ushahidi.swiftriver.core.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -29,6 +32,10 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class Place {
 
 	@Id
+    @GeneratedValue(strategy=GenerationType.TABLE, generator="Seq") 
+    @TableGenerator(name="Seq", table="seq", 
+        pkColumnName="name", valueColumnName="id", 
+        pkColumnValue="places") 
 	private long id;
 
 	@Column(name = "hash", nullable = false)

@@ -14,29 +14,18 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.ushahidi.swiftriver.core.model.Place;
-
-public interface PlaceDao extends GenericDao<Place> {
+public class CreateLinkDTO {
 	
-	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
-	 * 
-	 * @param placeHashes
-	 * @return
-	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+	private String url;
 
-	/**
-	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Place findByHash(String hash);
-	
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+		
 }

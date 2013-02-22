@@ -14,28 +14,36 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
-public interface LinkDao  extends GenericDao<Link> {
+public class JpaLinkDaoTest extends AbstractDaoTest {
+	
+	@Autowired
+	private LinkDao linkDao;
 	
 	/**
-	 * Gets and returns a list of {@link Link} entities with the
-	 * specified hash values
-	 * 
-	 * @param linkHashes
+	 * Test for {@link LinkDao#save(Link)}
 	 */
-	public List<Link> findAllByHash(ArrayList<String> linkHashes);
-	
-	/**
-	 * Gets the {@Link} record with the specified <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Link findByHash(String hash);
-
+	@Test
+	public void testSave() {
+		Link link = new Link();
+		String url = "http://www.ushahidi.com";
+		String hash = HashUtil.md5(url);
+		
+		link.setUrl(url);
+		link.setHash(hash);
+		linkDao.create(link);
+		
+		assertTrue(link.getId() > 0);
+	}
 }

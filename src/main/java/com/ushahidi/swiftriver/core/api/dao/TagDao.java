@@ -30,5 +30,14 @@ public interface TagDao extends GenericDao<Tag> {
 	 * @param tagHashes
 	 * @return
 	 */
-	public List<Tag> findByHash(ArrayList<String> tagHashes);
+	public List<Tag> findAllByHash(ArrayList<String> tagHashes);
+
+	/**
+	 * Gets and returns the {@link Tag} record with the specified
+	 * <code>hash</code>
+	 * @param hash
+	 * @return
+	 */
+	public Tag findByHash(String hash);
+	
 }

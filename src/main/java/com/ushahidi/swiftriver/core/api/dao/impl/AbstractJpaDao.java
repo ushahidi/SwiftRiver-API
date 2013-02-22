@@ -39,6 +39,7 @@ public abstract class AbstractJpaDao<T> implements GenericDao<T> {
 		this.em = em;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public AbstractJpaDao() {
         Type t = getClass().getGenericSuperclass();
         ParameterizedType pt = (ParameterizedType) t;
@@ -65,5 +66,4 @@ public abstract class AbstractJpaDao<T> implements GenericDao<T> {
 	public T update(final T t) {
 		return em.merge(t);
 	}
-
 }

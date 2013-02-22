@@ -14,29 +14,33 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-import com.ushahidi.swiftriver.core.model.Place;
+public class HashUtil {
 
-public interface PlaceDao extends GenericDao<Place> {
-	
 	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
+	 * Generates and returns an MD5 hash of the provided
+	 * <code>input</code>
 	 * 
-	 * @param placeHashes
+	 * @param input
 	 * @return
 	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+	public static String md5(String input) {
+		String md5 = null;
+		try {
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+			digest.update(input.getBytes(), 0, input.length());
+			
+			md5 = new BigInteger(1, digest.digest()).toString(16);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
 
-	/**
-	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Place findByHash(String hash);
-	
+		return md5;
+	}
+
 }

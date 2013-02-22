@@ -19,6 +19,7 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,22 +29,30 @@ import javax.persistence.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.AccountDropLink;
+import com.ushahidi.swiftriver.core.model.AccountDropPlace;
+import com.ushahidi.swiftriver.core.model.AccountDropTag;
+import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
 
+/**
+ * @author ekala
+ *
+ */
 @Repository
-@Transactional
 public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
+
 	
 	/**
 	 * @see DropDao#createDrops(Collection)
@@ -53,89 +62,31 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	}
 
 	/**
-	 * @see DropDao#addLink(long, Link)
-	 */
-	public void addLink(long dropId, Link link) {
-		getById(dropId).getLinks().add(link);
-	}
-
-	private Drop getById(long dropId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/**
 	 * @see DropDao#addLinks(long, Collection)
 	 */
 	public void addLinks(long dropId, Collection<Link> links) {
-		getById(dropId).getLinks().addAll(links);
-	}
-
-	public void removeLink(long dropId, Link link) {
-		getById(dropId).getLinks().remove(link);
-	}
-
-	/**
-	 * @see DropDao#addPlace(Long, Place)
-	 */
-	public void addPlace(Long dropId, Place place) {
-		findById(dropId).getPlaces().add(place);
+		findById(dropId).getLinks().addAll(links);
 	}
 
 	/**
 	 * @see DropDao#addPlaces(long, Collection)
 	 */
 	public void addPlaces(long dropId, Collection<Place> places) {
-		getById(dropId).getPlaces().addAll(places);
-	}
-
-	/**
-	 * @see DropDao#removePlace(Long, Place)
-	 */
-	public void removePlace(Long dropId, Place place) {
-		findById(dropId).getPlaces().remove(place);
-	}
-
-	/**
-	 * @see DropDao#addMedia(long, Media)
-	 */
-	public void addMedia(long dropId, Media media) {
-		getById(dropId).getMedia().add(media);
+		findById(dropId).getPlaces().addAll(places);
 	}
 
 	/**
 	 * @see DropDao#addMultipleMedia(long, Collection)
 	 */
 	public void addMultipleMedia(long dropId, Collection<Media> media) {
-		getById(dropId).getMedia().addAll(media);
-	}
-
-	/**
-	 * @see DropDao#removeMedia(long, Media)
-	 */
-	public void removeMedia(long dropId, Media media) {
-		getById(dropId).getMedia().remove(media);
-	}
-
-	/**
-	 * @see DropDao#addTag(Long, Tag)
-	 */
-	public void addTag(Long dropId, Tag tag) {
-		findById(dropId).getTags().add(tag);
+		findById(dropId).getMedia().addAll(media);
 	}
 
 	/**
 	 * @see DropDao#addTags(long, Collection)
 	 */
 	public void addTags(long dropId, Collection<Tag> tags) {
-		getById(dropId).getTags().addAll(tags);
-	}
-
-	/**
-	 * @see DropDao#removeTag(Long, Tag)
-	 */
-	public void removeTag(Long dropId, Tag tag) {
-		findById(dropId).getTags().remove(tag);
+		findById(dropId).getTags().addAll(tags);
 	}
 
 	/**
@@ -162,11 +113,12 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		if (drops.size() == 0) {
 			return;
 		}
-		
+
 		populateTags(drops, queryingAccount);
 		populateLinks(drops, queryingAccount);
 		populateMedia(drops, queryingAccount);
 		populatePlaces(drops, queryingAccount);
+		populateBuckets(drops);
 	}
 
 	/**
@@ -445,34 +397,259 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		query.setParameter("account_id", queryingAccount.getId());
 		
 		// Group the media by drop id
-				Map<Long, Place> places = new HashMap<Long, Place>();
-				for (Object oRow : query.getResultList()) {
-					Object[] r = (Object[]) oRow;
+		Map<Long, Place> places = new HashMap<Long, Place>();
+		for (Object oRow : query.getResultList()) {
+			Object[] r = (Object[]) oRow;
 
-					Long dropId = ((BigInteger) r[0]).longValue();
-					Drop drop = drops.get(dropIndex.get(dropId));
-					if (drop.getPlaces() == null) {
-						drop.setPlaces(new ArrayList<Place>());
-					}
+			Long dropId = ((BigInteger) r[0]).longValue();
+			Drop drop = drops.get(dropIndex.get(dropId));
+			if (drop.getPlaces() == null) {
+				drop.setPlaces(new ArrayList<Place>());
+			}
+
+			Long placeId = ((BigInteger) r[1]).longValue();
+			Place p = places.get(placeId);
+
+			if (p == null) {
+				p = new Place();
+				p.setId(placeId);
+				p.setPlaceName((String) r[2]);
+				p.setLatitude((Float)r[5]);
+				p.setLongitude((Float)r[6]);
+
+				places.put(placeId, p);
+			} 
+
+			// Add place to drop
+			if (!drop.getPlaces().contains(p)) {
+				drop.getPlaces().add(p);
+			}
+		}
+	}
+	
+	/**
+	 * Populates the buckets for each of the {@link Drop} 
+	 * in <code>drops</code>
+	 * 
+	 * @param drops
+	 */
+	public void populateBuckets(List<Drop> drops) {
+		Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
+		int i = 0;
+		for (Drop drop: drops) {
+			dropsIndex.put(drop.getId(), i);
+			i++;
+		}
+
+		// Query to fetch the buckets
+		String sql = "SELECT `buckets_droplets`.`droplet_id`, `buckets`.`id`, `buckets`.`bucket_name` ";
+		sql += "FROM `buckets` ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
+		sql += "WHERE `buckets_droplets`.`droplet_id` IN :dropIds ";
+		
+		Query query = this.em.createNativeQuery(sql);
+		query.setParameter("dropIds", dropsIndex.keySet());
+		
+		// Group the buckets by bucket id
+		Map<Long, Bucket> buckets = new HashMap<Long, Bucket>();
+		for (Object row: query.getResultList()) {
+			Object[] rowArray = (Object[]) row;
+			
+			Long dropId = ((BigInteger)rowArray[0]).longValue();
+			Drop drop = drops.get(dropsIndex.get(dropId));
+			if (drop.getBuckets() == null) {
+				drop.setBuckets(new ArrayList<Bucket>());
+			}
+
+			Long bucketId = ((BigInteger) rowArray[1]).longValue();
+			Bucket bucket = buckets.get(bucketId);
+			if (bucket == null) {
+				bucket = new Bucket();
+				bucket.setId(bucketId);
+				bucket.setName((String) rowArray[2]);
 				
-					Long placeId = ((BigInteger) r[1]).longValue();
-					Place p = places.get(placeId);
-					
-					if (p == null) {
-						p = new Place();
-						p.setId(placeId);
-						p.setPlaceName((String) r[2]);
-						p.setLatitude((Float)r[5]);
-						p.setLongitude((Float)r[6]);
-						
-						places.put(placeId, p);
-					} 
-					
-					// Add media to drop
-					if (!drop.getPlaces().contains(p)) {
-						drop.getPlaces().add(p);
-					}
-				}
+				buckets.put(bucketId, bucket);
+			}
+			
+			// Add bucket to the list of buckets
+			if (!drop.getBuckets().contains(bucket)) {
+				drop.getBuckets().add(bucket);
+			}
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findCommentById(java.lang.Long)
+	 */
+	public DropComment findCommentById(Long commentId) {
+		return this.em.find(DropComment.class, commentId);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#deleteComment(com.ushahidi.swiftriver.core.model.DropComment)
+	 */
+	public void deleteComment(DropComment dropComment) {
+		this.em.remove(dropComment);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addComment(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 */
+	public DropComment addComment(Drop drop, Account account, String commentText) {
+		DropComment dropComment = new DropComment();
+		
+		dropComment.setDrop(drop);
+		dropComment.setAccount(account);
+		dropComment.setDeleted(false);
+		dropComment.setCommentText(commentText);
+		dropComment.setDateAdded(new Date());
+
+		this.em.persist(dropComment);
+
+		return dropComment;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addLink(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 */
+	public void addLink(Drop drop, Account account, Link link) {
+		// Add the link to the account
+		AccountDropLink accountDropLink = new AccountDropLink();
+		accountDropLink.setLink(link);
+		accountDropLink.setAccount(account);
+		accountDropLink.setDrop(drop);
+		accountDropLink.setDeleted(false);
+
+		this.em.persist(accountDropLink);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeLink(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Link, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	@SuppressWarnings("unchecked")
+	public void removeLink(Drop drop, Link link, Account account) {
+		String sql = "FROM AccountDropLink WHERE account = :account ";
+		sql += "AND drop = :drop AND link = :link";
+		
+		Query query = em.createQuery(sql);
+		query.setParameter("link", link);
+		query.setParameter("drop", drop);
+		query.setParameter("account", account);
+		
+		List<AccountDropLink> links = (List<AccountDropLink>) query.getResultList();
+		AccountDropLink accountDropLink = links.isEmpty() ? null : links.get(0); 
+		
+		if (accountDropLink != null && !accountDropLink.isDeleted()) {
+			accountDropLink.setDeleted(true);
+			this.em.merge(accountDropLink);
+		} else if (accountDropLink == null) {
+			// No records found
+			accountDropLink = new AccountDropLink();
+			accountDropLink.setAccount(account);
+			accountDropLink.setDrop(drop);
+			accountDropLink.setLink(link);
+			accountDropLink.setDeleted(true);
+			
+			this.em.persist(accountDropLink);
+		}
+		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addPlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Place)
+	 */
+	public void addPlace(Drop drop, Account account, Place place) {
+		AccountDropPlace accountDropPlace = new AccountDropPlace();
+		accountDropPlace.setDrop(drop);
+		accountDropPlace.setPlace(place);
+		accountDropPlace.setAccount(account);
+		
+		this.em.persist(accountDropPlace);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removePlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Place, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	@SuppressWarnings("unchecked")
+	public void removePlace(Drop drop, Place place, Account account) {
+		String sql = "FROM AccountDropPlace WHERE account = :account ";
+		sql += "AND drop = :drop and place = :place";
+		
+		Query query = em.createQuery(sql);
+		query.setParameter("place", place);
+		query.setParameter("drop", drop);
+		query.setParameter("account", account);
+
+		List<AccountDropPlace> places = (List<AccountDropPlace>) query.getResultList();
+		AccountDropPlace accountDropPlace = (places.isEmpty()) ? null : places.get(0);
+
+		if (accountDropPlace != null && !accountDropPlace.isDeleted()) {
+			accountDropPlace.setDeleted(true);
+			this.em.merge(accountDropPlace);
+		} else if (accountDropPlace == null) {
+			// No records found
+			accountDropPlace = new AccountDropPlace();
+			accountDropPlace.setAccount(account);
+			accountDropPlace.setDrop(drop);
+			accountDropPlace.setPlace(place);
+			accountDropPlace.setDeleted(true);
+			
+			this.em.persist(accountDropPlace);
+		}
+		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public void addTag(Drop drop, Tag tag, Account account) {
+		AccountDropTag accountDropTag = new AccountDropTag();
+		accountDropTag.setDrop(drop);
+		accountDropTag.setAccount(account);
+		accountDropTag.setTag(tag);
+		accountDropTag.setDeleted(false);
+		
+		this.em.persist(accountDropTag);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	@SuppressWarnings("unchecked")
+	public void removeTag(Drop drop, Tag tag, Account account) {
+		String sql = "FROM AccountDropTag a WHERE a.account = :account ";
+		sql += "AND a.drop = :drop AND a.tag = :tag";
+
+		Query query = em.createQuery(sql);
+		query.setParameter("account", account);
+		query.setParameter("drop", drop);
+		query.setParameter("tag", tag);
+
+		List<AccountDropTag> tags = (List<AccountDropTag>)query.getResultList();
+		AccountDropTag accountDropTag = tags.isEmpty() ? null : tags.get(0); 
+		
+		if (accountDropTag != null && !accountDropTag.isDeleted()) {
+			accountDropTag.setDeleted(true);
+			this.em.merge(accountDropTag);
+		} else if (accountDropTag == null) {
+			// No records found
+			accountDropTag = new AccountDropTag();
+			accountDropTag.setAccount(account);
+			accountDropTag.setDrop(drop);
+			accountDropTag.setTag(tag);
+			accountDropTag.setDeleted(true);
+			
+			this.em.persist(accountDropTag);
+		}
+		
+	}
 }

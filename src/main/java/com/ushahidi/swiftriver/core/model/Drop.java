@@ -23,21 +23,27 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "droplets")
 public class Drop {
 
 	@Id
-	@GeneratedValue
+    @GeneratedValue(strategy=GenerationType.TABLE, generator="Seq") 
+    @TableGenerator(name="Seq", table="seq", 
+        pkColumnName="name", valueColumnName="id", 
+        pkColumnValue="droplets") 
 	private long id;
 	
 	@Column(name = "channel", nullable = false)
@@ -96,6 +102,12 @@ public class Drop {
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "droplets_media", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
 	private List<Media> media;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy="drop")
+	private List<DropComment> comments;
+	
+	@Transient
+	private List<Bucket> buckets;
 
 	public Drop() {
 
@@ -235,6 +247,22 @@ public class Drop {
 
 	public void setMedia(List<Media> media) {
 		this.media = media;
+	}
+
+	public List<DropComment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<DropComment> comments) {
+		this.comments = comments;
+	}
+
+	public List<Bucket> getBuckets() {
+		return buckets;
+	}
+
+	public void setBuckets(List<Bucket> buckets) {
+		this.buckets = buckets;
 	}
 
 }

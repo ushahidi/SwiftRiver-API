@@ -14,7 +14,11 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.hamcrest.Matchers.empty;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,14 +28,11 @@ import java.util.Map;
 import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
-
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.hamcrest.Matchers.*;
 
 public class RiversControllerTest extends AbstractControllerTest {
 
@@ -271,7 +272,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(5));
+				.andExpect(jsonPath("$.channel").value("rss"));
 	}
 
 	@Test

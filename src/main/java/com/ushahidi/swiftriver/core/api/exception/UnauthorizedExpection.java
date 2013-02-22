@@ -14,29 +14,29 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao;
+package com.ushahidi.swiftriver.core.api.exception;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.ushahidi.swiftriver.core.model.Place;
+/**
+ * Thrown when a client is not authorized 
+ */
+@ResponseStatus(value=HttpStatus.UNAUTHORIZED, reason="You are not authorized to access the resource")
+public class UnauthorizedExpection extends RuntimeException {
 
-public interface PlaceDao extends GenericDao<Place> {
+	private static final long serialVersionUID = -1793327149823107162L;
 	
-	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
-	 * 
-	 * @param placeHashes
-	 * @return
-	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
-
-	/**
-	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>
-	 * @param hash
-	 * @return
-	 */
-	public Place findByHash(String hash);
+	public UnauthorizedExpection() {
+		super();
+	}
 	
+	public UnauthorizedExpection(String message) {
+		super(message);
+	}
+	
+	public UnauthorizedExpection(String message, Throwable t) {
+		super(message, t);
+	}
+
 }

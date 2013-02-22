@@ -40,6 +40,19 @@ INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `l
 (5, 'user3@myswiftriver.com', 'User 3', 'user3', 'user3_password', 0, NULL, 'user3', '2013-01-01 00:00:04');
 
 -- -----------------------------------------------------
+-- Data for table `seq`
+-- -----------------------------------------------------
+INSERT INTO `seq` (`name`, `id`) VALUES 
+('droplets', 10),
+('tags', 11),
+('places', 10),
+('links', 10),
+('identities', 2),
+('media', 10),
+('river_tag_trends', 1),
+('rivers_droplets', 5);
+
+-- -----------------------------------------------------
 -- Data for table `roles_users`
 -- -----------------------------------------------------
 INSERT INTO `roles_users` (`user_id`, `role_id`, `account_id`) VALUES 
@@ -177,7 +190,6 @@ INSERT INTO `links` (`id`, `hash`, `url`) VALUES
 (9, '0a979780e77621d9617665dd029498cd', 'http://www.bbc.co.uk/news/uk-england-london-20339209#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa'),
 (10, 'bb9c7adf48c1f205807b92afb2034bc3', 'http://www.bbc.co.uk/sport/0/football/20319573');
 
-
 -- -----------------------------------------------------
 -- Data for table `tags`
 -- -----------------------------------------------------
@@ -292,3 +304,15 @@ INSERT INTO droplets_places(`id`, `droplet_id`, `place_id`) VALUES
 INSERT INTO `account_droplet_places` (`id`, `account_id`, `droplet_id`, `place_id`, `deleted`) VALUES 
 (1, 1, 5, 2, 1),
 (2, 1, 5, 4, 0);
+
+-- -----------------------------------------------------
+-- Data for table `droplet_comments`
+-- -----------------------------------------------------
+INSERT INTO `droplet_comments` (`droplet_id`, `account_id`, `comment_text`, `date_added`) VALUES
+(1, 3, 'Account 3 comment 1', '2013-02-14 14:20:44'),
+(1, 3, 'Account 3 comment 2', '2012-09-01 22:20:44'),
+(2, 4, 'Account 4 comment 1', '2012-08-08 01:20:44'),
+(2, 4, 'Account 4 comment 2', '2012-07-18 17:20:44'),
+(3, 5, 'Account 5 comment 1', '2012-06-28 21:20:44'),
+(3, 5, 'Account 5 comment 2', '2012-05-12 10:20:44'),
+(3, 5, 'Account 5 comment 3', '2012-04-19 08:20:44');

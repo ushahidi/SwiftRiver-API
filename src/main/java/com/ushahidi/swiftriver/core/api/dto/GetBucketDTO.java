@@ -22,30 +22,54 @@ import com.ushahidi.swiftriver.core.model.Bucket;
 
 /**
  * DTO mapping class for {@link Bucket}
- * 
  * @author ekala
- * 
+ *
  */
-public class BucketDTO {
-
+public class GetBucketDTO {
+	
 	private long id;
-
+	
 	private String name;
-
+	
 	private String description;
-
+	
 	@JsonProperty("date_added")
 	private String dateAdded;
-
+	
 	@JsonProperty("drop_count")
 	private int dropCount;
-
+	
 	@JsonProperty("public")
 	private boolean published;
 
-	private boolean active;
+	@JsonProperty("default_layout")
+	private String defaultLayout;
 	
 	private Account account;
+	
+	public static class Account {
+		private long id;
+		
+		@JsonProperty("account_path")
+		private String accountPath;
+
+		public long getId() {
+			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
+		}
+
+		public String getAccountPath() {
+			return accountPath;
+		}
+
+		public void setAccountPath(String accountPath) {
+			this.accountPath = accountPath;
+		}
+		
+	}
 
 	public long getId() {
 		return id;
@@ -95,12 +119,12 @@ public class BucketDTO {
 		this.published = published;
 	}
 
-	public boolean isActive() {
-		return active;
+	public String getDefaultLayout() {
+		return defaultLayout;
 	}
 
-	public void setActive(boolean active) {
-		this.active = active;
+	public void setDefaultLayout(String defaultLayout) {
+		this.defaultLayout = defaultLayout;
 	}
 
 	public Account getAccount() {
@@ -111,27 +135,5 @@ public class BucketDTO {
 		this.account = account;
 	}
 
-	public static class Account {
-
-		private long id;
-
-		@JsonProperty("account_path")
-		private String accountPath;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-	}
+	
 }

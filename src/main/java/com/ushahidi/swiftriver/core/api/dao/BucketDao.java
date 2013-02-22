@@ -26,23 +26,28 @@ import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.Drop;
 
 public interface BucketDao extends GenericDao<Bucket> {
-	
+
 	/**
-	 * Gets a collection of drops from a bucket using the specified parameters
+	 * Gets and returns a list of drops for the bucket specified in <code>bucketId</code>
+	 * using the request parameters in <code>requestParams</code>. The {@link Account}
+	 * in <code>account</code> is used to fetch account-specific metadata (tags, links, places etc)
 	 *  
 	 * @param bucketId
+	 * @param account
 	 * @param requestParams 
 	 * @return {@link LinkDTO}
 	 */
-	public List<Drop> getDrops(Long bucketId, Map<String, Object> requestParams);
+	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams);
 	
 	/**
-	 * Adds a single drop to a bucket
+	 * Adds the {@link Drop} specified in <code>dropId</code> to the
+	 * {@link Bucket} in <code>bucket</code>
 	 * 
-	 * @param bucketId
-	 * @param drop
+	 * @param bucket
+	 * @param dropId
+	 * @return 
 	 */
-	public void addDrop(Long bucketId, Drop drop);
+	public boolean addDrop(Bucket bucket, long dropId);
 	
 	/**
 	 * Adds a collection of drops to a buckets
@@ -52,14 +57,6 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public void addDrops(Long bucketId, Collection<Drop> drops);
 	
-	/**
-	 * Removes a single drop from a bucket
-	 * 
-	 * @param bucketId
-	 * @param drop
-	 */
-	public void removeDrop(Long bucketId, Drop drop);
-
 	/**
 	 * Adds a collaborator to the bucket with the specified id
 	 * 
@@ -71,14 +68,15 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly);
 
 	/**
-	 * Retrieves a {@link BucketCollaborator} record using the bucket id (<code>id</code>
-	 * and the account id (<code>accountId</code>) of the collaborator
+	 * Retrieves the {@link BucketCollaborator} record associated with the
+	 * {@link Account} in <code>account</code> for the {@link Bucket} specified
+	 * in <code>bucket</code>
 	 * 
-	 * @param id
-	 * @param accountId
+	 * @param bucket
+	 * @param account
 	 * @return {@link BucketCollaborator} on success, null otherwise
 	 */
-	public BucketCollaborator findCollaborator(Long id, Long accountId);
+	public BucketCollaborator findCollaborator(Bucket bucket, Account account);
 
 	/**
 	 * Modifies a bucket collaborator record 

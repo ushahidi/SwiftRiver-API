@@ -31,9 +31,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.ushahidi.swiftriver.core.api.dto.CollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
@@ -157,7 +158,7 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
 	@ResponseBody
-	public CollaboratorDTO addCollaborator(@RequestBody CollaboratorDTO body,
+	public GetCollaboratorDTO addCollaborator(@RequestBody CreateCollaboratorDTO body,
 			@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
@@ -170,7 +171,7 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.GET)
 	@ResponseBody
-	public List<CollaboratorDTO> getCollaborators(@PathVariable Long id) {
+	public List<GetCollaboratorDTO> getCollaborators(@PathVariable Long id) {
 		return riverService.getCollaborators(id);
 	}
 
@@ -183,8 +184,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public CollaboratorDTO modifyCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId, @RequestBody CollaboratorDTO body) {
+	public GetCollaboratorDTO modifyCollaborator(@PathVariable Long id,
+			@PathVariable Long collaboratorId, @RequestBody CreateCollaboratorDTO body) {
 		return riverService.modifyCollaborator(id, collaboratorId, body);
 	}
 
