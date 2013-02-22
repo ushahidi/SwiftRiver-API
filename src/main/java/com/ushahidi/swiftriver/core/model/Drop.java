@@ -108,6 +108,9 @@ public class Drop {
 	
 	@Transient
 	private List<Bucket> buckets;
+	
+	@Transient
+	private Boolean read;
 
 	public Drop() {
 
@@ -263,6 +266,14 @@ public class Drop {
 
 	public void setBuckets(List<Bucket> buckets) {
 		this.buckets = buckets;
+	}
+
+	public Boolean getRead() {
+		return read;
+	}
+
+	public void setRead(Boolean read) {
+		this.read = read;
 	}
 
 }

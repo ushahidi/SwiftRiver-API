@@ -148,6 +148,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		Drop drop = drops.get(0);
 		assertEquals(4, drop.getId());
+		assertEquals(false, drop.getRead());
 		assertEquals("twitter", drop.getChannel());
 		assertEquals("droplet_4_title", drop.getTitle());
 		assertEquals("droplet_4_content", drop.getContent());
