@@ -37,6 +37,7 @@ import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 
@@ -129,7 +130,7 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public GetCollaboratorDTO modifyCollaborator(@RequestBody CreateCollaboratorDTO body,
+	public GetCollaboratorDTO modifyCollaborator(@RequestBody ModifyCollaboratorDTO body,
 			@PathVariable Long id, @PathVariable Long accountId, Principal principal) {
 		return bucketService.modifyCollaborator(id, accountId, body, principal.getName());
 	}

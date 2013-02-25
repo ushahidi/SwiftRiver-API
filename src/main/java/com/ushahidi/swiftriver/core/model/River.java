@@ -95,8 +95,7 @@ public class River {
 	@Column(name = "river_full")
 	private Boolean full;
 	
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name="river_collaborators", joinColumns = @JoinColumn(name="river_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="river")
 	private List<RiverCollaborator> collaborators;
 	
 	@OneToMany(cascade = CascadeType.ALL)

@@ -39,6 +39,7 @@ import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -249,7 +250,7 @@ public class BucketService {
 					username));
 		}
 
-		Account account = accountDao.findById(createDTO.getId());
+		Account account = accountDao.findById(createDTO.getAccount().getId());
 		if (account == null) {
 			throw new BadRequestException("The specified account id does not exist");
 		}
@@ -258,7 +259,7 @@ public class BucketService {
 		BucketCollaborator collaborator = bucketDao.findCollaborator(bucket, account);
 		if (collaborator != null) {
 			LOG.error(String.format("The specified account(%d) is already collaborating on bucket(%d)", 
-					id, createDTO.getId()));
+					id, createDTO.getAccount().getId()));
 
 			throw new BadRequestException();
 		}
@@ -266,7 +267,7 @@ public class BucketService {
 	
 		collaborator = bucketDao.addCollaborator(bucket, account, createDTO.isReadOnly());
 		
-		return mapCollaboratorDTO(collaborator);
+		return mapper.map(collaborator, GetCollaboratorDTO.class);
 	}
 
 	/**
@@ -283,7 +284,7 @@ public class BucketService {
 		// Iterate through each collaborator and add them
 		// to the return list
 		for (BucketCollaborator collaborator: bucket.getCollaborators()) {
-			collaborotorList.add(mapCollaboratorDTO(collaborator));
+			collaborotorList.add(mapper.map(collaborator, GetCollaboratorDTO.class));
 		}
 
 		return collaborotorList;
@@ -301,7 +302,7 @@ public class BucketService {
 	 */
 	@Transactional(readOnly = false)
 	public GetCollaboratorDTO modifyCollaborator(Long id, Long accountId,
-			CreateCollaboratorDTO createDTO, String username) {
+			ModifyCollaboratorDTO createDTO, String username) {
 		
 		Bucket bucket = getBucketById(id);
 
@@ -319,13 +320,13 @@ public class BucketService {
 			throw new NotFoundException();
 		}
 		
-		collaborator.setActive(createDTO.isActive());
-		collaborator.setReadOnly(createDTO.isReadOnly());
+		collaborator.setActive(createDTO.getActive());
+		collaborator.setReadOnly(createDTO.getReadOnly());
 		
 		// Update
 		bucketDao.updateCollaborator(collaborator);
 		
-		return mapCollaboratorDTO(collaborator);
+		return mapper.map(collaborator, GetCollaboratorDTO.class);
 	}
 
 	/**
@@ -573,27 +574,4 @@ public class BucketService {
 		
 		return (readOnly && collaborator.isReadOnly()); 
 	}
-
-	/**
-	 * Maps a {@link BucketCollaborator} entity to {@link GetCollaboratorDTO}
-	 * 
-	 * @param collaborator
-	 * @return {@link GetCollaboratorDTO}
-	 */
-	private GetCollaboratorDTO mapCollaboratorDTO(
-			BucketCollaborator collaborator) {
-
-		Account account = collaborator.getAccount();
-
-		GetCollaboratorDTO collaboratorDTO = new GetCollaboratorDTO();
-		collaboratorDTO.setId(account.getId());
-		collaboratorDTO.setAccountPath(account.getAccountPath());
-		collaboratorDTO.setEmail(account.getOwner().getEmail());
-		collaboratorDTO.setActive(collaborator.isActive());
-		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
-		collaboratorDTO.setDateAdded(collaborator.getDateAdded());
-		
-		return collaboratorDTO;
-	}
-	
 }

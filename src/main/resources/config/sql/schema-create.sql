@@ -602,7 +602,7 @@ CREATE TABLE IF NOT EXISTS `river_collaborators` (
   `river_id` bigint(20) DEFAULT NULL,
   `account_id` bigint(20) DEFAULT NULL,
   `collaborator_active` tinyint(1) DEFAULT 0,
-  `read_only` tinyint(1)  DEFAULT '0',
+  `read_only` tinyint(1)  DEFAULT '1',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `river_id` (`river_id`,`account_id`)
@@ -617,7 +617,7 @@ CREATE TABLE IF NOT EXISTS `bucket_collaborators` (
   `account_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `bucket_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `collaborator_active` tinyint(1) DEFAULT 0,
-  `read_only` tinyint(1)  DEFAULT '0',
+  `read_only` tinyint(1)  DEFAULT '1',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',  
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`,`bucket_id`)

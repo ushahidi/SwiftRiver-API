@@ -5,6 +5,9 @@ ALTER TABLE `accounts` ADD `version` bigint(20) unsigned DEFAULT '1';
 
 ALTER TABLE `bucket_collaborators` CHANGE `user_id` `account_id` BIGINT(11)  UNSIGNED  NOT NULL  DEFAULT '0';
 ALTER TABLE `bucket_collaborators` ADD `date_added` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00';
+ALTER TABLE `bucket_collaborators` CHANGE `collaborator_active` `collaborator_active` TINYINT(1)  NULL  DEFAULT '0';
+ALTER TABLE `bucket_collaborators` CHANGE `read_only` `read_only` TINYINT(1)  NULL  DEFAULT '1';
+
 
 ALTER TABLE `bucket_subscriptions` RENAME TO `bucket_followers`;
 ALTER TABLE `bucket_followers` CHANGE `user_id` `account_id` BIGINT(20)  NOT NULL;
@@ -27,6 +30,8 @@ ALTER TABLE `river_channels` DROP `filter_runs`;
 ALTER TABLE `river_channels` ADD `drop_count` int(11) NOT NULL DEFAULT '0';
 
 ALTER TABLE `river_collaborators` CHANGE `user_id` `account_id` BIGINT(20)  NULL  DEFAULT NULL;
+ALTER TABLE `river_collaborators` ADD `date_added` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00';
+ALTER TABLE `river_collaborators` CHANGE `read_only` `read_only` TINYINT(1)  NULL  DEFAULT '1';
 
 ALTER TABLE `river_subscriptions` RENAME TO `river_followers`;
 ALTER TABLE `river_followers` CHANGE `user_id` `account_id` BIGINT(20)  NOT NULL;

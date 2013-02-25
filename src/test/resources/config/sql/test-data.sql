@@ -95,9 +95,9 @@ INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_name_canonical`, 
 -- ------------------------------------
 -- Data for table `river_collaborators`
 -- -------------------------------------
-INSERT INTO river_collaborators(`id`, `river_id`, `account_id`, `read_only`) VALUES
-(1, 1, 3, 0),
-(2, 1, 4, 1);
+INSERT INTO river_collaborators(`id`, `river_id`, `account_id`, `read_only`, `collaborator_active`) VALUES
+(1, 1, 3, 0, 1),
+(2, 1, 4, 1, 1);
 
 -- ------------------------------------
 -- Data for table `river_followers`
@@ -123,9 +123,9 @@ INSERT INTO `buckets` (`id`, `account_id`, `bucket_name`, `bucket_description`, 
 -- ------------------------------------
 -- Data for table `bucket_collaborators`
 -- -------------------------------------
-INSERT INTO bucket_collaborators(`id`, `bucket_id`, `account_id`, `read_only`) VALUES
-(1, 1, 3, 0),
-(2, 1, 4, 1);
+INSERT INTO bucket_collaborators(`id`, `bucket_id`, `account_id`, `read_only`, `collaborator_active`) VALUES
+(1, 1, 3, 0, 1),
+(2, 1, 4, 1, 1);
 
 -- ------------------------------------
 -- Data for table `bucket_collaborators`

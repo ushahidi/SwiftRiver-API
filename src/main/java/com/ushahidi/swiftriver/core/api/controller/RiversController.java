@@ -44,6 +44,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
@@ -163,8 +164,22 @@ public class RiversController extends AbstractController {
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
 	@ResponseBody
 	public GetCollaboratorDTO addCollaborator(
-			@RequestBody CreateCollaboratorDTO body, @PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+			@RequestBody CreateCollaboratorDTO body, @PathVariable Long id,
+			Principal principal) {
+
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		if (body.getAccount() == null) {
+			errors.add(new ErrorField("account", "missing"));
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return riverService.addCollaborator(id, body, principal.getName());
 	}
 
 	/**
@@ -190,8 +205,20 @@ public class RiversController extends AbstractController {
 	@ResponseBody
 	public GetCollaboratorDTO modifyCollaborator(@PathVariable Long id,
 			@PathVariable Long collaboratorId,
-			@RequestBody CreateCollaboratorDTO body) {
-		return riverService.modifyCollaborator(id, collaboratorId, body);
+			@RequestBody ModifyCollaboratorDTO body, Principal principal) {
+
+		if (body.getReadOnly() == null && body.getActive() == null) {
+			List<ErrorField> errors = new ArrayList<ErrorField>();
+			errors.add(new ErrorField("read_only", "missing"));
+			errors.add(new ErrorField("active", "missing"));
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return riverService.modifyCollaborator(id, collaboratorId, body,
+				principal.getName());
 	}
 
 	/**
@@ -201,9 +228,10 @@ public class RiversController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId) {
-		riverService.deleteCollaborator(id, collaboratorId);
+			@PathVariable Long collaboratorId, Principal principal) {
+		riverService.deleteCollaborator(id, collaboratorId, principal.getName());
 	}
 
 	/**

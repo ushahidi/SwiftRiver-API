@@ -329,7 +329,6 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	/**
 	 * @see {@link RiverDao#findCollaborator(Long, Long)}
 	 */
-	@SuppressWarnings("unchecked")
 	public RiverCollaborator findCollaborator(Long riverId, Long accountId) {
 		String sql = "FROM RiverCollaborator rc "
 				+ "WHERE rc.account.id = :accountId "
@@ -339,9 +338,14 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		query.setParameter("accountId", accountId);
 		query.setParameter("riverId", riverId);
 
-		List<RiverCollaborator> result = (List<RiverCollaborator>) query
-				.getResultList();
-		return result.isEmpty() ? null : result.get(0);
+		RiverCollaborator rc = null;
+		try {
+			rc = (RiverCollaborator) query.getSingleResult();
+		} catch (Exception e) {
+			// Do nothing;
+		}
+		
+		return rc;
 	}
 
 	/**

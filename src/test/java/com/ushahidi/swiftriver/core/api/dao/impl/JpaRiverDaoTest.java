@@ -4,10 +4,8 @@ import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -27,6 +26,7 @@ import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
@@ -34,6 +34,9 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 	@Autowired
 	RiverDao riverDao;
+	
+	@Autowired 
+	RiverCollaboratorDao riverCollaboratorDao;
 
 	@Autowired
 	AccountDao accountDao;
@@ -340,18 +343,50 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		assertEquals("test description", (String) results.get("description"));
 		assertEquals(false, results.get("river_public"));
 	}
-
+	
+	@Test
+	public void findCollaboratorByAccount() {
+		RiverCollaborator rc = riverDao.findCollaborator(1L, 3L);
+		
+		assertEquals(1L, (long)rc.getId());
+		assertEquals(3L, rc.getAccount().getId());
+	}
+	
+	@Test
+	public void findNonExistentCollaboratorByAccount() {
+		RiverCollaborator rc = riverDao.findCollaborator(1L, 5L);
+		
+		assertNull(rc);
+	}
+	
 	@Test
 	public void testAddCollaborator() {
-		long riverId = 1;
-
-		River river = riverDao.findById(riverId);
-		int collaboratorCount = river.getCollaborators().size();
-
+		River river = riverDao.findById(1L);
 		Account account = accountDao.findByUsername("user3");
-
+		
 		riverDao.addCollaborator(river, account, true);
-		assertEquals(collaboratorCount + 1, river.getCollaborators().size());
+		em.flush();
+		
+		String sql = "SELECT `river_id`, `account_id`, `collaborator_active`, `read_only` FROM `river_collaborators` WHERE `river_id` = ? AND `account_id` = ?";
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L, 5L);
+		
+		assertEquals(false, results.get("collaborator_active"));
+		assertEquals(true, results.get("read_only"));
+	}
+	
+	@Test
+	public void testModifyCollaborator() {
+		RiverCollaborator collaborator = riverCollaboratorDao.findById(1L);
+		collaborator.setActive(false);
+		collaborator.setReadOnly(true);
+		riverDao.updateCollaborator(collaborator);
+		em.flush();
+		
+		String sql = "SELECT `river_id`, `account_id`, `collaborator_active`, `read_only` FROM `river_collaborators` WHERE `id` = ?";
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L);
+		
+		assertEquals(false, results.get("collaborator_active"));
+		assertEquals(true, results.get("read_only"));
 	}
 
 	@Test

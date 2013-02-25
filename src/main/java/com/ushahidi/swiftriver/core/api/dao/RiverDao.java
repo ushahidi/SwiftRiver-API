@@ -66,7 +66,7 @@ public interface RiverDao extends GenericDao<River> {
 	 * @return {@link RiverCollaborator}
 	 */
 	public RiverCollaborator findCollaborator(Long riverId, Long accountId);
-
+	
 	/**
 	 * Adds a collaborator to a river
 	 * @param river
@@ -82,15 +82,6 @@ public interface RiverDao extends GenericDao<River> {
 	 * @param collaborator
 	 */
 	public void updateCollaborator(RiverCollaborator collaborator);
-
-	/**
-	 * Removes the {@link Account} with id <code>accountId</code>
-	 * from the list of collaborators on river with id <code>id</code>
-	 * 
-	 * @param id
-	 * @param accountId
-	 */
-	public void deleteCollaborator(Long id, Long accountId);
 
 	/**
 	 * Deletes the drop specified by 
