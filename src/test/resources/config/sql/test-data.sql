@@ -72,7 +72,7 @@ INSERT INTO `accounts` (`id`, `user_id`, `account_path`, `account_private`, `acc
 -- -----------------------------------------------------
 -- Data for table `account_followers`
 -- -----------------------------------------------------
-INSERT INTO `account_followers` (`account_id`, `follower_id`, `date_added`) VALUES
+INSERT INTO `account_followers` (`account_id`, `follower_id`, `follower_date_add`) VALUES
 (3, 4, '2013-01-02 00:00:03'),
 (3, 5, '2013-01-02 00:00:04'),
 (5, 3, '2013-01-02 00:00:02');

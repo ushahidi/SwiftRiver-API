@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS `account_followers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `follower_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `follower_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`,`follower_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Track followers';
