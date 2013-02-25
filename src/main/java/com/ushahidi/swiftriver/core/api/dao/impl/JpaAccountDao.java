@@ -92,8 +92,8 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 
 		List<Account> accounts = null;
 		try {
-			accounts = em.createQuery(sql)
-					.setParameter("q", query + "%").getResultList();
+			accounts = em.createQuery(sql).setParameter("q", query + "%")
+					.setMaxResults(10).getResultList();
 		} catch (NoResultException e) {
 			// Do nothing;
 		}
