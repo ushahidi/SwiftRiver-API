@@ -15,7 +15,8 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,10 +27,12 @@ import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.ushahidi.swiftriver.core.api.controller.AccountsController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.User;
 
 public class AccountServiceTest {
@@ -49,8 +52,8 @@ public class AccountServiceTest {
 		account = new Account();
 		account.setId(13);
 		account.setOwner(new User());
-		account.setFollowers(new ArrayList<Account>());
-		account.setFollowing(new ArrayList<Account>());
+		account.setFollowers(new ArrayList<AccountFollower>());
+		account.setFollowing(new ArrayList<AccountFollower>());
 		
 		getAccountDTO = new GetAccountDTO();
 		
@@ -99,4 +102,5 @@ public class AccountServiceTest {
 		verify(mockedMapper).map(account, GetAccountDTO.class);
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
+	
 }

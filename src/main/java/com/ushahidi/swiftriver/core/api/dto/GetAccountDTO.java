@@ -46,12 +46,6 @@ public class GetAccountDTO {
 	@JsonProperty("following_count")
 	private int followingCount;
 	
-	@JsonProperty("is_collaborator")
-	private boolean collaborator;
-	
-	@JsonProperty("is_following")
-	private boolean isFollower;
-
 	private Owner owner;
 	
 	private List<River> rivers;
@@ -508,22 +502,6 @@ public class GetAccountDTO {
 
 	public void setAccountPrivate(boolean accountPrivate) {
 		this.accountPrivate = accountPrivate;
-	}
-
-	public boolean isCollaborator() {
-		return collaborator;
-	}
-
-	public void setCollaborator(boolean collaborator) {
-		this.collaborator = collaborator;
-	}
-
-	public boolean isFollower() {
-		return isFollower;
-	}
-
-	public void setFollower(boolean isFollower) {
-		this.isFollower = isFollower;
 	}
 
 	public List<Bucket> getCollaboratingBuckets() {

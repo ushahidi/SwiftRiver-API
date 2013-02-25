@@ -41,4 +41,35 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param decrement
 	 */
 	public void decreaseRiverQuota(Account account, int decrement);
+
+	/**
+	 * Gets the {@link Account} record with the id in <code>accountId</code>
+	 * from the list of followers from the {@link Account} specified in
+	 * <code>account</code>
+	 * 
+	 * @param account
+	 * @param accountId
+	 * @return {@link Account}
+	 */
+	public Account getFollower(Account account, Long accountId);
+	
+	/**
+	 * Adds the {@link Account} specified in <code>follower</code>
+	 * to the list of followers for the {@link Account} specified
+	 * in <code>account</code>
+	 * 
+	 * @param account
+	 * @param follower
+	 */
+	public void addFollower(Account account, Account follower);
+
+	/**
+	 * Removes the {@link Account} specified in <code>follower</code>
+	 * from the list of followers for {@link Account} specified in
+	 * <code>account</code>
+	 * 
+	 * @param account
+	 * @param follower
+	 */
+	public boolean deleteFollower(Account account, Account follower);
 }

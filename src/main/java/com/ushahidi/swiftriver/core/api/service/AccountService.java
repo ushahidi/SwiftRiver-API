@@ -14,6 +14,9 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +25,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.AccountFollower;
 
 @Transactional(readOnly = true)
 @Service
@@ -117,5 +123,117 @@ public class AccountService {
 		accountDTO.setFollowingCount(account.getFollowing().size());
 		
 		return accountDTO;
-	}	
+	}
+
+	/**
+	 * Gets and returns the list of {@link Account} entities that are
+	 * following the {@Account} specified in <code>id</code>. <code>accountId</code>
+	 * is an optional parameter and when specified, verifies whether the {@link Account}
+	 * with that id (<code>accountId</code>) is a follower
+	 * 
+	 * @param id
+	 * @param accountId
+	 * @return {@link java.util.List}
+	 */
+	@Transactional
+	public List<FollowerDTO> getFollowers(Long id, Long accountId) {
+		Account account = getAccount(id);
+
+		if (account == null) {
+			throw new NotFoundException(String.format("Account %d does not exist", id));
+		}
+
+		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
+		if (accountId == null) {
+			for (AccountFollower accountFollower: account.getFollowers()) {
+				followers.add(mapFollowerDTO(accountFollower.getFollower()));
+			}
+		} else {
+			Account follower = accountDao.getFollower(account, accountId);
+			if (follower == null) {
+				throw new NotFoundException(String.format("Account %d does not follow %d",
+						accountId, id));
+			}
+			
+			followers.add(mapFollowerDTO(follower));
+		}
+		
+		return followers;
+	}
+
+	/**
+	 * Converts the given {@link Account} to a {@link FollowerDTO}
+	 * 
+	 * @param account
+	 * @return
+	 */
+	private FollowerDTO mapFollowerDTO(Account account) {
+		FollowerDTO followerDTO = new FollowerDTO();
+
+		followerDTO.setId(account.getId());
+		followerDTO.setAccountPath(account.getAccountPath());
+		followerDTO.setEmail(account.getOwner().getEmail());
+		followerDTO.setName(account.getOwner().getName());
+		followerDTO.setFollowerCount(account.getFollowers().size());
+		followerDTO.setFollowingCount(account.getFollowing().size());
+
+		return followerDTO;
+	}
+
+	/**
+	 * Adds the {@link Account} with the specified <code>accountId</code> to
+	 * the list of followers for the {@link Account} specified in <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@Transactional
+	public void addFollower(Long id, Long accountId) {
+		if (id.equals(accountId)) {
+			throw new BadRequestException("An account cannot follow itself");
+		}
+
+		Account account = getAccount(id);
+		
+		if (accountDao.getFollower(account, accountId) != null) {
+			throw new BadRequestException(String.format("Account %d is already following account %d",
+					accountId, id));
+		}
+		
+		Account follower = getAccount(accountId);
+		accountDao.addFollower(account, follower);
+	}
+
+	/**
+	 * Internal helper method for retrieving a {@link Account} entity
+	 * using its  unique database ID
+	 * 
+	 * @param accountId
+	 * @return
+	 */
+	private Account getAccount(Long accountId) {
+		Account account = accountDao.findById(accountId);
+		if (account == null) {
+			throw new NotFoundException("The requested account account does not exist");
+		}
+		
+		return account;
+	}
+
+	/**
+	 * Deletes the {@link Account} specified in <code>accountId</code> from
+	 * the list of followers for the {@link Account} specified in <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@Transactional
+	public void deleteFollower(Long id, Long accountId) {
+		Account account = getAccount(id);
+		if (!accountDao.deleteFollower(account, getAccount(accountId))) {
+			throw new NotFoundException(String.format("Account %d does not follow account %d",
+					accountId, id));
+		}
+	}
+
 }

@@ -1,8 +1,16 @@
 /**
- * The contents of this file are subject to the Affero General
- * Public License (AGPL) Version 3; you may not use this file 
- * except in compliance with the License. You may obtain a copy
- * of the License at http://www.gnu.org/licenses/agpl.html
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
@@ -61,13 +69,12 @@ public class Account {
 	@JoinColumn(name = "user_id")
 	private User owner;
 	
-	@OneToMany(cascade=CascadeType.ALL)
-	@JoinTable(name="account_followers", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="follower_id"))
-	private List<Account> followers;
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+	private List<AccountFollower> followers;
 	
 	@OneToMany(cascade=CascadeType.ALL)
-	@JoinTable(name="account_followers", joinColumns = @JoinColumn(name="follower_id"), inverseJoinColumns = @JoinColumn(name="account_id"))
-	private List<Account> following;
+	@JoinColumn(name="follower_id")
+	private List<AccountFollower> following;
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
 	private List<River> rivers;
@@ -210,19 +217,19 @@ public class Account {
 		this.collaboratingBuckets = collaboratingBuckets;
 	}
 
-	public List<Account> getFollowers() {
+	public List<AccountFollower> getFollowers() {
 		return followers;
 	}
 
-	public void setFollowers(List<Account> followers) {
+	public void setFollowers(List<AccountFollower> followers) {
 		this.followers = followers;
 	}
 
-	public List<Account> getFollowing() {
+	public List<AccountFollower> getFollowing() {
 		return following;
 	}
 
-	public void setFollowing(List<Account> following) {
+	public void setFollowing(List<AccountFollower> following) {
 		this.following = following;
 	}
 

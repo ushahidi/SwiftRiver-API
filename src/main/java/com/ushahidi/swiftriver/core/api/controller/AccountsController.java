@@ -15,6 +15,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.AccountService;
@@ -107,17 +109,35 @@ public class AccountsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
+	/**
+	 * Add a follower to an account
+	 * 
+	 * @param body
+	 * @param id
+	 */
+	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account addFollower(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void addFollower(@PathVariable Long id, @PathVariable Long accountId) {
+		accountService.addFollower(id, accountId);
 	}
 
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getFollowers(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public List<FollowerDTO> getFollowers(@PathVariable Long id,
+			@RequestParam(value = "follower", required = false) Long accountId) {
+		return accountService.getFollowers(id, accountId);
+	}
+	
+	/**
+	 * Handles deletion of an account from the list of followers
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@RequestMapping(value = "{id}/followers/{accountId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteFollower(@PathVariable Long id, @PathVariable Long accountId) {
+		accountService.deleteFollower(id, accountId);
 	}
 
 	@RequestMapping(value = "/{id}/following", method = RequestMethod.GET)
