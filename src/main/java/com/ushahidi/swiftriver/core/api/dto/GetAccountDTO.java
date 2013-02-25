@@ -346,6 +346,8 @@ public class GetAccountDTO {
         
         private String username;
         
+        private String avatar;
+        
         @JsonProperty("date_added")
         private String createdDate;
 
@@ -379,6 +381,14 @@ public class GetAccountDTO {
 
 		public void setCreatedDate(String createdDate) {
 			this.createdDate = createdDate;
+		}
+
+		public String getAvatar() {
+			return avatar;
+		}
+
+		public void setAvatar(String avatar) {
+			this.avatar = avatar;
 		}
     }
 

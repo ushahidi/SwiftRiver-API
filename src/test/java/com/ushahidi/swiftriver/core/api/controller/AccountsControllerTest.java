@@ -88,6 +88,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.owner.name").value("User 1"))
 				.andExpect(jsonPath("$.owner.email").value("user1@myswiftriver.com"))
 				.andExpect(jsonPath("$.owner.username").value("user1"))
+				.andExpect(jsonPath("$.owner.avatar").value("https://secure.gravatar.com/avatar/373329f529512d8898e8a8aeea3a7675?s=80&d=mm&r=g"))
 				.andExpect(jsonPath("$.rivers").exists())
 				.andExpect(jsonPath("$.rivers[0].id").exists())
 				.andExpect(jsonPath("$.rivers[0].name").exists())
