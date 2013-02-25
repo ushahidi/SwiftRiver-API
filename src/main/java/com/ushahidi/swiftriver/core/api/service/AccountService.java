@@ -67,13 +67,11 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException 
 	 */
-	public GetAccountDTO getAccountById(Long id) throws NotFoundException {
-		Account account = accountDao.findById(id);
+	public GetAccountDTO getAccountById(Long id, String queryingUsername) throws NotFoundException {
+		Account account = getAccount(id);
 		
-		if (account == null) {
-			throw new NotFoundException(String.format("Account not found", id));
-		}
-		
+		Account queryingAccount = accountDao.findByUsername(queryingUsername);
+		accountDao.populateAssets(account, queryingAccount);
 		return mapGetAccountDTO(account);
 	}
 
@@ -101,13 +99,15 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException 
 	 */
-	public GetAccountDTO getAccountByName(String accountPath) throws NotFoundException {
-		Account account = accountDao.findByName(accountPath);
+	public GetAccountDTO getAccountByName(String accountPath, String queryingUsername) throws NotFoundException {
+		Account account = accountDao.findByAccountPath(accountPath);
 		
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
 		
+		Account queryingAccount = accountDao.findByUsername(queryingUsername);
+		accountDao.populateAssets(account, queryingAccount);
 		return mapGetAccountDTO(account);
 	}
 	

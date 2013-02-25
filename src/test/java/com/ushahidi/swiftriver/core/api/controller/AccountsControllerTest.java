@@ -31,7 +31,8 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getAccountById() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts/1"))
+				.perform(get("/v1/accounts/1")
+						.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -41,14 +42,16 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getAccountByNonExistentId() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts/9999"))
+				.perform(get("/v1/accounts/9999")
+						.principal(getAuthentication("user1")))
 				.andExpect(status().isNotFound());
 	}
 	
 	@Test
 	public void getAccountByName() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts?account_path=user1"))
+				.perform(get("/v1/accounts?account_path=user1")
+						.principal(getAuthentication("admin")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))

@@ -98,4 +98,13 @@ public interface RiverDao extends GenericDao<River> {
 	 * @return
 	 */
 	public boolean removeDrop(Long id, Long dropId);
+
+	/**
+	 * Gets and returns a {@link List} of all {@link River} entities
+	 * whose id is in the {@link List} specified by <code><riverIds/code>
+	 * 
+	 * @param roverIds
+	 * @return
+	 */
+	public List<River> findAll(List<Long> riverIds);
 }

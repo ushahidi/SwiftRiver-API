@@ -27,7 +27,6 @@ import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.ushahidi.swiftriver.core.api.controller.AccountsController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -60,7 +59,7 @@ public class AccountServiceTest {
 		mockedAccountDao = mock(AccountDao.class);		
 		when(mockedAccountDao.findById(anyLong())).thenReturn(account);
 		when(mockedAccountDao.findByUsername(anyString())).thenReturn(account);
-		when(mockedAccountDao.findByName(anyString())).thenReturn(account);
+		when(mockedAccountDao.findByAccountPath(anyString())).thenReturn(account);
 		
 		mockedMapper = mock(Mapper.class);
 		when(mockedMapper.map(account, GetAccountDTO.class)).thenReturn(getAccountDTO);
@@ -72,7 +71,7 @@ public class AccountServiceTest {
 
 	@Test
 	public void findById() throws NotFoundException {
-		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13L);
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13L, "admin");
 
 		verify(mockedAccountDao).findById(13L);
 		assertEquals(getAccountDTO, actualGetAccountDTO);
@@ -88,9 +87,9 @@ public class AccountServiceTest {
 	
 	@Test
 	public void findByName() throws NotFoundException {
-		GetAccountDTO actualGetAccountDTO = accountService.getAccountByName("default");
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountByName("default", "user1");
 
-		verify(mockedAccountDao).findByName("default");
+		verify(mockedAccountDao).findByAccountPath("default");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 

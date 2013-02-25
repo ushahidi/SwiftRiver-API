@@ -45,7 +45,7 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 
 	@Test
 	public void findByName() {
-		Account account = accountDao.findByName("default");
+		Account account = accountDao.findByAccountPath("default");
 
 		assertNotNull(account);
 		assertEquals(1, account.getId());
@@ -53,7 +53,7 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 
 	@Test
 	public void findByNonExistentName() {
-		Account account = accountDao.findByName("chris");
+		Account account = accountDao.findByAccountPath("chris");
 
 		assertNull(account);
 	}

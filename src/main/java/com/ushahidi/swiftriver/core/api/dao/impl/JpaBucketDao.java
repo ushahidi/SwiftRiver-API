@@ -254,4 +254,15 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		return results.isEmpty() ? null : results.get(0);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findAll(java.util.List)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Bucket> findAll(List<Long> bucketIds) {
+		return (List<Bucket>) em.createQuery("FROM Bucket WHERE id IN :bucketIds")
+				.setParameter("bucketIds", bucketIds)
+				.getResultList();
+	}
+
 }

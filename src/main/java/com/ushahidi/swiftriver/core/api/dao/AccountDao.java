@@ -32,7 +32,7 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param accountPath
 	 * @return
 	 */
-	public Account findByName(String accountPath);
+	public Account findByAccountPath(String accountPath);
 	
 	/**
 	 * Reduce an account's quota by the given decrement
@@ -72,4 +72,14 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param follower
 	 */
 	public boolean deleteFollower(Account account, Account follower);
+
+	/**
+	 * Populates the list of assets for the {@link Account} specified in
+	 * <code>account</code> that the {@link Account} specified in
+	 * <code>queryingAccount</code> has access to.
+	 * 
+	 * @param account
+	 * @param queryingAccount
+	 */
+	public void populateAssets(Account account, Account queryingAccount);
 }

@@ -111,4 +111,13 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public Bucket findBucketByName(Account account, String bucketName);
 
+	/**
+	 * Gets and returns a {@link List} of all {@link Bucket} entities
+	 * whose id is in the {@link List} specified by <code><bucketIds/code>
+	 * 
+	 * @param bucketIds
+	 * @return
+	 */
+	public List<Bucket> findAll(List<Long> bucketIds);
+
 }

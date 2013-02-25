@@ -64,8 +64,8 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public GetAccountDTO getAccountById(@PathVariable Long id) throws NotFoundException {
-		return accountService.getAccountById(id);
+	public GetAccountDTO getAccountById(@PathVariable Long id, Principal principal) throws NotFoundException {
+		return accountService.getAccountById(id, principal.getName());
 	}
 	
 	/**
@@ -77,8 +77,9 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params="account_path")
 	@ResponseBody
-	public GetAccountDTO getAccountByName(@RequestParam("account_path") String accountPath) throws NotFoundException {
-		return accountService.getAccountByName(accountPath);
+	public GetAccountDTO getAccountByName(@RequestParam("account_path") String accountPath,
+			Principal principal) throws NotFoundException {
+		return accountService.getAccountByName(accountPath, principal.getName());
 	}
 
 	/**
