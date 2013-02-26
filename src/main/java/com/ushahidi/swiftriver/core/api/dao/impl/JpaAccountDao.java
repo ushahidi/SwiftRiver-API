@@ -23,7 +23,6 @@ import java.util.List;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -33,6 +32,8 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.River;
 
 @Repository
 public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao {
@@ -136,14 +137,13 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#populateAssets(com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Account)
 	 */
-	public void populateAssets(Account account, Account queryingAccount) {
-		populateRivers(account, queryingAccount);
-		populateBuckets(account, queryingAccount);
+	public void populateAssets(Account targetAccount, Account queryingAccount) {
+		populateRivers(targetAccount, queryingAccount);
+		populateBuckets(targetAccount, queryingAccount);
 		
 	}
 
-	@SuppressWarnings("unchecked")
-	private void populateBuckets(Account account, Account queryingAccount) {
+	private void populateBuckets(Account targetAccount, Account queryingAccount) {
 		// Query to fetch the bucket ids
 		String sql = "SELECT `buckets`.`id` AS `id` ";
 		sql += "FROM `buckets` " ;
@@ -158,7 +158,7 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 		sql += "AND `bucket_collaborators`.`account_id` = :collaborator_account_id ";
 		
 		Query query = em.createNativeQuery(sql);
-		query.setParameter("account_id", account.getId());
+		query.setParameter("account_id", targetAccount.getId());
 		query.setParameter("collaborator_account_id", queryingAccount.getId());
 		
 		List<Long> bucketIds = new ArrayList<Long>();
@@ -167,12 +167,13 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 			bucketIds.add(bucketId);
 		}
 		
-		if (!bucketIds.isEmpty()) {
-			account.setBuckets(bucketDao.findAll(bucketIds));
-		}
+		List<Bucket> accountBuckets = bucketIds.isEmpty() 
+				? new ArrayList<Bucket>() :bucketDao.findAll(bucketIds);
+
+		targetAccount.setBuckets(accountBuckets);
 	}
 
-	private void populateRivers(Account account, Account queryingAccount) {
+	private void populateRivers(Account targetAccount, Account queryingAccount) {
 		// Query to fetch the river ids
 		String sql = "SELECT `rivers`.`id` AS `id` ";
 		sql += "FROM `rivers` " ;
@@ -187,7 +188,7 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 		sql += "AND `river_collaborators`.`account_id` = :collaborator_account_id ";
 		
 		Query query = em.createNativeQuery(sql);
-		query.setParameter("account_id", account.getId());
+		query.setParameter("account_id", targetAccount.getId());
 		query.setParameter("collaborator_account_id", queryingAccount.getId());
 		
 		List<Long> riverIds = new ArrayList<Long>();
@@ -196,8 +197,9 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 			riverIds.add(riverId);
 		}
 		
-		if (!riverIds.isEmpty()) {
-			account.setRivers(riverDao.findAll(riverIds));
-		}
+		List<River> accountRivers = riverIds.isEmpty()
+				? new ArrayList<River>() : riverDao.findAll(riverIds);
+
+		targetAccount.setRivers(accountRivers);
 	}
 }

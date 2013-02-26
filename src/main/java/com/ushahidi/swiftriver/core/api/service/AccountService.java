@@ -139,10 +139,6 @@ public class AccountService {
 	public List<FollowerDTO> getFollowers(Long id, Long accountId) {
 		Account account = getAccount(id);
 
-		if (account == null) {
-			throw new NotFoundException(String.format("Account %d does not exist", id));
-		}
-
 		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
 		if (accountId == null) {
 			for (AccountFollower accountFollower: account.getFollowers()) {
@@ -214,7 +210,7 @@ public class AccountService {
 	private Account getAccount(Long accountId) {
 		Account account = accountDao.findById(accountId);
 		if (account == null) {
-			throw new NotFoundException("The requested account account does not exist");
+			throw new NotFoundException(String.format("Account %d does not exist", accountId));
 		}
 		
 		return account;

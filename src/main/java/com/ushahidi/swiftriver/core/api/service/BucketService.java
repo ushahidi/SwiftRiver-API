@@ -366,7 +366,7 @@ public class BucketService {
 	 * @param accountId
 	 * @param username
 	 */
-	@Transactional(readOnly = false)
+	@Transactional
 	public void addFollower(long id, long accountId, String username) {
 		Bucket bucket = getBucketById(id);
 		
@@ -383,9 +383,8 @@ public class BucketService {
 
 		// Is the account already following the bucket
 		if (bucket.getFollowers().contains(account)) {
-			LOG.error(String.format("%s  is already following bucket %d", 
+			throw new BadRequestException(String.format("%s  is already following bucket %d", 
 					accountId, id));
-			throw new BadRequestException();
 		}
 		
 		bucket.getFollowers().add(account);
@@ -395,26 +394,52 @@ public class BucketService {
 
 	/**
 	 * Gets and returns the list of followers for the {@link Bucket}
-	 * with the specified <code>id</code>
+	 * with the specified <code>id</code>. If <code>accountId</code>
+	 * is specified, checks if the {@link Account} associated with
+	 * that id is following the bucket
 	 * 
 	 * @param id
+	 * @param accountId
 	 * @return {@link List<AccountDTO>}
 	 */
-	public List<FollowerDTO> getFollowers(Long id) {
+	@Transactional
+	public List<FollowerDTO> getFollowers(Long id, Long accountId) {
 		Bucket bucket = getBucketById(id);
-		
+
 		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
-		for (Account account: bucket.getFollowers()) {
-			FollowerDTO dto = mapper.map(account, FollowerDTO.class);
-			
-			// Set the name and email address
-			dto.setName(account.getOwner().getName());
-			dto.setEmail(account.getOwner().getEmail());
-			
-			followers.add(dto);
+
+		// Has the accountId parameter been specified
+		if (accountId != null) {
+			Account follower = accountDao.findById(accountId);
+			if (follower == null) {
+				throw new NotFoundException(String.format("The account %d does not exist",
+						accountId));
+			}
+
+			if (bucket.getFollowers().contains(follower)) {
+				followers.add(mapFollowerDTO(follower));
+			} else {
+				throw new NotFoundException(String.format("Account %d does not follow bucket %d",
+						accountId, id));
+			}
+		} else {
+
+			for (Account account: bucket.getFollowers()) {
+				followers.add(mapFollowerDTO(account));
+			}
 		}
 		
 		return followers;
+	}
+
+	private FollowerDTO mapFollowerDTO(Account account) {
+		FollowerDTO dto = mapper.map(account, FollowerDTO.class);
+
+		// Set the name and email address
+		dto.setName(account.getOwner().getName());
+		dto.setEmail(account.getOwner().getEmail());
+		
+		return dto;
 	}
 
 	/**
@@ -425,17 +450,23 @@ public class BucketService {
 	 * @param id
 	 * @param accountId
 	 */
-	@Transactional(readOnly = false)
+	@Transactional
 	public void deleteFollower(Long id, Long accountId) {
 		Bucket bucket = getBucketById(id);
 		
 		Account account = accountDao.findById(accountId);
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(String.format("Account %d does not exist", accountId));
 		}
 
-		bucket.getFollowers().remove(account);
-		bucketDao.update(bucket);
+		// Does the account exist as a follower?
+		if (bucket.getFollowers().contains(account)) {
+			bucket.getFollowers().remove(account);
+			bucketDao.update(bucket);
+		} else {
+			throw new NotFoundException(String.format("Account %d does not follow bucket %d",
+					accountId, id));
+		}
 	}
 
 	/**
@@ -529,7 +560,7 @@ public class BucketService {
 	private Bucket getBucketById(long id) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(String.format("Bucket %d does not exist", id));
 		}
 		
 		return bucket;

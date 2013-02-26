@@ -75,11 +75,11 @@ public interface AccountDao extends GenericDao<Account> {
 
 	/**
 	 * Populates the list of assets for the {@link Account} specified in
-	 * <code>account</code> that the {@link Account} specified in
+	 * <code>targetAccount</code> that the {@link Account} specified in
 	 * <code>queryingAccount</code> has access to.
 	 * 
-	 * @param account
+	 * @param targetAccount
 	 * @param queryingAccount
 	 */
-	public void populateAssets(Account account, Account queryingAccount);
+	public void populateAssets(Account targetAccount, Account queryingAccount);
 }

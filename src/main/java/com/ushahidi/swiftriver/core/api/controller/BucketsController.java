@@ -166,8 +166,9 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
-	public List<FollowerDTO> getFollowers(@PathVariable Long id) {
-		return bucketService.getFollowers(id);
+	public List<FollowerDTO> getFollowers(@PathVariable Long id,
+			@RequestParam(value = "follower", required = false) Long accountId) {
+		return bucketService.getFollowers(id, accountId);
 	}
 
 	/**
