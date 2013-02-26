@@ -176,12 +176,7 @@ public class RiverService {
 	 * @throws NotFoundException
 	 */
 	public GetRiverDTO getRiverById(Long id) throws NotFoundException {
-		River river = riverDao.findById(id);
-
-		if (river == null) {
-			throw new NotFoundException(String.format(
-					"River with id %d not found", id));
-		}
+		River river = getRiver(id);
 
 		return mapper.map(river, GetRiverDTO.class);
 	}
@@ -195,11 +190,7 @@ public class RiverService {
 	 */
 	public GetChannelDTO createChannel(Long riverId,
 			CreateChannelDTO createChannelTO) {
-		River river = riverDao.findById(riverId);
-
-		if (river == null) {
-			throw new NotFoundException("River not found");
-		}
+		River river = getRiver(riverId);
 
 		Channel channel = mapper.map(createChannelTO, Channel.class);
 		channel.setRiver(river);
@@ -265,12 +256,11 @@ public class RiverService {
 	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
 			int page, int dropCount, String username) throws NotFoundException {
 
-		Account queryingAccount = accountDao.findByUsername(username);
-		River river = riverDao.findById(id);
-
-		if (river == null) {
-			throw new NotFoundException("River not found");
+		if (riverDao.findById(id) == null) {
+			throw new NotFoundException(String.format("River %d does not exist", id));
 		}
+
+		Account queryingAccount = accountDao.findByUsername(username);
 
 		List<Drop> drops = null;
 		if (sinceId != null) {
@@ -300,12 +290,7 @@ public class RiverService {
 	 */
 	@Transactional(readOnly = false)
 	public boolean deleteRiver(Long id) {
-		River river = riverDao.findById(id);
-
-		// Throw exception if the river doesn't exist
-		if (river == null) {
-			throw new NotFoundException("River not found");
-		}
+		River river = getRiver(id);
 
 		// Delete the river
 		riverDao.delete(river);
@@ -314,10 +299,7 @@ public class RiverService {
 
 	@Transactional
 	public List<GetCollaboratorDTO> getCollaborators(Long riverId) throws NotFoundException {
-		River river = riverDao.findById(riverId);
-		if (river == null) {
-			throw new NotFoundException("River not found");
-		}
+		River river = getRiver(riverId);
 
 		List<GetCollaboratorDTO> collaborators = new ArrayList<GetCollaboratorDTO>();
 
@@ -348,10 +330,7 @@ public class RiverService {
 			throws NotFoundException,BadRequestException {
 
 		// Check if the bucket exists
-		River river = riverDao.findById(riverId);
-		if (river == null) {
-			throw new NotFoundException();
-		}
+		River river = getRiver(riverId);
 
 		// Is the account already collaborating on the river
 		if (riverDao.findCollaborator(riverId, body.getId()) != null) {
@@ -411,18 +390,15 @@ public class RiverService {
 	 * Adds a follower to the specified river
 	 * 
 	 * @param id
-	 * @param body
+	 * @param accountId
 	 * @return
 	 */
 	@Transactional
-	public void addFollower(Long id, FollowerDTO body) {
+	public void addFollower(Long id, Long accountId) {
 		// Does the river exist?
-		River river = riverDao.findById(id);
-		if (river == null) {
-			throw new NotFoundException("River not found");
-		}
+		River river = getRiver(id);
 
-		Account account = accountDao.findById(body.getId());
+		Account account = accountDao.findById(accountId);
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
@@ -435,30 +411,57 @@ public class RiverService {
 	/**
 	 * Gets and returns a list of {@link Account} entities that are following
 	 * the river identified by <code>id</code>. The entities are transformed to
-	 * DTO for purposes of consumption by {@link RiversController}
+	 * DTO for purposes of consumption by {@link RiversController}.
+	 * 
+	 * <code>accountId</code> can be null. When specified, the method verifies
+	 * that the {@link Account} associated with it is following the river.
+	 * If following, the return list contains only a single {@link FollowerDTO}
+	 * object else, a {@link NotFoundException} is thrown 
 	 * 
 	 * @param id
+	 * @param accountId
 	 * @return
 	 */
 	@Transactional
-	public List<FollowerDTO> getFollowers(Long id) {
-		River river = riverDao.findById(id);
-
-		// Does the river exist?
-		if (river == null) {
-			throw new NotFoundException("River not found");
-		}
+	public List<FollowerDTO> getFollowers(Long id, Long accountId) {
+		River river = getRiver(id);
 
 		List<FollowerDTO> followerList = new ArrayList<FollowerDTO>();
-		for (Account account : river.getFollowers()) {
-			FollowerDTO accountDto = mapper.map(account, FollowerDTO.class);
-			accountDto.setName(account.getOwner().getName());
-			accountDto.setEmail(account.getOwner().getEmail());
-
-			followerList.add(accountDto);
+		if (accountId != null) {
+			Account account = accountDao.findById(accountId);
+			if (account == null) {
+				throw new NotFoundException(String.format("Account %d does not exist", accountId));
+			}
+			
+			if (river.getFollowers().contains(account)) {
+				followerList.add(mapFollowerDTO(account));
+			} else {
+				throw new NotFoundException(String.format("Account %d does not follow river %d",
+						accountId, id));
+			}
+		} else {
+			for (Account account : river.getFollowers()) {
+				followerList.add(mapFollowerDTO(account));
+			}
 		}
 
 		return followerList;
+	}
+
+	/**
+	 * Helper method for transforming an {@link Account} entity
+	 * to a {@link FollowerDTO} object
+	 * 
+	 * @param account
+	 * @return
+	 */
+	private FollowerDTO mapFollowerDTO(Account account) {
+		FollowerDTO accountDto = mapper.map(account, FollowerDTO.class);
+
+		accountDto.setName(account.getOwner().getName());
+		accountDto.setEmail(account.getOwner().getEmail());
+		
+		return accountDto;
 	}
 
 	/**
@@ -471,10 +474,7 @@ public class RiverService {
 	@Transactional
 	public void deleteFollower(Long riverId, Long accountId) {
 		// Load the river and check if it exists
-		River river = riverDao.findById(riverId);
-		if (river == null) {
-			throw new NotFoundException("River not found");
-		}
+		River river = getRiver(riverId);
 
 		// Load the account and check if it exists
 		Account account = accountDao.findById(accountId);
@@ -501,6 +501,16 @@ public class RiverService {
 	public boolean isOwner(River river, Account account) {
 		return river.getAccount() == account
 				|| account.getCollaboratingRivers().contains(river);
+	}
+
+	private River getRiver(Long id) {
+		River river = riverDao.findById(id);
+		if (river == null) {
+			throw new NotFoundException(String.format(
+					"River with id %d not found", id));
+		}
+		
+		return river;
 	}
 
 	/**

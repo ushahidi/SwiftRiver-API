@@ -193,6 +193,7 @@ public class RiversController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id,
 			@PathVariable Long collaboratorId) {
 		riverService.deleteCollaborator(id, collaboratorId);
@@ -204,9 +205,10 @@ public class RiversController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
-	public void addFollower(@RequestBody FollowerDTO body, @PathVariable Long id) {
-		riverService.addFollower(id, body);
+	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public void addFollower(@PathVariable Long id, @PathVariable Long accountId) {
+		riverService.addFollower(id, accountId);
 	}
 
 	/**
@@ -217,8 +219,9 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
-	public List<FollowerDTO> getFollowers(@PathVariable Long id) {
-		return riverService.getFollowers(id);
+	public List<FollowerDTO> getFollowers(@PathVariable Long id,
+			@RequestParam(value = "follower", required = false) Long accountId) {
+		return riverService.getFollowers(id, accountId);
 	}
 
 	/**
@@ -228,6 +231,7 @@ public class RiversController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/followers/{followerId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteFollower(@PathVariable Long id,
 			@PathVariable Long followerId) {
 		riverService.deleteFollower(id, followerId);
