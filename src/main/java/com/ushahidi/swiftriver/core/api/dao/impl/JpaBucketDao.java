@@ -39,6 +39,8 @@ import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 /**
  * Repository class for buckets
@@ -53,6 +55,32 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	
 	@Autowired
 	private DropDao dropDao;
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.
+	 * lang.Object)
+	 */
+	@Override
+	public Bucket create(Bucket bucket) {
+		bucket.setBucketNameCanonical(TextUtil.getURLSlug(bucket.getName()));
+		return super.create(bucket);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#update(java.
+	 * lang.Object)
+	 */
+	@Override
+	public Bucket update(Bucket bucket) {
+		bucket.setBucketNameCanonical(TextUtil.getURLSlug(bucket.getName()));
+		return super.update(bucket);
+	}
 
 	/*
 	 * (non-Javadoc)

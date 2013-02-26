@@ -46,6 +46,9 @@ public class Bucket {
 
 	@Column(name = "bucket_name", nullable = false)
 	private String name;
+	
+	@Column(name="bucket_name_canonical", nullable=false)
+	private String bucketNameCanonical;
 
 	@Column(name = "bucket_description")
 	private String description;
@@ -99,6 +102,14 @@ public class Bucket {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getBucketNameCanonical() {
+		return bucketNameCanonical;
+	}
+
+	public void setBucketNameCanonical(String bucketNameCanonical) {
+		this.bucketNameCanonical = bucketNameCanonical;
 	}
 
 	public String getDescription() {

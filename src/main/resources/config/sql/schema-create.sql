@@ -250,14 +250,15 @@ CREATE TABLE IF NOT EXISTS `buckets` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `bucket_name` varchar(255) NOT NULL DEFAULT '',
+  `bucket_name_canonical` VARCHAR(255) NOT NULL  DEFAULT '',
   `bucket_description` text,
-  `bucket_publish` tinyint(4) NOT NULL DEFAULT '0',
+  `bucket_publish` tinyint(1) NOT NULL DEFAULT '0',
   `default_layout` varchar(10) DEFAULT 'drops',
   `bucket_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `public_token` varchar(32),
   `drop_count` INT  NULL  DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name`),
+  UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name_canonical`),
   KEY `bucket_date_add_idx` (`bucket_date_add`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -16,12 +16,13 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,32 +41,57 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 	
 	@Autowired
 	private AccountDao accountDao;
+	
+	@PersistenceContext
+	protected EntityManager em;
 
 	/**
 	 * Tests that a bucket is successfully created and inserted
 	 * in the database
 	 */
 	@Test
-	@Transactional
-	public void testCreateBucket() {
+	public void createBucket() {
 		Account account = accountDao.findByUsername("user1");
 		Bucket bucket = new Bucket();
 
 		bucket.setName("Test Bucket Number 2");
+		bucket.setDescription("The Bucket's Description");
 		bucket.setPublished(true);
 		bucket.setAccount(account);
 		
 		bucketDao.create(bucket);
 		
-		assertTrue(bucket.getId() > 0);
-		assertEquals("Test Bucket Number 2", bucket.getName());
-		
 		assertNotNull(bucket.getId());
-		String sql = "SELECT bucket_name, account_id FROM `buckets` WHERE `id` = ?";
+		
+		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM `buckets` WHERE `id` = ?";
+		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, bucket.getId());
+		
+		assertEquals(BigInteger.valueOf(3L), (BigInteger)r.get("account_id"));
+		assertEquals("Test Bucket Number 2", (String)r.get("bucket_name"));
+		assertEquals("test-bucket-number-2", (String)r.get("bucket_name_canonical"));
+		assertEquals("The Bucket's Description", (String)r.get("bucket_description"));
+		assertTrue((Boolean)r.get("bucket_publish"));
+	}
+	
+	@Test
+	public void updateBucket() {
+		Bucket bucket = bucketDao.findById(1L);
+
+		bucket.setName("Renamed Bucket");
+		bucket.setDescription("Renamed Bucket's Description");
+		bucket.setPublished(false);
+		
+		bucketDao.update(bucket);
+		em.flush();
+		
+		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM `buckets` WHERE `id` = ?";
 		
 		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, bucket.getId());
-		assertEquals("Test Bucket Number 2", (String)r.get("bucket_name"));
 		assertEquals(BigInteger.valueOf(3L), (BigInteger)r.get("account_id"));
+		assertEquals("Renamed Bucket", (String)r.get("bucket_name"));
+		assertEquals("renamed-bucket", (String)r.get("bucket_name_canonical"));
+		assertEquals("Renamed Bucket's Description", (String)r.get("bucket_description"));
+		assertFalse((Boolean)r.get("bucket_publish"));
 	}
 	
 	/**

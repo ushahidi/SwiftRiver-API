@@ -117,8 +117,8 @@ INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `parameters
 -- -----------------------------------------------------
 -- Data for table `buckets`
 -- -----------------------------------------------------
-INSERT INTO `buckets` (`id`, `account_id`, `bucket_name`, `bucket_description`, `bucket_publish`, `bucket_date_add`, `drop_count`) VALUES 
-(1, 3, 'Bucket 1', 'A Bucket', 1, '2013-01-02 00:00:02', 13);
+INSERT INTO `buckets` (`id`, `account_id`, `bucket_name`, `bucket_name_canonical`, `bucket_description`, `bucket_publish`, `bucket_date_add`, `drop_count`) VALUES 
+(1, 3, 'Bucket 1', 'bucket-1', 'A Bucket', 1, '2013-01-02 00:00:02', 13);
 
 -- ------------------------------------
 -- Data for table `bucket_collaborators`
