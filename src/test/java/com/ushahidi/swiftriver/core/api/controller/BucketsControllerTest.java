@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -33,10 +34,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 
 public class BucketsControllerTest extends AbstractControllerTest {
 
@@ -129,58 +127,6 @@ public class BucketsControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(delete("/v1/buckets/5000")
 				.principal(authentication))
 			.andExpect(status().isNotFound());
-	}
-	
-	/**
-	 * Test for {@link BucketsController#addCollaborator(CreateCollaboratorDTO, Long)}
-	 * @throws Exception
-	 */
-	@Test
-	@Transactional
-	public void addCollaborator() throws Exception {
-//		CreateCollaboratorDTO collaborator = new CreateCollaboratorDTO();
-//		collaborator.setReadOnly(true);
-//		
-//		this.mockMvc.perform(post("/v1/buckets/1/collaborators")
-//				.accept(MediaType.APPLICATION_JSON)
-//				.contentType(MediaType.APPLICATION_JSON)
-//				.content(new ObjectMapper().writeValueAsBytes(collaborator))
-//				.principal(authentication))
-//			.andExpect(status().isOk())
-//			.andExpect(jsonPath("$.id").value(5))
-//			.andExpect(jsonPath("$.active").value(false))
-//			.andExpect(jsonPath("$.read_only").value(true));
-	}
-
-	/**
-	 * Test for {@link BucketsController#getCollaborators(Long)}
-	 * @throws Exception
-	 */
-	@Test
-	public void getCollaborators() throws Exception {
-		this.mockMvc.perform(get("/v1/buckets/1/collaborators"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.[*]").isArray());
-	}
-
-	/**
-	 * Test for {@link BucketsController#modifyCollaborator(GetCollaboratorDTO, Long, Long)}
-	 * @throws Exception
-	 */
-	@Test
-	@Transactional
-	public void modifyCollaborator() throws Exception {
-		ModifyCollaboratorDTO collaborator = new ModifyCollaboratorDTO();
-		collaborator.setActive(true);
-		collaborator.setReadOnly(false);
-
-		this.mockMvc.perform(put("/v1/buckets/1/collaborators/3")
-				.accept(MediaType.APPLICATION_JSON)
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(new ObjectMapper().writeValueAsBytes(collaborator))
-				.principal(authentication))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.read_only").value(false));
 	}
 	
 	/**
@@ -278,5 +224,192 @@ public class BucketsControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(put("/v1/buckets/1/drops/10")
 				.principal(authentication))
 		.andExpect(status().isOk());
+	}
+	
+	/**
+	 * Test for {@link RiversController#getCollaborators(Long)}
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getCollaborators() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/buckets/1/collaborators"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$").value(hasSize(2)))
+				.andExpect(jsonPath("$[1].id").value(2))
+				.andExpect(jsonPath("$[1].active").value(true))
+				.andExpect(jsonPath("$[1].read_only").value(true))
+				.andExpect(jsonPath("$[1].account.id").value(4))
+				.andExpect(jsonPath("$[1].account.account_path").value("user2"))
+				.andExpect(jsonPath("$[1].account.owner.name").value("User 2"))
+				.andExpect(
+						jsonPath("$[1].account.owner.avatar")
+								.value("https://secure.gravatar.com/avatar/ee8ce7cae1c9d064b9a2c049ce4a1071?s=80&d=mm&r=g"));
+	}
+
+	@Test
+	public void getUnknownCollaboratorsFromNonExistentRiver() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/9999/collaborators")).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void addCollaboratorToNonExistentRiver() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				post("/v1/buckets/1234/collaborators").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void addCollaboratorWithoutPermission() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				post("/v1/buckets/1/collaborators").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void addCollaboratorWithMissingAccountField() throws Exception {
+		String postBody = "{\"read_only\":true}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/buckets/1/collaborators").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user3")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("account"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+		;
+	}
+
+	@Test
+	public void addCollaborator() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 5}}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/buckets/1/collaborators").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(3));
+	}
+
+	@Test
+	public void modifyCollaboratorInNonExistentRiver() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1234/collaborators/1").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyNonExistentCollaborator() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1/collaborators/1234").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyCollaboratorWithoutPermission() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 4}}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1/collaborators/2").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void modifyCollaboratorWithMissingParameters() throws Exception {
+
+		String postBody = "{}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/buckets/1/collaborators/1").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("read_only"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"))
+				.andExpect(jsonPath("$.errors[1].field").value("active"))
+				.andExpect(jsonPath("$.errors[1].code").value("missing"));
+	}
+
+	@Test
+	public void modifyCollaborator() throws Exception {
+
+		String postBody = "{\"read_only\":true}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1/collaborators/2").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isOk());
+	}
+
+	/**
+	 * Test for {@link RiversController#deleteCollaborator(Long, Long)}
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteCollaborator() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/collaborators/2").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
+	}
+
+	@Test
+	public void deleteCollaboratorInNonExistentRiver() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1234/collaborators/2").principal(
+						getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void deleteNonExistentCollaborator() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/collaborators/1234").principal(
+						getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void deleteCollaboratorWithoutPermission() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/collaborators/1").principal(
+						getAuthentication("user3"))).andExpect(
+				status().isForbidden());
 	}
 }

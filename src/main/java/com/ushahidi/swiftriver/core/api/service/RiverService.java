@@ -329,6 +329,13 @@ public class RiverService {
 		return true;
 	}
 
+	/**
+	 * Get collaborators of the given river
+	 * 
+	 * @param riverId
+	 * @return
+	 * @throws NotFoundException
+	 */
 	public List<GetCollaboratorDTO> getCollaborators(Long riverId)
 			throws NotFoundException {
 		River river = riverDao.findById(riverId);

@@ -345,6 +345,25 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	}
 	
 	@Test
+	public void updateRiver() {
+		River river = riverDao.findById(2L);
+		river.setRiverName("updated river name");
+		river.setDescription("updated description");
+		river.setRiverPublic(true);
+	
+		riverDao.update(river);
+		em.flush();
+	
+		String sql = "SELECT `river_name`, `river_name_canonical`, `description`, `river_public` FROM `rivers` WHERE `id` = ?";
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 2);
+		assertEquals("updated river name", (String) results.get("river_name"));
+		assertEquals(TextUtil.getURLSlug("updated river name"),
+				(String) results.get("river_name_canonical"));
+		assertEquals("updated description", (String) results.get("description"));
+		assertEquals(true, results.get("river_public"));
+	}
+
+	@Test
 	public void findCollaboratorByAccount() {
 		RiverCollaborator rc = riverDao.findCollaborator(1L, 3L);
 		
@@ -387,24 +406,5 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));
-	}
-
-	@Test
-	public void updateRiver() {
-		River river = riverDao.findById(2L);
-		river.setRiverName("updated river name");
-		river.setDescription("updated description");
-		river.setRiverPublic(true);
-
-		riverDao.update(river);
-		em.flush();
-
-		String sql = "SELECT `river_name`, `river_name_canonical`, `description`, `river_public` FROM `rivers` WHERE `id` = ?";
-		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 2);
-		assertEquals("updated river name", (String) results.get("river_name"));
-		assertEquals(TextUtil.getURLSlug("updated river name"),
-				(String) results.get("river_name_canonical"));
-		assertEquals("updated description", (String) results.get("description"));
-		assertEquals(true, results.get("river_public"));
 	}
 }

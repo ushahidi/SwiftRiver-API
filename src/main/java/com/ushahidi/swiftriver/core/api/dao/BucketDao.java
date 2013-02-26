@@ -76,7 +76,7 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 * @param account
 	 * @return {@link BucketCollaborator} on success, null otherwise
 	 */
-	public BucketCollaborator findCollaborator(Bucket bucket, Account account);
+	public BucketCollaborator findCollaborator(Long bucketId, Long accountId);
 
 	/**
 	 * Modifies a bucket collaborator record 
