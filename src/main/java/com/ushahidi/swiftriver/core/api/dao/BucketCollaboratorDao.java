@@ -14,40 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.List;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 
-import com.ushahidi.swiftriver.core.model.Account;
+public interface BucketCollaboratorDao extends GenericDao<BucketCollaborator> {
 
-public interface AccountDao extends GenericDao<Account> {
-		
-	/**
-	 * Get an account by its username
-	 * 
-	 * @param username
-	 * @return
-	 */
-	public Account findByUsername(String username);
-	
-	/**
-	 * Get an account by its account path
-	 * 
-	 * @param accountPath
-	 * @return
-	 */
-	public Account findByName(String accountPath);
-	
-	/**
-	 * Reduce an account's quota by the given decrement
-	 * 
-	 * @param account
-	 * @param decrement
-	 */
-	public void decreaseRiverQuota(Account account, int decrement);
-	
-	/**
-	 * Search accounts matching the given query
-	 * 
-	 * @param query
-	 */
-	public List<Account> search(String query);
 }

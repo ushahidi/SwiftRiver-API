@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,9 @@ import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 
@@ -99,14 +103,28 @@ public class BucketsController extends AbstractController {
 	/**
 	 * Handler for adding a collaborator to a bucket.
 	 * 
-	 * @param createDTO
+	 * @param body
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/collaborators", method = RequestMethod.POST)
 	@ResponseBody
-	public GetCollaboratorDTO addCollaborator(@RequestBody CreateCollaboratorDTO createDTO,
-			@PathVariable Long id, Principal principal) {
-		return bucketService.addCollaborator(id, createDTO, principal.getName());
+	public GetCollaboratorDTO addCollaborator(
+			@RequestBody CreateCollaboratorDTO body, @PathVariable Long id,
+			Principal principal) {
+
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		if (body.getAccount() == null) {
+			errors.add(new ErrorField("account", "missing"));
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return bucketService.addCollaborator(id, body, principal.getName());
 	}
 
 	/**
@@ -125,13 +143,27 @@ public class BucketsController extends AbstractController {
 	 * Handler for modifying an existing collaborator.
 	 * 
 	 * @param body
+	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public GetCollaboratorDTO modifyCollaborator(@RequestBody CreateCollaboratorDTO body,
-			@PathVariable Long id, @PathVariable Long accountId, Principal principal) {
-		return bucketService.modifyCollaborator(id, accountId, body, principal.getName());
+	public GetCollaboratorDTO modifyCollaborator(@PathVariable Long id,
+			@PathVariable Long collaboratorId,
+			@RequestBody ModifyCollaboratorDTO body, Principal principal) {
+
+		if (body.getReadOnly() == null && body.getActive() == null) {
+			List<ErrorField> errors = new ArrayList<ErrorField>();
+			errors.add(new ErrorField("read_only", "missing"));
+			errors.add(new ErrorField("active", "missing"));
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return bucketService.modifyCollaborator(id, collaboratorId, body,
+				principal.getName());
 	}
 
 	/**
@@ -140,10 +172,11 @@ public class BucketsController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteCollaborator(@PathVariable Long id, @PathVariable Long accountId) {
-		bucketService.deleteCollaborator(id, accountId, null);
+	public void deleteCollaborator(@PathVariable Long id,
+			@PathVariable Long collaboratorId, Principal principal) {
+		bucketService.deleteCollaborator(id, collaboratorId, principal.getName());
 	}
 
 	/**

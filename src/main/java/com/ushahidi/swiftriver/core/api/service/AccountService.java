@@ -14,6 +14,9 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +37,7 @@ public class AccountService {
 
 	@Autowired
 	private AccountDao accountDao;
-	
+
 	@Autowired
 	private Mapper mapper;
 
@@ -59,15 +62,15 @@ public class AccountService {
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
 	public GetAccountDTO getAccountById(Long id) throws NotFoundException {
 		Account account = accountDao.findById(id);
-		
+
 		if (account == null) {
 			throw new NotFoundException(String.format("Account not found", id));
 		}
-		
+
 		return mapGetAccountDTO(account);
 	}
 
@@ -76,46 +79,72 @@ public class AccountService {
 	 * 
 	 * @param username
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByUsername(String username) throws NotFoundException {
+	public GetAccountDTO getAccountByUsername(String username)
+			throws NotFoundException {
 		Account account = accountDao.findByUsername(username);
-		
+
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
-		
+
 		return mapGetAccountDTO(account);
 	}
-	
+
 	/**
 	 * Get an account by account_path
 	 * 
 	 * @param username
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByName(String accountPath) throws NotFoundException {
+	public GetAccountDTO getAccountByName(String accountPath)
+			throws NotFoundException {
 		Account account = accountDao.findByName(accountPath);
-		
+
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
-		
+
 		return mapGetAccountDTO(account);
 	}
-	
+
+	/**
+	 * Search accounts
+	 * 
+	 * @param query
+	 * @return
+	 * @throws NotFoundException
+	 */
+	public List<GetAccountDTO> searchAccounts(String query)
+			throws NotFoundException {
+		List<Account> accounts = accountDao.search(query);
+
+		if (accounts == null) {
+			throw new NotFoundException("No accounts found");
+		}
+
+		List<GetAccountDTO> getAccountTOs = new ArrayList<GetAccountDTO>();
+		for (Account account : accounts) {
+			getAccountTOs.add(mapGetAccountDTO(account));
+		}
+
+		return getAccountTOs;
+	}
+
 	/**
 	 * Convert the given account into a GetAccountDTO
+	 * 
 	 * @param account
 	 * @return
 	 */
 	public GetAccountDTO mapGetAccountDTO(Account account) {
 		GetAccountDTO accountDTO = mapper.map(account, GetAccountDTO.class);
-		
+
 		accountDTO.setFollowerCount(account.getFollowers().size());
 		accountDTO.setFollowingCount(account.getFollowing().size());
-		
+
 		return accountDTO;
-	}	
+	}
 }

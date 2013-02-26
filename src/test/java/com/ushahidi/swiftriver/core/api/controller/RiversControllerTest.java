@@ -15,6 +15,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.collection.IsCollectionWithSize.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,10 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Map;
-
-import org.apache.commons.lang.ArrayUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -158,6 +155,109 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].places").isArray());
 	}
 
+	@Test
+	public void getDropsWithInvalidChannelIds() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops?channel_ids=meow").principal(
+								authentication))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("channel_ids"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
+	@Test
+	public void getDropsForSpecificChannelId() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops?channel_ids=2").principal(
+								authentication)).andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[1].id").value(4));
+	}
+
+	@Test
+	public void getDropsForSpecificChannelName() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops?channels=rss").principal(
+								authentication)).andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[1].id").value(1));
+	}
+
+	@Test
+	public void getDropsWithInvalidState() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops?state=meow").principal(
+								authentication))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("state"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
+	@Test
+	public void getReadDrops() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops?state=read").principal(
+								authentication)).andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[1].id").value(2));
+	}
+
+	@Test
+	public void getUnreadDrops() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops?state=unread").principal(
+								authentication)).andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[1].id").value(3));
+	}
+
+	@Test
+	public void getDropsWithinRange() throws Exception {
+		Authentication authentication = new UsernamePasswordAuthenticationToken(
+				"user1", "password");
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		this.mockMvc
+				.perform(
+						get(
+								"/v1/rivers/1/drops?date_from=01-JAN-12&date_to=01-JAN-13")
+								.principal(authentication))
+				.andExpect(status().isOk())
+
+				.andExpect(jsonPath("$[0].id").value(4));
+	}
+
 	/**
 	 * Test for {@link RiversController#deleteRiver(Long)}
 	 * 
@@ -193,36 +293,144 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.perform(get("/v1/rivers/1/collaborators"))
 				.andExpect(status().isOk())
 				.andExpect(
-						content().contentType("application/json;charset=UTF-8"));
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$").value(hasSize(2)))
+				.andExpect(jsonPath("$[1].id").value(2))
+				.andExpect(jsonPath("$[1].active").value(true))
+				.andExpect(jsonPath("$[1].read_only").value(true))
+				.andExpect(jsonPath("$[1].account.id").value(4))
+				.andExpect(jsonPath("$[1].account.account_path").value("user2"))
+				.andExpect(jsonPath("$[1].account.owner.name").value("User 2"))
+				.andExpect(
+						jsonPath("$[1].account.owner.avatar")
+								.value("https://secure.gravatar.com/avatar/ee8ce7cae1c9d064b9a2c049ce4a1071?s=80&d=mm&r=g"));
 	}
 
-	/**
-	 * Test for {@link RiversController#modifyCollaborator(Long, Long, Map)}
-	 * 
-	 * @throws Exception
-	 */
-	@SuppressWarnings("unchecked")
 	@Test
-	@Transactional
-	public void modifyCollaborator() throws Exception {
-		// Test data
-		Object[][] collaborotorData = { { "read_only", false },
-				{ "active", false } };
+	public void getUnknownCollaboratorsFromNonExistentRiver() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/9999/collaborators")).andExpect(
+				status().isNotFound());
+	}
 
-		Map<String, Object> collaboratorMap = ArrayUtils
-				.toMap(collaborotorData);
+	@Test
+	public void addCollaboratorToNonExistentRiver() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				post("/v1/rivers/1234/collaborators").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void addCollaboratorWithoutPermission() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				post("/v1/rivers/1/collaborators").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void addCollaboratorWithMissingAccountField() throws Exception {
+		String postBody = "{\"read_only\":true}";
 
 		this.mockMvc
 				.perform(
-						put("/v1/rivers/1/collaborators/3")
-								.accept(MediaType.APPLICATION_JSON)
+						post("/v1/rivers/1/collaborators").content(postBody)
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(
-										new ObjectMapper()
-												.writeValueAsBytes(collaboratorMap)))
+								.principal(getAuthentication("user3")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("account"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+		;
+	}
+
+	@Test
+	public void addCollaborator() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 5}}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/collaborators").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.read_only").value(false))
-				.andExpect(jsonPath("$.active").value(false));
+				.andExpect(jsonPath("$.id").value(3));
+	}
+
+	@Test
+	public void modifyCollaboratorInNonExistentRiver() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1234/collaborators/1").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyNonExistentCollaborator() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 9999}}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1/collaborators/1234").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyCollaboratorWithoutPermission() throws Exception {
+
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 4}}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1/collaborators/2").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void modifyCollaboratorWithMissingParameters() throws Exception {
+
+		String postBody = "{}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1/collaborators/1").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("read_only"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"))
+				.andExpect(jsonPath("$.errors[1].field").value("active"))
+				.andExpect(jsonPath("$.errors[1].code").value("missing"));
+	}
+
+	@Test
+	public void modifyCollaborator() throws Exception {
+
+		String postBody = "{\"read_only\":true}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1/collaborators/2").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isOk());
 	}
 
 	/**
@@ -231,10 +439,34 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Transactional
 	public void deleteCollaborator() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1/collaborators/2")).andExpect(
-				status().isOk());
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/collaborators/2").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
+	}
+
+	@Test
+	public void deleteCollaboratorInNonExistentRiver() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1234/collaborators/2").principal(
+						getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void deleteNonExistentCollaborator() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/collaborators/1234").principal(
+						getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void deleteCollaboratorWithoutPermission() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/collaborators/1").principal(
+						getAuthentication("user3"))).andExpect(
+				status().isForbidden());
 	}
 
 	/**

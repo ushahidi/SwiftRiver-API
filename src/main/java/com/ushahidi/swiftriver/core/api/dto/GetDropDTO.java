@@ -60,6 +60,8 @@ public class GetDropDTO {
 	
 	private List<GetPlaceDTO> places;
 	
+	private Boolean read;
+	
 	public static class Identity {
 		
 		private long id;
@@ -430,5 +432,13 @@ public class GetDropDTO {
 
 	public void setPlaces(List<GetPlaceDTO> places) {
 		this.places = places;
+	}
+
+	public Boolean getRead() {
+		return read;
+	}
+
+	public void setRead(Boolean read) {
+		this.read = read;
 	}
 }

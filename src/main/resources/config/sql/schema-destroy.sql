@@ -59,3 +59,4 @@ DROP TABLE IF EXISTS `user_identities`;
 DROP TABLE IF EXISTS `user_subscriptions`;
 DROP TABLE IF EXISTS `user_tokens`;
 DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `account_read_drops`;

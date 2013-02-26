@@ -32,6 +32,8 @@
 	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />
 	<bean id="placeDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaPlaceDao" />
 	<bean id="tagDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaTagDao" />
+	<bean id="riverCollaboratorDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverCollaboratorDao" />
+	<bean id="bucketCollaboratorDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />

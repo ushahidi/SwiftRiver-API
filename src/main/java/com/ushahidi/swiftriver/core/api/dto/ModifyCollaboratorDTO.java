@@ -16,54 +16,41 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
-import java.util.Date;
-
 import org.codehaus.jackson.annotate.JsonProperty;
 
-public class GetCollaboratorDTO {
+public class ModifyCollaboratorDTO {
 	
-	private long id;
-	
-	private boolean active;
+	private Long id;
 	
 	@JsonProperty("read_only")
-	private boolean readOnly;
+	private Boolean readOnly;
 	
-	@JsonProperty("date_added")
-	private Date dateAdded;
+	private Boolean active;
 	
 	private Account account;
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
-	public boolean isReadOnly() {
+	public Boolean getReadOnly() {
 		return readOnly;
 	}
 
-	public void setReadOnly(boolean readOnly) {
+	public void setReadOnly(Boolean readOnly) {
 		this.readOnly = readOnly;
 	}
 
-	public Date getDateAdded() {
-		return dateAdded;
+	public Boolean getActive() {
+		return active;
 	}
 
-	public void setDateAdded(Date dateAdded) {
-		this.dateAdded = dateAdded;
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 
 	public Account getAccount() {
@@ -75,14 +62,8 @@ public class GetCollaboratorDTO {
 	}
 
 	public static class Account {
-		
 		private long id;
-		
-		@JsonProperty("account_path")
-		private String accountPath;
-		
-		private Owner owner;
-		
+
 		public long getId() {
 			return id;
 		}
@@ -90,45 +71,6 @@ public class GetCollaboratorDTO {
 		public void setId(long id) {
 			this.id = id;
 		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-
-		public Owner getOwner() {
-			return owner;
-		}
-
-		public void setOwner(Owner owner) {
-			this.owner = owner;
-		}
-
-		public static class Owner {
-			
-			private String name;
-			
-			private String avatar;
-
-			public String getName() {
-				return name;
-			}
-
-			public void setName(String name) {
-				this.name = name;
-			}
-
-			public String getAvatar() {
-				return avatar;
-			}
-
-			public void setAvatar(String avatar) {
-				this.avatar = avatar;
-			}
-		}
-
+		
 	}
 }

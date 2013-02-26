@@ -26,6 +26,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import com.ushahidi.swiftriver.core.util.GravatarUtil;
+
 @Entity
 @Table(name="users")
 public class User {
@@ -117,6 +119,10 @@ public class User {
 
 	public void setCreatedDate(Date createdDate) {
 		this.createdDate = createdDate;
+	}
+	
+	public String getAvatar() {
+		return GravatarUtil.gravatar(email);
 	}
 
 }

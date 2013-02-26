@@ -1,0 +1,1 @@
+ALTER TABLE `rivers_droplets` ADD `channel` varchar(20) DEFAULT '';

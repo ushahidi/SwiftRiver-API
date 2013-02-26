@@ -14,43 +14,10 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dto;
+package com.ushahidi.swiftriver.core.api.dao;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
-public class CreateCollaboratorDTO {
-	
-	@JsonProperty("read_only")
-	private boolean readOnly;
-	
-	private Account account;
-	
-	public boolean isReadOnly() {
-		return readOnly;
-	}
+public interface RiverCollaboratorDao extends GenericDao<RiverCollaborator> {
 
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
-
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-
-	public static class Account {
-		private long id;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-		
-	}
 }
