@@ -1,12 +1,14 @@
 <beans:beans xmlns="http://www.springframework.org/schema/security"
 	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:oauth="http://www.springframework.org/schema/security/oauth2"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans 
                     http://www.springframework.org/schema/beans/spring-beans.xsd
                     http://www.springframework.org/schema/security 
                     http://www.springframework.org/schema/security/spring-security.xsd
                     http://www.springframework.org/schema/security/oauth2
-                    http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd">
+                    http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
+                    http://www.springframework.org/schema/context 
+					http://www.springframework.org/schema/context/spring-context.xsd ">
 
 	<http pattern="/oauth/token" create-session="stateless"
 		authentication-manager-ref="clientAuthenticationManager">
@@ -51,7 +53,9 @@
 		class="com.ushahidi.swiftriver.core.api.auth.DbUserDetailsService" />
 
 	<beans:bean id="clientDetails"
-		class="com.ushahidi.swiftriver.core.api.auth.DbClientDetailsService" />
+		class="com.ushahidi.swiftriver.core.api.auth.DbClientDetailsService">
+		<beans:property name="key" ref="encryptionKey" />
+	</beans:bean>
 
 	<beans:bean id="bcryptPasswordEncoder"
 		class="com.ushahidi.swiftriver.core.api.auth.CustomBCryptPasswordEncoder" />
@@ -102,4 +106,16 @@
 		class="org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler">
 		<beans:property name="tokenServices" ref="tokenServices" />
 	</beans:bean>
+	
+	<beans:beans profile="prod">
+		<beans:bean id="encryptionKey" class="java.lang.String">
+			<beans:constructor-arg value="${encrypt.key}" />
+		</beans:bean>
+	</beans:beans>
+	
+	<beans:beans profile="test">
+		<beans:bean id="encryptionKey" class="java.lang.String">
+			<beans:constructor-arg value="2344228477#97{7&amp;6&gt;82" />
+		</beans:bean>
+	</beans:beans>
 </beans:beans>

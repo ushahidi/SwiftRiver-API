@@ -16,7 +16,7 @@ public class JpaClientDaoTest extends AbstractDaoTest {
 	
 	@Test
 	public void findByClientId() {
-		Client client = clientDao.findByClientId("my-trusted-client");
+		Client client = clientDao.findByClientId("trusted-client");
 
 		assertNotNull(client);
 		assertEquals(1, client.getId());

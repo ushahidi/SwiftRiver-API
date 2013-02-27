@@ -29,13 +29,14 @@ private ClientDao mockClientDao;
 		mockClientDao = mock(ClientDao.class);
 		dbClientDetailsService = new DbClientDetailsService();
 		dbClientDetailsService.setClientDao(mockClientDao);
+		dbClientDetailsService.setKey("2344228477#97{7&6>82");
 	}
 
 	@Test
 	public void loadClientByClientId() {
 		Client client = new Client();
-		client.setClientId("my-trusted-client");
-		client.setClientSecret("password");
+		client.setClientId("trusted-client");
+		client.setClientSecret("8b22f281afd911c3dfc59270af43db1995d5968a3447c780ba3e152e603fd9a0");
 		client.setRedirectUri("example");
 		client.setActive(true);
 		Role r = new Role();
@@ -48,8 +49,8 @@ private ClientDao mockClientDao;
 		
 		ClientDetails ud = dbClientDetailsService.loadClientByClientId("client-id");
 		
-		assertEquals("my-trusted-client", ud.getClientId());
-		assertEquals("password", ud.getClientSecret());
+		assertEquals("trusted-client", ud.getClientId());
+		assertEquals("somesecret", ud.getClientSecret());
 		assertEquals(1, ud.getRegisteredRedirectUri().size());
 		assertTrue(ud.getRegisteredRedirectUri().contains("example"));
 		assertTrue(ud.getAuthorizedGrantTypes().contains("authorization_code"));

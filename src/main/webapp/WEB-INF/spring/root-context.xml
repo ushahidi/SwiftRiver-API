@@ -77,7 +77,7 @@
 
 	<!-- Data Sources -->
 	<beans profile="prod">
-		<context:property-placeholder location="classpath:db-prod.properties" />
+		<context:property-placeholder location="file:///${ext.prop.dir}/*.properties" />
 	</beans>
 
 	<beans profile="test">

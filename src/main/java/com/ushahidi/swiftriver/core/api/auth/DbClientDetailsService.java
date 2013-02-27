@@ -5,9 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.oauth2.provider.BaseClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
@@ -17,12 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.model.Client;
 import com.ushahidi.swiftriver.core.model.Role;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Transactional(readOnly = true)
 public class DbClientDetailsService implements ClientDetailsService {
 
+	final Logger logger = LoggerFactory.getLogger(DbClientDetailsService.class);
+
 	@Autowired
 	ClientDao clientDao;
+
+	private String key;
 
 	public ClientDao getClientDao() {
 		return clientDao;
@@ -30,6 +39,14 @@ public class DbClientDetailsService implements ClientDetailsService {
 
 	public void setClientDao(ClientDao clientDao) {
 		this.clientDao = clientDao;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	@Override
@@ -62,11 +79,17 @@ public class DbClientDetailsService implements ClientDetailsService {
 
 		BaseClientDetails details = new BaseClientDetails();
 		details.setClientId(dbClient.getClientId());
-		details.setClientSecret(dbClient.getClientSecret());
 		details.setRegisteredRedirectUri(redirectUri);
 		details.setAuthorities(authorities);
 		details.setAuthorizedGrantTypes(grantTypes);
 
+		// Decrypt client secret
+		TextEncryptor encryptor = Encryptors.text(
+				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(dbClient.getClientId()));
+		details.setClientSecret(encryptor.decrypt(dbClient.getClientSecret()));
+
 		return details;
 	}
+
 }
