@@ -17,11 +17,15 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -46,6 +50,12 @@ public class User {
 	
 	private int logins;
 	
+	private Boolean active;
+	
+	private Boolean expired;
+	
+	private Boolean locked;
+	
 	@Temporal(TemporalType.TIMESTAMP)	
 	@Column(name="last_login")
 	private Date lastLoginDate;
@@ -53,6 +63,10 @@ public class User {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="created_date")
 	private Date createdDate;
+	
+	@ManyToMany
+	@JoinTable(name="roles_users", joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name="role_id"))
+	private List<Role> roles;
 
 	public User() {
 	}
@@ -105,6 +119,30 @@ public class User {
 		this.logins = logins;
 	}
 
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+	public Boolean getExpired() {
+		return expired;
+	}
+
+	public void setExpired(Boolean expired) {
+		this.expired = expired;
+	}
+
+	public Boolean getLocked() {
+		return locked;
+	}
+
+	public void setLocked(Boolean locked) {
+		this.locked = locked;
+	}
+
 	public Date getLastLoginDate() {
 		return lastLoginDate;
 	}
@@ -125,4 +163,11 @@ public class User {
 		return GravatarUtil.gravatar(email);
 	}
 
+	public List<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(List<Role> roles) {
+		this.roles = roles;
+	}
 }

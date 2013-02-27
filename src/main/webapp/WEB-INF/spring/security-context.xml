@@ -27,16 +27,15 @@
 	<authentication-manager id="clientAuthenticationManager">
 		<authentication-provider user-service-ref="clientDetailsUserService" />
 	</authentication-manager>
-	
+
 	<authentication-manager alias="authenticationManager">
-		<authentication-provider>
-			<user-service id="userDetailsService">
-				<user name="admin" password="password" authorities="ROLE_ADMIN,ROLE_USER" />
-			</user-service>
+		<authentication-provider user-service-ref="dbUserDetailsService">
+			<password-encoder ref="bcryptPasswordEncoder" />
 		</authentication-provider>
 	</authentication-manager>
-	
-	<oauth:authorization-server client-details-service-ref="clientDetails" token-services-ref="tokenServices"
+
+	<oauth:authorization-server
+		client-details-service-ref="clientDetails" token-services-ref="tokenServices"
 		user-approval-handler-ref="userApprovalHandler">
 		<oauth:authorization-code />
 		<oauth:implicit />
@@ -45,13 +44,17 @@
 		<oauth:password />
 	</oauth:authorization-server>
 
-	<oauth:resource-server id="resourceServerFilter" resource-id="SwiftRiver" token-services-ref="tokenServices" />
+	<oauth:resource-server id="resourceServerFilter"
+		resource-id="SwiftRiver" token-services-ref="tokenServices" />
 
-	<oauth:client-details-service id="clientDetails">
-		<oauth:client client-id="trusted-client"
-			authorized-grant-types="password,authorization_code,refresh_token,implicit"
-			secret="somesecret" authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" />
-	</oauth:client-details-service>
+	<beans:bean id="dbUserDetailsService"
+		class="com.ushahidi.swiftriver.core.api.auth.DbUserDetailsService" />
+
+	<beans:bean id="clientDetails"
+		class="com.ushahidi.swiftriver.core.api.auth.DbClientDetailsService" />
+
+	<beans:bean id="bcryptPasswordEncoder"
+		class="com.ushahidi.swiftriver.core.api.auth.CustomBCryptPasswordEncoder" />
 
 	<beans:bean id="clientDetailsUserService"
 		class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">
@@ -84,16 +87,19 @@
 			</beans:list>
 		</beans:constructor-arg>
 	</beans:bean>
-	
-	<beans:bean id="tokenStore" class="org.springframework.security.oauth2.provider.token.InMemoryTokenStore" />
 
-	<beans:bean id="tokenServices" class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
+	<beans:bean id="tokenStore"
+		class="org.springframework.security.oauth2.provider.token.InMemoryTokenStore" />
+
+	<beans:bean id="tokenServices"
+		class="org.springframework.security.oauth2.provider.token.DefaultTokenServices">
 		<beans:property name="tokenStore" ref="tokenStore" />
 		<beans:property name="supportRefreshToken" value="true" />
 		<beans:property name="clientDetailsService" ref="clientDetails" />
 	</beans:bean>
-	
-	<beans:bean id="userApprovalHandler" class="org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler">
+
+	<beans:bean id="userApprovalHandler"
+		class="org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler">
 		<beans:property name="tokenServices" ref="tokenServices" />
 	</beans:bean>
 </beans:beans>

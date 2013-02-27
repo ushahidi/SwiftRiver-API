@@ -7,8 +7,10 @@ SET time_zone = "+00:00";
 -- Data for table `roles`
 -- -----------------------------------------------------
 INSERT INTO `roles` (`id`, `name`, `description`, `permissions`) VALUES 
-(1, 'login', 'Login privileges, granted after account confirmation', NULL),
-(2, 'admin', 'Super Administrator', NULL);
+(1, 'user', 'Login privileges, granted after account confirmation', NULL),
+(2, 'admin', 'Super Administrator', NULL),
+(3, 'client', 'Client application', NULL),
+(4, 'trusted_client', 'Truested client application', NULL);
 
 
 -- -----------------------------------------------------
@@ -33,7 +35,7 @@ INSERT INTO `settings` (`id`, `key`, `value`) VALUES
 -- Data for table `users`
 -- -----------------------------------------------------
 INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`, `created_date`) VALUES 
-(1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', 'c2bac288881c7dd9531c607e73b3af798499917760023656e9847b10b8e75542', 0, NULL, md5(rand()), '2013-01-01 00:00:00'),
+(1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', '$2a$05$f0I9XjamKm4LEaF8av1Zy.tzBrzFM0smLMKvMAqUWicGAcEnkCdQe', 0, NULL, md5(rand()), '2013-01-01 00:00:00'),
 (2, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, '', '2013-01-01 00:00:01'),
 (3, 'user1@myswiftriver.com', 'User 1', 'user1', 'user1_password', 0, NULL, 'user1', '2013-01-01 00:00:02'),
 (4, 'user2@myswiftriver.com', 'User 2', 'user2', 'user2_password', 0, NULL, 'user2', '2013-01-01 00:00:03'),
@@ -323,3 +325,16 @@ INSERT INTO `droplet_comments` (`droplet_id`, `account_id`, `comment_text`, `dat
 INSERT INTO `account_read_drops` (`account_id`, `droplet_id`) VALUES
 (3, 2),
 (3, 5);
+
+-- -----------------------------------------------------
+-- Data for table `clients`
+-- -----------------------------------------------------
+INSERT INTO `clients` (`id`, `client_id`, `client_secret`, `redirect_uri`, `name`) VALUES
+(1, 'trusted-client', 'somesecret', 'http://example.com/oauth/redirect', 'my app');
+
+-- -----------------------------------------------------
+-- Data for table `roles_clients`
+-- -----------------------------------------------------
+INSERT INTO `roles_clients` (`client_id`, `role_id`) VALUES 
+(1, 3),
+(1, 4);
