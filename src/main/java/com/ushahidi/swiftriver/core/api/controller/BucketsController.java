@@ -33,10 +33,16 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 
@@ -297,4 +303,91 @@ public class BucketsController extends AbstractController {
 	public void addDrop(@PathVariable long id, @PathVariable long dropId, Principal principal) {
 		bucketService.addDrop(id, dropId, principal.getName());
 	}
+	
+	/**
+	 * Handler for adding a tag to a drop that is in a bucket
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/tags", method = RequestMethod.POST)
+	@ResponseBody
+	public GetTagDTO addDropTag(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreateTagDTO createDTO) {
+		return bucketService.addDropTag(id, dropId, createDTO);
+	}
+	
+	/**
+	 * Handler for deleting a tag from a drop that is in a bucket 
+	 * @param id
+	 * @param dropId
+	 * @param linkId
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/tags/{tagId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropTag(@PathVariable Long id, @PathVariable Long dropId, @PathVariable Long tagId) {
+		bucketService.deleteDropTag(id, dropId, tagId);
+	}
+
+
+	/**
+	 * Handler for adding a link to a drop that is in a bucket
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/links", method = RequestMethod.POST)
+	@ResponseBody
+	public GetLinkDTO addDropLink(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreateLinkDTO createDTO) {
+		return bucketService.addDropLink(id, dropId, createDTO);
+	}
+
+	/**
+	 * Handler for deleting a link from a drop that is in a bucket
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param linkId
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/links/{linkId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropLink(@PathVariable Long id, @PathVariable Long dropId, @PathVariable Long linkId) {
+		bucketService.deleteDropLink(id, dropId, linkId);
+	}
+
+	
+	/**
+	 * Handler for adding a place to a drop
+	 *  
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/places", method = RequestMethod.POST)
+	@ResponseBody
+	public GetPlaceDTO addDropPlace(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreatePlaceDTO createDTO) {
+		return bucketService.addDropPlace(id, dropId, createDTO);
+	}
+
+	/**
+	 * Handler for deleting a place from a drop that is in a bucket
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param placeId
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/places/{placeId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropPlace(@PathVariable Long id, @PathVariable Long dropId, @PathVariable Long placeId) {
+		bucketService.deleteDropPlace(id, dropId, placeId);
+	}
+	
+	
 }

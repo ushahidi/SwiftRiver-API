@@ -38,6 +38,7 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.River;
@@ -129,7 +130,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
 				queryingAccount.getOwner().getId(), riverId, maxId);
 
-		return formatDrops(results, queryingAccount);
+		return formatDrops(results);
 	}
 
 	/*
@@ -158,7 +159,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
 				queryingAccount.getOwner().getId(), riverId, sinceId);
 
-		return formatDrops(results, queryingAccount);
+		return formatDrops(results);
 	}
 	
 	/**
@@ -167,7 +168,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 * @param results
 	 * @return
 	 */
-	private List<Drop> formatDrops(List<Map<String, Object>> results, Account queryingAccount) {
+	private List<Drop> formatDrops(List<Map<String, Object>> results) {
 		List<Drop> drops = new ArrayList<Drop>();
 		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
@@ -199,7 +200,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		}
 
 		// Populate metadata
-		dropsDao.populateMetadata(drops, queryingAccount);
+		dropsDao.populateMetadata(drops, DropSource.RIVER);
 		
 		return drops;
 	}

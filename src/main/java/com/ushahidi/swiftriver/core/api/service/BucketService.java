@@ -33,12 +33,22 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.controller.BucketsController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -46,7 +56,12 @@ import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
  * Service class for buckets
@@ -65,6 +80,18 @@ public class BucketService {
 
 	@Autowired
 	private AccountDao accountDao;
+
+	@Autowired
+	private BucketDropDao bucketDropDao;
+
+	@Autowired
+	private TagDao tagDao;
+
+	@Autowired
+	private LinkDao linkDao;
+
+	@Autowired
+	private PlaceDao placeDao;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
@@ -541,11 +568,12 @@ public class BucketService {
 		Account account = accountDao.findByUsername(username);
 	
 		if (!isOwner(bucket, account)) {
-			throw new UnauthorizedExpection();
+			throw new UnauthorizedExpection(String.format("%s does not have permission to put drops in bucket %d",
+					username, id));
 		}
 		
 		if (!bucketDao.addDrop(bucket, dropId)) {
-			throw new BadRequestException();
+			throw new BadRequestException(String.format("Drop %d could not be added to bucket %d", dropId, id));
 		}
 		
 	}
@@ -625,6 +653,218 @@ public class BucketService {
 		collaboratorDTO.setDateAdded(collaborator.getDateAdded());
 		
 		return collaboratorDTO;
+	}
+
+	/**
+	 * Adds a {@link Tag} to the {@link BucketDrop} with the specified <code>dropId</code>
+	 * The drop must be in the {@link Bucket} whose ID is specified in <code>id</code>
+	 * 
+	 * The created {@link Tag} entity is transformed to a DTO for purposes of
+	 * consumption by {@link BucketsController}
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@Transactional
+	public GetTagDTO addDropTag(Long id, Long dropId, CreateTagDTO createDTO) {		
+		// Get the bucket drop
+		BucketDrop bucketDrop = getBucketDrop(dropId, id);
+		
+		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
+		Tag tag = tagDao.findByHash(hash);
+		if (tag == null) {
+			tag = new Tag();
+			tag.setTag(createDTO.getTag());
+			tag.setTagCanonical(createDTO.getTag().toLowerCase());
+			tag.setType(createDTO.getTagType());
+			tag.setHash(hash);
+
+			tagDao.create(tag);
+		} else {
+			// Check if the tag exists in the bucket drop
+			if (bucketDropDao.findTag(bucketDrop, tag) != null) {
+				throw new BadRequestException(String.format("Tag %s of type %s has already been added to drop %d",
+						tag.getTag(), tag.getType(), dropId));
+			}
+		}
+		 
+		bucketDropDao.addTag(bucketDrop, tag);
+		return mapper.map(tag, GetTagDTO.class);
+	}
+
+	/**
+	 * Deletes the {@link Tag} with the id specified in <code>tagId</code>
+	 * from the {@link BucketDrop} specified in <code>dropId</code>
+	 * 
+	 * The request {@link BucketDrop} must be a member of the {@link Bucket}
+	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
+	 * is thrown
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param tagId
+	 */
+	@Transactional
+	public void deleteDropTag(Long id, Long dropId, Long tagId) {
+		BucketDrop bucketDrop = getBucketDrop(dropId, id);
+		Tag tag = tagDao.findById(tagId);
+
+		if (tag == null) {
+			throw new NotFoundException(String.format("Tag %d does not exist", tagId));
+		}
+
+		if (!bucketDropDao.deleteTag(bucketDrop, tag)) {
+			throw new NotFoundException(String.format("Drop %d does not have tag %d", dropId, tagId));
+		}
+	}
+
+	/**
+	 * Adds a {@link Link} to the {@link BucketDrop} with the specified <code>dropId</code>
+	 * The drop must be in the {@link Bucket} whose ID is specified in <code>id</code>
+	 * 
+	 * The created {@link Link} entity is transformed to a DTO for purposes of
+	 * consumption by {@link BucketsController}
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@Transactional
+	public GetLinkDTO addDropLink(Long id, Long dropId, CreateLinkDTO createDTO) {
+		BucketDrop bucketDrop = getBucketDrop(dropId, id);
+
+		String hash = HashUtil.md5(createDTO.getUrl());
+		Link link = linkDao.findByHash(hash);
+		if (link == null) {
+			link = new Link();
+			link.setUrl(createDTO.getUrl());
+			link.setHash(hash);
+			
+			linkDao.create(link);
+		} else {
+			// Has the link already been added ?
+			if (bucketDropDao.findLink(bucketDrop, link) != null) {
+				throw new BadRequestException(String.format("%s has already been added to drop %d",
+						link.getUrl(), dropId));
+			}
+		}
+		
+		bucketDropDao.addLink(bucketDrop, link);
+		return mapper.map(link, GetLinkDTO.class);
+	}
+
+	/**
+	 * Deletes the {@link Link} with the id specified in <code>linkId</code>
+	 * from the {@link BucketDrop} specified in <code>dropId</code>
+	 * 
+	 * The request {@link BucketDrop} must be a member of the {@link Bucket}
+	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
+	 * is thrown
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param linkId
+	 */
+	@Transactional
+	public void deleteDropLink(Long id, Long dropId, Long linkId) {
+		BucketDrop bucketDrop = getBucketDrop(dropId, id);
+		Link link = linkDao.findById(linkId);
+
+		if (link == null) {
+			throw new NotFoundException(String.format("Link %d does not exist", linkId));
+		}
+
+		if (!bucketDropDao.deleteLink(bucketDrop, link)) {
+			throw new NotFoundException(String.format("Drop %d does not have link %d", dropId, linkId));
+		}		
+	}
+
+	/**
+	 * Adds a {@link Place} to the {@link BucketDrop} with the specified <code>dropId</code>
+	 * The drop must be in the {@link Bucket} whose ID is specified in <code>id</code>
+	 * 
+	 * The created {@link Place} entity is transformed to a DTO for purposes of
+	 * consumption by {@link BucketsController}
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@Transactional
+	public GetPlaceDTO addDropPlace(Long id, Long dropId, CreatePlaceDTO createDTO) {
+		BucketDrop bucketDrop = getBucketDrop(dropId, id);
+		
+		String hashInput = createDTO.getName();
+		hashInput += Float.toString(createDTO.getLongitude());
+		hashInput += Float.toString(createDTO.getLatitude());
+		 
+		 String hash = HashUtil.md5(hashInput);
+
+		 // Generate a hash for the place name
+		 Place place = placeDao.findByHash(hashInput);
+		 if (place == null) {
+			 place = new Place();
+			 place.setPlaceName(createDTO.getName());
+			 place.setPlaceNameCanonical(createDTO.getName().toLowerCase());
+			 place.setHash(hash);
+			 place.setLatitude(createDTO.getLatitude());
+			 place.setLongitude(createDTO.getLongitude());
+
+			 placeDao.create(place);
+		 } else {
+			 if (bucketDropDao.findPlace(bucketDrop, place) != null) {
+				 throw new BadRequestException(String.format("Drop %d already has the place %s with coordinates [%f, %f]",
+						 dropId, place.getPlaceName(), place.getLatitude(), place.getLongitude()));
+			 }
+		 }
+
+		 bucketDropDao.addPlace(bucketDrop, place);
+		 return mapper.map(place, GetPlaceDTO.class);
+	}
+
+	/**
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param placeId
+	 */
+	@Transactional
+	public void deleteDropPlace(Long id, Long dropId, Long placeId) {
+		BucketDrop bucketDrop = getBucketDrop(dropId, id);
+		Place place = placeDao.findById(placeId);
+
+		if (place == null) {
+			throw new NotFoundException(String.format("Place %d does not exist", placeId));
+		}
+
+		if (!bucketDropDao.deletePlace(bucketDrop, place)) {
+			throw new NotFoundException(String.format("Drop %d does not have place %d", dropId, placeId));
+		}
+	}
+
+	/**
+	 * Helper method to retrieve a {@link BucketDrop} record from
+	 * the database and verify that the retrieved entity belongs
+	 * to the {@link Bucket} with the ID specified in <code>bucketId</code>
+	 * @param dropId
+	 * @param bucketId
+	 * @return
+	 */
+	private BucketDrop getBucketDrop(Long dropId, Long bucketId) {
+		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
+		if (bucketDrop == null) {
+			throw new NotFoundException(String.format("Drop %d does not exist", dropId));
+		}
+		
+		if (bucketDrop.getBucket().getId() != bucketId) {
+			throw new NotFoundException(String.format("Drop %d does is not in bucket %d", dropId, bucketId));
+		}
+		
+		return bucketDrop;
 	}
 	
 }

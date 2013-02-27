@@ -24,19 +24,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "account_droplet_tags")
-public class AccountDropTag {
+@Table(name = "bucket_droplet_tags")
+public class BucketDropTag {
 	
 	@Id
 	@GeneratedValue
 	private long id;
 	
 	@ManyToOne
-	private Account account;
-	
-	@ManyToOne
-	@JoinColumn(name="droplet_id")
-	private Drop drop;
+	@JoinColumn(name="buckets_droplets_id")
+	private BucketDrop bucketDrop;
 	
 	@ManyToOne
 	private Tag tag;
@@ -51,20 +48,12 @@ public class AccountDropTag {
 		this.id = id;
 	}
 
-	public Account getAccount() {
-		return account;
+	public BucketDrop getBucketDrop() {
+		return bucketDrop;
 	}
 
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-
-	public Drop getDrop() {
-		return drop;
-	}
-
-	public void setDrop(Drop drop) {
-		this.drop = drop;
+	public void setBucketDrop(BucketDrop drop) {
+		this.bucketDrop = drop;
 	}
 
 	public Tag getTag() {

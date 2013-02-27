@@ -32,6 +32,7 @@
 	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />
 	<bean id="placeDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaPlaceDao" />
 	<bean id="tagDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaTagDao" />
+	<bean id="bucketDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDropDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />

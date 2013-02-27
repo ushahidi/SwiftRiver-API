@@ -32,12 +32,10 @@ import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.model.AccountDropLink;
-import com.ushahidi.swiftriver.core.model.AccountDropPlace;
-import com.ushahidi.swiftriver.core.model.AccountDropTag;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropComment;
+import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
@@ -51,7 +49,9 @@ import com.ushahidi.swiftriver.core.model.Tag;
 @Repository
 public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
-	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
+	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);	
+	
+	// Drop sources
 
 	
 	/**
@@ -109,15 +109,15 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * com.ushahidi.swiftriver.core.api.dao.DropDao#populateMetadata(java.util
 	 * .List, com.ushahidi.swiftriver.core.model.Account)
 	 */
-	public void populateMetadata(List<Drop> drops, Account queryingAccount) {
+	public void populateMetadata(List<Drop> drops, DropSource dropSource) {
 		if (drops.size() == 0) {
 			return;
 		}
 
-		populateTags(drops, queryingAccount);
-		populateLinks(drops, queryingAccount);
-		populateMedia(drops, queryingAccount);
-		populatePlaces(drops, queryingAccount);
+		populateTags(drops, dropSource);
+		populateLinks(drops, dropSource);
+		populateMedia(drops, dropSource);
+		populatePlaces(drops, dropSource);
 		populateBuckets(drops);
 	}
 
@@ -125,35 +125,28 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * Populate tag metadata into the given drops.
 	 * 
 	 * @param drops
-	 * @param queryingAccount
+	 * @param dropSource TODO
 	 */
-	public void populateTags(List<Drop> drops, Account queryingAccount) {
+	public void populateTags(List<Drop> drops, DropSource dropSource) {
 
 		List<Long> dropIds = new ArrayList<Long>();
 		for (Drop drop : drops) {
 			dropIds.add(drop.getId());
 		}
 
-		String sql = "SELECT `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type` ";
-		sql += "FROM `droplets_tags`  ";
-		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
-		sql += "WHERE `droplet_id` IN :drop_ids  ";
-		sql += "AND `tags`.`id` NOT IN ( ";
-		sql += "	SELECT `tag_id` FROM `account_droplet_tags`  ";
-		sql += "	WHERE `account_id` = :account_id  ";
-		sql += "	AND `droplet_id` IN :drop_ids  ";
-		sql += "	AND `deleted` = 1) ";
-		sql += "UNION ALL  ";
-		sql += "SELECT `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type`  ";
-		sql += "FROM `account_droplet_tags`  ";
-		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
-		sql += "WHERE `droplet_id` IN :drop_ids  ";
-		sql += "AND `account_id` = :account_id  ";
-		sql += "AND `deleted` = 0 ";
+		String sql = null;
+		switch (dropSource) {
+			case RIVER:
+				sql = getRiverTagsQuery();
+				break;
+				
+			case BUCKET:
+				sql = getBucketTagsQuery();
+				break;
+		}
 
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIds);
-		query.setParameter("account_id", queryingAccount.getId());
 
 		// Group the tags by drop id
 		Map<Long, List<Tag>> tags = new HashMap<Long, List<Tag>>();
@@ -186,41 +179,84 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		}
 
 	}
+	/**
+	 * Builds and returns the query for fetching tags for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * 
+	 * @return
+	 */
+	private String getBucketTagsQuery() {
+		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type` ";
+		sql += "FROM `droplets_tags`  ";
+		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
+		sql += "INNER JOIN buckets_droplets ON (`buckets_droplets`.`droplet_id` = `droplets_tags`.`droplet_id`)";
+		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids  ";
+		sql += "AND `tags`.`id` NOT IN ( ";
+		sql += "	SELECT `tag_id` FROM `bucket_droplet_tags`  ";
+		sql += "	WHERE `buckets_droplets_id` IN :drop_ids  ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL  ";
+		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type`  ";
+		sql += "FROM `bucket_droplet_tags` ";
+		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
+		sql += "WHERE `buckets_droplets_id` IN :drop_ids  ";
+		sql += "AND `deleted` = 0 ";
+		
+		return sql;
+	}
+
+	/**
+	 * Builds and returns the query for fetching tags for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * 
+	 * @return
+	 */
+	private String getRiverTagsQuery() {
+		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type` ";
+		sql += "FROM `droplets_tags`  ";
+		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
+		sql += "INNER JOIN rivers_droplets ON (`rivers_droplets`.`droplet_id` = `droplets_tags`.`droplet_id`)";
+		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids  ";
+		sql += "AND `tags`.`id` NOT IN ( ";
+		sql += "	SELECT `tag_id` FROM `river_droplet_tags`  ";
+		sql += "	WHERE `rivers_droplets_id` IN :drop_ids  ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL  ";
+		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type`  ";
+		sql += "FROM `river_droplet_tags` ";
+		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
+		sql += "WHERE `rivers_droplets_id` IN :drop_ids  ";
+		sql += "AND `deleted` = 0 ";
+		
+		return sql;
+	}
 
 	/**
 	 * Populate link metadata into the given drops array.
 	 * 
 	 * @param drops
-	 * @param queryingAccount
+	 * @param dropSource TODO
 	 */
-	public void populateLinks(List<Drop> drops, Account queryingAccount) {
+	public void populateLinks(List<Drop> drops, DropSource dropSource) {
 
 		List<Long> dropIds = new ArrayList<Long>();
 		for (Drop drop : drops) {
 			dropIds.add(drop.getId());
 		}
 
-		String sql = "SELECT `droplet_id`, `link_id` AS `id`, `url` ";
-		sql += "FROM `droplets_links` ";
-		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`) ";
-		sql += "WHERE `droplet_id` IN :drop_ids ";
-		sql += "AND `links`.`id` NOT IN ( ";
-		sql += "SELECT `link_id` ";
-		sql += "FROM `account_droplet_links` ";
-		sql += "WHERE `account_id` = :account_id ";
-		sql += "AND `droplet_id` IN :drop_ids ";
-		sql += "AND `deleted` = 1) ";
-		sql += "UNION ALL ";
-		sql += "SELECT `droplet_id`, `link_id` AS `id`, `url` ";
-		sql += "FROM `account_droplet_links` ";
-		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`) ";
-		sql += "WHERE `droplet_id` IN :drop_ids ";
-		sql += "AND `account_id` = :account_id ";
-		sql += "AND `deleted` = 0 ";
+		String sql = null;
+		switch (dropSource) {
+			case RIVER:
+				sql = getRiverLinksQuery();
+				break;
+				
+			case BUCKET:
+				sql = getBucketLinksQuery();
+				break;
+		}
 
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIds);
-		query.setParameter("account_id", queryingAccount.getId());
 
 		// Group the links by drop id
 		Map<Long, List<Link>> links = new HashMap<Long, List<Link>>();
@@ -253,12 +289,64 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	}
 
 	/**
+	 * Builds and returns the query for fetching links for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * 
+	 * @return
+	 */
+	private String getBucketLinksQuery() {
+		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `link_id` AS `id`, `url` ";
+		sql += "FROM `droplets_links`  ";
+		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
+		sql += "INNER JOIN buckets_droplets ON (`buckets_droplets`.`droplet_id` = `droplets_links`.`droplet_id`)";
+		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids  ";
+		sql += "AND `links`.`id` NOT IN ( ";
+		sql += "	SELECT `link_id` FROM `bucket_droplet_links`  ";
+		sql += "	WHERE `buckets_droplets_id` IN :drop_ids  ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL  ";
+		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `link_id` AS `id`, `url`  ";
+		sql += "FROM `bucket_droplet_links`  ";
+		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
+		sql += "WHERE `buckets_droplets_id` IN :drop_ids  ";
+		sql += "AND `deleted` = 0 ";
+		
+		return sql;
+	}
+
+	/**
+	 * Builds and returns the query for fetching links for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * 
+	 * @return
+	 */
+	private String getRiverLinksQuery() {
+		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `link_id` AS `id`, `url` ";
+		sql += "FROM `droplets_links`  ";
+		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
+		sql += "INNER JOIN rivers_droplets ON (`rivers_droplets`.`droplet_id` = `droplets_links`.`droplet_id`)";
+		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids  ";
+		sql += "AND `links`.`id` NOT IN ( ";
+		sql += "	SELECT `link_id` FROM `river_droplet_links`  ";
+		sql += "	WHERE `rivers_droplets_id` IN :drop_ids  ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL  ";
+		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `link_id` AS `id`, `url`  ";
+		sql += "FROM `river_droplet_links`  ";
+		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
+		sql += "WHERE `rivers_droplets_id` IN :drop_ids  ";
+		sql += "AND `deleted` = 0 ";
+		
+		return sql;
+	}
+
+	/**
 	 * Populate media metadata into the given drops array.
 	 * 
 	 * @param drops
-	 * @param queryingAccount
+	 * @param dropSource TODO
 	 */
-	public void populateMedia(List<Drop> drops, Account queryingAccount) {
+	public void populateMedia(List<Drop> drops, DropSource dropSource) {
 
 		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
 		int i = 0;
@@ -268,10 +356,20 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		}
 		
 		// Generate a map for drop images
-		String sql = "SELECT `id`, `droplet_image` ";
-		sql += "FROM `droplets` ";
-		sql += "WHERE `droplet_image` > 0 ";
-		sql += "AND `id` IN :drop_ids ";
+		String sql = "SELECT `droplets`.`id`, `droplet_image` FROM `droplets` ";		
+		switch (dropSource) {
+			case BUCKET:
+				sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
+				sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
+				break;
+				
+			case RIVER:
+				sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
+				sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
+				break;
+		}
+		
+		sql += "AND `droplets`.`droplet_image` > 0";
 
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
@@ -283,29 +381,19 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 					((BigInteger) r2[1]).longValue());
 		}
 
-		sql = "SELECT `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
-		sql += "FROM `droplets_media` ";
-		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
-		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
-		sql += "WHERE `droplet_id` IN :drop_ids ";
-		sql += "AND `media`.`id` NOT IN ( ";
-		sql += "SELECT `media_id` ";
-		sql += "FROM `account_droplet_media` ";
-		sql += "WHERE `account_id` = :account_id ";
-		sql += "AND `droplet_id` IN :drop_ids ";
-		sql += "AND `deleted` = 1) ";
-		sql += "UNION ALL ";
-		sql += "SELECT `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
-		sql += "FROM `account_droplet_media` ";
-		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
-		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
-		sql += "WHERE `droplet_id` IN :drop_ids ";
-		sql += "AND `account_id` = :account_id ";
-		sql += "AND `deleted` = 0; ";
+		// Get the query to fetch the drop media
+		switch (dropSource) {
+			case RIVER:
+				sql = getRiverMediaQuery();
+				break;
+				
+			case BUCKET:
+				sql = getBucketMediaQuery();
+				break;
+		}		
 
 		query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
-		query.setParameter("account_id", queryingAccount.getId());
 
 		// Group the media by drop id
 		for (Object oRow : query.getResultList()) {
@@ -360,12 +448,72 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	}
 
 	/**
+	 * Builds and returns the query for fetching media for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * 
+	 * @return
+	 */
+	private String getBucketMediaQuery() {
+		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, ";
+		sql += "`media_thumbnails`.`url` AS `thumbnail_url` ";
+		sql += "FROM `droplets_media` ";
+		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets_media`.`droplet_id`) ";
+		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
+		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
+		sql += "AND `media`.`id` NOT IN ( ";
+		sql += "	SELECT `media_id` ";
+		sql += "	FROM `bucket_droplet_media` ";
+		sql += "	WHERE `buckets_droplets_id` IN :drop_ids ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL ";
+		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
+		sql += "FROM `bucket_droplet_media` ";
+		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
+		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
+		sql += "WHERE `buckets_droplets_id` IN :drop_ids ";
+		sql += "AND `deleted` = 0; ";
+		
+		return sql;
+	}
+
+	/**
+	 * Builds and returns the query for fetching media for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * 
+	 * @return
+	 */
+	private String getRiverMediaQuery() {
+		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, ";
+		sql += "`media_thumbnails`.`url` AS `thumbnail_url` ";
+		sql += "FROM `droplets_media` ";
+		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
+		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets_media`.`droplet_id`) ";
+		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
+		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
+		sql += "AND `media`.`id` NOT IN ( ";
+		sql += "	SELECT `media_id` ";
+		sql += "	FROM `river_droplet_media` ";
+		sql += "	WHERE `rivers_droplets_id` IN :drop_ids ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL ";
+		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
+		sql += "FROM `river_droplet_media` ";
+		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
+		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
+		sql += "WHERE `rivers_droplets_id` IN :drop_ids ";
+		sql += "AND `deleted` = 0; ";
+		
+		return sql;
+	}
+
+	/**
 	 * Populate geo metadata into the given drops array.
 	 * 
 	 * @param drops
-	 * @param queryingAccount
+	 * @param dropSource TODO
 	 */
-	public void populatePlaces(List<Drop> drops, Account queryingAccount) {
+	public void populatePlaces(List<Drop> drops, DropSource dropSource) {
 		
 		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
 		int i = 0;
@@ -374,27 +522,20 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			i++;
 		}
 
-		String sql = "SELECT `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, `places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
-		sql += "FROM `droplets_places` ";
-		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
-		sql += "WHERE `droplet_id` IN :drop_ids ";
-		sql += "AND `places`.`id` NOT IN ( ";
-		sql += "SELECT `place_id` ";
-		sql += "FROM `account_droplet_places` ";
-		sql += "WHERE `account_id` = :account_id ";
-		sql += "AND `droplet_id` IN :drop_ids ";
-		sql += "AND `deleted` = 1) ";
-		sql += "UNION ALL ";
-		sql += "SELECT `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, `places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
-		sql += "FROM `account_droplet_places` ";
-		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
-		sql += "WHERE `droplet_id` IN :drop_ids ";
-		sql += "AND `account_id` = :account_id ";
-		sql += "AND `deleted` = 0 ";
-		
+		String sql = null;
+		// Get the query to fetch the drop media
+		switch (dropSource) {
+			case RIVER:
+				sql = getRiverPlacesQuery();
+				break;
+				
+			case BUCKET:
+				sql = getBucketPlacesQuery();
+				break;
+		}		
+
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
-		query.setParameter("account_id", queryingAccount.getId());
 		
 		// Group the media by drop id
 		Map<Long, Place> places = new HashMap<Long, Place>();
@@ -427,6 +568,62 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		}
 	}
 	
+	/**
+	 * Builds and returns the query for fetching places for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * 
+	 * @return
+	 */
+	private String getBucketPlacesQuery() {
+		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, ";
+		sql += "`places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
+		sql += "FROM `droplets_places` ";
+		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets_places`.`droplet_id`) ";
+		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
+		sql += "AND `places`.`id` NOT IN ( ";
+		sql += "	SELECT `place_id` ";
+		sql += "	FROM `bucket_droplet_places` ";
+		sql += "	WHERE `buckets_droplets_id` IN :drop_ids ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL ";
+		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, `places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
+		sql += "FROM `bucket_droplet_places` ";
+		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
+		sql += "WHERE `buckets_droplets_id` IN :drop_ids ";
+		sql += "AND `deleted` = 0 ";
+		
+		return sql;
+	}
+
+	/**
+	 * Builds and returns the query for fetching places for the drops
+	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * 
+	 * @return
+	 */
+	private String getRiverPlacesQuery() {
+		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, ";
+		sql += "`places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
+		sql += "FROM `droplets_places` ";
+		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
+		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets_places`.`droplet_id`) ";
+		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
+		sql += "AND `places`.`id` NOT IN ( ";
+		sql += "	SELECT `place_id` ";
+		sql += "	FROM `river_droplet_places` ";
+		sql += "	WHERE `rivers_droplets_id` IN :drop_ids ";
+		sql += "	AND `deleted` = 1) ";
+		sql += "UNION ALL ";
+		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, `places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
+		sql += "FROM `river_droplet_places` ";
+		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
+		sql += "WHERE `rivers_droplets_id` IN :drop_ids ";
+		sql += "AND `deleted` = 0 ";
+		
+		return sql;
+	}
+
 	/**
 	 * Populates the buckets for each of the {@link Drop} 
 	 * in <code>drops</code>
@@ -512,144 +709,4 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		return dropComment;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addLink(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
-	 */
-	public void addLink(Drop drop, Account account, Link link) {
-		// Add the link to the account
-		AccountDropLink accountDropLink = new AccountDropLink();
-		accountDropLink.setLink(link);
-		accountDropLink.setAccount(account);
-		accountDropLink.setDrop(drop);
-		accountDropLink.setDeleted(false);
-
-		this.em.persist(accountDropLink);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeLink(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Link, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	@SuppressWarnings("unchecked")
-	public void removeLink(Drop drop, Link link, Account account) {
-		String sql = "FROM AccountDropLink WHERE account = :account ";
-		sql += "AND drop = :drop AND link = :link";
-		
-		Query query = em.createQuery(sql);
-		query.setParameter("link", link);
-		query.setParameter("drop", drop);
-		query.setParameter("account", account);
-		
-		List<AccountDropLink> links = (List<AccountDropLink>) query.getResultList();
-		AccountDropLink accountDropLink = links.isEmpty() ? null : links.get(0); 
-		
-		if (accountDropLink != null && !accountDropLink.isDeleted()) {
-			accountDropLink.setDeleted(true);
-			this.em.merge(accountDropLink);
-		} else if (accountDropLink == null) {
-			// No records found
-			accountDropLink = new AccountDropLink();
-			accountDropLink.setAccount(account);
-			accountDropLink.setDrop(drop);
-			accountDropLink.setLink(link);
-			accountDropLink.setDeleted(true);
-			
-			this.em.persist(accountDropLink);
-		}
-		
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addPlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Place)
-	 */
-	public void addPlace(Drop drop, Account account, Place place) {
-		AccountDropPlace accountDropPlace = new AccountDropPlace();
-		accountDropPlace.setDrop(drop);
-		accountDropPlace.setPlace(place);
-		accountDropPlace.setAccount(account);
-		
-		this.em.persist(accountDropPlace);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removePlace(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Place, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	@SuppressWarnings("unchecked")
-	public void removePlace(Drop drop, Place place, Account account) {
-		String sql = "FROM AccountDropPlace WHERE account = :account ";
-		sql += "AND drop = :drop and place = :place";
-		
-		Query query = em.createQuery(sql);
-		query.setParameter("place", place);
-		query.setParameter("drop", drop);
-		query.setParameter("account", account);
-
-		List<AccountDropPlace> places = (List<AccountDropPlace>) query.getResultList();
-		AccountDropPlace accountDropPlace = (places.isEmpty()) ? null : places.get(0);
-
-		if (accountDropPlace != null && !accountDropPlace.isDeleted()) {
-			accountDropPlace.setDeleted(true);
-			this.em.merge(accountDropPlace);
-		} else if (accountDropPlace == null) {
-			// No records found
-			accountDropPlace = new AccountDropPlace();
-			accountDropPlace.setAccount(account);
-			accountDropPlace.setDrop(drop);
-			accountDropPlace.setPlace(place);
-			accountDropPlace.setDeleted(true);
-			
-			this.em.persist(accountDropPlace);
-		}
-		
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	public void addTag(Drop drop, Tag tag, Account account) {
-		AccountDropTag accountDropTag = new AccountDropTag();
-		accountDropTag.setDrop(drop);
-		accountDropTag.setAccount(account);
-		accountDropTag.setTag(tag);
-		accountDropTag.setDeleted(false);
-		
-		this.em.persist(accountDropTag);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#removeTag(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Tag, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	@SuppressWarnings("unchecked")
-	public void removeTag(Drop drop, Tag tag, Account account) {
-		String sql = "FROM AccountDropTag a WHERE a.account = :account ";
-		sql += "AND a.drop = :drop AND a.tag = :tag";
-
-		Query query = em.createQuery(sql);
-		query.setParameter("account", account);
-		query.setParameter("drop", drop);
-		query.setParameter("tag", tag);
-
-		List<AccountDropTag> tags = (List<AccountDropTag>)query.getResultList();
-		AccountDropTag accountDropTag = tags.isEmpty() ? null : tags.get(0); 
-		
-		if (accountDropTag != null && !accountDropTag.isDeleted()) {
-			accountDropTag.setDeleted(true);
-			this.em.merge(accountDropTag);
-		} else if (accountDropTag == null) {
-			// No records found
-			accountDropTag = new AccountDropTag();
-			accountDropTag.setAccount(account);
-			accountDropTag.setDrop(drop);
-			accountDropTag.setTag(tag);
-			accountDropTag.setDeleted(true);
-			
-			this.em.persist(accountDropTag);
-		}
-		
-	}
 }

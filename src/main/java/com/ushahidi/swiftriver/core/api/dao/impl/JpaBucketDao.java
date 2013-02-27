@@ -37,6 +37,7 @@ import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 
@@ -61,6 +62,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	public boolean addDrop(Bucket bucket, long dropId) {
 		Drop drop = dropDao.findById(dropId);
 		if (drop == null) {
+			LOG.warn(String.format("Drop %d does not exist", dropId));
 			return false;
 		}
 		
@@ -148,7 +150,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams) {
-		String sql = "SELECT `droplets`.`id` AS `id`, `buckets_droplets`.`id` AS `sort_id`, `droplet_title`, ";
+		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `droplet_title`, ";
 		sql += "`droplet_content`, `droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
@@ -193,34 +195,34 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			
 			// Set the drop properties
 			drop.setId(((BigInteger)rowArray[0]).longValue());
-			drop.setTitle((String) rowArray[2]);
-			drop.setContent((String) rowArray[3]);
-			drop.setChannel((String) rowArray[4]);
+			drop.setTitle((String) rowArray[1]);
+			drop.setContent((String) rowArray[2]);
+			drop.setChannel((String) rowArray[3]);
 			
 			Identity identity = new Identity();
-			identity.setId(((BigInteger) rowArray[5]).longValue());
-			identity.setName((String) rowArray[6]);
-			identity.setAvatar((String) rowArray[7]);
+			identity.setId(((BigInteger) rowArray[4]).longValue());
+			identity.setName((String) rowArray[5]);
+			identity.setAvatar((String) rowArray[6]);
 
 			drop.setIdentity(identity);
 
-			drop.setDatePublished((Date)rowArray[8]);
-			drop.setOriginalId((String) rowArray[9]);
+			drop.setDatePublished((Date)rowArray[7]);
+			drop.setOriginalId((String) rowArray[8]);
 			
-			if (rowArray[11] != null) {
+			if (rowArray[10] != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger) rowArray[11]).longValue());
-				originalUrl.setUrl((String) rowArray[12]);
+				originalUrl.setId(((BigInteger) rowArray[10]).longValue());
+				originalUrl.setUrl((String) rowArray[11]);
 			}
 
-			drop.setCommentCount((Integer) rowArray[13]);
+			drop.setCommentCount((Integer) rowArray[12]);
 
 			drops.add(drop);
 		}
 		
 		if (!drops.isEmpty()) {
 			// Populate the metadata
-			dropDao.populateMetadata(drops, account);
+			dropDao.populateMetadata(drops, DropSource.BUCKET);
 		}
 
 		return drops;

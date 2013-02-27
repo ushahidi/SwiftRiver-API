@@ -23,28 +23,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-/**
- * Model for the account_droplet_tags table
- * @author ekala
- *
- */
 @Entity
-@Table(name = "account_droplet_links")
-public class AccountDropLink {
+@Table(name = "bucket_droplet_places")
+public class BucketDropPlace {
 
 	@Id
 	@GeneratedValue
 	private long id;
 	
 	@ManyToOne
-	private Account account;
+	@JoinColumn(name="droplets_buckets_id")
+	private BucketDrop bucketDrop;
 	
 	@ManyToOne
-	private Link link;
-	
-	@ManyToOne
-	@JoinColumn(name = "droplet_id")
-	private Drop drop;
+	private Place place;
 	
 	private boolean deleted;
 
@@ -56,28 +48,20 @@ public class AccountDropLink {
 		this.id = id;
 	}
 
-	public Account getAccount() {
-		return account;
+	public BucketDrop getBucketDrop() {
+		return bucketDrop;
 	}
 
-	public void setAccount(Account account) {
-		this.account = account;
+	public void setBucketDrop(BucketDrop drop) {
+		this.bucketDrop = drop;
 	}
 
-	public Link getLink() {
-		return link;
+	public Place getPlace() {
+		return place;
 	}
 
-	public void setLink(Link link) {
-		this.link = link;
-	}
-
-	public Drop getDrop() {
-		return drop;
-	}
-
-	public void setDrop(Drop drop) {
-		this.drop = drop;
+	public void setPlace(Place place) {
+		this.place = place;
 	}
 
 	public boolean isDeleted() {
