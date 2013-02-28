@@ -17,6 +17,7 @@ package com.ushahidi.swiftriver.core.api.dto;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * Transfer Object for Accounts
@@ -69,6 +70,9 @@ public class GetAccountDTO {
 	
 	@JsonProperty("following_buckets")
 	private List<Bucket> followingBuckets;
+	
+	@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+	private String token;
 	
 	public static class River {
 		
@@ -350,6 +354,8 @@ public class GetAccountDTO {
         
         @JsonProperty("date_added")
         private String createdDate;
+        
+        private Boolean active;
 
 		public String getName() {
 			return name;
@@ -389,6 +395,14 @@ public class GetAccountDTO {
 
 		public void setAvatar(String avatar) {
 			this.avatar = avatar;
+		}
+
+		public Boolean getActive() {
+			return active;
+		}
+
+		public void setActive(Boolean active) {
+			this.active = active;
 		}
     }
 
@@ -550,6 +564,14 @@ public class GetAccountDTO {
 
 	public void setFollowingBuckets(List<Bucket> followingBuckets) {
 		this.followingBuckets = followingBuckets;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 

@@ -57,7 +57,7 @@ public class Account {
 	@Column(name = "river_quota_remaining")
 	private int riverQuotaRemaining;
 
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "user_id")
 	private User owner;
 	

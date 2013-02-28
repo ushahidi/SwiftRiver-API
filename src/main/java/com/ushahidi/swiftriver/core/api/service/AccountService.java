@@ -15,19 +15,31 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.UserDao;
+import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.User;
+import com.ushahidi.swiftriver.core.model.UserToken;
+import com.ushahidi.swiftriver.core.util.ErrorUtil;
 
 @Transactional(readOnly = true)
 @Service
@@ -36,7 +48,16 @@ public class AccountService {
 	final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
 	@Autowired
+	private UserDao userDao;
+
+	@Autowired
 	private AccountDao accountDao;
+
+	@Autowired
+	private UserTokenDao userTokenDao;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private Mapper mapper;
@@ -47,6 +68,30 @@ public class AccountService {
 
 	public void setAccountDao(AccountDao accountDao) {
 		this.accountDao = accountDao;
+	}
+
+	public UserDao getUserDao() {
+		return userDao;
+	}
+
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
+	}
+
+	public UserTokenDao getUserTokenDao() {
+		return userTokenDao;
+	}
+
+	public void setUserTokenDao(UserTokenDao userTokenDao) {
+		this.userTokenDao = userTokenDao;
+	}
+
+	public PasswordEncoder getPasswordEncoder() {
+		return passwordEncoder;
+	}
+
+	public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	public Mapper getMapper() {
@@ -99,7 +144,7 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByName(String accountPath)
+	public GetAccountDTO getAccountByName(String accountPath, boolean getToken)
 			throws NotFoundException {
 		Account account = accountDao.findByName(accountPath);
 
@@ -107,7 +152,35 @@ public class AccountService {
 			throw new NotFoundException("Account not found");
 		}
 
-		return mapGetAccountDTO(account);
+		GetAccountDTO getAccountDTO = mapGetAccountDTO(account);
+		if (getToken) {
+			getAccountDTO.setToken(createUserToken(account.getOwner())
+					.getToken());
+		}
+		return getAccountDTO;
+	}
+	
+	/**
+	 * Get an account by email
+	 * 
+	 * @param username
+	 * @return
+	 * @throws NotFoundException
+	 */
+	public GetAccountDTO getAccountByEmail(String email, boolean getToken)
+			throws NotFoundException {
+		Account account = accountDao.findByEmail(email);
+
+		if (account == null) {
+			throw new NotFoundException("Account not found");
+		}
+
+		GetAccountDTO getAccountDTO = mapGetAccountDTO(account);
+		if (getToken) {
+			getAccountDTO.setToken(createUserToken(account.getOwner())
+					.getToken());
+		}
+		return getAccountDTO;
 	}
 
 	/**
@@ -133,6 +206,103 @@ public class AccountService {
 		return getAccountTOs;
 	}
 
+	@Transactional(readOnly = false)
+	public GetAccountDTO createAccount(CreateAccountDTO createAccountTO) {
+		if (accountDao.findByName(createAccountTO.getAccountPath()) != null) {
+			BadRequestException ex = new BadRequestException(
+					"Account already exists");
+			List<ErrorField> errors = new ArrayList<ErrorField>();
+			errors.add(new ErrorField("account_path", "duplicate"));
+			ex.setErrors(errors);
+			throw ex;
+		}
+
+		if (accountDao.findByEmail(createAccountTO.getEmail()) != null) {
+			BadRequestException ex = new BadRequestException(
+					"Account already exists");
+			List<ErrorField> errors = new ArrayList<ErrorField>();
+			errors.add(new ErrorField("email", "duplicate"));
+			ex.setErrors(errors);
+			throw ex;
+		}
+
+		User user = new User();
+		user.setActive(false);
+		user.setName(createAccountTO.getName());
+		user.setEmail(createAccountTO.getEmail());
+		user.setUsername(createAccountTO.getEmail());
+		user.setPassword(passwordEncoder.encode(createAccountTO.getPassword()));
+		userDao.create(user);
+
+		Account account = new Account();
+		account.setAccountPath(createAccountTO.getAccountPath());
+		account.setAccountPrivate(createAccountTO.isAccountPrivate());
+		account.setOwner(user);
+		accountDao.create(account);
+
+		GetAccountDTO getAccountTo = mapper.map(account, GetAccountDTO.class);
+
+		UserToken token = createUserToken(user);
+		getAccountTo.setToken(token.getToken());
+		return getAccountTo;
+	}
+
+	@Transactional(readOnly = false)
+	public GetAccountDTO modifyAccount(Long accountId,
+			ModifyAccountDTO modifyAccountTO) {
+
+		Account account = accountDao.findById(accountId);
+
+		if (account == null)
+			throw new NotFoundException("Account not found.");
+
+		if (modifyAccountTO.getAccountPath() != null) {
+			if (accountDao.findByName(modifyAccountTO.getAccountPath()) != null) {
+				throw ErrorUtil.getBadRequestException("account_path",
+						"duplicate");
+			}
+		}
+
+		if (modifyAccountTO.getOwner() != null
+				&& modifyAccountTO.getOwner().getEmail() != null) {
+			String email = modifyAccountTO.getOwner().getEmail();
+			if (accountDao.findByEmail(email) != null) {
+				throw ErrorUtil.getBadRequestException("owner.email",
+						"duplicate");
+			}
+			account.getOwner().setUsername(email);
+		}
+
+		if (modifyAccountTO.getOwner() != null
+				&& modifyAccountTO.getOwner().getPassword() != null
+				&& account.getOwner().getActive()) {
+
+			if (modifyAccountTO.getToken() == null)
+				throw ErrorUtil.getBadRequestException("token", "missing");
+
+			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
+				throw ErrorUtil.getBadRequestException("token", "invalid");
+
+			String password = passwordEncoder.encode(modifyAccountTO.getOwner()
+					.getPassword());
+			modifyAccountTO.getOwner().setPassword(password);
+		}
+
+		if (modifyAccountTO.getToken() != null
+				&& !account.getOwner().getActive()) {
+			// Activate account is matching user token found
+			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
+				throw ErrorUtil.getBadRequestException("token", "invalid");
+
+			account.getOwner().setActive(true);
+		}
+
+		mapper.map(modifyAccountTO, account);
+		accountDao.update(account);
+
+		return mapper.map(account, GetAccountDTO.class);
+	}
+
 	/**
 	 * Convert the given account into a GetAccountDTO
 	 * 
@@ -146,5 +316,31 @@ public class AccountService {
 		accountDTO.setFollowingCount(account.getFollowing().size());
 
 		return accountDTO;
+	}
+
+	@Transactional(readOnly = false)
+	public boolean isTokenValid(String tokenString, User user) {
+		// Activate account is matching user token found
+		UserToken token = userTokenDao.findByToken(tokenString);
+
+		if (token == null || token.getUser().getId() != user.getId()
+				|| token.getExpires().getTime() < (new Date()).getTime())
+			return false;
+
+		userTokenDao.delete(token);
+		return true;
+	}
+
+	@Transactional(readOnly = false)
+	public UserToken createUserToken(User user) {
+		UserToken token = new UserToken();
+		token.setToken(UUID.randomUUID().toString());
+		long expiryDate = (new Date()).getTime() + 86400000L;
+		token.setExpires(new Date(expiryDate));
+		token.setUser(user);
+
+		userTokenDao.create(token);
+
+		return token;
 	}
 }

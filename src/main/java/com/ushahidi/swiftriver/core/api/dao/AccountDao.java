@@ -37,6 +37,14 @@ public interface AccountDao extends GenericDao<Account> {
 	public Account findByName(String accountPath);
 	
 	/**
+	 * Get an account by its account path
+	 * 
+	 * @param accountPath
+	 * @return
+	 */
+	public Account findByEmail(String email);
+	
+	/**
 	 * Reduce an account's quota by the given decrement
 	 * 
 	 * @param account

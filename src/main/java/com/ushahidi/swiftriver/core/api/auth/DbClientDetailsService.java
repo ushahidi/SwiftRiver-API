@@ -74,6 +74,7 @@ public class DbClientDetailsService implements ClientDetailsService {
 			// Only trusted clients can use username and password
 			if (role.getName().equals("trusted_client")) {
 				grantTypes.add("password");
+				grantTypes.add("client_credentials");
 			}
 		}
 

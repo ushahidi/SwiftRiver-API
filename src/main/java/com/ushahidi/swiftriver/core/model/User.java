@@ -18,7 +18,9 @@ package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -26,6 +28,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -68,6 +71,9 @@ public class User {
 	@JoinTable(name="roles_users", joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name="role_id"))
 	private List<Role> roles;
 
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="user")
+	private Set<UserToken> tokens;
+	
 	public User() {
 	}
 
@@ -169,5 +175,13 @@ public class User {
 
 	public void setRoles(List<Role> roles) {
 		this.roles = roles;
+	}
+
+	public Set<UserToken> getTokens() {
+		return tokens;
+	}
+
+	public void setTokens(Set<UserToken> tokens) {
+		this.tokens = tokens;
 	}
 }

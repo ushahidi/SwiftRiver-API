@@ -61,6 +61,14 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 	}
 	
 	@Test
+	public void findByEmail() {
+		Account account = accountDao.findByEmail("user2@myswiftriver.com");
+		
+		assertNotNull(account);
+		assertEquals(4, account.getId());
+	}
+	
+	@Test
 	public void decreaseRiverQuota() {
 		Account account = accountDao.findById(1L);
 		accountDao.decreaseRiverQuota(account, 3);

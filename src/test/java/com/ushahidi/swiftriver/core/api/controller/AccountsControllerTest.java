@@ -15,12 +15,14 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 import org.junit.Test;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,14 +38,13 @@ public class AccountsControllerTest extends AbstractControllerTest {
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value(1));
 	}
-	
+
 	@Test
 	public void getAccountByNonExistentId() throws Exception {
-		this.mockMvc
-				.perform(get("/v1/accounts/9999"))
-				.andExpect(status().isNotFound());
+		this.mockMvc.perform(get("/v1/accounts/9999")).andExpect(
+				status().isNotFound());
 	}
-	
+
 	@Test
 	public void getAccountByName() throws Exception {
 		this.mockMvc
@@ -54,6 +55,38 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.id").value(3));
 	}
 	
+	@Test
+	public void getAccountByEmail() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/accounts?email=user3@myswiftriver.com"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.id").value(5));
+	}
+	
+	@Test
+	public void getAccountWithTokenForAccountPath() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/accounts?account_path=user1&token=1"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.id").value(3))
+				.andExpect(jsonPath("$.token").exists());
+	}
+	
+	@Test
+	public void getAccountWithTokenForEmail() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/accounts?email=user3@myswiftriver.com&token=1"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.id").value(5))
+				.andExpect(jsonPath("$.token").exists());
+	}
+
 	@Test
 	public void searchAccounts() throws Exception {
 		this.mockMvc
@@ -66,7 +99,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void getAuthenticatedUserAccount() throws Exception {		
+	public void getAuthenticatedUserAccount() throws Exception {
 		Authentication authentication = new UsernamePasswordAuthenticationToken(
 				"user1", "password");
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -86,9 +119,13 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.is_collaborator").value(false))
 				.andExpect(jsonPath("$.is_following").value(false))
 				.andExpect(jsonPath("$.owner.name").value("User 1"))
-				.andExpect(jsonPath("$.owner.email").value("user1@myswiftriver.com"))
+				.andExpect(
+						jsonPath("$.owner.email").value(
+								"user1@myswiftriver.com"))
 				.andExpect(jsonPath("$.owner.username").value("user1"))
-				.andExpect(jsonPath("$.owner.avatar").value("https://secure.gravatar.com/avatar/373329f529512d8898e8a8aeea3a7675?s=80&d=mm&r=g"))
+				.andExpect(
+						jsonPath("$.owner.avatar")
+								.value("https://secure.gravatar.com/avatar/373329f529512d8898e8a8aeea3a7675?s=80&d=mm&r=g"))
 				.andExpect(jsonPath("$.rivers").exists())
 				.andExpect(jsonPath("$.rivers[0].id").exists())
 				.andExpect(jsonPath("$.rivers[0].name").exists())
@@ -107,4 +144,227 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.buckets[0].public").exists())
 				.andExpect(jsonPath("$.buckets[0].drop_count").exists());
 	}
+
+	@Test
+	public void createAccount() throws Exception {
+		String postBody = "{\"name\":\"Dexter Morgan\",\"account_path\":\"dexter\",\"email\":\"dexter@example.com\",\"password\":\"mirabilis\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(7))
+				.andExpect(jsonPath("$.active").value(false))
+				.andExpect(jsonPath("$.token").exists());
+	}
+
+	@Test
+	public void createAccountWithoutName() throws Exception {
+		String postBody = "{\"account_path\":\"dexter\",\"email\":\"dexter@example.com\",\"password\":\"mirabilis\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("name"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+
+	@Test
+	public void createAccountWithoutAccountPath() throws Exception {
+		String postBody = "{\"name\":\"Dexter Morgan\",\"email\":\"dexter@example.com\",\"password\":\"mirabilis\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("account_path"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+
+	@Test
+	public void createAccountWithoutEmail() throws Exception {
+		String postBody = "{\"name\":\"Dexter Morgan\",\"account_path\":\"dexter\",\"password\":\"mirabilis\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("email"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+
+	@Test
+	public void createAccountWithoutPassword() throws Exception {
+		String postBody = "{\"name\":\"Dexter Morgan\",\"account_path\":\"dexter\",\"email\":\"dexter@example.com\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("password"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+
+	@Test
+	public void modifyNonExistentAccount() throws Exception {
+		String postBody = "{\"account_path\":\"dexter\"}";
+
+		this.mockMvc.perform(
+				put("/v1/accounts/9999").content(postBody).contentType(
+						MediaType.APPLICATION_JSON)).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyAccount() throws Exception {
+		String postBody = "{\"account_path\":\"dexter\", \"private\":true, \"river_quota_remaining\":93, \"owner\": {\"name\": \"Papa Smurf\", \"email\": \"example@example.com\"}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(jsonPath("$.account_path").value("dexter"))
+				.andExpect(jsonPath("$.private").value(true))
+				.andExpect(jsonPath("$.river_quota_remaining").value(93))
+				.andExpect(jsonPath("$.owner.name").value("Papa Smurf"))
+				.andExpect(
+						jsonPath("$.owner.email").value("example@example.com"));
+	}
+
+	@Test
+	public void modifyAccountPathToDuplicate() throws Exception {
+		String postBody = "{\"account_path\":\"user1\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("account_path"))
+				.andExpect(jsonPath("$.errors[0].code").value("duplicate"));
+	}
+
+	@Test
+	public void modifyAccountEmailToDuplicate() throws Exception {
+		String postBody = "{\"owner\":{\"email\":\"user1@myswiftriver.com\"}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("owner.email"))
+				.andExpect(jsonPath("$.errors[0].code").value("duplicate"));
+	}
+
+	@Test
+	public void modifyPassword() throws Exception {
+		String postBody = "{\"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\",\"owner\":{\"password\":\"new password\"}}";
+
+		this.mockMvc.perform(
+				put("/v1/accounts/6").content(postBody).contentType(
+						MediaType.APPLICATION_JSON)).andExpect(status().isOk());
+	}
+
+	@Test
+	public void modifyPasswordWithoutToken() throws Exception {
+		String postBody = "{\"owner\":{\"password\":\"new password\"}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("token"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+
+	@Test
+	public void modifyPasswordWithInvalidTokenToken() throws Exception {
+		String postBody = "{\"token\":\"This is invalid\",\"owner\":{\"password\":\"new password\"}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("token"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
+	@Test
+	public void modifyPasswordWithExpiredTokenToken() throws Exception {
+		String postBody = "{\"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\",\"owner\":{\"password\":\"new password\"}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("token"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
+	@Test
+	public void activateAccount() throws Exception {
+		String postBody = "{\"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/6").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.owner.active").value(true));
+	}
+
+	@Test
+	public void activateAccountWithExpiredToken() throws Exception {
+		String postBody = "{\"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/6").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("token"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
+	@Test
+	public void activateAccountWithNonExistentToken() throws Exception {
+		String postBody = "{\"token\":\"this can't be a token\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/6").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("token"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
 }
