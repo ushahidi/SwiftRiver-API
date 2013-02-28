@@ -348,8 +348,8 @@ public class BucketsController extends AbstractController {
 	@RequestMapping(value = "/{id}/drops/{dropId}/tags", method = RequestMethod.POST)
 	@ResponseBody
 	public GetTagDTO addDropTag(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateTagDTO createDTO) {
-		return bucketService.addDropTag(id, dropId, createDTO);
+			@RequestBody CreateTagDTO createDTO, Principal principal) {
+		return bucketService.addDropTag(id, dropId, createDTO, principal.getName());
 	}
 	
 	/**
@@ -360,8 +360,9 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/tags/{tagId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropTag(@PathVariable Long id, @PathVariable Long dropId, @PathVariable Long tagId) {
-		bucketService.deleteDropTag(id, dropId, tagId);
+	public void deleteDropTag(@PathVariable Long id, @PathVariable Long dropId,
+			@PathVariable Long tagId, Principal principal) {
+		bucketService.deleteDropTag(id, dropId, tagId, principal.getName());
 	}
 
 
@@ -376,8 +377,8 @@ public class BucketsController extends AbstractController {
 	@RequestMapping(value = "/{id}/drops/{dropId}/links", method = RequestMethod.POST)
 	@ResponseBody
 	public GetLinkDTO addDropLink(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateLinkDTO createDTO) {
-		return bucketService.addDropLink(id, dropId, createDTO);
+			@RequestBody CreateLinkDTO createDTO, Principal principal) {
+		return bucketService.addDropLink(id, dropId, createDTO, principal.getName());
 	}
 
 	/**
@@ -389,8 +390,9 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/links/{linkId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropLink(@PathVariable Long id, @PathVariable Long dropId, @PathVariable Long linkId) {
-		bucketService.deleteDropLink(id, dropId, linkId);
+	public void deleteDropLink(@PathVariable Long id, @PathVariable Long dropId, 
+			@PathVariable Long linkId, Principal principal) {
+		bucketService.deleteDropLink(id, dropId, linkId, principal.getName());
 	}
 
 	
@@ -405,8 +407,8 @@ public class BucketsController extends AbstractController {
 	@RequestMapping(value = "/{id}/drops/{dropId}/places", method = RequestMethod.POST)
 	@ResponseBody
 	public GetPlaceDTO addDropPlace(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreatePlaceDTO createDTO) {
-		return bucketService.addDropPlace(id, dropId, createDTO);
+			@RequestBody CreatePlaceDTO createDTO, Principal principal) {
+		return bucketService.addDropPlace(id, dropId, createDTO, principal.getName());
 	}
 
 	/**
@@ -418,8 +420,9 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/places/{placeId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropPlace(@PathVariable Long id, @PathVariable Long dropId, @PathVariable Long placeId) {
-		bucketService.deleteDropPlace(id, dropId, placeId);
+	public void deleteDropPlace(@PathVariable Long id, @PathVariable Long dropId,
+			@PathVariable Long placeId, Principal principal) {
+		bucketService.deleteDropPlace(id, dropId, placeId, principal.getName());
 	}
 	
 	
