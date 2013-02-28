@@ -412,4 +412,84 @@ public class BucketsControllerTest extends AbstractControllerTest {
 						getAuthentication("user3"))).andExpect(
 				status().isForbidden());
 	}
+	
+	/**
+	 * Test for {@link BucketsController#addDropTag(Long, Long, com.ushahidi.swiftriver.core.api.dto.CreateTagDTO)}
+	 * @throws Exception
+	 */
+	@Test
+	public void addDropTag() throws Exception {
+		String tag = "{\"tag\": \"Precious Blood Riruta\", \"tag_type\": \"organization\"}";
+		this.mockMvc.perform(post("/v1/buckets/1/drops/1/tags")
+				.content(tag)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.tag").value("Precious Blood Riruta"));
+	}
+	
+	/**
+	 * Test for {@link BucketsController#deleteDropTag(Long, Long, Long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteDropTag() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/1/tags/1")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#addDropLink(Long, Long, com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void addDropLink() throws Exception {
+		String link = "{\"url\": \"http://www.ushahidi.com\"}";
+		this.mockMvc.perform(post("/v1/buckets/1/drops/1/links")
+				.content(link)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.url").value("http://www.ushahidi.com"));
+	}
+	
+	/**
+	 * Test for {@link BucketsController#deleteDropLink(Long, Long, Long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteDropLink() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/1/links/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#addDropPlace(Long, Long, com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void addDropPlace() throws Exception {
+		String place = "{\"name\": \"Amsterdam\", \"latitude\":52.3667, \"longitude\": 4.88333 }";
+
+		this.mockMvc.perform(post("/v1/buckets/1/drops/1/places")
+				.content(place)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Amsterdam"))
+			.andExpect(jsonPath("$.longitude").value(4.88333));
+	}
+	
+	/**
+	 * Test for {@link BucketsController#deleteDropPlace(Long, Long, Long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteDropPlace() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/1/places/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
 }
