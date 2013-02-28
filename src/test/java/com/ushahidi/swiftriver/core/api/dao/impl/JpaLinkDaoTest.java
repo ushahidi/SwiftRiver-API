@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -24,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Link;
-import com.ushahidi.swiftriver.core.util.HashUtil;
 
 public class JpaLinkDaoTest extends AbstractDaoTest {
 	
@@ -35,15 +35,12 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 	 * Test for {@link LinkDao#save(Link)}
 	 */
 	@Test
-	public void testSave() {
+	public void testCreate() {
 		Link link = new Link();
-		String url = "http://www.ushahidi.com";
-		String hash = HashUtil.md5(url);
-		
-		link.setUrl(url);
-		link.setHash(hash);
+		link.setUrl("http://www.ushahidi.com");
 		linkDao.create(link);
 		
 		assertTrue(link.getId() > 0);
+		assertEquals("242dc4c581d755a10217eea313038209", link.getHash());
 	}
 }

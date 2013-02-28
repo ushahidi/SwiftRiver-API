@@ -23,9 +23,16 @@ import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 @Repository
 public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
+
+	@Override
+	public Link create(Link t) {
+		t.setHash(HashUtil.md5(t.getUrl()));
+		return super.create(t);
+	}
 
 	/**
 	 * @see LinkDao#findAllByHash(ArrayList)

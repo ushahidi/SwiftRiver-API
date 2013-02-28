@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -24,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
  * {@link TagDao} unit tests 
@@ -37,22 +37,18 @@ public class JpaTagDaoTest extends AbstractDaoTest {
 	private TagDao tagDao;
 
 	/**
-	 * Test for {@link TagDao#save(Tag)} 
+	 * Test for {@link TagDao#create(Tag)} 
 	 */
 	@Test
-	public void testSave() {
+	public void testCreate() {
 		Tag tag = new Tag();
 
-		String tagName = "Ushahidi Inc";
-		String hash = HashUtil.md5(tagName + "oragnization");
-
-		tag.setTag(tagName);
-		tag.setType(tagName.toLowerCase());
+		tag.setTag("Ushahidi Inc");
 		tag.setType("organization");
-		tag.setHash(hash);
 		
-		tagDao.create(tag);
-		
+		tagDao.create(tag);		
 		assertTrue(tag.getId() > 0);
+		assertEquals("ushahidi inc", tag.getTagCanonical());
+		assertEquals("75ff52b5876a910d6b1c0c273076f8de", tag.getHash());
 	}
 }

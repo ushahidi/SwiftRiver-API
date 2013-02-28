@@ -23,6 +23,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
  * Repository class for places
@@ -32,6 +33,16 @@ import com.ushahidi.swiftriver.core.model.Place;
 @Repository
 public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao{
 
+	public Place create(Place place) {
+		String hashInput = place.getPlaceName();
+		hashInput += Float.toString(place.getLongitude());
+		hashInput += Float.toString(place.getLatitude());
+
+		place.setHash(HashUtil.md5(hashInput));
+		place.setPlaceNameCanonical(place.getPlaceName().toLowerCase());
+
+		return super.create(place);
+	}
 	/**
 	 * @see PlaceDao#findAllByHash(ArrayList)
 	 */
