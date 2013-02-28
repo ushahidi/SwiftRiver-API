@@ -173,11 +173,13 @@ CREATE TABLE IF NOT EXISTS `rivers_droplets` (
   `channel_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_date_pub` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `channel` varchar(20) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `rivers_droplet_un_river_droplet` (`river_id`,`droplet_id`),
   KEY `river_id_idx` (`river_id`),
   KEY `droplet_id_idx` (`droplet_id`),
-  KEY `droplet_date_pub` (`droplet_date_pub`)
+  KEY `droplet_date_pub` (`droplet_date_pub`),
+  KEY `channel_id` (`channel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*
@@ -288,14 +290,15 @@ CREATE TABLE IF NOT EXISTS `buckets` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `bucket_name` varchar(255) NOT NULL DEFAULT '',
+  `bucket_name_canonical` VARCHAR(255) NOT NULL  DEFAULT '',
   `bucket_description` text,
-  `bucket_publish` tinyint(4) NOT NULL DEFAULT '0',
+  `bucket_publish` tinyint(1) NOT NULL DEFAULT '0',
   `default_layout` varchar(10) DEFAULT 'drops',
   `bucket_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   `public_token` varchar(32),
   `drop_count` INT  NULL  DEFAULT '0',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name`),
+  UNIQUE KEY `un_bucket_name` (`account_id`,`bucket_name_canonical`),
   KEY `bucket_date_add_idx` (`bucket_date_add`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -661,7 +664,7 @@ CREATE TABLE IF NOT EXISTS `river_collaborators` (
   `river_id` bigint(20) DEFAULT NULL,
   `account_id` bigint(20) DEFAULT NULL,
   `collaborator_active` tinyint(1) DEFAULT 0,
-  `read_only` tinyint(1)  DEFAULT '0',
+  `read_only` tinyint(1)  DEFAULT '1',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `river_id` (`river_id`,`account_id`)
@@ -676,7 +679,7 @@ CREATE TABLE IF NOT EXISTS `bucket_collaborators` (
   `account_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `bucket_id` bigint(11) unsigned NOT NULL DEFAULT '0',
   `collaborator_active` tinyint(1) DEFAULT 0,
-  `read_only` tinyint(1)  DEFAULT '0',
+  `read_only` tinyint(1)  DEFAULT '1',
   `date_added` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',  
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`,`bucket_id`)
@@ -826,4 +829,13 @@ CREATE TABLE IF NOT EXISTS `seq` (
   `name` varchar(30) NOT NULL DEFAULT '',
   `id` bigint(20) unsigned NOT NULL,
   PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- TABLE 'account_read_drops'
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `account_read_drops` (
+  `account_id` bigint(20) NOT NULL,
+  `droplet_id` bigint(20) NOT NULL,
+  UNIQUE KEY `droplet_id` (`droplet_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

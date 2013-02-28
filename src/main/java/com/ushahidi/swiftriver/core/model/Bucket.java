@@ -32,6 +32,9 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 @Entity
 @Table(name = "buckets")
 public class Bucket {
@@ -46,6 +49,9 @@ public class Bucket {
 
 	@Column(name = "bucket_name", nullable = false)
 	private String name;
+	
+	@Column(name="bucket_name_canonical", nullable=false)
+	private String bucketNameCanonical;
 
 	@Column(name = "bucket_description")
 	private String description;
@@ -99,6 +105,14 @@ public class Bucket {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getBucketNameCanonical() {
+		return bucketNameCanonical;
+	}
+
+	public void setBucketNameCanonical(String bucketNameCanonical) {
+		this.bucketNameCanonical = bucketNameCanonical;
 	}
 
 	public String getDescription() {
@@ -175,33 +189,26 @@ public class Bucket {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((account == null) ? 0 : account.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
+		return new HashCodeBuilder(17, 31).
+	            append(account).
+	            append(bucketNameCanonical).
+	            toHashCode();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
 		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Bucket other = (Bucket) obj;
-		if (account == null) {
-			if (other.account != null)
-				return false;
-		} else if (!account.equals(other.account))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		return true;
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        Bucket other = (Bucket) obj;
+        return new EqualsBuilder().
+            append(account, other.account).
+            append(bucketNameCanonical, other.bucketNameCanonical).
+            isEquals();
 	}
 	
 }

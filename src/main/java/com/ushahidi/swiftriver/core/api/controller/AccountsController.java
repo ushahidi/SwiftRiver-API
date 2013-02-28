@@ -79,7 +79,20 @@ public class AccountsController extends AbstractController {
 	@ResponseBody
 	public GetAccountDTO getAccountByName(@RequestParam("account_path") String accountPath,
 			Principal principal) throws NotFoundException {
-		return accountService.getAccountByName(accountPath, principal.getName());
+		return accountService.getAccountByAccountPath(accountPath, principal.getName());
+	}
+	
+	/**
+	 * Get account details for the specified id.
+	 * 
+	 * @param id
+	 * @return
+	 * @throws NotFoundException 
+	 */
+	@RequestMapping(method = RequestMethod.GET, params="q")
+	@ResponseBody
+	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query) throws NotFoundException {
+		return accountService.searchAccounts(query);
 	}
 
 	/**

@@ -40,6 +40,7 @@ import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 /**
  * Repository class for buckets
@@ -54,6 +55,32 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	
 	@Autowired
 	private DropDao dropDao;
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.
+	 * lang.Object)
+	 */
+	@Override
+	public Bucket create(Bucket bucket) {
+		bucket.setBucketNameCanonical(TextUtil.getURLSlug(bucket.getName()));
+		return super.create(bucket);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#update(java.
+	 * lang.Object)
+	 */
+	@Override
+	public Bucket update(Bucket bucket) {
+		bucket.setBucketNameCanonical(TextUtil.getURLSlug(bucket.getName()));
+		return super.update(bucket);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -117,17 +144,23 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findCollaborator(com.ushahidi.swiftriver.core.model.Bucket, com.ushahidi.swiftriver.core.model.Account)
 	 */
-	@SuppressWarnings("unchecked")
-	public BucketCollaborator findCollaborator(Bucket bucket, Account account) {
-		String sql = "FROM BucketCollaborator bc WHERE bc.bucket =:bucket AND bc.account = :account";
-		
-		Query query = em.createQuery(sql);
-		query.setParameter("bucket", bucket);
-		query.setParameter("account", account);
+	public BucketCollaborator findCollaborator(Long bucketId, Long accountId) {
+		String sql = "FROM BucketCollaborator bc "
+				+ "WHERE bc.account.id = :accountId "
+				+ "AND bc.bucket.id =:riverId";
 
-		List<BucketCollaborator> results = (List<BucketCollaborator>) query
-				.getResultList();
-		return results.isEmpty() ? null : results.get(0);
+		Query query = this.em.createQuery(sql);
+		query.setParameter("accountId", accountId);
+		query.setParameter("riverId", bucketId);
+
+		BucketCollaborator collaborator = null;
+		try {
+			collaborator = (BucketCollaborator) query.getSingleResult();
+		} catch (Exception e) {
+			// Do nothing;
+		}
+		
+		return collaborator;
 	}
 
 	/**

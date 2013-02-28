@@ -14,6 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import java.util.List;
+
 import com.ushahidi.swiftriver.core.model.Account;
 
 public interface AccountDao extends GenericDao<Account> {
@@ -82,4 +84,11 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param queryingAccount
 	 */
 	public void populateAssets(Account targetAccount, Account queryingAccount);
+	
+	/**
+	 * Search accounts matching the given query
+	 * 
+	 * @param query
+	 */
+	public List<Account> search(String query);
 }

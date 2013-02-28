@@ -1,16 +1,18 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.service;
 
@@ -40,7 +42,7 @@ public class AccountService {
 
 	@Autowired
 	private AccountDao accountDao;
-	
+
 	@Autowired
 	private Mapper mapper;
 
@@ -65,7 +67,7 @@ public class AccountService {
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
 	public GetAccountDTO getAccountById(Long id, String queryingUsername) throws NotFoundException {
 		Account account = getAccount(id);
@@ -80,26 +82,28 @@ public class AccountService {
 	 * 
 	 * @param username
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByUsername(String username) throws NotFoundException {
+	public GetAccountDTO getAccountByUsername(String username)
+			throws NotFoundException {
 		Account account = accountDao.findByUsername(username);
-		
+
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
-		
+
 		return mapGetAccountDTO(account);
 	}
-	
+
 	/**
 	 * Get an account by account_path
 	 * 
-	 * @param username
+	 * @param accountPath
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByName(String accountPath, String queryingUsername) throws NotFoundException {
+	public GetAccountDTO getAccountByAccountPath(String accountPath, 
+			String queryingUsername)  throws NotFoundException {
 		Account account = accountDao.findByAccountPath(accountPath);
 		
 		if (account == null) {
@@ -110,18 +114,42 @@ public class AccountService {
 		accountDao.populateAssets(account, queryingAccount);
 		return mapGetAccountDTO(account);
 	}
-	
+
+	/**
+	 * Search accounts
+	 * 
+	 * @param query
+	 * @return
+	 * @throws NotFoundException
+	 */
+	public List<GetAccountDTO> searchAccounts(String query)
+			throws NotFoundException {
+		List<Account> accounts = accountDao.search(query);
+
+		if (accounts == null) {
+			throw new NotFoundException("No accounts found");
+		}
+
+		List<GetAccountDTO> getAccountTOs = new ArrayList<GetAccountDTO>();
+		for (Account account : accounts) {
+			getAccountTOs.add(mapGetAccountDTO(account));
+		}
+
+		return getAccountTOs;
+	}
+
 	/**
 	 * Convert the given account into a GetAccountDTO
+	 * 
 	 * @param account
 	 * @return
 	 */
 	public GetAccountDTO mapGetAccountDTO(Account account) {
 		GetAccountDTO accountDTO = mapper.map(account, GetAccountDTO.class);
-		
+
 		accountDTO.setFollowerCount(account.getFollowers().size());
 		accountDTO.setFollowingCount(account.getFollowing().size());
-		
+
 		return accountDTO;
 	}
 
