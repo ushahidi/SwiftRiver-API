@@ -16,9 +16,14 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +34,18 @@ import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
@@ -44,8 +56,12 @@ import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Channel;
+import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.Tag;
 
 public class RiverServiceTest {
 	
@@ -60,6 +76,14 @@ public class RiverServiceTest {
 	private Mapper mockMapper;
 	
 	private RiverService riverService;
+
+	private RiverDropDao mockRiverDropDao;
+
+	private TagDao mockTagDao;
+
+	private LinkDao mockLinkDao;
+
+	private PlaceDao mockPlaceDao;
 	
 	@Before
 	public void setup() {
@@ -67,6 +91,10 @@ public class RiverServiceTest {
 		mockAccountDao = mock(AccountDao.class);
 		mockChannelDao = mock(ChannelDao.class);
 		mockRiverCollaboratorDao = mock(RiverCollaboratorDao.class);
+		mockRiverDropDao = mock(RiverDropDao.class);
+		mockTagDao = mock(TagDao.class);
+		mockLinkDao = mock(LinkDao.class);
+		mockPlaceDao = mock(PlaceDao.class);
 		mockMapper = mock(Mapper.class);
 		
 		riverService = new RiverService();
@@ -74,6 +102,10 @@ public class RiverServiceTest {
 		riverService.setAccountDao(mockAccountDao);
 		riverService.setChannelDao(mockChannelDao);
 		riverService.setRiverCollaboratorDao(mockRiverCollaboratorDao);
+		riverService.setRiverDropDao(mockRiverDropDao);
+		riverService.setTagDao(mockTagDao);
+		riverService.setLinkDao(mockLinkDao);
+		riverService.setPlaceDao(mockPlaceDao);
 		riverService.setMapper(mockMapper);
 	}
 
@@ -356,5 +388,142 @@ public class RiverServiceTest {
 		
 		riverService.deleteCollaborator(1L, 2L, "admin");
 		verify(mockRiverCollaboratorDao).delete(collaborator);
+	}
+	
+	@Test
+	public void addDropTag() {
+		CreateTagDTO createTag = mock(CreateTagDTO.class);
+
+		River mockRiver = mock(River.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Tag mockTag = mock(Tag.class);
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockTagDao.findByHash(anyString())).thenReturn(mockTag);
+
+		riverService.addDropTag(1L, 3L, createTag, "user1");
+
+		verify(mockRiverDao).findById(1L);
+		verify(mockRiverDropDao).findById(3L);
+		verify(mockRiverDropDao).findTag(mockRiverDrop, mockTag);
+		verify(mockRiverDropDao).addTag(mockRiverDrop, mockTag);		
+	}
+	
+	@Test
+	public void deleteDropTag() {
+		River mockRiver = mock(River.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Tag mockTag = mock(Tag.class);
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockTagDao.findById(anyLong())).thenReturn(mockTag);
+		when(mockRiverDropDao.deleteTag(mockRiverDrop, mockTag)).thenReturn(true);
+		
+		riverService.deleteDropTag(2L, 3L, 100L, "user1");
+		verify(mockTagDao).findById(100L);
+		verify(mockRiverDropDao).deleteTag(mockRiverDrop, mockTag);
+		
+	}
+	
+	@Test
+	public void addDropLink() {
+		CreateLinkDTO dto = new CreateLinkDTO();
+		dto.setUrl("http://www.nation.co.ke");
+
+		River mockRiver = mock(River.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Link mockLink = mock(Link.class);
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockLinkDao.findByHash(anyString())).thenReturn(mockLink);
+		
+		riverService.addDropLink(1L, 3L, dto, "user3");
+		verify(mockRiverDropDao).findById(3L);
+		verify(mockRiverDropDao).addLink(mockRiverDrop, mockLink);
+		
+		
+	}
+	
+	@Test
+	public void deleteDropLink() {
+		River mockRiver = mock(River.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Link mockLink = mock(Link.class);
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockLinkDao.findById(anyLong())).thenReturn(mockLink);
+		when(mockRiverDropDao.deleteLink(mockRiverDrop, mockLink)).thenReturn(true);
+		
+		riverService.deleteDropLink(1L, 22L, 55L, "admin");
+
+		verify(mockRiverDropDao).findById(22L);
+		verify(mockLinkDao).findById(55L);
+		verify(mockRiverDropDao).deleteLink(mockRiverDrop, mockLink);
+		
+	}
+	
+	@Test
+	public void addDropPlace() {
+		CreatePlaceDTO createPlace = new CreatePlaceDTO();
+
+		River mockRiver = mock(River.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Place mockPlace = mock(Place.class);
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockPlaceDao.findByHash(anyString())).thenReturn(mockPlace);
+		
+		riverService.addDropPlace(2L, 33L, createPlace, "user1");
+		verify(mockRiverDropDao).findById(33L);
+		verify(mockAccountDao).findByUsername("user1");
+		verify(mockRiverDropDao).findPlace(mockRiverDrop, mockPlace);
+		verify(mockRiverDropDao).addPlace(mockRiverDrop, mockPlace);
+		
+	}
+	
+	@Test
+	public void deleteDropPlace() {
+		River mockRiver = mock(River.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Place mockPlace = mock(Place.class);
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockPlaceDao.findById(anyLong())).thenReturn(mockPlace);
+		when(mockRiverDropDao.deletePlace(mockRiverDrop, mockPlace)).thenReturn(true);
+		
+		riverService.deleteDropPlace(2L, 90L, 78L, "admin");
+		verify(mockRiverDropDao).findById(90L);
+		verify(mockPlaceDao).findById(78L);
+		verify(mockRiverDropDao).deletePlace(mockRiverDrop, mockPlace);
 	}
 }

@@ -30,15 +30,25 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.controller.RiversController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
-import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
@@ -48,10 +58,17 @@ import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 @Transactional(readOnly = true)
 @Service
@@ -74,6 +91,18 @@ public class RiverService {
 
 	@Autowired
 	private Mapper mapper;
+
+	@Autowired
+	private RiverDropDao riverDropDao;
+
+	@Autowired
+	private TagDao tagDao;
+
+	@Autowired
+	private LinkDao linkDao;
+
+	@Autowired
+	private PlaceDao placeDao;
 
 	public RiverDao getRiverDao() {
 		return riverDao;
@@ -114,6 +143,22 @@ public class RiverService {
 
 	public void setMapper(Mapper mapper) {
 		this.mapper = mapper;
+	}
+
+	public void setRiverDropDao(RiverDropDao riverDropDao) {
+		this.riverDropDao = riverDropDao;
+	}
+
+	public void setTagDao(TagDao tagDao) {
+		this.tagDao = tagDao;
+	}
+
+	public void setLinkDao(LinkDao linkDao) {
+		this.linkDao = linkDao;
+	}
+
+	public void setPlaceDao(PlaceDao placeDao) {
+		this.placeDao = placeDao;
 	}
 
 	/**
@@ -562,11 +607,260 @@ public class RiverService {
 	private River getRiver(Long id) {
 		River river = riverDao.findById(id);
 		if (river == null) {
-			throw new NotFoundException(String.format(
-					"River with id %d not found", id));
+			throw new NotFoundException(String.format("River with id %d not found", id));
 		}
 		
 		return river;
+	}
+
+	/**
+	 * Adds a {@link Tag} to the {@link RiverDrop} with the specified <code>dropId</code>
+	 * The drop must be in the {@link River} whose ID is specified in <code>id</code>
+	 * 
+	 * The created {@link Tag} entity is transformed to a DTO for purposes of
+	 * consumption by {@link RiversController}
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @param name
+	 * @return
+	 */
+	@Transactional
+	public GetTagDTO addDropTag(Long riverId, Long dropId, CreateTagDTO createDTO,
+			String authUser) {
+
+		River river = getRiver(riverId);
+		checkPermissions(river, authUser);
+
+		// Get the bucket drop
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		
+		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
+		Tag tag = tagDao.findByHash(hash);
+		if (tag == null) {
+			tag = new Tag();
+			tag.setTag(createDTO.getTag());
+			tag.setType(createDTO.getTagType());
+
+			tagDao.create(tag);
+		} else {
+			// Check if the tag exists in the bucket drop
+			if (riverDropDao.findTag(riverDrop, tag) != null) {
+				throw new BadRequestException(String.format("Tag %s of type %s has already been added to drop %d",
+						tag.getTag(), tag.getType(), dropId));
+			}
+		}
+		 
+		riverDropDao.addTag(riverDrop, tag);
+		return mapper.map(tag, GetTagDTO.class);
+	}
+
+	/**
+	 * Deletes the {@link Tag} with the id specified in <code>tagId</code>
+	 * from the {@link RiverDrop} specified in <code>dropId</code>
+	 * 
+	 * The request {@link BucketDrop} must be a member of the {@link River}
+	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
+	 * is thrown
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param tagId
+	 * @param authUser
+	 */
+	@Transactional
+	public void deleteDropTag(Long riverId, Long dropId, Long tagId, String authUser) {
+		River river = getRiver(riverId);
+		checkPermissions(river, authUser);
+
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+
+		Tag tag = tagDao.findById(tagId);
+
+		if (tag == null) {
+			throw new NotFoundException(String.format("Tag %d does not exist", tagId));
+		}
+
+		if (!riverDropDao.deleteTag(riverDrop, tag)) {
+			throw new NotFoundException(String.format("Drop %d does not have tag %d", dropId, tagId));
+		}
+		
+	}
+
+	/**
+	 * Adds a {@link Link} to the {@link RiverDrop} with the specified <code>dropId</code>
+	 * The drop must be in the {@link River} whose ID is specified in <code>id</code>
+	 * 
+	 * The created {@link Link} entity is transformed to a DTO for purposes of
+	 * consumption by {@link RiversController}
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public GetLinkDTO addDropLink(Long riverId, Long dropId, CreateLinkDTO createDTO, String authUser) {
+		River river = getRiver(riverId);
+		checkPermissions(river, authUser);
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+
+		String hash = HashUtil.md5(createDTO.getUrl());
+		Link link = linkDao.findByHash(hash);
+		if (link == null) {
+			link = new Link();
+			link.setUrl(createDTO.getUrl());
+			link.setHash(hash);
+			
+			linkDao.create(link);
+		} else {
+			// Has the link already been added ?
+			if (riverDropDao.findLink(riverDrop, link) != null) {
+				throw new BadRequestException(String.format("%s has already been added to drop %d",
+						link.getUrl(), dropId));
+			}
+		}
+		
+		riverDropDao.addLink(riverDrop, link);
+		return mapper.map(link, GetLinkDTO.class);
+	}
+
+	/**
+	 * Deletes the {@link Link} with the id specified in <code>linkId</code>
+	 * from the {@link RiverDrop} specified in <code>dropId</code>
+	 * 
+	 * The request {@link RiverDrop} must be a member of the {@link River}
+	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
+	 * is thrown
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param linkId
+	 * @param authUser
+	 */
+	@Transactional
+	public void deleteDropLink(Long riverId, Long dropId, Long linkId, String authUser) {
+		River river = getRiver(riverId);
+		checkPermissions(river, authUser);
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		Link link = linkDao.findById(linkId);
+
+		if (link == null) {
+			throw new NotFoundException(String.format("Link %d does not exist", linkId));
+		}
+
+		if (!riverDropDao.deleteLink(riverDrop, link)) {
+			throw new NotFoundException(String.format("Drop %d does not have link %d", dropId, linkId));
+		}		
+	}
+	
+	/**
+	 * Adds a {@link Place} to the {@link RiverDrop} with the specified <code>dropId</code>
+	 * The drop must be in the {@link River} whose ID is specified in <code>id</code>
+	 * 
+	 * The created {@link Place} entity is transformed to a DTO for purposes of
+	 * consumption by {@link RiversController}
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public GetPlaceDTO addDropPlace(Long riverId, Long dropId, CreatePlaceDTO createDTO, String authUser) {
+		River river = getRiver(riverId);
+		checkPermissions(river, authUser);
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		
+		String hashInput = createDTO.getName();
+		hashInput += Float.toString(createDTO.getLongitude());
+		hashInput += Float.toString(createDTO.getLatitude());
+		 
+		 String hash = HashUtil.md5(hashInput);
+
+		 // Generate a hash for the place name
+		 Place place = placeDao.findByHash(hash);
+		 if (place == null) {
+			 place = new Place();
+			 place.setPlaceName(createDTO.getName());
+			 place.setLatitude(createDTO.getLatitude());
+			 place.setLongitude(createDTO.getLongitude());
+
+			 placeDao.create(place);
+		 } else {
+			 if (riverDropDao.findPlace(riverDrop, place) != null) {
+				 throw new BadRequestException(String.format(
+						 "Drop %d already has the place %s with coordinates [%f, %f]",
+						 dropId, place.getPlaceName(), place.getLatitude(), place.getLongitude()));
+			 }
+		 }
+
+		 riverDropDao.addPlace(riverDrop, place);
+		 return mapper.map(place, GetPlaceDTO.class);
+	}
+
+	/**
+	 * Deletes the {@link Link} with the id specified in <code>linkId</code>
+	 * from the {@link RiverDrop} specified in <code>dropId</code>
+	 * 
+	 * The request {@link RiverDrop} must be a member of the {@link Bucket}
+	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
+	 * is thrown
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param placeId
+	 * @param authUser
+	 */
+	@Transactional
+	public void deleteDropPlace(Long riverId, Long dropId, Long placeId, String authUser) {
+		River river = getRiver(riverId);
+		checkPermissions(river, authUser);
+
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		Place place = placeDao.findById(placeId);
+
+		if (place == null) {
+			throw new NotFoundException(String.format("Place %d does not exist", placeId));
+		}
+
+		if (!riverDropDao.deletePlace(riverDrop, place)) {
+			throw new NotFoundException(String.format("Drop %d does not have place %d", dropId, placeId));
+		}
+		
+	}
+
+	/**
+	 * Helper method to retrieve a {@link RiverDrop} record from
+	 * the database and verify that the retrieved entity belongs
+	 * to the {@link River} specified in <code>river</code>
+	 * 
+	 * @param dropId
+	 * @param river
+	 * @return
+	 */
+	private RiverDrop getRiverDrop(Long dropId, River river) {
+		RiverDrop riverDrop = riverDropDao.findById(dropId);
+		if (riverDrop == null) {
+			throw new NotFoundException();
+		}
+
+		if (!riverDrop.getRiver().equals(river)) {
+			throw new NotFoundException(String.format("Drop %d does not exist in river %d",
+					dropId, river.getId()));
+		}
+		return riverDrop;
+	}
+
+	private void checkPermissions(River river, String authUser) {
+		Account account = accountDao.findByUsername(authUser);
+		if (!(river.getAccount().equals(account) || 
+				account.getCollaboratingRivers().contains(river))) {
+			throw new ForbiddenException("Permission denied");
+		}
 	}
 
 }

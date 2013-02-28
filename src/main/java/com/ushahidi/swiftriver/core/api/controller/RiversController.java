@@ -36,8 +36,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
@@ -46,6 +49,9 @@ import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -424,7 +430,97 @@ public class RiversController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
+	@ResponseBody
 	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
 		riverService.deleteDrop(id, dropId);
 	}
+	
+	/**
+	 * Handler for adding a tag to a drop that is in a river
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/tags", method = RequestMethod.POST)
+	@ResponseBody
+	public GetTagDTO addDropTag(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreateTagDTO createDTO, Principal principal) {
+		return riverService.addDropTag(id, dropId, createDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for deleting a tag from a drop that is in a river 
+	 * @param id
+	 * @param dropId
+	 * @param linkId
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/tags/{tagId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropTag(@PathVariable Long id, @PathVariable Long dropId,
+			@PathVariable Long tagId, Principal principal) {
+		riverService.deleteDropTag(id, dropId, tagId, principal.getName());
+	}
+
+
+	/**
+	 * Handler for adding a link to a drop that is in a river
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/links", method = RequestMethod.POST)
+	@ResponseBody
+	public GetLinkDTO addDropLink(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreateLinkDTO createDTO, Principal principal) {
+		return riverService.addDropLink(id, dropId, createDTO, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a link from a drop that is in a river
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param linkId
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/links/{linkId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropLink(@PathVariable Long id, @PathVariable Long dropId, 
+			@PathVariable Long linkId, Principal principal) {
+		riverService.deleteDropLink(id, dropId, linkId, principal.getName());
+	}
+
+	
+	/**
+	 * Handler for adding a place to a drop
+	 *  
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/places", method = RequestMethod.POST)
+	@ResponseBody
+	public GetPlaceDTO addDropPlace(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreatePlaceDTO createDTO, Principal principal) {
+		return riverService.addDropPlace(id, dropId, createDTO, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a place from a drop that is in a river
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param placeId
+	 */
+	@RequestMapping(value = "/{id}/drops/{dropId}/places/{placeId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropPlace(@PathVariable Long id, @PathVariable Long dropId,
+			@PathVariable Long placeId, Principal principal) {
+		riverService.deleteDropPlace(id, dropId, placeId, principal.getName());
+	}
+	
 }

@@ -880,6 +880,12 @@ public class BucketService {
 	}
 
 	/**
+	 * Deletes the {@link Place} with the id specified in <code>placeId</code>
+	 * from the {@link BucketDrop} specified in <code>dropId</code>
+	 * 
+	 * The request {@link BucketDrop} must be a member of the {@link Bucket}
+	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
+	 * is thrown
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -923,7 +929,8 @@ public class BucketService {
 	/**
 	 * Helper method to retrieve a {@link BucketDrop} record from
 	 * the database and verify that the retrieved entity belongs
-	 * to the {@link Bucket} with the ID specified in <code>bucketId</code>
+	 * to the {@link Bucket} specified in <code>bucket</code>
+	 * 
 	 * @param dropId
 	 * @param bucket
 	 * @return
@@ -935,7 +942,7 @@ public class BucketService {
 		}
 		
 		if (!bucketDrop.getBucket().equals(bucket)) {
-			throw new NotFoundException(String.format("Drop %d does is not in bucket %d", dropId, bucket));
+			throw new NotFoundException(String.format("Drop %d does is not in bucket %d", dropId, bucket.getId()));
 		}
 		
 		return bucketDrop;
