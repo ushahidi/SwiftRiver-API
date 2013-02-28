@@ -471,7 +471,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void addDropPlace() throws Exception {
-		String place = "{\"name\": \"Amsterdam\", \"latitude\":52.3667, \"longitude\": 4.88333 }";
+		String place = "{\"name\": \"Amsterdam\", \"longitude\":52.3667, \"latitude\": 4.88333 }";
 
 		this.mockMvc.perform(post("/v1/buckets/1/drops/1/places")
 				.content(place)
@@ -479,7 +479,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 				.principal(getAuthentication("user1")))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.name").value("Amsterdam"))
-			.andExpect(jsonPath("$.longitude").value(4.88333));
+			.andExpect(jsonPath("$.longitude").value(52.3667));
 	}
 	
 	/**
