@@ -32,7 +32,7 @@ public class BucketDropPlace {
 	private long id;
 	
 	@ManyToOne
-	@JoinColumn(name="droplets_buckets_id")
+	@JoinColumn(name="buckets_droplets_id")
 	private BucketDrop bucketDrop;
 	
 	@ManyToOne
