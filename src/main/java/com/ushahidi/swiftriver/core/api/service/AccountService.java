@@ -16,6 +16,7 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,23 +24,33 @@ import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ClientDao;
+import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
+import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Transactional(readOnly = true)
 @Service
@@ -57,10 +68,18 @@ public class AccountService {
 	private UserTokenDao userTokenDao;
 
 	@Autowired
+	private ClientDao clientDao;
+
+	@Autowired
+	private RoleDao roleDao;
+
+	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	private Mapper mapper;
+
+	private String key;
 
 	public AccountDao getAccountDao() {
 		return accountDao;
@@ -86,6 +105,22 @@ public class AccountService {
 		this.userTokenDao = userTokenDao;
 	}
 
+	public ClientDao getClientDao() {
+		return clientDao;
+	}
+
+	public void setClientDao(ClientDao clientDao) {
+		this.clientDao = clientDao;
+	}
+
+	public RoleDao getRoleDao() {
+		return roleDao;
+	}
+
+	public void setRoleDao(RoleDao roleDao) {
+		this.roleDao = roleDao;
+	}
+
 	public PasswordEncoder getPasswordEncoder() {
 		return passwordEncoder;
 	}
@@ -100,6 +135,14 @@ public class AccountService {
 
 	public void setMapper(Mapper mapper) {
 		this.mapper = mapper;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	/**
@@ -159,7 +202,7 @@ public class AccountService {
 		}
 		return getAccountDTO;
 	}
-	
+
 	/**
 	 * Get an account by email
 	 * 
@@ -206,6 +249,12 @@ public class AccountService {
 		return getAccountTOs;
 	}
 
+	/**
+	 * Create an account
+	 * 
+	 * @param createAccountTO
+	 * @return
+	 */
 	@Transactional(readOnly = false)
 	public GetAccountDTO createAccount(CreateAccountDTO createAccountTO) {
 		if (accountDao.findByName(createAccountTO.getAccountPath()) != null) {
@@ -247,6 +296,13 @@ public class AccountService {
 		return getAccountTo;
 	}
 
+	/**
+	 * Modify an existing account
+	 * 
+	 * @param accountId
+	 * @param modifyAccountTO
+	 * @return
+	 */
 	@Transactional(readOnly = false)
 	public GetAccountDTO modifyAccount(Long accountId,
 			ModifyAccountDTO modifyAccountTO) {
@@ -318,6 +374,13 @@ public class AccountService {
 		return accountDTO;
 	}
 
+	/**
+	 * Returns true if the given token is valid for the user.
+	 * 
+	 * @param tokenString
+	 * @param user
+	 * @return
+	 */
 	@Transactional(readOnly = false)
 	public boolean isTokenValid(String tokenString, User user) {
 		// Activate account is matching user token found
@@ -331,6 +394,12 @@ public class AccountService {
 		return true;
 	}
 
+	/**
+	 * Create a token for the given user.
+	 * 
+	 * @param user
+	 * @return
+	 */
 	@Transactional(readOnly = false)
 	public UserToken createUserToken(User user) {
 		UserToken token = new UserToken();
@@ -342,5 +411,96 @@ public class AccountService {
 		userTokenDao.create(token);
 
 		return token;
+	}
+
+	/**
+	 * Get clients in the given account
+	 * 
+	 * @param accountId
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetClientDTO> getClients(Long accountId, String authUser) {
+
+		Account account = accountDao.findById(accountId);
+
+		if (account == null)
+			throw new NotFoundException("Account not found");
+
+		Account authAccount = accountDao.findByUsername(authUser);
+
+		if (!authAccount.equals(account))
+			throw new ForbiddenException("Permission Denied");
+
+		List<GetClientDTO> clients = new ArrayList<GetClientDTO>();
+		for (Client client : account.getClients()) {
+
+			// Decrypt client secret
+			TextEncryptor encryptor = Encryptors.text(
+					TextUtil.convertStringToHex(key),
+					TextUtil.convertStringToHex(client.getClientId()));
+			GetClientDTO dto = mapper.map(client, GetClientDTO.class);
+			dto.setClientSecret(encryptor.decrypt(client.getClientSecret()));
+
+			clients.add(dto);
+		}
+
+		return clients;
+	}
+
+	/**
+	 * Create a new client under the given account.
+	 * 
+	 * @param accountId
+	 * @param createClientTO
+	 * @param name
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public GetClientDTO createClient(Long accountId,
+			CreateClientDTO createClientTO, String name) {
+		Account account = accountDao.findById(accountId);
+
+		if (account == null)
+			throw new NotFoundException("Account not found");
+
+		if (!account.equals(accountDao.findByUsername(name)))
+			throw new ForbiddenException("Permission Denied");
+
+		Client client = mapper.map(createClientTO, Client.class);
+		String clientId = UUID.randomUUID().toString();
+		String secret = UUID.randomUUID().toString();
+
+		// Encrypt the secret
+		TextEncryptor encryptor = Encryptors.text(
+				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(clientId));
+		client.setClientSecret(encryptor.encrypt(secret));
+		client.setClientId(clientId);
+
+		client.setAccount(account);
+		client.setRoles(new HashSet<Role>());
+		client.getRoles().add(roleDao.findByName("client"));
+		clientDao.create(client);
+
+		GetClientDTO dto = mapper.map(client, GetClientDTO.class);
+		dto.setClientSecret(secret);
+		return dto;
+	}
+
+	public void deleteApp(Long accountId, Long clientId, String authUser) {
+		Account account = accountDao.findById(accountId);
+
+		if (account == null)
+			throw new NotFoundException("Account not found");
+
+		if (!account.equals(accountDao.findByUsername(authUser)))
+			throw new ForbiddenException("Permission Denied");
+
+		Client client = clientDao.findById(clientId);
+		if (client == null)
+			throw new NotFoundException("Client not found");
+
+		clientDao.delete(client);
 	}
 }

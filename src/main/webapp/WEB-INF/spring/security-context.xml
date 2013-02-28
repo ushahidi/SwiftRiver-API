@@ -105,16 +105,4 @@
 		class="org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler">
 		<beans:property name="tokenServices" ref="tokenServices" />
 	</beans:bean>
-
-	<beans:beans profile="prod">
-		<beans:bean id="encryptionKey" class="java.lang.String">
-			<beans:constructor-arg value="${encrypt.key}" />
-		</beans:bean>
-	</beans:beans>
-
-	<beans:beans profile="test">
-		<beans:bean id="encryptionKey" class="java.lang.String">
-			<beans:constructor-arg value="2344228477#97{7&amp;6&gt;82" />
-		</beans:bean>
-	</beans:beans>
 </beans:beans>

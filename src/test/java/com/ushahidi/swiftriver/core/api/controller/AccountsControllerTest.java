@@ -14,6 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -26,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
 public class AccountsControllerTest extends AbstractControllerTest {
 
@@ -54,7 +56,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value(3));
 	}
-	
+
 	@Test
 	public void getAccountByEmail() throws Exception {
 		this.mockMvc
@@ -64,7 +66,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value(5));
 	}
-	
+
 	@Test
 	public void getAccountWithTokenForAccountPath() throws Exception {
 		this.mockMvc
@@ -75,11 +77,12 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.id").value(3))
 				.andExpect(jsonPath("$.token").exists());
 	}
-	
+
 	@Test
 	public void getAccountWithTokenForEmail() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts?email=user3@myswiftriver.com&token=1"))
+				.perform(
+						get("/v1/accounts?email=user3@myswiftriver.com&token=1"))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -365,6 +368,134 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.errors").isArray())
 				.andExpect(jsonPath("$.errors[0].field").value("token"))
 				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+	}
+
+	@Test
+	public void getApps() throws Exception {
+		this.mockMvc
+				.perform(
+						get("/v1/accounts/1/apps").principal(
+								getAuthentication("admin")))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$[0].id").value(1))
+				.andExpect(jsonPath("$[0].client_id").value("trusted-client"))
+				.andExpect(jsonPath("$[0].client_secret").value("somesecret"))
+				.andExpect(
+						jsonPath("$[0].redirect_uri").value(
+								"http://example.com/oauth/redirect"))
+				.andExpect(jsonPath("$[0].name").value("my app"))
+				.andExpect(
+						jsonPath("$[0].description").value(
+								"my app's description"))
+				.andExpect(jsonPath("$[0].homepage").value("my app's homepage"));
+	}
+
+	@Test
+	public void getUnknownAccountApps() throws Exception {
+		this.mockMvc.perform(
+				get("/v1/accounts/9999/apps").principal(
+						getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void getOtherUserApps() throws Exception {
+		this.mockMvc.perform(
+				get("/v1/accounts/1/apps")
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void createApp() throws Exception {
+		String postBody = "{\"name\":\"My App\",\"description\":\"App Description\",\"redirect_uri\":\"http://example.com\",\"homepage\":\"http://example.com\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts/1/apps").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(2))
+				.andExpect(jsonPath("$.client_id").exists())
+				.andExpect(jsonPath("$.client_secret").exists());
+	}
+
+	@Test
+	public void createAppInUnknownAccount() throws Exception {
+		String postBody = "{\"name\":\"My App\",\"description\":\"App Description\",\"redirect_uri\":\"http://example.com\",\"homepage\":\"http://example.com\"}";
+
+		this.mockMvc.perform(
+				post("/v1/accounts/9999/apps").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void createAppWithoutPermission() throws Exception {
+		String postBody = "{\"name\":\"My App\",\"description\":\"App Description\",\"redirect_uri\":\"http://example.com\",\"homepage\":\"http://example.com\"}";
+
+		this.mockMvc.perform(
+				post("/v1/accounts/1/apps").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void createAppWithMissingParameters() throws Exception {
+		String postBody = "{\"name\":\"My App\",\"description\":\"App Description\",\"homepage\":\"http://example.com\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts/1/apps").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("redirect_uri"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+
+		postBody = "{\"redirect_uri\":\"redirect uri\",\"description\":\"App Description\",\"homepage\":\"http://example.com\"}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/accounts/1/apps").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("name"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+	
+
+	@Test
+	public void deleteApp() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/accounts/1/apps/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("admin"))).andExpect(status().isOk());
+	}
+	
+	@Test
+	public void deleteUnknownApp() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/accounts/1/apps/9999").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("admin"))).andExpect(status().isNotFound());
+	}
+	
+	
+	@Test
+	public void deleteAppWithoutPermssion() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/accounts/1/apps/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isForbidden());
 	}
 
 }

@@ -23,6 +23,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -53,6 +54,10 @@ public class Client {
 	@ManyToMany
 	@JoinTable(name="roles_clients", joinColumns = @JoinColumn(name="client_id"), inverseJoinColumns = @JoinColumn(name="role_id"))
 	private Set<Role> roles;
+	
+	@ManyToOne
+	@JoinColumn(name = "account_id")
+	private Account account;
 
 	public long getId() {
 		return id;
@@ -124,6 +129,14 @@ public class Client {
 
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
+	}
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
 }

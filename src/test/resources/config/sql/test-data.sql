@@ -331,8 +331,8 @@ INSERT INTO `account_read_drops` (`account_id`, `droplet_id`) VALUES
 -- -----------------------------------------------------
 -- Data for table `clients`
 -- -----------------------------------------------------
-INSERT INTO `clients` (`id`, `client_id`, `client_secret`, `redirect_uri`, `name`) VALUES
-(1, 'trusted-client', 'somesecret', 'http://example.com/oauth/redirect', 'my app');
+INSERT INTO `clients` (`id`, `account_id`, `client_id`, `client_secret`, `redirect_uri`, `name`, `description`, `homepage`) VALUES
+(1, 1, 'trusted-client', '8b22f281afd911c3dfc59270af43db1995d5968a3447c780ba3e152e603fd9a0', 'http://example.com/oauth/redirect', 'my app', 'my app''s description', 'my app''s homepage');
 
 -- -----------------------------------------------------
 -- Data for table `roles_clients`

@@ -784,16 +784,17 @@ CREATE TABLE IF NOT EXISTS `account_read_drops` (
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS `clients` (
   `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
+  `account_id` bigint(11) NOT NULL,
   `client_id` varchar(255) NOT NULL DEFAULT '',
   `client_secret` varchar(255) NOT NULL DEFAULT '',
   `redirect_uri` varchar(255) NOT NULL DEFAULT '',
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `homepage` varchar(255) DEFAULT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
+  `active` TINYINT(1)  NULL  DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `client_id` (`client_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- -----------------------------------------------------
 -- Table `roles_clients`

@@ -31,7 +31,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
@@ -206,17 +208,34 @@ public class AccountsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/apps", method = RequestMethod.POST)
+	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.POST)
 	@ResponseBody
-	public Account createApp(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetClientDTO createApp(@RequestBody CreateClientDTO body,
+			@PathVariable Long accountId, Principal principal) {
+		
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		if (body.getName() == null) {
+			errors.add(new ErrorField("name", "missing"));
+		}
+
+		if (body.getRedirectUri() == null) {
+			errors.add(new ErrorField("redirect_uri", "missing"));
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+		
+		return accountService.createClient(accountId, body, principal.getName());
 	}
 
-	@RequestMapping(value = "/{id}/apps", method = RequestMethod.GET)
+	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getApps(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public List<GetClientDTO> getApps(@PathVariable Long accountId, Principal principal) {
+		return accountService.getClients(accountId, principal.getName());
 	}
 
 	@RequestMapping(value = "/{id}/apps/{appId}", method = RequestMethod.PUT)
@@ -226,9 +245,9 @@ public class AccountsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/apps/{appId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public Account deleteApp(@PathVariable Long id, @PathVariable Long appId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void deleteApp(@PathVariable Long accountId, @PathVariable Long appId, Principal principal) {
+		accountService.deleteApp(accountId, appId, principal.getName());
 	}
 }

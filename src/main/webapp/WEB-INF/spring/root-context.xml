@@ -14,15 +14,17 @@
 
 	<!-- post-processors for all standard config annotations -->
 	<context:annotation-config />
-	
+
 	<bean id="bcryptPasswordEncoder"
 		class="com.ushahidi.swiftriver.core.api.auth.CustomBCryptPasswordEncoder" />
 
 	<!-- Repository Beans -->
 	<bean id="accountDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
 	<bean id="userDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaUserDao" />
-	<bean id="userTokenDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaUserTokenDao" />
+	<bean id="userTokenDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaUserTokenDao" />
 	<bean id="clientDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaClientDao" />
+	<bean id="roleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRoleDao" />
 	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
 	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
 	<bean id="bucketDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDao" />
@@ -36,7 +38,9 @@
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
 
 	<!-- Service Beans -->
-	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
+	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
+		<property name="key" ref="encryptionKey" />
+	</bean>
 	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService" />
 	<bean id="bucketService" class="com.ushahidi.swiftriver.core.api.service.BucketService" />
 	<bean id="dropService" class="com.ushahidi.swiftriver.core.api.service.DropService" />
@@ -82,10 +86,18 @@
 	<!-- Data Sources -->
 	<beans profile="prod">
 		<context:property-placeholder location="file:///${ext.prop.dir}/*.properties" />
+
+		<bean id="encryptionKey" class="java.lang.String">
+			<constructor-arg value="${encrypt.key}" />
+		</bean>
 	</beans>
 
 	<beans profile="test">
 		<context:property-placeholder location="classpath:db-test.properties" />
+		
+		<bean id="encryptionKey" class="java.lang.String">
+			<constructor-arg value="2344228477#97{7&amp;6&gt;82" />
+		</bean>
 
 		<jdbc:initialize-database data-source="dataSource">
 			<jdbc:script location="classpath:config/sql/schema-destroy.sql" />
