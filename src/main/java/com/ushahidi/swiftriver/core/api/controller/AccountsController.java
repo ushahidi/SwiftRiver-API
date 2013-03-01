@@ -35,6 +35,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -238,11 +239,11 @@ public class AccountsController extends AbstractController {
 		return accountService.getClients(accountId, principal.getName());
 	}
 
-	@RequestMapping(value = "/{id}/apps/{appId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account modifyApp(@RequestBody Map<String, Object> body,
-			@PathVariable Long id, @PathVariable Long appId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetClientDTO modifyApp(@RequestBody ModifyClientDTO body,
+			@PathVariable Long accountId, @PathVariable Long appId, Principal principal) {
+		return accountService.modifyClient(accountId, appId, body, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.DELETE)

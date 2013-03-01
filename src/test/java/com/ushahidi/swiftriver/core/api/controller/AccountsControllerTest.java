@@ -27,7 +27,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
+
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 public class AccountsControllerTest extends AbstractControllerTest {
 
@@ -471,7 +474,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.errors[0].field").value("name"))
 				.andExpect(jsonPath("$.errors[0].code").value("missing"));
 	}
-	
 
 	@Test
 	public void deleteApp() throws Exception {
@@ -480,22 +482,104 @@ public class AccountsControllerTest extends AbstractControllerTest {
 						MediaType.APPLICATION_JSON).principal(
 						getAuthentication("admin"))).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	public void deleteUnknownApp() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/accounts/1/apps/9999").contentType(
 						MediaType.APPLICATION_JSON).principal(
-						getAuthentication("admin"))).andExpect(status().isNotFound());
+						getAuthentication("admin"))).andExpect(
+				status().isNotFound());
 	}
-	
-	
+
 	@Test
 	public void deleteAppWithoutPermssion() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/accounts/1/apps/1").contentType(
 						MediaType.APPLICATION_JSON).principal(
-						getAuthentication("user1"))).andExpect(status().isForbidden());
+						getAuthentication("user1"))).andExpect(
+				status().isForbidden());
 	}
 
+	@Test
+	public void modifyApp() throws Exception {
+		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1/apps/1").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("My App Renamed"))
+				.andExpect(jsonPath("$.description").value("App Description Renamed"))
+				.andExpect(jsonPath("$.redirect_uri").value("http://example.com/renamed"))
+				.andExpect(jsonPath("$.homepage").value("http://example.com/home/renamed"))
+				.andExpect(jsonPath("$.client_id").value("trusted-client"))
+				.andExpect(jsonPath("$.client_secret").value("somesecret"));
+	}
+	
+	@Test
+	public void modifyAppWithoutPermission() throws Exception {
+		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1/apps/1").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isForbidden());
+	}
+	
+	@Test
+	public void modifyUnknownApp() throws Exception {
+		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1/apps/9999").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void modifyAppInUnknownAccount() throws Exception {
+		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/9999/apps/1").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void modifyAppPartially() throws Exception {
+		String postBody = "{\"name\":\"apps's new name\"}";
+		
+		this.mockMvc
+		.perform(
+				put("/v1/accounts/1/apps/1").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("admin")))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.description").value(notNullValue()));
+	}
+	
+	@Test
+	public void modifyAppResetCredentials() throws Exception {
+		String postBody = "{\"client_id\":\"reset\"}";
+		
+		this.mockMvc
+		.perform(
+				put("/v1/accounts/1/apps/1").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("admin")))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.client_id").value(not(equalTo("trusted-client"))))
+		.andExpect(jsonPath("$.client_id").value(not(equalTo("reset"))))
+		.andExpect(jsonPath("$.client_secret").value(not(equalTo("somesecret"))));
+	}
 }

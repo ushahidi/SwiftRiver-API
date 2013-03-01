@@ -339,6 +339,7 @@ public class AccountServiceTest {
 		assertEquals("new app's description", client.getDescription());
 		assertEquals("http://example.com", client.getHomepage());
 		assertEquals("http://example.com/redirect", client.getRedirectUri());
+		assertTrue(client.getActive());
 		assertTrue(client.getRoles().contains(role));
 		assertNotNull(client.getClientId());
 		assertNotNull(client.getClientSecret());

@@ -40,6 +40,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
@@ -434,13 +435,8 @@ public class AccountService {
 
 		List<GetClientDTO> clients = new ArrayList<GetClientDTO>();
 		for (Client client : account.getClients()) {
-
-			// Decrypt client secret
-			TextEncryptor encryptor = Encryptors.text(
-					TextUtil.convertStringToHex(key),
-					TextUtil.convertStringToHex(client.getClientId()));
 			GetClientDTO dto = mapper.map(client, GetClientDTO.class);
-			dto.setClientSecret(encryptor.decrypt(client.getClientSecret()));
+			dto.setClientSecret(decryptClientSecret(client));
 
 			clients.add(dto);
 		}
@@ -468,19 +464,11 @@ public class AccountService {
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = mapper.map(createClientTO, Client.class);
-		String clientId = UUID.randomUUID().toString();
-		String secret = UUID.randomUUID().toString();
-
-		// Encrypt the secret
-		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(key),
-				TextUtil.convertStringToHex(clientId));
-		client.setClientSecret(encryptor.encrypt(secret));
-		client.setClientId(clientId);
-
+		String secret = resetClientCredentials(client);
 		client.setAccount(account);
 		client.setRoles(new HashSet<Role>());
 		client.getRoles().add(roleDao.findByName("client"));
+		client.setActive(true);
 		clientDao.create(client);
 
 		GetClientDTO dto = mapper.map(client, GetClientDTO.class);
@@ -502,5 +490,83 @@ public class AccountService {
 			throw new NotFoundException("Client not found");
 
 		clientDao.delete(client);
+	}
+
+	/**
+	 * Mofify the given client app.
+	 * 
+	 * @param accountId
+	 * @param dbClientId
+	 * @param modifyClientDTO
+	 * @param authUser
+	 * @return
+	 */
+	public GetClientDTO modifyClient(Long accountId, Long dbClientId,
+			ModifyClientDTO modifyClientDTO, String authUser) {
+
+		Account account = accountDao.findById(accountId);
+
+		if (account == null)
+			throw new NotFoundException("Account not found");
+
+		if (!account.equals(accountDao.findByUsername(authUser)))
+			throw new ForbiddenException("Permission Denied");
+
+		Client client = clientDao.findById(dbClientId);
+		if (client == null)
+			throw new NotFoundException("Client not found");
+
+		mapper.map(modifyClientDTO, client);
+
+		String secret = null;
+		if (modifyClientDTO.getClientId() != null) {
+			secret = resetClientCredentials(client);
+		}
+
+		clientDao.update(client);
+
+		GetClientDTO getClientDTO = mapper.map(client, GetClientDTO.class);
+		if (secret != null) {
+			// We present the plain text secret
+			getClientDTO.setClientSecret(secret);
+		} else {
+			getClientDTO.setClientSecret(decryptClientSecret(client));
+		}
+
+		return getClientDTO;
+	}
+
+	/**
+	 * Sets a random client_id and client_secret in the given Client object.
+	 * 
+	 * @param client
+	 * @return The plain text secret.
+	 */
+	private String resetClientCredentials(Client client) {
+		// Reset the client credentials
+		String clientId = UUID.randomUUID().toString();
+		String secret = UUID.randomUUID().toString();
+
+		// Encrypt the secret
+		TextEncryptor encryptor = Encryptors.text(
+				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(clientId));
+		client.setClientSecret(encryptor.encrypt(secret));
+		client.setClientId(clientId);
+
+		return secret;
+	}
+
+	/**
+	 * Get the plain text client_secret for the given client.
+	 * 
+	 * @param client
+	 * @return
+	 */
+	private String decryptClientSecret(Client client) {
+		TextEncryptor encryptor = Encryptors.text(
+				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(client.getClientId()));
+		return encryptor.decrypt(client.getClientSecret());
 	}
 }
