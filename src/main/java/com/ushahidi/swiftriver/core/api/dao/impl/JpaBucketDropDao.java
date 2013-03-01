@@ -32,8 +32,7 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
-public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements
-		BucketDropDao {
+public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements BucketDropDao {
 
 	/*
 	 * (non-Javadoc)
@@ -191,6 +190,33 @@ public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements
 		}
 
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#increaseVeracity(com.ushahidi.swiftriver.core.model.BucketDrop)
+	 */
+	public void increaseVeracity(BucketDrop bucketDrop) {
+		long veracity = bucketDrop.getVeracity();
+		veracity += 1;
+
+		bucketDrop.setVeracity(veracity);
+		this.em.merge(bucketDrop);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findById(java.lang.Long, java.lang.Long)
+	 */
+	public BucketDrop findById(Long bucketDropId, Long bucketId) {
+		String sql = "FROM BucketDrop WHERE id = :id AND bucket.id = :bucketId";
+		
+		TypedQuery<BucketDrop> query = em.createQuery(sql, BucketDrop.class);
+		query.setParameter("id", bucketDropId);
+		query.setParameter("bucketId", bucketId);
+		
+		List<BucketDrop> bucketDrops = query.getResultList();
+		return bucketDrops.isEmpty() ?  null : bucketDrops.get(0);
 	}
 
 }

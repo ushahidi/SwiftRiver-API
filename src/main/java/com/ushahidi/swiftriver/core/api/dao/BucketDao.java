@@ -23,6 +23,7 @@ import java.util.Map;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 
 public interface BucketDao extends GenericDao<Bucket> {
@@ -40,14 +41,14 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams);
 	
 	/**
-	 * Adds the {@link Drop} specified in <code>dropId</code> to the
+	 * Adds the {@link Drop} specified in <code>drop</code> to the
 	 * {@link Bucket} in <code>bucket</code>
 	 * 
 	 * @param bucket
-	 * @param dropId
+	 * @param drop
 	 * @return 
 	 */
-	public boolean addDrop(Bucket bucket, long dropId);
+	public boolean addDrop(Bucket bucket, Drop drop);
 	
 	/**
 	 * Adds a collection of drops to a buckets
@@ -119,5 +120,15 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 * @return
 	 */
 	public List<Bucket> findAll(List<Long> bucketIds);
+
+	/**
+	 * Gets and returns the {@link BucketDrop} record with
+	 * the specified <code>bucketId</code> and <code>dropId</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @return
+	 */
+	public BucketDrop findDrop(Long bucketId, Long dropId);
 
 }

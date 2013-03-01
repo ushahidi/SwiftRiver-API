@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.DropSource;
@@ -73,9 +74,10 @@ public interface DropDao extends GenericDao<Drop> {
 	 * 
 	 * @param drops
 	 * @param dropSource
+	 * @param queryingAccount
 	 * @return
 	 */
-	public void populateMetadata(List<Drop> drops, DropSource dropSource);
+	public void populateMetadata(List<Drop> drops, DropSource dropSource, Account queryingAccount);
 
 	/**
 	 * Gets and returns the {@link DropComment} record with the specified

@@ -466,6 +466,7 @@ CREATE TABLE IF NOT EXISTS `buckets_droplets` (
   `bucket_id` int(11) unsigned NOT NULL DEFAULT '0',
   `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_date_added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date when the droplet was added to the bucket',
+  `droplet_veracity` int(11) unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `bucket_droplet_un_bucket_droplet` (`bucket_id`,`droplet_id`),
   KEY `bucket_id_idx` (`bucket_id`),

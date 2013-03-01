@@ -25,9 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Query;
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
@@ -49,10 +53,15 @@ import com.ushahidi.swiftriver.core.model.Tag;
 @Repository
 public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
-	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);	
+	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
 	
-	// Drop sources
-
+	private NamedParameterJdbcTemplate jdbcTemplate;
+	
+	@Autowired
+	public void setDataSource(DataSource dataSource) {
+		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	}
+	
 	
 	/**
 	 * @see DropDao#createDrops(Collection)
@@ -109,7 +118,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * com.ushahidi.swiftriver.core.api.dao.DropDao#populateMetadata(java.util
 	 * .List, com.ushahidi.swiftriver.core.model.Account)
 	 */
-	public void populateMetadata(List<Drop> drops, DropSource dropSource) {
+	public void populateMetadata(List<Drop> drops, DropSource dropSource, Account queryingAccount) {
 		if (drops.size() == 0) {
 			return;
 		}
@@ -118,7 +127,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		populateLinks(drops, dropSource);
 		populateMedia(drops, dropSource);
 		populatePlaces(drops, dropSource);
-		populateBuckets(drops);
+		populateBuckets(drops, queryingAccount);
 	}
 
 	/**
@@ -631,8 +640,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * in <code>drops</code>
 	 * 
 	 * @param drops
+	 * @param queryingAccount
 	 */
-	public void populateBuckets(List<Drop> drops) {
+	public void populateBuckets(List<Drop> drops, Account queryingAccount) {
 		Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
 		int i = 0;
 		for (Drop drop: drops) {
@@ -641,31 +651,44 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		}
 
 		// Query to fetch the buckets
-		String sql = "SELECT `buckets_droplets`.`droplet_id`, `buckets`.`id`, `buckets`.`bucket_name` ";
+		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
+		sql += "`buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
-		sql += "WHERE `buckets_droplets`.`droplet_id` IN :dropIds ";
+		sql += "WHERE `buckets_droplets`.`id` IN (:dropIds)";
+		sql += "AND `buckets`.`bucket_publish` = 1 ";
+		sql += "UNION ALL ";
+		sql += "SELECT `buckets_droplets`.`id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
+		sql += "`buckets`.`bucket_name` ";
+		sql += "FROM `buckets` ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
+		sql += "LEFT JOIN `accounts` ON (`buckets`.`account_id` = `accounts`.`id` AND `buckets`.`account_id` = :accountId) ";
+		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId)";
+		sql += "WHERE `buckets_droplets`.`id` IN (:dropIds) ";
+		sql += "AND `buckets`.`bucket_publish` = 0 ";
 		
-		Query query = this.em.createNativeQuery(sql);
-		query.setParameter("dropIds", dropsIndex.keySet());
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("dropIds", dropsIndex.keySet());
+		params.addValue("accountId", queryingAccount.getId());
 		
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
+	
 		// Group the buckets by bucket id
 		Map<Long, Bucket> buckets = new HashMap<Long, Bucket>();
-		for (Object row: query.getResultList()) {
-			Object[] rowArray = (Object[]) row;
+		for (Map<String, Object> row: results) {
 			
-			Long dropId = ((BigInteger)rowArray[0]).longValue();
+			Long dropId = ((BigInteger)row.get("id")).longValue();
 			Drop drop = drops.get(dropsIndex.get(dropId));
 			if (drop.getBuckets() == null) {
 				drop.setBuckets(new ArrayList<Bucket>());
 			}
 
-			Long bucketId = ((BigInteger) rowArray[1]).longValue();
+			Long bucketId = ((BigInteger) row.get("bucket_id")).longValue();
 			Bucket bucket = buckets.get(bucketId);
 			if (bucket == null) {
 				bucket = new Bucket();
 				bucket.setId(bucketId);
-				bucket.setName((String) rowArray[2]);
+				bucket.setName((String)row.get("bucket_name"));
 				
 				buckets.put(bucketId, bucket);
 			}

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,17 +87,12 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addDrop(com.ushahidi.swiftriver.core.model.Bucket, long)
 	 */
-	public boolean addDrop(Bucket bucket, long dropId) {
-		Drop drop = dropDao.findById(dropId);
-		if (drop == null) {
-			LOG.warn(String.format("Drop %d does not exist", dropId));
-			return false;
-		}
-		
+	public boolean addDrop(Bucket bucket, Drop drop) {		
 		BucketDrop bucketDrop = new BucketDrop();
 		bucketDrop.setDrop(drop);
 		bucketDrop.setBucket(bucket);
 		bucketDrop.setDateAdded(new Date());
+		bucketDrop.setVeracity(1L);
 		
 		this.em.persist(bucketDrop);
 
@@ -255,7 +251,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		
 		if (!drops.isEmpty()) {
 			// Populate the metadata
-			dropDao.populateMetadata(drops, DropSource.BUCKET);
+			dropDao.populateMetadata(drops, DropSource.BUCKET, account);
 		}
 
 		return drops;
@@ -298,6 +294,22 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		return (List<Bucket>) em.createQuery("FROM Bucket WHERE id IN :bucketIds")
 				.setParameter("bucketIds", bucketIds)
 				.getResultList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findDrop(java.lang.Long, java.lang.Long)
+	 */
+	public BucketDrop findDrop(Long bucketId, Long dropId) {
+		String sql = "FROM BucketDrop WHERE bucket.id = :bucketId AND drop.id = :dropId";
+		
+		TypedQuery<BucketDrop> query = em.createQuery(sql, BucketDrop.class);
+		query.setParameter("bucketId", bucketId);
+		query.setParameter("dropId", dropId);
+		
+		List<BucketDrop> bucketDrops = query.getResultList();
+		
+		return bucketDrops.isEmpty() ? null : bucketDrops.get(0);
 	}
 
 }

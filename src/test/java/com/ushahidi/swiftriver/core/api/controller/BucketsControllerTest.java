@@ -221,7 +221,10 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void addDrop() throws Exception {
-		this.mockMvc.perform(put("/v1/buckets/1/drops/10")
+		String dropSource = "{\"source\": \"river\"}";
+		this.mockMvc.perform(put("/v1/buckets/1/drops/5")
+				.content(dropSource)
+				.contentType(MediaType.APPLICATION_JSON)
 				.principal(authentication))
 		.andExpect(status().isOk());
 	}

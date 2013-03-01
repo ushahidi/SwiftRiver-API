@@ -47,6 +47,9 @@ public class BucketDrop {
 	@Column(name="droplet_date_added")
 	private Date dateAdded;
 	
+	@Column(name="droplet_veracity")
+	private long veracity;
+	
 	public long getId() {
 		return id;
 	}
@@ -77,6 +80,14 @@ public class BucketDrop {
 
 	public void setDateAdded(Date dateAdded) {
 		this.dateAdded = dateAdded;
+	}
+
+	public long getVeracity() {
+		return veracity;
+	}
+
+	public void setVeracity(long veracity) {
+		this.veracity = veracity;
 	}
 
 }

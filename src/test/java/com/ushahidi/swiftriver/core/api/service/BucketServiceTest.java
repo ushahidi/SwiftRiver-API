@@ -36,19 +36,24 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 public class BucketServiceTest {
@@ -70,6 +75,8 @@ private BucketDao mockBucketDao;
 	private PlaceDao mockPlaceDao;
 
 	private LinkDao mockLinkDao;
+
+	private RiverDropDao mockRiverDropDao;
 	
 	@Before
 	public void setup() {
@@ -80,6 +87,7 @@ private BucketDao mockBucketDao;
 		mockTagDao = mock(TagDao.class);
 		mockPlaceDao = mock(PlaceDao.class);
 		mockLinkDao = mock(LinkDao.class);
+		mockRiverDropDao = mock(RiverDropDao.class);
 		mockMapper = mock(Mapper.class);
 		
 		bucketService = new BucketService();
@@ -90,6 +98,7 @@ private BucketDao mockBucketDao;
 		bucketService.setTagDao(mockTagDao);
 		bucketService.setPlaceDao(mockPlaceDao);
 		bucketService.setLinkDao(mockLinkDao);
+		bucketService.setRiverDropDao(mockRiverDropDao);
 		bucketService.setMapper(mockMapper);
 	}
 
@@ -184,15 +193,14 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
-		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockTagDao.findByHash(anyString())).thenReturn(mockTag);
 
 		bucketService.addDropTag(1L, 3L, createTag, "user1");
 
 		verify(mockBucketDao).findById(1L);
-		verify(mockBucketDropDao).findById(3L);
+		verify(mockBucketDropDao).findById(3L, 1L);
 		verify(mockBucketDropDao).findTag(mockBucketDrop, mockTag);
 		verify(mockBucketDropDao).addTag(mockBucketDrop, mockTag);
 	}
@@ -206,9 +214,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
-		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockTagDao.findById(anyLong())).thenReturn(mockTag);
 		when(mockBucketDropDao.deleteTag(mockBucketDrop, mockTag)).thenReturn(true);
 		
@@ -231,9 +238,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
-		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockPlaceDao.findByHash(anyString())).thenReturn(mockPlace);
 		
 		bucketService.addDropPlace(1L, 22L, dto, "admin");
@@ -249,9 +255,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
-		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockPlaceDao.findById(anyLong())).thenReturn(mockPlace);
 		when(mockBucketDropDao.deletePlace(mockBucketDrop, mockPlace)).thenReturn(true);
 		
@@ -260,7 +265,7 @@ private BucketDao mockBucketDao;
 	}
 	
 	@Test
-	public void testAddLink() {
+	public void addLink() {
 		CreateLinkDTO createLink = new CreateLinkDTO();
 		createLink.setUrl("http://www.ushahidi.com");
 
@@ -271,9 +276,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
-		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockLinkDao.findByHash(anyString())).thenReturn(mockLink);
 
 		bucketService.addDropLink(1L, 22L, createLink, "admin");
@@ -281,7 +285,7 @@ private BucketDao mockBucketDao;
 	}
 	
 	@Test
-	public void testDeleteLink() {
+	public void deleteLink() {
 		Bucket mockBucket = mock(Bucket.class);
 		BucketDrop mockBucketDrop = mock(BucketDrop.class);
 		Account mockAuthAccount = mock(Account.class);
@@ -289,15 +293,103 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
-		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockLinkDao.findById(anyLong())).thenReturn(mockLink);
 		when(mockBucketDropDao.deleteLink(mockBucketDrop, mockLink)).thenReturn(true);
 		
 		bucketService.deleteDropLink(1L, 5L, 22L, "admin");
 		verify(mockLinkDao).findById(22L);
 		verify(mockBucketDropDao).deleteLink(mockBucketDrop, mockLink);
+		
+	}
+	
+	@Test
+	public void addDropFromRiver() {
+		DropSourceDTO dropSource = new DropSourceDTO();
+		dropSource.setSource("river");
+
+		Bucket mockBucket = mock(Bucket.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Drop mockDrop = mock(Drop.class);
+
+		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getDrop()).thenReturn(mockDrop);
+		when(mockBucketDao.findDrop(anyLong(), anyLong())).thenReturn(null);
+		
+		bucketService.addDrop(1L, 22L, dropSource, "admin");
+		verify(mockBucketDao).addDrop(mockBucket, mockDrop);		
+	}
+	
+	@Test
+	public void addDropFromBucket() {
+		DropSourceDTO dropSource = new DropSourceDTO();
+		dropSource.setSource("bucket");
+
+		Bucket mockBucket = mock(Bucket.class);
+		Bucket mockOtherBucket = mock(Bucket.class);
+		BucketDrop mockBucketDrop = mock(BucketDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Drop mockDrop = mock(Drop.class);
+
+		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
+		when(mockBucketDrop.getDrop()).thenReturn(mockDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockOtherBucket);
+		
+		bucketService.addDrop(1L, 12L, dropSource, "admin");
+		verify(mockBucketDropDao).findById(12L);
+		verify(mockBucketDao).addDrop(mockBucket, mockDrop);		
+	}
+	
+	@Test
+	public void addExistingBucketDropFromRiver() {
+		DropSourceDTO dropSource = new DropSourceDTO();
+		dropSource.setSource("river");
+
+		Bucket mockBucket = mock(Bucket.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Drop mockDrop = mock(Drop.class);
+		BucketDrop mockBucketDrop = mock(BucketDrop.class);
+
+		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDrop.getDrop()).thenReturn(mockDrop);
+		when(mockBucketDao.findDrop(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		
+		bucketService.addDrop(1L, 22L, dropSource, "admin");
+		verify(mockBucketDropDao).increaseVeracity(mockBucketDrop);
+		
+	}
+	
+	@Test(expected=BadRequestException.class)
+	public void addExistingBucketDropFromBucket() {
+		DropSourceDTO dropSource = new DropSourceDTO();
+		dropSource.setSource("bucket");
+
+		Bucket mockBucket = mock(Bucket.class);
+		BucketDrop mockBucketDrop = mock(BucketDrop.class);
+		Account mockAuthAccount = mock(Account.class);
+		Drop mockDrop = mock(Drop.class);
+
+		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
+		when(mockBucketDrop.getDrop()).thenReturn(mockDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
+		
+		bucketService.addDrop(1L, 12L, dropSource, "admin");
+		verify(mockBucketDropDao).findById(12L);
 		
 	}
 }

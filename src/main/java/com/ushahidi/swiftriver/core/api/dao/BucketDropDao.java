@@ -25,6 +25,17 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 public interface BucketDropDao extends GenericDao<BucketDrop> {
+	
+	/**
+	 * Gets and returns the {@link BucketDrop} record with the ID
+	 * specified in <code>bucketDropId</code> and {@link Bucket} with
+	 * the ID specified in <code>bucketId</code>
+	 * 
+	 * @param bucketDropId
+	 * @param bucketId
+	 * @return
+	 */
+	public BucketDrop findById(Long bucketDropId, Long bucketId);
 
 	/**
 	 * Adds the {@link Tag} specified in <code>tag</code> to the 
@@ -112,5 +123,13 @@ public interface BucketDropDao extends GenericDao<BucketDrop> {
 	 * @return
 	 */
 	public boolean deletePlace(BucketDrop bucketDrop, Place place);
+
+	/**
+	 * Increments the veracity of the {@link BucketDrop} specified
+	 * in <code>bucketDrop</code> by 1
+	 * 
+	 * @param bucketDrop
+	 */
+	public void increaseVeracity(BucketDrop bucketDrop);
 
 }

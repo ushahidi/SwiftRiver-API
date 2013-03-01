@@ -185,7 +185,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
 				params);
 
-		return formatDrops(results);
+		return formatDrops(results, queryingAccount);
 	}
 
 	/*
@@ -252,16 +252,17 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
 				params);
 
-		return formatDrops(results);
+		return formatDrops(results, queryingAccount);
 	}
 
 	/**
 	 * Generate a Drop entity list for the given drop result map.
 	 * 
 	 * @param results
+	 * @param queryingAccount
 	 * @return
 	 */
-	private List<Drop> formatDrops(List<Map<String, Object>> results) {
+	private List<Drop> formatDrops(List<Map<String, Object>> results, Account queryingAccount) {
 		List<Drop> drops = new ArrayList<Drop>();
 		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
@@ -294,7 +295,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		}
 
 		// Populate metadata
-		dropsDao.populateMetadata(drops, DropSource.RIVER);
+		dropsDao.populateMetadata(drops, DropSource.RIVER, queryingAccount);
 		
 		return drops;
 	}
