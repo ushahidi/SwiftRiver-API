@@ -2,6 +2,7 @@ package com.ushahidi.swiftriver.core.api.auth;
 
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +42,7 @@ public class DbUserDetailsServiceTest {
 		user.setLocked(false);
 		Role r = new Role();
 		r.setName("user");
-		List<Role> roles = new ArrayList<Role>();
+		Set<Role> roles = new HashSet<Role>();
 		roles.add(r);
 		user.setRoles(roles);
 		

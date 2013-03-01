@@ -352,7 +352,12 @@ public class AccountService {
 				throw ErrorUtil.getBadRequestException("token", "invalid");
 
 			account.setActive(true);
-			account.getOwner().setActive(true);
+			User user = account.getOwner();
+			user.setActive(true);
+			user.setExpired(false);
+			user.setLocked(false);
+			user.setRoles(new HashSet<Role>());
+			user.getRoles().add(roleDao.findByName("user"));
 		}
 
 		mapper.map(modifyAccountTO, account);

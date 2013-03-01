@@ -69,7 +69,7 @@ public class User {
 	
 	@ManyToMany
 	@JoinTable(name="roles_users", joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name="role_id"))
-	private List<Role> roles;
+	private Set<Role> roles;
 
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="user")
 	private Set<UserToken> tokens;
@@ -169,11 +169,11 @@ public class User {
 		return GravatarUtil.gravatar(email);
 	}
 
-	public List<Role> getRoles() {
+	public Set<Role> getRoles() {
 		return roles;
 	}
 
-	public void setRoles(List<Role> roles) {
+	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
 	}
 
