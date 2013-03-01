@@ -125,7 +125,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * Populate tag metadata into the given drops.
 	 * 
 	 * @param drops
-	 * @param dropSource TODO
+	 * @param dropSource
 	 */
 	public void populateTags(List<Drop> drops, DropSource dropSource) {
 
@@ -235,7 +235,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * Populate link metadata into the given drops array.
 	 * 
 	 * @param drops
-	 * @param dropSource TODO
+	 * @param dropSource
 	 */
 	public void populateLinks(List<Drop> drops, DropSource dropSource) {
 
@@ -344,7 +344,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * Populate media metadata into the given drops array.
 	 * 
 	 * @param drops
-	 * @param dropSource TODO
+	 * @param dropSource
 	 */
 	public void populateMedia(List<Drop> drops, DropSource dropSource) {
 
@@ -355,15 +355,17 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			i++;
 		}
 		
-		// Generate a map for drop images
-		String sql = "SELECT `droplets`.`id`, `droplet_image` FROM `droplets` ";		
+		// Generate a map for drop images		
+		String sql = null;		
 		switch (dropSource) {
 			case BUCKET:
+				sql = "SELECT `buckets_droplets`.`id`, `droplet_image` FROM `droplets` ";
 				sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
 				sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
 				break;
 				
 			case RIVER:
+				sql = "SELECT `rivers_droplets`.`id`, `droplet_image` FROM `droplets` ";
 				sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 				sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
 				break;
@@ -511,7 +513,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * Populate geo metadata into the given drops array.
 	 * 
 	 * @param drops
-	 * @param dropSource TODO
+	 * @param dropSource
 	 */
 	public void populatePlaces(List<Drop> drops, DropSource dropSource) {
 		
