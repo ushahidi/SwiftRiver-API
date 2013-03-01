@@ -351,6 +351,7 @@ public class AccountService {
 			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
 				throw ErrorUtil.getBadRequestException("token", "invalid");
 
+			account.setActive(true);
 			account.getOwner().setActive(true);
 		}
 

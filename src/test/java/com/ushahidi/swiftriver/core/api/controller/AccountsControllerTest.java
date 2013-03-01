@@ -342,6 +342,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 						put("/v1/accounts/6").content(postBody).contentType(
 								MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.active").value(true))
 				.andExpect(jsonPath("$.owner.active").value(true));
 	}
 
