@@ -38,7 +38,7 @@ INSERT INTO `bucket_droplet_media` (`buckets_droplets_id`, `media_id`, `deleted`
 (SELECT `buckets_droplets`.`id`, `media_id`, `deleted` FROM `account_droplet_media`
 INNER JOIN `buckets_droplets` ON (`account_droplet_media`.`droplet_id` = `buckets_droplets`.`droplet_id`));
 
-INSERT INTO `river_droplet_tags` (`rivers_droplets_id`, `media_id`, `deleted`)
+INSERT INTO `river_droplet_media` (`rivers_droplets_id`, `media_id`, `deleted`)
 (SELECT `rivers_droplets`.`id`, `media_id`, `deleted` FROM `account_droplet_media`
 INNER JOIN `rivers_droplets` ON (`account_droplet_media`.`droplet_id` = `rivers_droplets`.`droplet_id`));
 
