@@ -27,17 +27,6 @@ import com.ushahidi.swiftriver.core.model.Tag;
 public interface BucketDropDao extends GenericDao<BucketDrop> {
 	
 	/**
-	 * Gets and returns the {@link BucketDrop} record with the ID
-	 * specified in <code>bucketDropId</code> and {@link Bucket} with
-	 * the ID specified in <code>bucketId</code>
-	 * 
-	 * @param bucketDropId
-	 * @param bucketId
-	 * @return
-	 */
-	public BucketDrop findById(Long bucketDropId, Long bucketId);
-
-	/**
 	 * Adds the {@link Tag} specified in <code>tag</code> to the 
 	 * {@link BucketDrop} specified in <code>bucketDrop</code>
 	 *  

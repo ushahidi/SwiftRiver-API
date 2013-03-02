@@ -204,19 +204,4 @@ public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements Buck
 		this.em.merge(bucketDrop);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findById(java.lang.Long, java.lang.Long)
-	 */
-	public BucketDrop findById(Long bucketDropId, Long bucketId) {
-		String sql = "FROM BucketDrop WHERE id = :id AND bucket.id = :bucketId";
-		
-		TypedQuery<BucketDrop> query = em.createQuery(sql, BucketDrop.class);
-		query.setParameter("id", bucketDropId);
-		query.setParameter("bucketId", bucketId);
-		
-		List<BucketDrop> bucketDrops = query.getResultList();
-		return bucketDrops.isEmpty() ?  null : bucketDrops.get(0);
-	}
-
 }

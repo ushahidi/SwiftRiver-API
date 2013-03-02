@@ -193,14 +193,15 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockTagDao.findByHash(anyString())).thenReturn(mockTag);
 
 		bucketService.addDropTag(1L, 3L, createTag, "user1");
 
 		verify(mockBucketDao).findById(1L);
-		verify(mockBucketDropDao).findById(3L, 1L);
+		verify(mockBucketDropDao).findById(3L);
 		verify(mockBucketDropDao).findTag(mockBucketDrop, mockTag);
 		verify(mockBucketDropDao).addTag(mockBucketDrop, mockTag);
 	}
@@ -214,7 +215,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockTagDao.findById(anyLong())).thenReturn(mockTag);
 		when(mockBucketDropDao.deleteTag(mockBucketDrop, mockTag)).thenReturn(true);
@@ -238,7 +240,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockPlaceDao.findByHash(anyString())).thenReturn(mockPlace);
 		
@@ -255,7 +258,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockPlaceDao.findById(anyLong())).thenReturn(mockPlace);
 		when(mockBucketDropDao.deletePlace(mockBucketDrop, mockPlace)).thenReturn(true);
@@ -276,7 +280,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockLinkDao.findByHash(anyString())).thenReturn(mockLink);
 
@@ -293,7 +298,8 @@ private BucketDao mockBucketDao;
 
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAuthAccount);
-		when(mockBucketDropDao.findById(anyLong(), anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockLinkDao.findById(anyLong())).thenReturn(mockLink);
 		when(mockBucketDropDao.deleteLink(mockBucketDrop, mockLink)).thenReturn(true);

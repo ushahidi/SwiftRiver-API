@@ -844,11 +844,8 @@ public class RiverService {
 	 */
 	private RiverDrop getRiverDrop(Long dropId, River river) {
 		RiverDrop riverDrop = riverDropDao.findById(dropId);
-		if (riverDrop == null) {
-			throw new NotFoundException();
-		}
-
-		if (!riverDrop.getRiver().equals(river)) {
+		if (riverDrop == null || 
+				(riverDrop != null && !riverDrop.getRiver().equals(river))) {
 			throw new NotFoundException(String.format("Drop %d does not exist in river %d",
 					dropId, river.getId()));
 		}
