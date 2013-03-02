@@ -616,10 +616,14 @@ public class BucketService {
 	 * 
 	 * @param bucketId
 	 * @param dropId
+	 * @param authUser
 	 */
 	@Transactional
-	public void deleteDrop(Long bucketId, Long dropId) {
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+	public void deleteDrop(Long bucketId, Long dropId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		checkPermissions(bucket, authUser);
+
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		bucketDropDao.delete(bucketDrop);
 	}
 
@@ -756,7 +760,7 @@ public class BucketService {
 		checkPermissions(bucket, authUser);
 
 		// Get the bucket drop
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		
 		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
@@ -795,7 +799,7 @@ public class BucketService {
 	public void deleteDropTag(Long bucketId, Long dropId, Long tagId, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
 		checkPermissions(bucket, authUser);
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
 		Tag tag = tagDao.findById(tagId);
 
@@ -825,7 +829,7 @@ public class BucketService {
 	public GetLinkDTO addDropLink(Long bucketId, Long dropId, CreateLinkDTO createDTO, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
 		checkPermissions(bucket, authUser);
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
 		String hash = HashUtil.md5(createDTO.getUrl());
 		Link link = linkDao.findByHash(hash);
@@ -864,7 +868,7 @@ public class BucketService {
 	public void deleteDropLink(Long bucketId, Long dropId, Long linkId, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
 		checkPermissions(bucket, authUser);
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		Link link = linkDao.findById(linkId);
 
 		if (link == null) {
@@ -893,7 +897,7 @@ public class BucketService {
 	public GetPlaceDTO addDropPlace(Long bucketId, Long dropId, CreatePlaceDTO createDTO, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
 		checkPermissions(bucket, authUser);
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		
 		String hashInput = createDTO.getName();
 		hashInput += Float.toString(createDTO.getLongitude());
@@ -941,7 +945,7 @@ public class BucketService {
 		Bucket bucket = getBucketById(bucketId);
 		checkPermissions(bucket, authUser);
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucketId);
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		Place place = placeDao.findById(placeId);
 
 		if (place == null) {
@@ -973,18 +977,19 @@ public class BucketService {
 	/**
 	 * Helper method to retrieve a {@link BucketDrop} record from
 	 * the database and verify that the retrieved entity belongs
-	 * to the {@link Bucket} specified in <code>bucketId</code>
+	 * to the {@link Bucket} specified in <code>bucket</code>
 	 * 
 	 * @param dropId
-	 * @param bucketId
+	 * @param bucket
 	 * @return
 	 */
-	private BucketDrop getBucketDrop(Long dropId, Long bucketId) {
-		BucketDrop bucketDrop = bucketDropDao.findById(dropId, bucketId);
+	private BucketDrop getBucketDrop(Long dropId, Bucket bucket) {
+		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
 
-		if (bucketDrop == null) {
+		if (bucketDrop == null ||
+				(bucketDrop != null && !bucketDrop.getBucket().equals(bucket))) {
 			throw new NotFoundException(String.format("Drop %d does is not in bucket %d",
-					dropId,  bucketId));
+					dropId,  bucket.getId()));
 		}
 		
 		return bucketDrop;

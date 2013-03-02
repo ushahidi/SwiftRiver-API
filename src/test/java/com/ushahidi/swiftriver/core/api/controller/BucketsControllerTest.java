@@ -199,7 +199,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteDrop() throws Exception {
-		this.mockMvc.perform(delete("/v1/buckets/1/drops/3"))
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/3")
+				.principal(getAuthentication("user1")))
 			.andExpect(status().isOk());
 	}
 	
@@ -211,7 +212,8 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteNonExistentDrop() throws Exception {
-		this.mockMvc.perform(delete("/v1/buckets/1/drops/500000"))
+		this.mockMvc.perform(delete("/v1/buckets/1/drops/500000")
+				.principal(getAuthentication("user1")))
 			.andExpect(status().isNotFound());
 	}
 	
