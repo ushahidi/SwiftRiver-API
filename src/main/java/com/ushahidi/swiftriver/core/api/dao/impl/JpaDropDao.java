@@ -127,7 +127,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		populateLinks(drops, dropSource);
 		populateMedia(drops, dropSource);
 		populatePlaces(drops, dropSource);
-		populateBuckets(drops, queryingAccount);
+		populateBuckets(drops, queryingAccount, dropSource);
 	}
 
 	/**
@@ -641,8 +641,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * 
 	 * @param drops
 	 * @param queryingAccount
+	 * @param dropSource
 	 */
-	public void populateBuckets(List<Drop> drops, Account queryingAccount) {
+	public void populateBuckets(List<Drop> drops, Account queryingAccount, DropSource dropSource) {
 		Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
 		int i = 0;
 		for (Drop drop: drops) {
@@ -650,21 +651,35 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			i++;
 		}
 
+		String dropIdColumn = null;
+		String joinClause = null;		
+		switch (dropSource) {
+			case BUCKET:
+				dropIdColumn = "`buckets_droplets`.`id` AS `id`";
+				joinClause = "WHERE `buckets_droplets`.`id` IN (:dropIds) ";
+				break;
+			case RIVER:
+				dropIdColumn = "`rivers_droplets`.`id` AS `id`";
+				joinClause = "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `buckets_droplets`.`droplet_id`) ";
+				joinClause += "WHERE `rivers_droplets`.`id` IN (:dropIds)";
+				break;
+		}
+		
 		// Query to fetch the buckets
-		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
+		String sql = "SELECT " + dropIdColumn + ", `buckets`.`id` AS `bucket_id`, ";
 		sql += "`buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
-		sql += "WHERE `buckets_droplets`.`id` IN (:dropIds)";
+		sql += joinClause;
 		sql += "AND `buckets`.`bucket_publish` = 1 ";
 		sql += "UNION ALL ";
-		sql += "SELECT `buckets_droplets`.`id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
+		sql += "SELECT " + dropIdColumn + ", `buckets`.`id` AS `bucket_id`, ";
 		sql += "`buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
 		sql += "LEFT JOIN `accounts` ON (`buckets`.`account_id` = `accounts`.`id` AND `buckets`.`account_id` = :accountId) ";
-		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId)";
-		sql += "WHERE `buckets_droplets`.`id` IN (:dropIds) ";
+		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId) ";
+		sql += joinClause;
 		sql += "AND `buckets`.`bucket_publish` = 0 ";
 		
 		MapSqlParameterSource params = new MapSqlParameterSource();
