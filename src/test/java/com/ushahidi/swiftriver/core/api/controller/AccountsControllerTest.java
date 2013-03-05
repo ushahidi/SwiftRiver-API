@@ -292,20 +292,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPasswordWithoutToken() throws Exception {
-		String postBody = "{\"owner\":{\"password\":\"new password\"}}";
-
-		this.mockMvc
-				.perform(
-						put("/v1/accounts/1").content(postBody).contentType(
-								MediaType.APPLICATION_JSON))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("token"))
-				.andExpect(jsonPath("$.errors[0].code").value("missing"));
-	}
-
-	@Test
 	public void modifyPasswordWithInvalidTokenToken() throws Exception {
 		String postBody = "{\"token\":\"This is invalid\",\"owner\":{\"password\":\"new password\"}}";
 

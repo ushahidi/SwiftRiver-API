@@ -14,9 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -227,10 +225,14 @@ public class AccountServiceTest {
 	public void modifyAccount() {
 		accountService.setMapper(mapper);
 
+		User user = new User();
+		user.setActive(false);
+		user.setExpired(true);
+		user.setLocked(true);
+		user.setId(1);
 		Account account = new Account();
-		account.setOwner(new User());
-		account.getOwner().setActive(true);
-		account.getOwner().setId(1);
+		account.setActive(false);
+		account.setOwner(user);		
 		UserToken userToken = new UserToken();
 		userToken.setUser(account.getOwner());
 		userToken.setExpires(new Date((new Date()).getTime() + 86400000L));
@@ -261,7 +263,10 @@ public class AccountServiceTest {
 		assertEquals("new account path", modifiedAccount.getAccountPath());
 		assertTrue(modifiedAccount.isAccountPrivate());
 		assertEquals(999, modifiedAccount.getRiverQuotaRemaining());
+		assertTrue(modifiedAccount.isActive());
 		assertTrue(modifiedAccount.getOwner().getActive());
+		assertFalse(modifiedAccount.getOwner().getExpired());
+		assertFalse(modifiedAccount.getOwner().getLocked());
 		assertEquals("email@example.com", modifiedAccount.getOwner().getEmail());
 		assertEquals("email@example.com", modifiedAccount.getOwner()
 				.getUsername());

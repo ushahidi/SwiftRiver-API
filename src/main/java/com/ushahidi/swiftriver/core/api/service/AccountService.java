@@ -330,34 +330,29 @@ public class AccountService {
 			account.getOwner().setUsername(email);
 		}
 
-		if (modifyAccountTO.getOwner() != null
-				&& modifyAccountTO.getOwner().getPassword() != null
-				&& account.getOwner().getActive()) {
-
-			if (modifyAccountTO.getToken() == null)
-				throw ErrorUtil.getBadRequestException("token", "missing");
-
+		if (modifyAccountTO.getToken() != null) {
 			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
 				throw ErrorUtil.getBadRequestException("token", "invalid");
 
-			String password = passwordEncoder.encode(modifyAccountTO.getOwner()
-					.getPassword());
-			modifyAccountTO.getOwner().setPassword(password);
-		}
+			// Activate account if inactive
+			if (!account.getOwner().getActive()) {
+				account.setActive(true);
+				User user = account.getOwner();
+				user.setActive(true);
+				user.setExpired(false);
+				user.setLocked(false);
+				user.setRoles(new HashSet<Role>());
+				user.getRoles().add(roleDao.findByName("user"));
+			}
 
-		if (modifyAccountTO.getToken() != null
-				&& !account.getOwner().getActive()) {
-			// Activate account is matching user token found
-			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
-				throw ErrorUtil.getBadRequestException("token", "invalid");
+			// Modify password if different
+			if (modifyAccountTO.getOwner() != null
+					&& modifyAccountTO.getOwner().getPassword() != null) {
 
-			account.setActive(true);
-			User user = account.getOwner();
-			user.setActive(true);
-			user.setExpired(false);
-			user.setLocked(false);
-			user.setRoles(new HashSet<Role>());
-			user.getRoles().add(roleDao.findByName("user"));
+				String password = passwordEncoder.encode(modifyAccountTO
+						.getOwner().getPassword());
+				modifyAccountTO.getOwner().setPassword(password);
+			}
 		}
 
 		mapper.map(modifyAccountTO, account);
