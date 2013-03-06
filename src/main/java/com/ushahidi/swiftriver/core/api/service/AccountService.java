@@ -308,6 +308,7 @@ public class AccountService {
 	public GetAccountDTO modifyAccount(Long accountId,
 			ModifyAccountDTO modifyAccountTO) {
 
+		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
 		Account account = accountDao.findById(accountId);
 
 		if (account == null)
@@ -320,9 +321,8 @@ public class AccountService {
 			}
 		}
 
-		if (modifyAccountTO.getOwner() != null
-				&& modifyAccountTO.getOwner().getEmail() != null) {
-			String email = modifyAccountTO.getOwner().getEmail();
+		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
+			String email = modifyAcOwner.getEmail();
 			if (accountDao.findByEmail(email) != null) {
 				throw ErrorUtil.getBadRequestException("owner.email",
 						"duplicate");
@@ -330,9 +330,22 @@ public class AccountService {
 			account.getOwner().setUsername(email);
 		}
 
+		// If modifying password without a token, raise an error
+		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
+				&& modifyAcOwner.getPassword() != null)
+			throw ErrorUtil.getBadRequestException("token", "missing");
+
 		if (modifyAccountTO.getToken() != null) {
 			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
 				throw ErrorUtil.getBadRequestException("token", "invalid");
+
+			// If a token is present, the account is active and no password,
+			// then raise an error. Probably a password reset but password
+			// missing.
+			if (account.getOwner().getActive()
+					&& (modifyAcOwner == null || (modifyAcOwner != null && modifyAcOwner
+							.getPassword() == null)))
+				throw ErrorUtil.getBadRequestException("password", "missing");
 
 			// Activate account if inactive
 			if (!account.getOwner().getActive()) {
@@ -346,12 +359,11 @@ public class AccountService {
 			}
 
 			// Modify password if different
-			if (modifyAccountTO.getOwner() != null
-					&& modifyAccountTO.getOwner().getPassword() != null) {
+			if (modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
 
 				String password = passwordEncoder.encode(modifyAccountTO
 						.getOwner().getPassword());
-				modifyAccountTO.getOwner().setPassword(password);
+				modifyAcOwner.setPassword(password);
 			}
 		}
 

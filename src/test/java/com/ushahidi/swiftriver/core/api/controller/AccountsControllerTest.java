@@ -290,6 +290,49 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				put("/v1/accounts/6").content(postBody).contentType(
 						MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 	}
+	
+	@Test
+	public void modifyPasswordWithoutOwnerArray() throws Exception {
+		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/5").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("password"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+	
+	@Test
+	public void modifyPasswordWithoutPasswordInOwnerArray() throws Exception {
+		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\",\"owner\":{}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/5").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("password"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+	
+	@Test
+	public void modifyPasswordWithoutToken() throws Exception {
+		String postBody = "{\"owner\":{\"password\":\"new password\"}}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/accounts/1").content(postBody).contentType(
+								MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("token"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"));
+	}
+
 
 	@Test
 	public void modifyPasswordWithInvalidTokenToken() throws Exception {
