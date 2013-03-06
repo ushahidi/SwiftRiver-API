@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
@@ -97,9 +98,9 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public GetAccountDTO getAccountById(@PathVariable Long id)
-			throws NotFoundException {
-		return accountService.getAccountById(id);
+	public GetAccountDTO getAccountById(@PathVariable Long id,
+			Principal principal) throws NotFoundException {
+		return accountService.getAccountById(id, principal.getName());
 	}
 
 	/**
@@ -113,11 +114,12 @@ public class AccountsController extends AbstractController {
 	@ResponseBody
 	public GetAccountDTO getAccountByName(
 			@RequestParam("account_path") String accountPath,
-			@RequestParam(value = "token", required = false) boolean getToken)
-			throws NotFoundException {
-		return accountService.getAccountByName(accountPath, getToken);
+			@RequestParam(value = "token", required = false) boolean getToken,
+			Principal principal) throws NotFoundException {
+		return accountService.getAccountByAccountPath(accountPath, getToken,
+				principal.getName());
 	}
-	
+
 	/**
 	 * Get account details for the specified email
 	 * 
@@ -127,11 +129,11 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params = "email")
 	@ResponseBody
-	public GetAccountDTO getAccountByEmail(
-			@RequestParam("email") String email,
-			@RequestParam(value = "token", required = false) boolean getToken)
-			throws NotFoundException {
-		return accountService.getAccountByEmail(email, getToken);
+	public GetAccountDTO getAccountByEmail(@RequestParam("email") String email,
+			@RequestParam(value = "token", required = false) boolean getToken,
+			Principal principal) throws NotFoundException {
+		return accountService.getAccountByEmail(email, getToken,
+				principal.getName());
 	}
 
 	/**
@@ -143,9 +145,9 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params = "q")
 	@ResponseBody
-	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query)
+	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query, Principal principal)
 			throws NotFoundException {
-		return accountService.searchAccounts(query);
+		return accountService.searchAccounts(query, principal.getName());
 	}
 
 	/**
@@ -184,17 +186,36 @@ public class AccountsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/followers", method = RequestMethod.POST)
+	/**
+	 * Add a follower to an account
+	 * 
+	 * @param body
+	 * @param id
+	 */
+	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account addFollower(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void addFollower(@PathVariable Long id, @PathVariable Long accountId) {
+		accountService.addFollower(id, accountId);
 	}
 
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getFollowers(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public List<FollowerDTO> getFollowers(@PathVariable Long id,
+			@RequestParam(value = "follower", required = false) Long accountId) {
+		return accountService.getFollowers(id, accountId);
+	}
+
+	/**
+	 * Handles deletion of an account from the list of followers
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@RequestMapping(value = "{id}/followers/{accountId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteFollower(@PathVariable Long id,
+			@PathVariable Long accountId) {
+		accountService.deleteFollower(id, accountId);
 	}
 
 	@RequestMapping(value = "/{id}/following", method = RequestMethod.GET)
@@ -213,7 +234,7 @@ public class AccountsController extends AbstractController {
 	@ResponseBody
 	public GetClientDTO createApp(@RequestBody CreateClientDTO body,
 			@PathVariable Long accountId, Principal principal) {
-		
+
 		List<ErrorField> errors = new ArrayList<ErrorField>();
 		if (body.getName() == null) {
 			errors.add(new ErrorField("name", "missing"));
@@ -229,26 +250,31 @@ public class AccountsController extends AbstractController {
 			e.setErrors(errors);
 			throw e;
 		}
-		
-		return accountService.createClient(accountId, body, principal.getName());
+
+		return accountService
+				.createClient(accountId, body, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetClientDTO> getApps(@PathVariable Long accountId, Principal principal) {
+	public List<GetClientDTO> getApps(@PathVariable Long accountId,
+			Principal principal) {
 		return accountService.getClients(accountId, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public GetClientDTO modifyApp(@RequestBody ModifyClientDTO body,
-			@PathVariable Long accountId, @PathVariable Long appId, Principal principal) {
-		return accountService.modifyClient(accountId, appId, body, principal.getName());
+			@PathVariable Long accountId, @PathVariable Long appId,
+			Principal principal) {
+		return accountService.modifyClient(accountId, appId, body,
+				principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteApp(@PathVariable Long accountId, @PathVariable Long appId, Principal principal) {
+	public void deleteApp(@PathVariable Long accountId,
+			@PathVariable Long appId, Principal principal) {
 		accountService.deleteApp(accountId, appId, principal.getName());
 	}
 }

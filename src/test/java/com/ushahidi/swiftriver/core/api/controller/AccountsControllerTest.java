@@ -1,23 +1,22 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,7 +36,9 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getAccountById() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts/1"))
+				.perform(
+						get("/v1/accounts/1").principal(
+								getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -46,14 +47,17 @@ public class AccountsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void getAccountByNonExistentId() throws Exception {
-		this.mockMvc.perform(get("/v1/accounts/9999")).andExpect(
-				status().isNotFound());
+		this.mockMvc.perform(
+				get("/v1/accounts/9999").principal(getAuthentication("user1")))
+				.andExpect(status().isNotFound());
 	}
 
 	@Test
 	public void getAccountByName() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts?account_path=user1"))
+				.perform(
+						get("/v1/accounts?account_path=user1").principal(
+								getAuthentication("admin")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -63,7 +67,8 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getAccountByEmail() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts?email=user3@myswiftriver.com"))
+				.perform(get("/v1/accounts?email=user3@myswiftriver.com").principal(
+						getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -73,7 +78,8 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	@Test
 	public void getAccountWithTokenForAccountPath() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts?account_path=user1&token=1"))
+				.perform(get("/v1/accounts?account_path=user1&token=1").principal(
+						getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -85,7 +91,8 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	public void getAccountWithTokenForEmail() throws Exception {
 		this.mockMvc
 				.perform(
-						get("/v1/accounts?email=user3@myswiftriver.com&token=1"))
+						get("/v1/accounts?email=user3@myswiftriver.com&token=1").principal(
+								getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -96,7 +103,8 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	@Test
 	public void searchAccounts() throws Exception {
 		this.mockMvc
-				.perform(get("/v1/accounts?q=my"))
+				.perform(get("/v1/accounts?q=my").principal(
+						getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
@@ -122,8 +130,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.river_quota_remaining").value(20))
 				.andExpect(jsonPath("$.follower_count").value(2))
 				.andExpect(jsonPath("$.following_count").value(1))
-				.andExpect(jsonPath("$.is_collaborator").value(false))
-				.andExpect(jsonPath("$.is_following").value(false))
 				.andExpect(jsonPath("$.owner.name").value("User 1"))
 				.andExpect(
 						jsonPath("$.owner.email").value(
@@ -290,7 +296,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				put("/v1/accounts/6").content(postBody).contentType(
 						MediaType.APPLICATION_JSON)).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	public void modifyPasswordWithoutOwnerArray() throws Exception {
 		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\"}";
@@ -304,7 +310,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.errors[0].field").value("password"))
 				.andExpect(jsonPath("$.errors[0].code").value("missing"));
 	}
-	
+
 	@Test
 	public void modifyPasswordWithoutPasswordInOwnerArray() throws Exception {
 		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\",\"owner\":{}}";
@@ -318,7 +324,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.errors[0].field").value("password"))
 				.andExpect(jsonPath("$.errors[0].code").value("missing"));
 	}
-	
+
 	@Test
 	public void modifyPasswordWithoutToken() throws Exception {
 		String postBody = "{\"owner\":{\"password\":\"new password\"}}";
@@ -332,7 +338,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.errors[0].field").value("token"))
 				.andExpect(jsonPath("$.errors[0].code").value("missing"));
 	}
-
 
 	@Test
 	public void modifyPasswordWithInvalidTokenToken() throws Exception {
@@ -542,74 +547,156 @@ public class AccountsControllerTest extends AbstractControllerTest {
 								.principal(getAuthentication("admin")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.name").value("My App Renamed"))
-				.andExpect(jsonPath("$.description").value("App Description Renamed"))
-				.andExpect(jsonPath("$.redirect_uri").value("http://example.com/renamed"))
-				.andExpect(jsonPath("$.homepage").value("http://example.com/home/renamed"))
+				.andExpect(
+						jsonPath("$.description").value(
+								"App Description Renamed"))
+				.andExpect(
+						jsonPath("$.redirect_uri").value(
+								"http://example.com/renamed"))
+				.andExpect(
+						jsonPath("$.homepage").value(
+								"http://example.com/home/renamed"))
 				.andExpect(jsonPath("$.client_id").value("trusted-client"))
 				.andExpect(jsonPath("$.client_secret").value("somesecret"));
 	}
-	
+
 	@Test
 	public void modifyAppWithoutPermission() throws Exception {
 		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc.perform(
+				put("/v1/accounts/1/apps/1").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void modifyUnknownApp() throws Exception {
+		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc.perform(
+				put("/v1/accounts/1/apps/9999").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("admin"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyAppInUnknownAccount() throws Exception {
+		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
+
+		this.mockMvc.perform(
+				put("/v1/accounts/9999/apps/1").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("admin"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyAppPartially() throws Exception {
+		String postBody = "{\"name\":\"apps's new name\"}";
 
 		this.mockMvc
 				.perform(
 						put("/v1/accounts/1/apps/1").content(postBody)
 								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user1")))
-				.andExpect(status().isForbidden());
-	}
-	
-	@Test
-	public void modifyUnknownApp() throws Exception {
-		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
-
-		this.mockMvc
-				.perform(
-						put("/v1/accounts/1/apps/9999").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("admin")))
-				.andExpect(status().isNotFound());
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.description").value(notNullValue()));
 	}
-	
-	@Test
-	public void modifyAppInUnknownAccount() throws Exception {
-		String postBody = "{\"name\":\"My App Renamed\",\"description\":\"App Description Renamed\",\"redirect_uri\":\"http://example.com/renamed\",\"homepage\":\"http://example.com/home/renamed\"}";
 
-		this.mockMvc
-				.perform(
-						put("/v1/accounts/9999/apps/1").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("admin")))
-				.andExpect(status().isNotFound());
-	}
-	
-	@Test
-	public void modifyAppPartially() throws Exception {
-		String postBody = "{\"name\":\"apps's new name\"}";
-		
-		this.mockMvc
-		.perform(
-				put("/v1/accounts/1/apps/1").content(postBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("admin")))
-		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.description").value(notNullValue()));
-	}
-	
 	@Test
 	public void modifyAppResetCredentials() throws Exception {
 		String postBody = "{\"client_id\":\"reset\"}";
-		
+
 		this.mockMvc
-		.perform(
-				put("/v1/accounts/1/apps/1").content(postBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("admin")))
-		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.client_id").value(not(equalTo("trusted-client"))))
-		.andExpect(jsonPath("$.client_id").value(not(equalTo("reset"))))
-		.andExpect(jsonPath("$.client_secret").value(not(equalTo("somesecret"))));
+				.perform(
+						put("/v1/accounts/1/apps/1").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isOk())
+				.andExpect(
+						jsonPath("$.client_id").value(
+								not(equalTo("trusted-client"))))
+				.andExpect(jsonPath("$.client_id").value(not(equalTo("reset"))))
+				.andExpect(
+						jsonPath("$.client_secret").value(
+								not(equalTo("somesecret"))));
+	}
+
+	/**
+	 * Test for {@link AccountsController#deleteFollower(Long, Long)} where the
+	 * accountId parameter is null
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getFollowers() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/accounts/3/followers"))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.[0].account_path").exists());
+	}
+
+	/**
+	 * Test for {@link AccountsController#getFollowers(Long, Long)} where the
+	 * accountId parameter has been specified
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getFollowersByAccount() throws Exception {
+		this.mockMvc
+				.perform(get("/v1/accounts/3/followers").param("follower", "5"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.[0].account_path").value("user3"));
+	}
+
+	/**
+	 * Test for {@link AccountsController#addFollower(Long, Long)}
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void addFollower() throws Exception {
+		this.mockMvc.perform(put("/v1/accounts/5/followers/4")).andExpect(
+				status().isOk());
+	}
+
+	/**
+	 * Test for {@link AccountsController#addFollower(Long, Long)} where the
+	 * {@link Account} id of the follower is the same as the id of the
+	 * {@link Account} to be followed
+	 * 
+	 * @throws Exception
+	 */
+	public void addInvalidFollower() throws Exception {
+		this.mockMvc.perform(put("/v1/accounts/3/followers/3")).andExpect(
+				status().isBadRequest());
+	}
+
+	/**
+	 * Test for {@link AccountsController#deleteFollower(Long, Long)}
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteFollower() throws Exception {
+		this.mockMvc.perform(delete("/v1/accounts/3/followers/5")).andExpect(
+				status().isOk());
+	}
+
+	/**
+	 * Test for {@link AccountsController#deleteFollower(Long, Long)} where the
+	 * specified account id doesn't exist the target account
+	 * 
+	 * @throws Exception
+	 */
+	public void deleteNonExistentFollower() throws Exception {
+		this.mockMvc.perform(delete("/v1/accounts/3/followers/1000"))
+				.andExpect(status().isNotFound());
 	}
 }

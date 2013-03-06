@@ -1,16 +1,18 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.service;
 
@@ -37,6 +39,7 @@ import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
+import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
@@ -46,6 +49,7 @@ import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Client;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
@@ -58,6 +62,12 @@ import com.ushahidi.swiftriver.core.util.TextUtil;
 public class AccountService {
 
 	final Logger logger = LoggerFactory.getLogger(AccountService.class);
+
+	@Autowired
+	private RiverService riverService;
+
+	@Autowired
+	private BucketService bucketService;
 
 	@Autowired
 	private UserDao userDao;
@@ -81,6 +91,22 @@ public class AccountService {
 	private Mapper mapper;
 
 	private String key;
+
+	public RiverService getRiverService() {
+		return riverService;
+	}
+
+	public void setRiverService(RiverService riverService) {
+		this.riverService = riverService;
+	}
+
+	public BucketService getBucketService() {
+		return bucketService;
+	}
+
+	public void setBucketService(BucketService bucketService) {
+		this.bucketService = bucketService;
+	}
 
 	public AccountDao getAccountDao() {
 		return accountDao;
@@ -153,14 +179,11 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountById(Long id) throws NotFoundException {
-		Account account = accountDao.findById(id);
+	public GetAccountDTO getAccountById(Long id, String authUser)
+			throws NotFoundException {
+		Account account = getAccount(id);
 
-		if (account == null) {
-			throw new NotFoundException(String.format("Account not found", id));
-		}
-
-		return mapGetAccountDTO(account);
+		return mapGetAccountDTO(account, accountDao.findByUsername(authUser));
 	}
 
 	/**
@@ -178,25 +201,26 @@ public class AccountService {
 			throw new NotFoundException("Account not found");
 		}
 
-		return mapGetAccountDTO(account);
+		return mapGetAccountDTO(account, account);
 	}
 
 	/**
 	 * Get an account by account_path
 	 * 
-	 * @param username
+	 * @param accountPath
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByName(String accountPath, boolean getToken)
-			throws NotFoundException {
-		Account account = accountDao.findByName(accountPath);
+	public GetAccountDTO getAccountByAccountPath(String accountPath,
+			boolean getToken, String authUser) throws NotFoundException {
+		Account account = accountDao.findByAccountPath(accountPath);
 
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
 
-		GetAccountDTO getAccountDTO = mapGetAccountDTO(account);
+		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
+				accountDao.findByUsername(authUser));
 		if (getToken) {
 			getAccountDTO.setToken(createUserToken(account.getOwner())
 					.getToken());
@@ -211,15 +235,16 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByEmail(String email, boolean getToken)
-			throws NotFoundException {
+	public GetAccountDTO getAccountByEmail(String email, boolean getToken,
+			String authUser) throws NotFoundException {
 		Account account = accountDao.findByEmail(email);
 
 		if (account == null) {
 			throw new NotFoundException("Account not found");
 		}
 
-		GetAccountDTO getAccountDTO = mapGetAccountDTO(account);
+		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
+				accountDao.findByUsername(authUser));
 		if (getToken) {
 			getAccountDTO.setToken(createUserToken(account.getOwner())
 					.getToken());
@@ -234,7 +259,7 @@ public class AccountService {
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public List<GetAccountDTO> searchAccounts(String query)
+	public List<GetAccountDTO> searchAccounts(String query, String authUser)
 			throws NotFoundException {
 		List<Account> accounts = accountDao.search(query);
 
@@ -242,9 +267,10 @@ public class AccountService {
 			throw new NotFoundException("No accounts found");
 		}
 
+		Account queryingAccount = accountDao.findByUsername(authUser);
 		List<GetAccountDTO> getAccountTOs = new ArrayList<GetAccountDTO>();
 		for (Account account : accounts) {
-			getAccountTOs.add(mapGetAccountDTO(account));
+			getAccountTOs.add(mapGetAccountDTO(account, queryingAccount));
 		}
 
 		return getAccountTOs;
@@ -258,7 +284,7 @@ public class AccountService {
 	 */
 	@Transactional(readOnly = false)
 	public GetAccountDTO createAccount(CreateAccountDTO createAccountTO) {
-		if (accountDao.findByName(createAccountTO.getAccountPath()) != null) {
+		if (accountDao.findByAccountPath(createAccountTO.getAccountPath()) != null) {
 			BadRequestException ex = new BadRequestException(
 					"Account already exists");
 			List<ErrorField> errors = new ArrayList<ErrorField>();
@@ -315,7 +341,7 @@ public class AccountService {
 			throw new NotFoundException("Account not found.");
 
 		if (modifyAccountTO.getAccountPath() != null) {
-			if (accountDao.findByName(modifyAccountTO.getAccountPath()) != null) {
+			if (accountDao.findByAccountPath(modifyAccountTO.getAccountPath()) != null) {
 				throw ErrorUtil.getBadRequestException("account_path",
 						"duplicate");
 			}
@@ -374,12 +400,32 @@ public class AccountService {
 	}
 
 	/**
-	 * Convert the given account into a GetAccountDTO
+	 * Convert the given account into a GetAccountDTO and filter out rivers that
+	 * queryingAccount has no access to.
 	 * 
 	 * @param account
+	 * @param queryingAccount
 	 * @return
 	 */
-	public GetAccountDTO mapGetAccountDTO(Account account) {
+	public GetAccountDTO mapGetAccountDTO(Account account,
+			Account queryingAccount) {
+
+		// Filter out private rivers queryingAccount has no access to
+		account.setRivers(riverService.filterVisible(account.getRivers(),
+				queryingAccount));
+		account.setCollaboratingRivers(riverService.filterVisible(
+				account.getCollaboratingRivers(), queryingAccount));
+		account.setFollowingRivers(riverService.filterVisible(
+				account.getFollowingRivers(), queryingAccount));
+
+		// Filter out private buckets queryingAccount has no access to
+		account.setBuckets(bucketService.filterVisible(account.getBuckets(),
+				queryingAccount));
+		account.setCollaboratingBuckets(bucketService.filterVisible(
+				account.getCollaboratingBuckets(), queryingAccount));
+		account.setFollowingBuckets(bucketService.filterVisible(
+				account.getFollowingBuckets(), queryingAccount));
+
 		GetAccountDTO accountDTO = mapper.map(account, GetAccountDTO.class);
 
 		accountDTO.setFollowerCount(account.getFollowers().size());
@@ -582,4 +628,115 @@ public class AccountService {
 				TextUtil.convertStringToHex(client.getClientId()));
 		return encryptor.decrypt(client.getClientSecret());
 	}
+
+	/**
+	 * Gets and returns the list of {@link Account} entities that are following
+	 * the {@Account} specified in <code>id</code>.
+	 * <code>accountId</code> is an optional parameter and when specified,
+	 * verifies whether the {@link Account} with that id (<code>accountId</code>
+	 * ) is a follower
+	 * 
+	 * @param id
+	 * @param accountId
+	 * @return {@link java.util.List}
+	 */
+	@Transactional
+	public List<FollowerDTO> getFollowers(Long id, Long accountId) {
+		Account account = getAccount(id);
+
+		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
+		if (accountId == null) {
+			for (AccountFollower accountFollower : account.getFollowers()) {
+				followers.add(mapFollowerDTO(accountFollower.getFollower()));
+			}
+		} else {
+			Account follower = accountDao.getFollower(account, accountId);
+			if (follower == null) {
+				throw new NotFoundException(String.format(
+						"Account %d does not follow %d", accountId, id));
+			}
+
+			followers.add(mapFollowerDTO(follower));
+		}
+
+		return followers;
+	}
+
+	/**
+	 * Converts the given {@link Account} to a {@link FollowerDTO}
+	 * 
+	 * @param account
+	 * @return
+	 */
+	private FollowerDTO mapFollowerDTO(Account account) {
+		FollowerDTO followerDTO = new FollowerDTO();
+
+		followerDTO.setId(account.getId());
+		followerDTO.setAccountPath(account.getAccountPath());
+		followerDTO.setEmail(account.getOwner().getEmail());
+		followerDTO.setName(account.getOwner().getName());
+		followerDTO.setFollowerCount(account.getFollowers().size());
+		followerDTO.setFollowingCount(account.getFollowing().size());
+
+		return followerDTO;
+	}
+
+	/**
+	 * Adds the {@link Account} with the specified <code>accountId</code> to the
+	 * list of followers for the {@link Account} specified in <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@Transactional
+	public void addFollower(Long id, Long accountId) {
+		if (id.equals(accountId)) {
+			throw new BadRequestException("An account cannot follow itself");
+		}
+
+		Account account = getAccount(id);
+
+		if (accountDao.getFollower(account, accountId) != null) {
+			throw new BadRequestException(
+					String.format("Account %d is already following account %d",
+							accountId, id));
+		}
+
+		Account follower = getAccount(accountId);
+		accountDao.addFollower(account, follower);
+	}
+
+	/**
+	 * Internal helper method for retrieving a {@link Account} entity using its
+	 * unique database ID
+	 * 
+	 * @param accountId
+	 * @return
+	 */
+	private Account getAccount(Long accountId) {
+		Account account = accountDao.findById(accountId);
+		if (account == null) {
+			throw new NotFoundException(String.format(
+					"Account %d does not exist", accountId));
+		}
+
+		return account;
+	}
+
+	/**
+	 * Deletes the {@link Account} specified in <code>accountId</code> from the
+	 * list of followers for the {@link Account} specified in <code>id</code>
+	 * 
+	 * @param id
+	 * @param accountId
+	 */
+	@Transactional
+	public void deleteFollower(Long id, Long accountId) {
+		Account account = getAccount(id);
+		if (!accountDao.deleteFollower(account, getAccount(accountId))) {
+			throw new NotFoundException(String.format(
+					"Account %d does not follow account %d", accountId, id));
+		}
+	}
+
 }

@@ -29,27 +29,24 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name = "buckets_droplets")
-public class BucketDrop {
+@Table(name="rivers_droplets")
+public class RiverDrop {
 	
 	@Id
 	@GeneratedValue
 	private long id;
 	
 	@ManyToOne
-	@JoinColumn(name = "droplet_id")
+	@JoinColumn(name="droplet_id")
 	private Drop drop;
 	
 	@ManyToOne
-	private Bucket bucket;
+	private River river;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="droplet_date_added")
-	private Date dateAdded;
-	
-	@Column(name="droplet_veracity")
-	private long veracity;
-	
+	@Column(name="droplet_date_pub")
+	private Date datePublished;
+
 	public long getId() {
 		return id;
 	}
@@ -66,28 +63,20 @@ public class BucketDrop {
 		this.drop = drop;
 	}
 
-	public Bucket getBucket() {
-		return bucket;
+	public River getRiver() {
+		return river;
 	}
 
-	public void setBucket(Bucket bucket) {
-		this.bucket = bucket;
+	public void setRiver(River river) {
+		this.river = river;
 	}
 
-	public Date getDateAdded() {
-		return dateAdded;
+	public Date getDatePublished() {
+		return datePublished;
 	}
 
-	public void setDateAdded(Date dateAdded) {
-		this.dateAdded = dateAdded;
+	public void setDatePublished(Date datePublished) {
+		this.datePublished = datePublished;
 	}
-
-	public long getVeracity() {
-		return veracity;
-	}
-
-	public void setVeracity(long veracity) {
-		this.veracity = veracity;
-	}
-
+	
 }

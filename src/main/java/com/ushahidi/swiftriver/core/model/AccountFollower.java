@@ -16,16 +16,25 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
+import java.util.Date;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
+/**
+ * Model for account followers
+ * @author ekala
+ *
+ */
 @Entity
-@Table(name = "account_droplet_tags")
-public class AccountDropTag {
+@Table(name = "account_followers")
+public class AccountFollower {
 	
 	@Id
 	@GeneratedValue
@@ -35,13 +44,11 @@ public class AccountDropTag {
 	private Account account;
 	
 	@ManyToOne
-	@JoinColumn(name="droplet_id")
-	private Drop drop;
+	private Account follower;
 	
-	@ManyToOne
-	private Tag tag;
-	
-	private boolean deleted;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "follower_date_add")
+	private Date dateAdded;
 
 	public long getId() {
 		return id;
@@ -59,30 +66,20 @@ public class AccountDropTag {
 		this.account = account;
 	}
 
-	public Drop getDrop() {
-		return drop;
+	public Account getFollower() {
+		return follower;
 	}
 
-	public void setDrop(Drop drop) {
-		this.drop = drop;
+	public void setFollower(Account follower) {
+		this.follower = follower;
 	}
 
-	public Tag getTag() {
-		return tag;
+	public Date getDateAdded() {
+		return dateAdded;
 	}
 
-	public void setTag(Tag tag) {
-		this.tag = tag;
-	}
-
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 	
-	
-
 }

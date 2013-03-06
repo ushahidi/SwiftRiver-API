@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,7 @@ import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.util.TextUtil;
@@ -85,16 +87,12 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addDrop(com.ushahidi.swiftriver.core.model.Bucket, long)
 	 */
-	public boolean addDrop(Bucket bucket, long dropId) {
-		Drop drop = dropDao.findById(dropId);
-		if (drop == null) {
-			return false;
-		}
-		
+	public boolean addDrop(Bucket bucket, Drop drop) {		
 		BucketDrop bucketDrop = new BucketDrop();
 		bucketDrop.setDrop(drop);
 		bucketDrop.setBucket(bucket);
 		bucketDrop.setDateAdded(new Date());
+		bucketDrop.setVeracity(1L);
 		
 		this.em.persist(bucketDrop);
 
@@ -181,7 +179,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams) {
-		String sql = "SELECT `droplets`.`id` AS `id`, `buckets_droplets`.`id` AS `sort_id`, `droplet_title`, ";
+		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `droplet_title`, ";
 		sql += "`droplet_content`, `droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
@@ -226,34 +224,34 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			
 			// Set the drop properties
 			drop.setId(((BigInteger)rowArray[0]).longValue());
-			drop.setTitle((String) rowArray[2]);
-			drop.setContent((String) rowArray[3]);
-			drop.setChannel((String) rowArray[4]);
+			drop.setTitle((String) rowArray[1]);
+			drop.setContent((String) rowArray[2]);
+			drop.setChannel((String) rowArray[3]);
 			
 			Identity identity = new Identity();
-			identity.setId(((BigInteger) rowArray[5]).longValue());
-			identity.setName((String) rowArray[6]);
-			identity.setAvatar((String) rowArray[7]);
+			identity.setId(((BigInteger) rowArray[4]).longValue());
+			identity.setName((String) rowArray[5]);
+			identity.setAvatar((String) rowArray[6]);
 
 			drop.setIdentity(identity);
 
-			drop.setDatePublished((Date)rowArray[8]);
-			drop.setOriginalId((String) rowArray[9]);
+			drop.setDatePublished((Date)rowArray[7]);
+			drop.setOriginalId((String) rowArray[8]);
 			
-			if (rowArray[11] != null) {
+			if (rowArray[10] != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger) rowArray[11]).longValue());
-				originalUrl.setUrl((String) rowArray[12]);
+				originalUrl.setId(((BigInteger) rowArray[10]).longValue());
+				originalUrl.setUrl((String) rowArray[11]);
 			}
 
-			drop.setCommentCount((Integer) rowArray[13]);
+			drop.setCommentCount((Integer) rowArray[12]);
 
 			drops.add(drop);
 		}
 		
 		if (!drops.isEmpty()) {
 			// Populate the metadata
-			dropDao.populateMetadata(drops, account);
+			dropDao.populateMetadata(drops, DropSource.BUCKET, account);
 		}
 
 		return drops;
@@ -285,6 +283,33 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 		List<Bucket> results = (List<Bucket>) query.getResultList();
 		return results.isEmpty() ? null : results.get(0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findAll(java.util.List)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Bucket> findAll(List<Long> bucketIds) {
+		return (List<Bucket>) em.createQuery("FROM Bucket WHERE id IN :bucketIds")
+				.setParameter("bucketIds", bucketIds)
+				.getResultList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findDrop(java.lang.Long, java.lang.Long)
+	 */
+	public BucketDrop findDrop(Long bucketId, Long dropId) {
+		String sql = "FROM BucketDrop WHERE bucket.id = :bucketId AND drop.id = :dropId";
+		
+		TypedQuery<BucketDrop> query = em.createQuery(sql, BucketDrop.class);
+		query.setParameter("bucketId", bucketId);
+		query.setParameter("dropId", dropId);
+		
+		List<BucketDrop> bucketDrops = query.getResultList();
+		
+		return bucketDrops.isEmpty() ? null : bucketDrops.get(0);
 	}
 
 }

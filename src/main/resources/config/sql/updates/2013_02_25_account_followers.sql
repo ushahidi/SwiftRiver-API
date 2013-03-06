@@ -1,0 +1,2 @@
+-- Add Primary Key column
+ALTER TABLE `account_followers` ADD COLUMN `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST;

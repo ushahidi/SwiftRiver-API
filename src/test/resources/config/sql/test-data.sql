@@ -122,14 +122,19 @@ INSERT INTO `river_channels` (`id`, `river_id`, `channel`, `active`, `parameters
 -- Data for table `buckets`
 -- -----------------------------------------------------
 INSERT INTO `buckets` (`id`, `account_id`, `bucket_name`, `bucket_name_canonical`, `bucket_description`, `bucket_publish`, `bucket_date_add`, `drop_count`) VALUES 
-(1, 3, 'Bucket 1', 'bucket-1', 'A Bucket', 1, '2013-01-02 00:00:02', 13);
+(1, 3, 'Bucket 1', 'bucket-1', 'A Bucket', 1, '2013-01-02 00:00:02', 13),
+(2, 1, 'Bucket 2', 'bucket-2', 'B Bucket', 0, '2013-01-02 00:00:03', 10),
+(3, 4, 'Bucket 3', 'bucket-3', 'C Bucket', 0, '2013-01-02 00:00:04', 12),
+(4, 5, 'Bucket 4', 'bucket-4', 'D Bucket', 1, '2013-01-02 00:00:05', 4);
+
 
 -- ------------------------------------
 -- Data for table `bucket_collaborators`
 -- -------------------------------------
 INSERT INTO bucket_collaborators(`id`, `bucket_id`, `account_id`, `read_only`, `collaborator_active`) VALUES
 (1, 1, 3, 0, 1),
-(2, 1, 4, 1, 1);
+(2, 1, 4, 1, 1),
+(3, 3, 3, 0, 1);
 
 -- ------------------------------------
 -- Data for table `bucket_collaborators`
@@ -219,26 +224,12 @@ INSERT INTO `droplets_tags` (`id`, `droplet_id`, `tag_id`) VALUES
 (3, 5, 2);
 
 -- -----------------------------------------------------
--- Data for table `account_droplet_tags`
--- -----------------------------------------------------
-INSERT INTO `account_droplet_tags` (`id`, `account_id`, `droplet_id`, `tag_id`, `deleted`) VALUES
-(1, 1, 5, 2, 1),
-(2, 1, 5, 11, 0);
-
--- -----------------------------------------------------
 -- Data for table `droplets_links`
 -- -----------------------------------------------------
 INSERT INTO droplets_links(`id`, `droplet_id`, `link_id`) VALUES
 (1, 5, 10),
 (2, 4, 10),
 (3, 5, 2);
-
--- -----------------------------------------------------
--- Data for table `account_droplet_links`
--- -----------------------------------------------------
-INSERT INTO `account_droplet_links` (`id`, `account_id`, `droplet_id`, `link_id`, `deleted`) VALUES 
-(1, 1, 5, 2, 1),
-(2, 1, 5, 4, 0);
 
 -- -----------------------------------------------------
 -- Data for table `medi`
@@ -301,13 +292,6 @@ INSERT INTO droplets_places(`id`, `droplet_id`, `place_id`) VALUES
 (1, 5, 1),
 (2, 4, 1),
 (3, 5, 2);
-
--- -----------------------------------------------------
--- Data for table `account_droplet_links`
--- -----------------------------------------------------
-INSERT INTO `account_droplet_places` (`id`, `account_id`, `droplet_id`, `place_id`, `deleted`) VALUES 
-(1, 1, 5, 2, 1),
-(2, 1, 5, 4, 0);
 
 -- -----------------------------------------------------
 -- Data for table `droplet_comments`

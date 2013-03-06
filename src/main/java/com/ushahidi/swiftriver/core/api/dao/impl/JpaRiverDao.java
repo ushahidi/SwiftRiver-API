@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.River;
@@ -257,10 +259,10 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 * Generate a Drop entity list for the given drop result map.
 	 * 
 	 * @param results
+	 * @param queryingAccount
 	 * @return
 	 */
-	private List<Drop> formatDrops(List<Map<String, Object>> results,
-			Account queryingAccount) {
+	private List<Drop> formatDrops(List<Map<String, Object>> results, Account queryingAccount) {
 		List<Drop> drops = new ArrayList<Drop>();
 		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
@@ -293,8 +295,8 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		}
 
 		// Populate metadata
-		dropsDao.populateMetadata(drops, queryingAccount);
-
+		dropsDao.populateMetadata(drops, DropSource.RIVER, queryingAccount);
+		
 		return drops;
 	}
 
@@ -366,6 +368,16 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		query.setParameter("dropId", dropId);
 
 		return query.executeUpdate() == 1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findAll(java.util.List)
+	 */
+	public List<River> findAll(List<Long> riverIds) {
+		TypedQuery<River> query = em.createQuery("FROM River WHERE id IN :riverIds", River.class);
+		query.setParameter("riverIds", riverIds);
+		return query.getResultList();
 	}
 
 }

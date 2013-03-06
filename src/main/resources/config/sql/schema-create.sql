@@ -30,9 +30,11 @@ COMMENT = 'Track subscriptions to rivers and/or buckets' ;
 -- Table `account_followers`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `account_followers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `follower_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `follower_date_add` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `account_id` (`account_id`,`follower_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Track followers';
 
@@ -180,6 +182,57 @@ CREATE TABLE IF NOT EXISTS `rivers_droplets` (
   KEY `channel_id` (`channel_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/*
+ * Metadata tables for the drops in  river
+ */
+
+-- ----------------------------------------
+-- Table `river_droplet_tags`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `river_droplet_tags` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `rivers_droplets_id` bigint(20) NOT NULL,
+  `tag_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_river_droplet_tag` (`rivers_droplets_id`, `tag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- Table `river_droplet_places`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `river_droplet_places` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `rivers_droplets_id` bigint(20) NOT NULL,
+  `place_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_river_droplet_place` (`rivers_droplets_id`, `place_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- Table `river_droplet_links`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `river_droplet_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `rivers_droplets_id` bigint(20) NOT NULL,
+  `link_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_river_droplet_link` (`rivers_droplets_id`, `link_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- Table `river_droplet_media`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `river_droplet_media` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `rivers_droplets_id` bigint(20) NOT NULL,
+  `media_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_river_droplet_media` (`rivers_droplets_id`, `media_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- -----------------------------------------------------
 -- Table `bucket_comments`
@@ -214,19 +267,6 @@ CREATE TABLE IF NOT EXISTS `places` (
   KEY `places_idx` (`place_name_canonical`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
--- -----------------------------------------------------
--- Table `account_droplet_links`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS  `account_droplet_links` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `link_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `account_id` (`account_id`,`droplet_id`,`link_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- -----------------------------------------------------
 -- Table `user_identities`
@@ -310,20 +350,6 @@ CREATE TABLE IF NOT EXISTS `snapshot_options` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
-
--- -----------------------------------------------------
--- Table `account_droplet_places`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `account_droplet_places` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `place_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `account_id` (`account_id`,`droplet_id`,`place_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 -- -----------------------------------------------------
 -- Table `links`
 -- -----------------------------------------------------
@@ -352,18 +378,6 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8;
 
 
--- -----------------------------------------------------
--- Table `account_droplet_tags`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `account_droplet_tags` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `tag_id` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `account_id` (`account_id`,`droplet_id`,`tag_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 -- -----------------------------------------------------
 -- Table `river_channels`
@@ -452,12 +466,60 @@ CREATE TABLE IF NOT EXISTS `buckets_droplets` (
   `bucket_id` int(11) unsigned NOT NULL DEFAULT '0',
   `droplet_id` bigint(20) unsigned NOT NULL DEFAULT '0',
   `droplet_date_added` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date when the droplet was added to the bucket',
+  `droplet_veracity` int(11) unsigned NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   UNIQUE KEY `bucket_droplet_un_bucket_droplet` (`bucket_id`,`droplet_id`),
   KEY `bucket_id_idx` (`bucket_id`),
   KEY `droplet_id_idx` (`droplet_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- ----------------------------------------
+-- Table `bucket_droplet_tags`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `bucket_droplet_tags` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `buckets_droplets_id` bigint(20) NOT NULL,
+  `tag_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_bucket_droplet_tag` (`buckets_droplets_id`, `tag_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- Table `bucket_droplet_places`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `bucket_droplet_places` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `buckets_droplets_id` bigint(20) NOT NULL,
+  `place_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_bucket_droplet_place` (`buckets_droplets_id`, `place_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- Table `bucket_droplet_links`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `bucket_droplet_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `buckets_droplets_id` bigint(20) NOT NULL,
+  `link_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_bucket_droplet_link` (`buckets_droplets_id`, `link_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- Table `bucket_droplet_media`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `bucket_droplet_media` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `buckets_droplets_id` bigint(20) NOT NULL,
+  `media_id` bigint(20) NOT NULL,
+  `deleted` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `un_bucket_droplet_media` (`buckets_droplets_id`, `media_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- -----------------------------------------------------
 -- Table `droplets`

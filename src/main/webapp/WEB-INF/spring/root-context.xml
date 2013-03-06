@@ -27,6 +27,8 @@
 	<bean id="roleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRoleDao" />
 	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
 	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
+	<bean id="riverDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDropDao" />
+	<bean id="bucketDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDropDao" />
 	<bean id="bucketDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDao" />
 	<bean id="channel" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaChannelDao" />
 	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />

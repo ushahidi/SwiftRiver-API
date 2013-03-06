@@ -14,7 +14,6 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -26,14 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
-import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
-import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
-import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.service.DropService;
 
 @Controller
@@ -55,19 +47,6 @@ public class DropsController extends AbstractController {
 	}
 
 	/**
-	 * Handler for adding a comment to a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/comments", method = RequestMethod.POST)
-	@ResponseBody
-	public GetCommentDTO addComment(@RequestBody CreateCommentDTO comment,
-			@PathVariable Long id, Principal principal) {
-		return dropService.addComment(id, comment, principal.getName());
-	}
-
-	/**
 	 * Handler for getting comments defined a drop.
 	 * 
 	 * @param body
@@ -77,110 +56,5 @@ public class DropsController extends AbstractController {
 	@ResponseBody
 	public List<GetCommentDTO> getComments(@PathVariable long id) {
 		return dropService.getComments(id);
-	}
-
-	/**
-	 * Handler for deleting a comment.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/comments/{commentId}", method = RequestMethod.DELETE)
-	public void deleteComment(@PathVariable long id, @PathVariable long commentId, Principal principal) {
-		dropService.deleteComment(id, commentId);
-	}
-	
-	/**
-	 * Handler for adding a link to a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/links", method = RequestMethod.POST)
-	@ResponseBody
-	public GetLinkDTO addLink(@RequestBody CreateLinkDTO link, @PathVariable long id, Principal principal) {
-		return dropService.addLink(id, link, principal.getName());
-	}
-	
-	/**
-	 * Handler for deleting a link.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/links/{linkId}", method = RequestMethod.DELETE)
-	@ResponseBody
-	public void deleteLink(@PathVariable long id, @PathVariable long linkId, Principal principal) {
-		dropService.deleteLink(id, linkId, principal.getName());
-	}
-	
-	/**
-	 * Handler for adding a place to a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/places", method = RequestMethod.POST)
-	@ResponseBody
-	public GetPlaceDTO addPlace(@RequestBody CreatePlaceDTO place, @PathVariable long id, Principal principal) {
-		return dropService.addPlace(id, place, principal.getName());
-	}
-	
-	/**
-	 * Handler for deleting a place.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/places/{placeId}", method = RequestMethod.DELETE)
-	@ResponseBody
-	public void deletePlace(@PathVariable long id, @PathVariable long placeId, Principal principal) {
-		dropService.deletePlace(id, placeId, principal.getName());
-	}
-	
-	/**
-	 * Handler for adding a tag to a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
-	@ResponseBody
-	public GetTagDTO addTag(@RequestBody CreateTagDTO tag, @PathVariable Long id, Principal principal) {
-		return dropService.addTag(id, tag, principal.getName());
-	}
-	
-	/**
-	 * Handler for deleting a tag.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/tags/{tagId}", method = RequestMethod.DELETE)
-	@ResponseBody
-	public void deleteTag(@PathVariable long id, @PathVariable long tagId, Principal principal) {
-		dropService.deleteTag(id, tagId, principal.getName());
-	}
-	
-	/**
-	 * Handler for adding a media to a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/media", method = RequestMethod.POST)
-	public Map<String, Object> addMedia(@RequestBody Map<String, Object> body, @PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
-	}
-	
-	/**
-	 * Handler for deleting a media.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/media", method = RequestMethod.DELETE)
-	public Map<String, Object> deleteMedia(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 }

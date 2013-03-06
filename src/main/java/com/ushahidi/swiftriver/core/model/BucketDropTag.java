@@ -24,22 +24,19 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "account_droplet_places")
-public class AccountDropPlace {
-
+@Table(name = "bucket_droplet_tags")
+public class BucketDropTag {
+	
 	@Id
 	@GeneratedValue
 	private long id;
 	
 	@ManyToOne
-	private Account account;
+	@JoinColumn(name="buckets_droplets_id")
+	private BucketDrop bucketDrop;
 	
 	@ManyToOne
-	@JoinColumn(name="droplet_id")
-	private Drop drop;
-	
-	@ManyToOne
-	private Place place;
+	private Tag tag;
 	
 	private boolean deleted;
 
@@ -51,28 +48,20 @@ public class AccountDropPlace {
 		this.id = id;
 	}
 
-	public Account getAccount() {
-		return account;
+	public BucketDrop getBucketDrop() {
+		return bucketDrop;
 	}
 
-	public void setAccount(Account account) {
-		this.account = account;
+	public void setBucketDrop(BucketDrop drop) {
+		this.bucketDrop = drop;
 	}
 
-	public Drop getDrop() {
-		return drop;
+	public Tag getTag() {
+		return tag;
 	}
 
-	public void setDrop(Drop drop) {
-		this.drop = drop;
-	}
-
-	public Place getPlace() {
-		return place;
-	}
-
-	public void setPlace(Place place) {
-		this.place = place;
+	public void setTag(Tag tag) {
+		this.tag = tag;
 	}
 
 	public boolean isDeleted() {
@@ -84,4 +73,5 @@ public class AccountDropPlace {
 	}
 	
 	
+
 }

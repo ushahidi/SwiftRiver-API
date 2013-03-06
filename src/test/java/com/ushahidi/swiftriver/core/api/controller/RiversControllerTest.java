@@ -594,4 +594,60 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.message").exists())
 				.andExpect(jsonPath("$.errors").isArray());
 	}
+	
+	@Test
+	public void addDropTag() throws Exception {
+		String tag = "{\"tag\": \"Samuel L. Jackson\", \"tag_type\":\"person\"}";
+		this.mockMvc.perform(post("/v1/rivers/1/drops/1/tags")
+				.content(tag)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.tag").value("Samuel L. Jackson"));
+	}
+	
+	@Test
+	public void deleteDropTag() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/tags/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	public void addDropLink() throws Exception {
+		String link = "{\"url\": \"http://www.mashada.com\"}";
+		this.mockMvc.perform(post("/v1/rivers/1/drops/1/links")
+				.content(link)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.url").value("http://www.mashada.com"));
+	}
+
+	@Test
+	public void deleteDropLink() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/links/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void addDropPlace() throws Exception {
+		String place = "{\"name\": \"Mombasa\", \"latitude\":-4.05466, \"longitude\": 39.6636 }";
+
+		this.mockMvc.perform(post("/v1/rivers/1/drops/1/places")
+				.content(place)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Mombasa"))
+			.andExpect(jsonPath("$.latitude").value(-4.05466));
+	}
+	
+	@Test
+	public void deleteDropPlace() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/places/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
 }

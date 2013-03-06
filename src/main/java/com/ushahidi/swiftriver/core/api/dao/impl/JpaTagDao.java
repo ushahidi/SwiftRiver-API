@@ -25,6 +25,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
  * Repository class for tags
@@ -33,6 +34,12 @@ import com.ushahidi.swiftriver.core.model.Tag;
  */
 @Repository
 public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
+	
+	public Tag create(Tag t) {
+		t.setTagCanonical(t.getTag().toLowerCase());		
+		t.setHash(HashUtil.md5(t.getTag() + t.getType()));
+		return super.create(t);
+	}
 
 	/**
 	 * @see TagDao#findAllByHash(ArrayList)

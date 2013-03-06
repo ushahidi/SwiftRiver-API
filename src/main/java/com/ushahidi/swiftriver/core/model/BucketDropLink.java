@@ -16,40 +16,35 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.util.Date;
-
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
+/**
+ * Model for the bucket_droplet_links table
+ * @author ekala
+ *
+ */
 @Entity
-@Table(name = "buckets_droplets")
-public class BucketDrop {
-	
+@Table(name = "bucket_droplet_links")
+public class BucketDropLink {
+
 	@Id
 	@GeneratedValue
 	private long id;
 	
 	@ManyToOne
-	@JoinColumn(name = "droplet_id")
-	private Drop drop;
-	
+	@JoinColumn(name = "buckets_droplets_id")
+	private BucketDrop bucketDrop;
+
 	@ManyToOne
-	private Bucket bucket;
+	private Link link;
 	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="droplet_date_added")
-	private Date dateAdded;
-	
-	@Column(name="droplet_veracity")
-	private long veracity;
-	
+	private boolean deleted;
+
 	public long getId() {
 		return id;
 	}
@@ -58,36 +53,29 @@ public class BucketDrop {
 		this.id = id;
 	}
 
-	public Drop getDrop() {
-		return drop;
+	public BucketDrop getBucketDrop() {
+		return bucketDrop;
 	}
 
-	public void setDrop(Drop drop) {
-		this.drop = drop;
+	public void setBucketDrop(BucketDrop bucketDrop) {
+		this.bucketDrop = bucketDrop;
 	}
 
-	public Bucket getBucket() {
-		return bucket;
+	public Link getLink() {
+		return link;
 	}
 
-	public void setBucket(Bucket bucket) {
-		this.bucket = bucket;
+	public void setLink(Link link) {
+		this.link = link;
 	}
 
-	public Date getDateAdded() {
-		return dateAdded;
+	public boolean isDeleted() {
+		return deleted;
 	}
 
-	public void setDateAdded(Date dateAdded) {
-		this.dateAdded = dateAdded;
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
-
-	public long getVeracity() {
-		return veracity;
-	}
-
-	public void setVeracity(long veracity) {
-		this.veracity = veracity;
-	}
-
+	
+	
 }

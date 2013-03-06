@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -24,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.model.Place;
-import com.ushahidi.swiftriver.core.util.HashUtil;
 
 public class JpaPlaceDaoTest extends AbstractDaoTest {
 
@@ -32,26 +32,19 @@ public class JpaPlaceDaoTest extends AbstractDaoTest {
 	private PlaceDao placeDao;
 	
 	/**
-	 * Test for {@link PlaceDao#save(com.ushahidi.swiftriver.core.model.Place)}
+	 * Test for {@link PlaceDao#create(com.ushahidi.swiftriver.core.model.Place)}
 	 */
 	@Test
-	public void testSave() {
+	public void testCreate() {
 		Place place = new Place();
-		String placeName = "Muthaiga";
-		float longitude = 36.8333f;
-		float latitude = -1.25f;
-		
-		String hash = HashUtil.md5(placeName + Float.toString(longitude) + Float.toString(latitude));
 
-		place.setPlaceName(placeName);
-		place.setPlaceNameCanonical(placeName.toLowerCase());
-		place.setLatitude(latitude);
-		place.setLongitude(longitude);
-		place.setHash(hash);
+		place.setPlaceName("Muthaiga");
+		place.setLatitude(-1.25f);
+		place.setLongitude(36.8333f);
 
 		placeDao.create(place);
 		
 		assertTrue(place.getId() > 0);
-	
+		assertEquals("muthaiga", place.getPlaceNameCanonical());	
 	}
 }
