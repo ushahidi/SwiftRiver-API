@@ -14,18 +14,14 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.service.DropService;
 
 @Controller
@@ -46,15 +42,4 @@ public class DropsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	/**
-	 * Handler for getting comments defined a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/comments", method = RequestMethod.GET)
-	@ResponseBody
-	public List<GetCommentDTO> getComments(@PathVariable long id) {
-		return dropService.getComments(id);
-	}
 }

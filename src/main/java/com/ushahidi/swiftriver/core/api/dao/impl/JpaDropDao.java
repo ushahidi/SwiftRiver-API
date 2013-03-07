@@ -19,10 +19,10 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Query;
 import javax.sql.DataSource;
@@ -38,7 +38,6 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
@@ -651,102 +650,87 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			i++;
 		}
 
-		String dropIdColumn = null;
-		String joinClause = null;		
-		switch (dropSource) {
-			case BUCKET:
-				dropIdColumn = "`buckets_droplets`.`id` AS `id`";
-				joinClause = "WHERE `buckets_droplets`.`id` IN (:dropIds) ";
-				break;
-			case RIVER:
-				dropIdColumn = "`rivers_droplets`.`id` AS `id`";
-				joinClause = "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `buckets_droplets`.`droplet_id`) ";
-				joinClause += "WHERE `rivers_droplets`.`id` IN (:dropIds)";
-				break;
-		}
-		
+		Map<Long, Long> bucketDropsIndex = getBucketDropsIndex(dropsIndex.keySet(), dropSource);
+
 		// Query to fetch the buckets
-		String sql = "SELECT " + dropIdColumn + ", `buckets`.`id` AS `bucket_id`, ";
+		String sql = "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
 		sql += "`buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
-		sql += joinClause;
+		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
 		sql += "AND `buckets`.`bucket_publish` = 1 ";
 		sql += "UNION ALL ";
-		sql += "SELECT " + dropIdColumn + ", `buckets`.`id` AS `bucket_id`, ";
+		sql += "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
 		sql += "`buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
 		sql += "LEFT JOIN `accounts` ON (`buckets`.`account_id` = `accounts`.`id` AND `buckets`.`account_id` = :accountId) ";
 		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId) ";
-		sql += joinClause;
+		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
 		sql += "AND `buckets`.`bucket_publish` = 0 ";
 		
 		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("dropIds", dropsIndex.keySet());
+		params.addValue("dropletIds", bucketDropsIndex.keySet());
 		params.addValue("accountId", queryingAccount.getId());
 		
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
 	
-		// Group the buckets by bucket id
-		Map<Long, Bucket> buckets = new HashMap<Long, Bucket>();
+		// Group the buckets per drop 
+		Map<Long, List<Bucket>> dropBucketsMap = new HashMap<Long, List<Bucket>>();
 		for (Map<String, Object> row: results) {
 			
 			Long dropId = ((BigInteger)row.get("id")).longValue();
-			Drop drop = drops.get(dropsIndex.get(dropId));
-			if (drop.getBuckets() == null) {
-				drop.setBuckets(new ArrayList<Bucket>());
+			List<Bucket> dropBuckets = dropBucketsMap.get(dropId);
+			if (dropBuckets == null) {
+				dropBuckets = new ArrayList<Bucket>();
 			}
 
-			Long bucketId = ((BigInteger) row.get("bucket_id")).longValue();
-			Bucket bucket = buckets.get(bucketId);
-			if (bucket == null) {
-				bucket = new Bucket();
-				bucket.setId(bucketId);
-				bucket.setName((String)row.get("bucket_name"));
-				
-				buckets.put(bucketId, bucket);
-			}
-			
-			// Add bucket to the list of buckets
-			if (!drop.getBuckets().contains(bucket)) {
-				drop.getBuckets().add(bucket);
-			}
+			// Create the bucket
+			Bucket bucket = new Bucket();
+			bucket.setId(((BigInteger) row.get("bucket_id")).longValue());
+			bucket.setName((String)row.get("bucket_name"));
+
+			// Add to the list of buckets for the current drop
+			dropBuckets.add(bucket);			
+			dropBucketsMap.put(dropId, dropBuckets);				
+		}
+		
+		// Populate the buckets for the submitted drops
+		for (Map.Entry<Long, List<Bucket>> entry: dropBucketsMap.entrySet()) {
+			Long dropId = bucketDropsIndex.get(entry.getKey());
+
+			// Retrieve the drop
+			Drop drop = drops.get(dropsIndex.get(dropId));
+			drop.setBuckets(entry.getValue());
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findCommentById(java.lang.Long)
-	 */
-	public DropComment findCommentById(Long commentId) {
-		return this.em.find(DropComment.class, commentId);
-	}
+	private Map<Long, Long> getBucketDropsIndex(Set<Long> dropIds,
+			DropSource dropSource) {
+		String sql = null;
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#deleteComment(com.ushahidi.swiftriver.core.model.DropComment)
-	 */
-	public void deleteComment(DropComment dropComment) {
-		this.em.remove(dropComment);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addComment(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
-	 */
-	public DropComment addComment(Drop drop, Account account, String commentText) {
-		DropComment dropComment = new DropComment();
+		switch(dropSource) {
+			case BUCKET:
+				sql = "SELECT `id`, `droplet_id` FROM `buckets_droplets` WHERE `id` IN :dropIds";
+			break;
+			case RIVER:
+				sql = "SELECT `id`, `droplet_id` FROM `rivers_droplets` WHERE `id` IN :dropIds";
+			break;
+		}
 		
-		dropComment.setDrop(drop);
-		dropComment.setAccount(account);
-		dropComment.setDeleted(false);
-		dropComment.setCommentText(commentText);
-		dropComment.setDateAdded(new Date());
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("dropIds", dropIds);
+		
+		Map<Long, Long> bucketDropsIndex = new HashMap<Long, Long>();
+		for (Object row: query.getResultList()) {
+			Object[] rowArray = (Object[]) row;
 
-		this.em.persist(dropComment);
-
-		return dropComment;
+			Long dropId = ((BigInteger) rowArray[0]).longValue();
+			Long indexId = ((BigInteger)rowArray[1]).longValue();
+			
+			bucketDropsIndex.put(indexId, dropId);
+		}
+		
+		return bucketDropsIndex;
 	}
-
 }

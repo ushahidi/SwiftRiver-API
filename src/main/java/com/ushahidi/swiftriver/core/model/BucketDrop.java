@@ -17,13 +17,16 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -49,6 +52,15 @@ public class BucketDrop {
 	
 	@Column(name="droplet_veracity")
 	private long veracity;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
+	private List<BucketDropLink> links;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
+	private List<BucketDropPlace> places;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
+	private List<BucketDropTag> tags;
 	
 	public long getId() {
 		return id;
@@ -88,6 +100,30 @@ public class BucketDrop {
 
 	public void setVeracity(long veracity) {
 		this.veracity = veracity;
+	}
+
+	public List<BucketDropLink> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<BucketDropLink> links) {
+		this.links = links;
+	}
+
+	public List<BucketDropPlace> getPlaces() {
+		return places;
+	}
+
+	public void setPlaces(List<BucketDropPlace> places) {
+		this.places = places;
+	}
+
+	public List<BucketDropTag> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<BucketDropTag> tags) {
+		this.tags = tags;
 	}
 
 }

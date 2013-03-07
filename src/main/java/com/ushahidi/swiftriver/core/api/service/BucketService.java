@@ -623,8 +623,19 @@ public class BucketService {
 		Bucket bucket = getBucketById(bucketId);
 		checkPermissions(bucket, authUser);
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-		bucketDropDao.delete(bucketDrop);
+		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
+		if (bucketDrop == null) {
+			throw new NotFoundException("The requested drop does not exist");
+		}
+		
+		// Use the main drop id to find the bucket drop 
+		BucketDrop targetBucketDrop = bucketDao.findDrop(bucketId, bucketDrop.getDrop().getId());
+		if (targetBucketDrop == null) {
+			throw new NotFoundException("The requested drop does not exist");
+		}
+		
+		// Delete the drop
+		bucketDropDao.delete(targetBucketDrop);
 	}
 
 	/**
@@ -655,7 +666,6 @@ public class BucketService {
 					username, bucketId));
 		}
 		
-		Drop drop = null;
 		BucketDrop bucketDrop = null;
 
 		if (dropSourceTO.getSource().equals("river")) {
@@ -663,27 +673,27 @@ public class BucketService {
 			if (riverDrop == null) {
 				throw new NotFoundException(String.format("Drop %d is not a river drop", dropId));
 			}
-
-			drop = riverDrop.getDrop();
+			Drop drop = riverDrop.getDrop();
 			bucketDrop = bucketDao.findDrop(bucketId, drop.getId());
 			
 			if (bucketDrop != null) {
 				bucketDropDao.increaseVeracity(bucketDrop);
 			} else {
-				bucketDao.addDrop(bucket, drop);
+				bucketDropDao.createFromRiverDrop(riverDrop, bucket);
 			}
 		} else if (dropSourceTO.getSource().equals("bucket")) {
 			bucketDrop = bucketDropDao.findById(dropId);
 			if (bucketDrop == null) {
 				throw new NotFoundException(String.format("Drop %d is not a bucket drop", dropId));
 			}
-			drop = bucketDrop.getDrop();
 
 			if (bucketDrop.getBucket().equals(bucket)) {
 				throw new BadRequestException(String.format("Drop %d already exists in bucket %d",
 						dropId, bucketId));
 			}
-			bucketDao.addDrop(bucket, drop);
+
+			// Create a new bucket drop from an existing
+			bucketDropDao.createFromExisting(bucketDrop, bucket);
 		}
 		
 	}
