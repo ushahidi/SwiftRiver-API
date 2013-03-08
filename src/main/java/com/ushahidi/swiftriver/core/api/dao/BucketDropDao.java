@@ -16,8 +16,10 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.BucketDropLink;
 import com.ushahidi.swiftriver.core.model.BucketDropPlace;
 import com.ushahidi.swiftriver.core.model.BucketDropTag;
@@ -144,5 +146,26 @@ public interface BucketDropDao extends GenericDao<BucketDrop> {
 	 * @param bucket
 	 */
 	public void createFromExisting(BucketDrop sourceBucketDrop, Bucket bucket);
+
+	/**
+	 * Create a new {@link BucketDropComment} entity for the {@link Bucket}
+	 * entity specified in <code>bucket</code>. 
+	 * 
+	 * @param bucketDrop
+	 * @param account
+	 * @param commentText
+	 * @return
+	 */
+	public BucketDropComment addComment(BucketDrop bucketDrop, Account account,
+			String commentText);
+
+	/**
+	 * Deletes the {@link BucketDropComment} entity with the ID specified 
+	 * in <code>commentId</code>
+	 * 
+	 * @param commentId
+	 * @return
+	 */
+	public boolean deleteComment(Long commentId);
 
 }

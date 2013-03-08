@@ -58,6 +58,9 @@ public class RiverDrop {
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
 	private List<RiverDropTag> tags;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	private List<RiverDropComment> comments;
 
 	public long getId() {
 		return id;
@@ -113,6 +116,14 @@ public class RiverDrop {
 
 	public void setTags(List<RiverDropTag> tags) {
 		this.tags = tags;
+	}
+
+	public List<RiverDropComment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<RiverDropComment> comments) {
+		this.comments = comments;
 	}
 
 	

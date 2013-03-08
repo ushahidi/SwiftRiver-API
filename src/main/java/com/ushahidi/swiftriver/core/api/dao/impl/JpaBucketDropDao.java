@@ -25,14 +25,17 @@ import javax.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.BucketDropLink;
 import com.ushahidi.swiftriver.core.model.BucketDropPlace;
 import com.ushahidi.swiftriver.core.model.BucketDropTag;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropLink;
 import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
@@ -256,6 +259,19 @@ public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements Buck
 			tags.add(bucketDropTag);
 		}
 		bucketDrop.setTags(tags);
+
+		// Comments
+		List<BucketDropComment> comments = new ArrayList<BucketDropComment>();
+		for (RiverDropComment comment: riverDrop.getComments()) {
+			BucketDropComment dropComment = new BucketDropComment();
+			dropComment.setBucketDrop(bucketDrop);
+			dropComment.setAccount(comment.getAccount());
+			dropComment.setCommentText(comment.getCommentText());
+			dropComment.setDateAdded(comment.getDateAdded());
+			
+			comments.add(dropComment);
+		}
+		bucketDrop.setComments(comments);
 		
 		this.create(bucketDrop);
 		
@@ -301,8 +317,47 @@ public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements Buck
 		}
 		bucketDrop.setTags(tags);
 		
+		// Comments
+		List<BucketDropComment> comments = new ArrayList<BucketDropComment>();
+		for (BucketDropComment comment: sourceBucketDrop.getComments()) {
+			BucketDropComment dropComment = new BucketDropComment();
+			dropComment.setBucketDrop(bucketDrop);
+			dropComment.setAccount(comment.getAccount());
+			dropComment.setCommentText(comment.getCommentText());
+			dropComment.setDateAdded(comment.getDateAdded());
+			
+			comments.add(dropComment);
+		}
+		bucketDrop.setComments(comments);
+		
 		this.create(bucketDrop);
 
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addComment(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 */
+	public BucketDropComment addComment(BucketDrop bucketDrop, Account account,
+			String commentText) {
+		BucketDropComment dropComment = new BucketDropComment();
+
+		dropComment.setBucketDrop(bucketDrop);
+		dropComment.setAccount(account);
+		dropComment.setCommentText(commentText);
+		dropComment.setDateAdded(new Date());
+		
+		this.em.persist(dropComment);
+		return dropComment;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteComment(com.ushahidi.swiftriver.core.model.BucketDrop, java.lang.Long)
+	 */
+	public boolean deleteComment(Long commentId) {
+		String sql = "DELETE FROM BucketDropComment WHERE id = ?1";
+		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;		
 	}
 
 }

@@ -41,6 +41,7 @@ import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
@@ -48,6 +49,7 @@ import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -61,6 +63,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
@@ -1003,6 +1006,85 @@ public class BucketService {
 		}
 		
 		return bucketDrop;
+	}
+
+	/**
+	 * Adds a comment to the {@link BucketDrop} entity specified 
+	 * in <code>dropId</code>. This entity must be associated with
+	 * the {@link Bucket} entity specified in <code>bucketId</code>
+	 * otherwise a {@link NotFoundException} will be thrown.
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	public GetCommentDTO addDropComment(Long bucketId, Long dropId,
+			CreateCommentDTO createDTO, String authUser) {
+
+		if (createDTO.getCommentText() == null || 
+				createDTO.getCommentText().trim().length() == 0) {
+			throw new BadRequestException("The no comment text specified");
+		}
+
+		Bucket bucket = getBucketById(bucketId);
+		if (!bucket.isPublished()) {
+			checkPermissions(bucket, authUser);
+		}
+
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		Account account = accountDao.findByUsername(authUser);
+		BucketDropComment dropComment = bucketDropDao.addComment(bucketDrop,
+				account, createDTO.getCommentText());
+
+		return mapper.map(dropComment, GetCommentDTO.class);
+	}
+
+	/**
+	 * Get and return the list of {@link BucketDropComment} entities
+	 * for the {@link BucketDrop} with the ID specified in <code>dropId</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetCommentDTO> getDropComments(Long bucketId, Long dropId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		if (!bucket.isPublished()) {
+			checkPermissions(bucket, authUser);
+		}
+		
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		List<GetCommentDTO> commentsList = new ArrayList<GetCommentDTO>();
+		for (BucketDropComment dropComment: bucketDrop.getComments()) {
+			GetCommentDTO commentDTO = mapper.map(dropComment, GetCommentDTO.class);
+			commentsList.add(commentDTO);
+		}
+		
+		return commentsList;
+	}
+
+	/**
+	 * Deletes the {@link BucketDropComment} entity specified in <code>commentId</code>
+	 * from the {@link BucketDrop} entity specified in <code>dropId</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param commentId
+	 * @param authUser
+	 */
+	public void deleteDropComment(Long bucketId, Long dropId, Long commentId,
+			String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		checkPermissions(bucket, authUser);
+		
+		getBucketDrop(dropId, bucket);
+		
+		if (!bucketDropDao.deleteComment(commentId)) {
+			throw new NotFoundException(String.format("Comment %d does not exist", commentId));
+		}
 	}
 	
 }

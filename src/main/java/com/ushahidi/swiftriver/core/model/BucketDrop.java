@@ -62,6 +62,9 @@ public class BucketDrop {
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
 	private List<BucketDropTag> tags;
 	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
+	private List<BucketDropComment> comments;
+	
 	public long getId() {
 		return id;
 	}
@@ -124,6 +127,14 @@ public class BucketDrop {
 
 	public void setTags(List<BucketDropTag> tags) {
 		this.tags = tags;
+	}
+
+	public List<BucketDropComment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<BucketDropComment> comments) {
+		this.comments = comments;
 	}
 
 }

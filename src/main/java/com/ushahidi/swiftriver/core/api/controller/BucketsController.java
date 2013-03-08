@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
@@ -41,6 +42,7 @@ import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -430,5 +432,50 @@ public class BucketsController extends AbstractController {
 		bucketService.deleteDropPlace(id, dropId, placeId, principal.getName());
 	}
 	
+	/**
+	 * Handler for adding a comment to a bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.POST)
+	@ResponseBody
+	public GetCommentDTO addDropComment(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreateCommentDTO createDTO, Principal principal) {
+		
+		return bucketService.addDropComment(id, dropId, createDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for getting the comments of bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetCommentDTO> getDropComments(@PathVariable Long id, @PathVariable Long dropId,
+			Principal principal) {
+		return bucketService.getDropComments(id, dropId, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a comment from a bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param commentId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/drops/{dropId}/comments/{commentId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropComment(@PathVariable Long id, @PathVariable Long dropId, 
+			@PathVariable Long commentId, Principal principal) {
+		bucketService.deleteDropComment(id, dropId, commentId, principal.getName());
+	}
 	
 }
