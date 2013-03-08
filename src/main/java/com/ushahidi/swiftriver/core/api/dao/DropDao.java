@@ -31,6 +31,8 @@ import com.ushahidi.swiftriver.core.model.Tag;
 
 public interface DropDao extends GenericDao<Drop> {
 	
+	public List<Drop> createDrops(List<Drop> drops);
+	
 	/**
 	 * Adds a collection of links to a drop
 	 * 

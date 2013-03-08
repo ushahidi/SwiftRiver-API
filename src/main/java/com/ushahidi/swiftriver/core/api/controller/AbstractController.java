@@ -15,7 +15,8 @@ import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 public abstract class AbstractController {
 	
 	final Logger logger = LoggerFactory.getLogger(AbstractController.class);
-
+	
+	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorDTO> handleIOException(Exception ex) {
 		ErrorDTO errorTO = new ErrorDTO();

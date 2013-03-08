@@ -16,21 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Place;
 
 public interface PlaceDao extends GenericDao<Place> {
 	
 	/**
-	 * Gets and returns all place entities with the specified
-	 * hash values
+	 * Populate place IDs in the given list of drops while create any that are
+	 * missing.
 	 * 
-	 * @param placeHashes
-	 * @return
+	 * @param drops
 	 */
-	public List<Place> findAllByHash(ArrayList<String> placeHashes);
+	public void getPlaces(List<Drop> drops);
 
 	/**
 	 * Gets and returs the {@link Place} record with the hash in <code>hash</code>

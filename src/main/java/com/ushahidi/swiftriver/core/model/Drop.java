@@ -46,6 +46,9 @@ public class Drop {
         pkColumnValue="droplets") 
 	private long id;
 	
+	@Column(name = "droplet_hash", nullable = false)
+	private String hash;
+	
 	@Column(name = "channel", nullable = false)
 	private String channel;
 	
@@ -110,6 +113,9 @@ public class Drop {
 	private List<Bucket> buckets;
 	
 	@Transient
+	private List<Long> riverIds;
+	
+	@Transient
 	private Boolean read;
 
 	public Drop() {
@@ -122,6 +128,14 @@ public class Drop {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public String getHash() {
+		return hash;
+	}
+
+	public void setHash(String hash) {
+		this.hash = hash;
 	}
 
 	public Identity getIdentity() {
@@ -266,6 +280,14 @@ public class Drop {
 
 	public void setBuckets(List<Bucket> buckets) {
 		this.buckets = buckets;
+	}
+
+	public List<Long> getRiverIds() {
+		return riverIds;
+	}
+
+	public void setRiverIds(List<Long> riverIds) {
+		this.riverIds = riverIds;
 	}
 
 	public Boolean getRead() {

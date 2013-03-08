@@ -14,8 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,7 +25,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.CreateDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.service.DropService;
 
 @Controller
@@ -42,8 +46,46 @@ public class DropsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public Map<String, Object> createDrop(@RequestBody Map<String, Object> body) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public List<GetDropDTO> createDrop(@RequestBody List<CreateDropDTO> drops) {
+
+		for (CreateDropDTO drop : drops) {
+
+			List<ErrorField> errors = new ArrayList<ErrorField>();
+			
+			if (drop.getTitle() == null) {
+				errors.add(new ErrorField("title", "missing"));
+			}
+			
+			if (drop.getContent() == null) {
+				errors.add(new ErrorField("content", "missing"));
+			}
+			
+			if (drop.getChannel() == null) {
+				errors.add(new ErrorField("channel", "missing"));
+			}
+			
+			if (drop.getDatePublished() == null) {
+				errors.add(new ErrorField("date_published", "missing"));
+			}
+			
+			if (drop.getOriginalId() == null) {
+				errors.add(new ErrorField("original_id", "missing"));
+			}
+			
+			if (drop.getIdentity() != null && drop.getIdentity().getOriginId() == null) {
+				errors.add(new ErrorField("identity.origin_id", "missing"));
+			}
+
+			if (!errors.isEmpty()) {
+				BadRequestException e = new BadRequestException(
+						"Invalid parameter.");
+				e.setErrors(errors);
+				throw e;
+			}
+		}
+
+		return dropService.createDrops(drops);
 	}
 
 	/**

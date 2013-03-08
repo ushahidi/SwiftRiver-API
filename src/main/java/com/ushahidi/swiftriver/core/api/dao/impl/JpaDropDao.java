@@ -17,12 +17,16 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.math.BigInteger;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Query;
 import javax.sql.DataSource;
@@ -30,11 +34,19 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
+import com.ushahidi.swiftriver.core.api.dao.IdentityDao;
+import com.ushahidi.swiftriver.core.api.dao.LinkDao;
+import com.ushahidi.swiftriver.core.api.dao.MediaDao;
+import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
+import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -44,30 +56,275 @@ import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.Sequence;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.MD5Util;
 
-/**
- * @author ekala
- *
- */
 @Repository
 public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaDropDao.class);
-	
-	private NamedParameterJdbcTemplate jdbcTemplate;
-	
+
+	@Autowired
+	private SequenceDao sequenceDao;
+
+	@Autowired
+	private IdentityDao identityDao;
+
+	@Autowired
+	private TagDao tagDao;
+
+	@Autowired
+	private LinkDao linkDao;
+
+	@Autowired
+	private PlaceDao placeDao;
+
+	@Autowired
+	private MediaDao mediaDao;
+
+	private NamedParameterJdbcTemplate namedJdbcTemplate;
+	private JdbcTemplate jdbcTemplate;
+
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+		this.namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
 	}
-	
-	
-	/**
-	 * @see DropDao#createDrops(Collection)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.DropDao#createDrops(java.util.List)
 	 */
-	public void createDrops(Collection<Drop> drops) {
-		// TODO Auto-generated method stub
+	public List<Drop> createDrops(List<Drop> drops) {
+
+		// Get a lock on droplets
+		Sequence seq = sequenceDao.findById("droplets");
+
+		// Get identity IDs populated
+		identityDao.getIdentities(drops);
+
+		// newDropIndex maps a drop hash to an list index in the drops list.
+		Map<String, List<Integer>> newDropIndex = getNewDropIndex(drops);
+
+		// Insert new drops
+		if (newDropIndex.size() > 0) {
+			// Find drops that already exist
+			updateNewDropIndex(newDropIndex, drops);
+
+			// Insert new drops into the db
+			batchInsert(newDropIndex, drops, seq);
+		}
+
+		// Populate metadata
+		insertRiverDrops(drops);
+		tagDao.getTags(drops);
+		linkDao.getLinks(drops);
+		placeDao.getPlaces(drops);
+		mediaDao.getMedia(drops);
+
+		return drops;
+	}
+
+	/**
+	 * Generates a mapping of drop hashes to list index for the given drops.
+	 * Also populates a drop hash into the given list of drops.
+	 * 
+	 * @param drops
+	 * @return
+	 */
+	private Map<String, List<Integer>> getNewDropIndex(List<Drop> drops) {
+		Map<String, List<Integer>> newDropIndex = new HashMap<String, List<Integer>>();
+
+		// Generate hashes for each new drops i.e. those without an id
+		int i = 0;
+		for (Drop drop : drops) {
+			if (drop.getId() > 0)
+				continue;
+
+			String hash = MD5Util.md5Hex(drop.getIdentity().getOriginId()
+					+ drop.getChannel() + drop.getOriginalId());
+			drop.setHash(hash);
+
+			// Keep a record of where this hash is in the drop list
+			List<Integer> indexes;
+			if (newDropIndex.containsKey(hash)) {
+				indexes = newDropIndex.get(hash);
+			} else {
+				indexes = new ArrayList<Integer>();
+				newDropIndex.put(hash, indexes);
+			}
+			indexes.add(i++);
+		}
+
+		return newDropIndex;
+	}
+
+	/**
+	 * For the given list of new drops, find those that the hash already exist
+	 * and update the drop entry with the existing id and remove the hash from
+	 * the new drop index.
+	 * 
+	 * @param newDropIndex
+	 * @param drops
+	 */
+	private void updateNewDropIndex(Map<String, List<Integer>> newDropIndex,
+			List<Drop> drops) {
+		// First find and update existing drops with their ids.
+		String sql = "SELECT `id`, `droplet_hash` FROM `droplets` WHERE `droplet_hash` IN (:hashes)";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("hashes", newDropIndex.keySet());
+
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
+		// Update id for the drops that were found
+		for (Map<String, Object> result : results) {
+			String hash = (String) result.get("droplet_hash");
+			Long id = ((BigInteger) result.get("id")).longValue();
+
+			List<Integer> indexes = newDropIndex.get(hash);
+			for (Integer index : indexes) {
+				drops.get(index).setId(id);
+			}
+
+			// Hash is not for a new drop so remove it
+			newDropIndex.remove(hash);
+		}
+	}
+
+	/**
+	 * Insert new drops in a single batch statement
+	 * 
+	 * @param newDropIndex
+	 * @param drops
+	 */
+	private void batchInsert(final Map<String, List<Integer>> newDropIndex,
+			final List<Drop> drops, Sequence seq) {
+
+		final List<String> hashes = new ArrayList<String>();
+		hashes.addAll(newDropIndex.keySet());
+		final long startKey = sequenceDao.getIds(seq, hashes.size());
+
+		String sql = "INSERT INTO `droplets` (`id`, `channel`, `droplet_hash`, "
+				+ "`droplet_orig_id`, `droplet_title`, "
+				+ "`droplet_content`, `droplet_date_pub`, `droplet_date_add`, "
+				+ "`identity_id`) VALUES (?,?,?,?,?,?,?,?,?)";
+
+		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			public void setValues(PreparedStatement ps, int i)
+					throws SQLException {
+				String hash = hashes.get(i);
+
+				// Update drops with the newly generated id
+				for (int index : newDropIndex.get(hash)) {
+					drops.get(index).setId(startKey + i);
+				}
+
+				Drop drop = drops.get(newDropIndex.get(hash).get(0));
+				ps.setLong(1, drop.getId());
+				ps.setString(2, drop.getChannel());
+				ps.setString(3, drop.getHash());
+				ps.setString(4, drop.getOriginalId());
+				ps.setString(5, drop.getTitle());
+				ps.setString(6, drop.getContent());
+				ps.setTimestamp(7, new java.sql.Timestamp(drop
+						.getDatePublished().getTime()));
+				ps.setTimestamp(8,
+						new java.sql.Timestamp((new Date()).getTime()));
+				ps.setLong(9, drop.getIdentity().getId());
+			}
+
+			public int getBatchSize() {
+				return hashes.size();
+			}
+		});
+
+	}
+
+	/**
+	 * Populate the rivers_droplets table
+	 * 
+	 * @param drops
+	 */
+	private void insertRiverDrops(final List<Drop> drops) {
+
+		// Get a lock on rivers_droplets
+		Sequence seq = sequenceDao.findById("rivers_droplets");
+
+		// Mapping of drop id to list index position
+		final Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+		// List of rivers in a drop
+		Map<Long, Set<Long>> dropRiversMap = new HashMap<Long, Set<Long>>();
+		int i = 0;
+		for (Drop drop : drops) {
+			if (drop.getRiverIds() == null)
+				continue;
+
+			Set<Long> rivers = new HashSet<Long>();
+			rivers.addAll(drop.getRiverIds());
+			dropRiversMap.put(drop.getId(), rivers);
+
+			dropIndex.put(drop.getId(), i++);
+		}
+
+		// No rivers found, exit
+		if (dropIndex.size() == 0)
+			return;
+
+		// Find already existing rivers_droplets
+		String sql = "SELECT `droplet_id`, `river_id` FROM `rivers_droplets` WHERE `droplet_id` in (:ids)";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("ids", dropIndex.keySet());
+
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
+		// Remove already existing rivers_droplets from our Set
+		for (Map<String, Object> result : results) {
+			long dropletId = ((BigInteger) result.get("droplet_id"))
+					.longValue();
+			long riverId = ((BigInteger) result.get("river_id")).longValue();
+
+			Set<Long> riverSet = dropRiversMap.get(dropletId);
+			if (riverSet != null) {
+				riverSet.remove(riverId);
+			}
+		}
+
+		// Insert the remaining items in the set into the db
+		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, `droplet_date_pub`, `channel`) VALUES (?,?,?,?,?)";
+
+		final List<long[]> dropRiverList = new ArrayList<long[]>();
+		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
+
+		for (Long dropletId : dropRiversMap.keySet()) {
+			for (Long riverId : dropRiversMap.get(dropletId)) {
+				long[] riverDrop = { dropletId, riverId };
+				dropRiverList.add(riverDrop);
+			}
+		}
+		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			public void setValues(PreparedStatement ps, int i)
+					throws SQLException {
+				long[] riverDrop = dropRiverList.get(i);
+				Drop drop = drops.get(dropIndex.get(riverDrop[0]));
+				ps.setLong(1, startKey + i);
+				ps.setLong(2, riverDrop[0]);
+				ps.setLong(3, riverDrop[1]);
+				ps.setTimestamp(4, new java.sql.Timestamp(drop
+						.getDatePublished().getTime()));
+				ps.setString(5, drop.getChannel());
+			}
+
+			public int getBatchSize() {
+				return dropRiverList.size();
+			}
+		});
 	}
 
 	/**
@@ -118,7 +375,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * com.ushahidi.swiftriver.core.api.dao.DropDao#populateMetadata(java.util
 	 * .List, com.ushahidi.swiftriver.core.model.Account)
 	 */
-	public void populateMetadata(List<Drop> drops, DropSource dropSource, Account queryingAccount) {
+	public void populateMetadata(List<Drop> drops, DropSource dropSource,
+			Account queryingAccount) {
 		if (drops.size() == 0) {
 			return;
 		}
@@ -145,13 +403,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		String sql = null;
 		switch (dropSource) {
-			case RIVER:
-				sql = getRiverTagsQuery();
-				break;
-				
-			case BUCKET:
-				sql = getBucketTagsQuery();
-				break;
+		case RIVER:
+			sql = getRiverTagsQuery();
+			break;
+
+		case BUCKET:
+			sql = getBucketTagsQuery();
+			break;
 		}
 
 		Query query = em.createNativeQuery(sql);
@@ -188,9 +446,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		}
 
 	}
+
 	/**
-	 * Builds and returns the query for fetching tags for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * Builds and returns the query for fetching tags for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.Bucket</code>
 	 * 
 	 * @return
 	 */
@@ -210,13 +469,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
 		sql += "WHERE `buckets_droplets_id` IN :drop_ids  ";
 		sql += "AND `deleted` = 0 ";
-		
+
 		return sql;
 	}
 
 	/**
-	 * Builds and returns the query for fetching tags for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * Builds and returns the query for fetching tags for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.River</code>
 	 * 
 	 * @return
 	 */
@@ -236,7 +495,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
 		sql += "WHERE `rivers_droplets_id` IN :drop_ids  ";
 		sql += "AND `deleted` = 0 ";
-		
+
 		return sql;
 	}
 
@@ -255,13 +514,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		String sql = null;
 		switch (dropSource) {
-			case RIVER:
-				sql = getRiverLinksQuery();
-				break;
-				
-			case BUCKET:
-				sql = getBucketLinksQuery();
-				break;
+		case RIVER:
+			sql = getRiverLinksQuery();
+			break;
+
+		case BUCKET:
+			sql = getBucketLinksQuery();
+			break;
 		}
 
 		Query query = em.createNativeQuery(sql);
@@ -298,8 +557,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	}
 
 	/**
-	 * Builds and returns the query for fetching links for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * Builds and returns the query for fetching links for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.Bucket</code>
 	 * 
 	 * @return
 	 */
@@ -319,13 +578,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
 		sql += "WHERE `buckets_droplets_id` IN :drop_ids  ";
 		sql += "AND `deleted` = 0 ";
-		
+
 		return sql;
 	}
 
 	/**
-	 * Builds and returns the query for fetching links for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * Builds and returns the query for fetching links for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.River</code>
 	 * 
 	 * @return
 	 */
@@ -345,7 +604,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
 		sql += "WHERE `rivers_droplets_id` IN :drop_ids  ";
 		sql += "AND `deleted` = 0 ";
-		
+
 		return sql;
 	}
 
@@ -363,23 +622,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			dropIndex.put(drop.getId(), i);
 			i++;
 		}
-		
-		// Generate a map for drop images		
-		String sql = null;		
+
+		// Generate a map for drop images
+		String sql = null;
 		switch (dropSource) {
-			case BUCKET:
-				sql = "SELECT `buckets_droplets`.`id`, `droplet_image` FROM `droplets` ";
-				sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
-				sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
-				break;
-				
-			case RIVER:
-				sql = "SELECT `rivers_droplets`.`id`, `droplet_image` FROM `droplets` ";
-				sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
-				sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
-				break;
+		case BUCKET:
+			sql = "SELECT `buckets_droplets`.`id`, `droplet_image` FROM `droplets` ";
+			sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
+			sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
+			break;
+
+		case RIVER:
+			sql = "SELECT `rivers_droplets`.`id`, `droplet_image` FROM `droplets` ";
+			sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
+			sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
+			break;
 		}
-		
+
 		sql += "AND `droplets`.`droplet_image` > 0";
 
 		Query query = em.createNativeQuery(sql);
@@ -394,14 +653,14 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		// Get the query to fetch the drop media
 		switch (dropSource) {
-			case RIVER:
-				sql = getRiverMediaQuery();
-				break;
-				
-			case BUCKET:
-				sql = getBucketMediaQuery();
-				break;
-		}		
+		case RIVER:
+			sql = getRiverMediaQuery();
+			break;
+
+		case BUCKET:
+			sql = getBucketMediaQuery();
+			break;
+		}
 
 		query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
@@ -415,7 +674,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			if (drop.getMedia() == null) {
 				drop.setMedia(new ArrayList<Media>());
 			}
-		
+
 			Long mediaId = ((BigInteger) r[1]).longValue();
 			Media m = null;
 			for (Media x : drop.getMedia()) {
@@ -423,21 +682,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 					m = x;
 				}
 			}
-			
+
 			if (m == null) {
 				m = new Media();
 				m.setId(mediaId);
 				m.setUrl((String) r[2]);
 				m.setType((String) r[3]);
-			} 
-			
+			}
+
 			// Add thumbnails
 			if (r[4] != null) {
 				MediaThumbnail mt = new MediaThumbnail();
 				mt.setMedia(m);
-				mt.setSize((Integer)r[4]);
-				mt.setUrl((String)r[5]);
-				
+				mt.setSize((Integer) r[4]);
+				mt.setUrl((String) r[5]);
+
 				List<MediaThumbnail> thumbnails = m.getThumbnails();
 				if (thumbnails == null) {
 					thumbnails = new ArrayList<MediaThumbnail>();
@@ -445,22 +704,22 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				}
 				thumbnails.add(mt);
 			}
-			
+
 			if (!drop.getMedia().contains(m)) {
 				drop.getMedia().add(m);
-				
+
 				// Set the droplet image if any
 				Long dropImageId = dropImagesMap.get(drop.getId());
 				if (dropImageId != null && dropImageId == m.getId()) {
 					drop.setImage(m);
 				}
-			}			
+			}
 		}
 	}
 
 	/**
-	 * Builds and returns the query for fetching media for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * Builds and returns the query for fetching media for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.Bucket</code>
 	 * 
 	 * @return
 	 */
@@ -484,13 +743,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
 		sql += "WHERE `buckets_droplets_id` IN :drop_ids ";
 		sql += "AND `deleted` = 0; ";
-		
+
 		return sql;
 	}
 
 	/**
-	 * Builds and returns the query for fetching media for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * Builds and returns the query for fetching media for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.River</code>
 	 * 
 	 * @return
 	 */
@@ -514,7 +773,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
 		sql += "WHERE `rivers_droplets_id` IN :drop_ids ";
 		sql += "AND `deleted` = 0; ";
-		
+
 		return sql;
 	}
 
@@ -525,7 +784,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @param dropSource
 	 */
 	public void populatePlaces(List<Drop> drops, DropSource dropSource) {
-		
+
 		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
 		int i = 0;
 		for (Drop drop : drops) {
@@ -536,18 +795,18 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		String sql = null;
 		// Get the query to fetch the drop media
 		switch (dropSource) {
-			case RIVER:
-				sql = getRiverPlacesQuery();
-				break;
-				
-			case BUCKET:
-				sql = getBucketPlacesQuery();
-				break;
-		}		
+		case RIVER:
+			sql = getRiverPlacesQuery();
+			break;
+
+		case BUCKET:
+			sql = getBucketPlacesQuery();
+			break;
+		}
 
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
-		
+
 		// Group the media by drop id
 		Map<Long, Place> places = new HashMap<Long, Place>();
 		for (Object oRow : query.getResultList()) {
@@ -566,11 +825,11 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				p = new Place();
 				p.setId(placeId);
 				p.setPlaceName((String) r[2]);
-				p.setLatitude((Float)r[5]);
-				p.setLongitude((Float)r[6]);
+				p.setLatitude((Float) r[5]);
+				p.setLongitude((Float) r[6]);
 
 				places.put(placeId, p);
-			} 
+			}
 
 			// Add place to drop
 			if (!drop.getPlaces().contains(p)) {
@@ -578,10 +837,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		}
 	}
-	
+
 	/**
-	 * Builds and returns the query for fetching places for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.Bucket</code>
+	 * Builds and returns the query for fetching places for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.Bucket</code>
 	 * 
 	 * @return
 	 */
@@ -603,13 +862,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
 		sql += "WHERE `buckets_droplets_id` IN :drop_ids ";
 		sql += "AND `deleted` = 0 ";
-		
+
 		return sql;
 	}
 
 	/**
-	 * Builds and returns the query for fetching places for the drops
-	 * in a <code>com.ushahidi.swiftriver.core.model.River</code>
+	 * Builds and returns the query for fetching places for the drops in a
+	 * <code>com.ushahidi.swiftriver.core.model.River</code>
 	 * 
 	 * @return
 	 */
@@ -631,42 +890,43 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
 		sql += "WHERE `rivers_droplets_id` IN :drop_ids ";
 		sql += "AND `deleted` = 0 ";
-		
+
 		return sql;
 	}
 
 	/**
-	 * Populates the buckets for each of the {@link Drop} 
-	 * in <code>drops</code>
+	 * Populates the buckets for each of the {@link Drop} in <code>drops</code>
 	 * 
 	 * @param drops
 	 * @param queryingAccount
 	 * @param dropSource
 	 */
-	public void populateBuckets(List<Drop> drops, Account queryingAccount, DropSource dropSource) {
+	public void populateBuckets(List<Drop> drops, Account queryingAccount,
+			DropSource dropSource) {
 		Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
 		int i = 0;
-		for (Drop drop: drops) {
+		for (Drop drop : drops) {
 			dropsIndex.put(drop.getId(), i);
 			i++;
 		}
 
 		String dropIdColumn = null;
-		String joinClause = null;		
+		String joinClause = null;
 		switch (dropSource) {
-			case BUCKET:
-				dropIdColumn = "`buckets_droplets`.`id` AS `id`";
-				joinClause = "WHERE `buckets_droplets`.`id` IN (:dropIds) ";
-				break;
-			case RIVER:
-				dropIdColumn = "`rivers_droplets`.`id` AS `id`";
-				joinClause = "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `buckets_droplets`.`droplet_id`) ";
-				joinClause += "WHERE `rivers_droplets`.`id` IN (:dropIds)";
-				break;
+		case BUCKET:
+			dropIdColumn = "`buckets_droplets`.`id` AS `id`";
+			joinClause = "WHERE `buckets_droplets`.`id` IN (:dropIds) ";
+			break;
+		case RIVER:
+			dropIdColumn = "`rivers_droplets`.`id` AS `id`";
+			joinClause = "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `buckets_droplets`.`droplet_id`) ";
+			joinClause += "WHERE `rivers_droplets`.`id` IN (:dropIds)";
+			break;
 		}
-		
+
 		// Query to fetch the buckets
-		String sql = "SELECT " + dropIdColumn + ", `buckets`.`id` AS `bucket_id`, ";
+		String sql = "SELECT " + dropIdColumn
+				+ ", `buckets`.`id` AS `bucket_id`, ";
 		sql += "`buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
@@ -681,18 +941,19 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId) ";
 		sql += joinClause;
 		sql += "AND `buckets`.`bucket_publish` = 0 ";
-		
+
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("dropIds", dropsIndex.keySet());
 		params.addValue("accountId", queryingAccount.getId());
-		
-		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
-	
+
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
 		// Group the buckets by bucket id
 		Map<Long, Bucket> buckets = new HashMap<Long, Bucket>();
-		for (Map<String, Object> row: results) {
-			
-			Long dropId = ((BigInteger)row.get("id")).longValue();
+		for (Map<String, Object> row : results) {
+
+			Long dropId = ((BigInteger) row.get("id")).longValue();
 			Drop drop = drops.get(dropsIndex.get(dropId));
 			if (drop.getBuckets() == null) {
 				drop.setBuckets(new ArrayList<Bucket>());
@@ -703,21 +964,24 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			if (bucket == null) {
 				bucket = new Bucket();
 				bucket.setId(bucketId);
-				bucket.setName((String)row.get("bucket_name"));
-				
+				bucket.setName((String) row.get("bucket_name"));
+
 				buckets.put(bucketId, bucket);
 			}
-			
+
 			// Add bucket to the list of buckets
 			if (!drop.getBuckets().contains(bucket)) {
 				drop.getBuckets().add(bucket);
 			}
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findCommentById(java.lang.Long)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.DropDao#findCommentById(java.lang
+	 * .Long)
 	 */
 	public DropComment findCommentById(Long commentId) {
 		return this.em.find(DropComment.class, commentId);
@@ -725,7 +989,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#deleteComment(com.ushahidi.swiftriver.core.model.DropComment)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.DropDao#deleteComment(com.ushahidi
+	 * .swiftriver.core.model.DropComment)
 	 */
 	public void deleteComment(DropComment dropComment) {
 		this.em.remove(dropComment);
@@ -733,11 +1000,15 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#addComment(com.ushahidi.swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.DropDao#addComment(com.ushahidi.
+	 * swiftriver.core.model.Drop, com.ushahidi.swiftriver.core.model.Account,
+	 * java.lang.String)
 	 */
 	public DropComment addComment(Drop drop, Account account, String commentText) {
 		DropComment dropComment = new DropComment();
-		
+
 		dropComment.setDrop(drop);
 		dropComment.setAccount(account);
 		dropComment.setDeleted(false);

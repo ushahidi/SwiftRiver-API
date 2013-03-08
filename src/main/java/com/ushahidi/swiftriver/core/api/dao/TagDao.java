@@ -16,28 +16,28 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 public interface TagDao extends GenericDao<Tag> {
-	
+
 	/**
-	 * Given a list of hashes, finds and returns all tags whose
-	 * hash is contained in the list
+	 * Populate tag IDs in the given list of drops while create any that are
+	 * missing.
 	 * 
-	 * @param tagHashes
-	 * @return
+	 * @param drops
 	 */
-	public List<Tag> findAllByHash(ArrayList<String> tagHashes);
+	public void getTags(List<Drop> drops);
 
 	/**
 	 * Gets and returns the {@link Tag} record with the specified
 	 * <code>hash</code>
+	 * 
 	 * @param hash
 	 * @return
 	 */
 	public Tag findByHash(String hash);
-	
+
 }

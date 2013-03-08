@@ -30,22 +30,19 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropComment;
 
 
-/**
- * Drops service class
- * 
- * @author ekala
- */
-
 @Service
+@Transactional(readOnly = true)
 public class DropService {
 	
-	final static Logger LOG = LoggerFactory.getLogger(DropService.class);
+	final Logger logger = LoggerFactory.getLogger(DropService.class);
 	
 	@Autowired
 	private Mapper mapper;
@@ -65,6 +62,54 @@ public class DropService {
 	@Autowired
 	private TagDao tagDao;
 	
+	public Mapper getMapper() {
+		return mapper;
+	}
+
+	public void setMapper(Mapper mapper) {
+		this.mapper = mapper;
+	}
+
+	public DropDao getDropDao() {
+		return dropDao;
+	}
+
+	public void setDropDao(DropDao dropDao) {
+		this.dropDao = dropDao;
+	}
+
+	public AccountDao getAccountDao() {
+		return accountDao;
+	}
+
+	public void setAccountDao(AccountDao accountDao) {
+		this.accountDao = accountDao;
+	}
+
+	public LinkDao getLinkDao() {
+		return linkDao;
+	}
+
+	public void setLinkDao(LinkDao linkDao) {
+		this.linkDao = linkDao;
+	}
+
+	public PlaceDao getPlaceDao() {
+		return placeDao;
+	}
+
+	public void setPlaceDao(PlaceDao placeDao) {
+		this.placeDao = placeDao;
+	}
+
+	public TagDao getTagDao() {
+		return tagDao;
+	}
+
+	public void setTagDao(TagDao tagDao) {
+		this.tagDao = tagDao;
+	}
+
 	/**
 	 * Gets and returns the comments for the drop with the specified
 	 * <code>id</code>
@@ -121,6 +166,30 @@ public class DropService {
 		 }
 		 return drop;
 	 }
+
+	/**
+	 * Create the given list of drops
+	 * 
+	 * @param drops
+	 * @return
+	 */
+	 @Transactional(readOnly = false)
+	public List<GetDropDTO> createDrops(List<CreateDropDTO> dropDTOs) {
+		 
+		List<Drop> drops = new ArrayList<Drop>();		
+		for(CreateDropDTO dto : dropDTOs) {
+			drops.add(mapper.map(dto, Drop.class));
+		}
+		
+		dropDao.createDrops(drops);
+		
+		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
+		for (Drop drop : drops) {
+			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));
+		}
+		
+		return getDropDTOs;
+	}
 	 
 	 
 }

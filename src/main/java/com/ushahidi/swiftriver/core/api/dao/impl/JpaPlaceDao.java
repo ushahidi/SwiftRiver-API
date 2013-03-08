@@ -16,60 +16,309 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.math.BigInteger;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Place;
-import com.ushahidi.swiftriver.core.util.HashUtil;
+import com.ushahidi.swiftriver.core.model.Sequence;
+import com.ushahidi.swiftriver.core.util.MD5Util;
 
-/**
- * Repository class for places
- * @author ekala
- *
- */
 @Repository
-public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao{
+public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
+
+	@Autowired
+	private JpaSequenceDao sequenceDao;
+
+	private NamedParameterJdbcTemplate namedJdbcTemplate;
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	public void setDataSource(DataSource dataSource) {
+		this.namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+		this.jdbcTemplate = new JdbcTemplate(dataSource);
+	}
 
 	public Place create(Place place) {
-		String hashInput = place.getPlaceName();
-		hashInput += Float.toString(place.getLongitude());
-		hashInput += Float.toString(place.getLatitude());
-
-		place.setHash(HashUtil.md5(hashInput));
-		place.setPlaceNameCanonical(place.getPlaceName().toLowerCase());
+		place = formatPlace(place);
+		place.setHash(getHash(place));
 
 		return super.create(place);
 	}
+
 	/**
-	 * @see PlaceDao#findAllByHash(ArrayList)
+	 * Generate a hash for the given place.
+	 * 
+	 * @param t
+	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public List<Place> findAllByHash(ArrayList<String> placeHashes) {
-		String sql = "FROM Place WHERE hash IN (?1)";
-		
-		return (List<Place>) em.createQuery(sql).setParameter(1, placeHashes).getResultList();
+	public String getHash(Place p) {
+		String hash = MD5Util.md5Hex(p.getPlaceName()
+				+ p.getLongitude().toString() + p.getLatitude().toString());
+
+		return hash;
+	}
+
+	private Place formatPlace(Place place) {
+		place.setPlaceName(place.getPlaceName().trim());
+		place.setPlaceNameCanonical(place.getPlaceName().toLowerCase());
+		return place;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.PlaceDao#findByHash(java.lang.String)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.PlaceDao#findByHash(java.lang.String
+	 * )
 	 */
 	@SuppressWarnings("unchecked")
 	public Place findByHash(String hash) {
 		String sql = "FROM Place WHERE hash = :hash";
-		List<Place> places = (List<Place>)em.createQuery(sql).setParameter("hash", hash).getResultList();
+		List<Place> places = (List<Place>) em.createQuery(sql)
+				.setParameter("hash", hash).getResultList();
 		return places.isEmpty() ? null : places.get(0);
 	}
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see com.ushahidi.swiftriver.core.api.dao.PlaceDao#findById(long)
 	 */
 	public Place findById(long placeId) {
 		return this.em.find(Place.class, placeId);
+	}
+
+	@Override
+	public void getPlaces(List<Drop> drops) {
+		// Get a lock
+		Sequence seq = sequenceDao.findById("places");
+
+		Map<String, List<int[]>> newPlaceIndex = getNewPlaceIndex(drops);
+
+		if (newPlaceIndex.size() > 0) {
+			// Find places that already exist in the db
+			updateNewPlaceIndex(newPlaceIndex, drops);
+
+			// Insert new place into the db
+			batchInsert(newPlaceIndex, drops, seq);
+		}
+
+	}
+
+	/**
+	 * Generates a mapping of place hashes to list index for the given drops.
+	 * Also populates an place hash into the given list of drops.
+	 * 
+	 * @param drops
+	 * @return
+	 */
+	private Map<String, List<int[]>> getNewPlaceIndex(List<Drop> drops) {
+		Map<String, List<int[]>> newPlaceIndex = new HashMap<String, List<int[]>>();
+
+		// Generate hashes for each new drops i.e. those without an id
+		int i = 0;
+		for (Drop drop : drops) {
+			if (drop.getPlaces() == null)
+				continue;
+
+			int j = 0;
+			for (Place place : drop.getPlaces()) {
+				// Cleanup the place
+				place = formatPlace(place);
+
+				String hash = getHash(place);
+				place.setHash(hash);
+
+				// Keep a record of where this hash is in the drop list
+				List<int[]> indexes;
+				if (newPlaceIndex.containsKey(hash)) {
+					indexes = newPlaceIndex.get(hash);
+				} else {
+					indexes = new ArrayList<int[]>();
+					newPlaceIndex.put(hash, indexes);
+				}
+
+				// Location of the place in the drops array is an i,j tuple
+				int[] loc = { i, j++ };
+				indexes.add(loc);
+			}
+
+			i += 1;
+		}
+
+		return newPlaceIndex;
+	}
+
+	/**
+	 * For the given list of new drops, find those that the place hash already
+	 * exists in the db and update the drop entry with the existing id. Also
+	 * remove the hash from the new place index for those that already exist.
+	 * 
+	 * @param newPlaceIndex
+	 * @param drops
+	 */
+	private void updateNewPlaceIndex(Map<String, List<int[]>> newPlaceIndex,
+			List<Drop> drops) {
+		// First find and update existing drops with their ids.
+		String sql = "SELECT `id`, `hash` FROM `places` WHERE `hash` IN (:hashes)";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("hashes", newPlaceIndex.keySet());
+
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
+		// Update id for the drops that were found
+		for (Map<String, Object> result : results) {
+			String hash = (String) result.get("hash");
+			Long id = ((BigInteger) result.get("id")).longValue();
+
+			List<int[]> indexes = newPlaceIndex.get(hash);
+			for (int[] index : indexes) {
+				drops.get(index[0]).getPlaces().get(index[1]).setId(id);
+			}
+
+			// Hash is not for a new drop so remove it
+			newPlaceIndex.remove(hash);
+		}
+	}
+
+	/**
+	 * Insert new places in a single batch statement
+	 * 
+	 * @param newPlaceIndex
+	 * @param drops
+	 */
+	private void batchInsert(final Map<String, List<int[]>> newPlaceIndex,
+			final List<Drop> drops, Sequence seq) {
+
+		final List<String> hashes = new ArrayList<String>();
+		hashes.addAll(newPlaceIndex.keySet());
+		final long startKey = sequenceDao.getIds(seq, hashes.size());
+
+		String sql = "INSERT INTO `places` (`id`, `hash`, `place_name`, "
+				+ "`place_name_canonical`, `longitude`, `latitude`) "
+				+ "VALUES (?,?,?,?,?,?)";
+
+		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			public void setValues(PreparedStatement ps, int i)
+					throws SQLException {
+				String hash = hashes.get(i);
+
+				// Update drops with the newly generated id
+				for (int[] index : newPlaceIndex.get(hash)) {
+					drops.get(index[0]).getPlaces().get(index[1])
+							.setId(startKey + i);
+				}
+
+				int[] index = newPlaceIndex.get(hash).get(0);
+				Place place = drops.get(index[0]).getPlaces().get(index[1]);
+				ps.setLong(1, place.getId());
+				ps.setString(2, place.getHash());
+				ps.setString(3, place.getPlaceName());
+				ps.setString(4, place.getPlaceNameCanonical());
+				ps.setFloat(5, place.getLongitude());
+				ps.setFloat(6, place.getLatitude());
+			}
+
+			public int getBatchSize() {
+				return hashes.size();
+			}
+		});
+
+		// Update the droplet_places table
+		insertDropletPlaces(drops);
+
+	}
+
+	/**
+	 * Populate the droplet places table.
+	 * 
+	 * @param drops
+	 */
+	private void insertDropletPlaces(List<Drop> drops) {
+
+		// List of drop IDs in the drops list
+		List<Long> dropIds = new ArrayList<Long>();
+		// List of places in a drop
+		Map<Long, Set<Long>> dropletPlacesMap = new HashMap<Long, Set<Long>>();
+		for (Drop drop : drops) {
+			dropIds.add(drop.getId());
+
+			for (Place place : drop.getPlaces()) {
+				Set<Long> places = null;
+				if (dropletPlacesMap.containsKey(drop.getId())) {
+					places = dropletPlacesMap.get(drop.getId());
+				} else {
+					places = new HashSet<Long>();
+					dropletPlacesMap.put(drop.getId(), places);
+				}
+
+				places.add(place.getId());
+			}
+		}
+
+		// Find droplet places that already exist in the db
+		String sql = "SELECT `droplet_id`, `place_id` FROM `droplets_places` WHERE `droplet_id` in (:ids)";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("ids", dropIds);
+
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
+		// Remove already existing droplet_places from our Set
+		for (Map<String, Object> result : results) {
+			long dropletId = ((BigInteger) result.get("droplet_id"))
+					.longValue();
+			long placeId = ((BigInteger) result.get("place_id")).longValue();
+
+			Set<Long> placeSet = dropletPlacesMap.get(dropletId);
+			if (placeSet != null) {
+				placeSet.remove(placeId);
+			}
+		}
+
+		// Insert the remaining items in the set into the db
+		sql = "INSERT INTO `droplets_places` (`droplet_id`, `place_id`) VALUES (?,?)";
+
+		final List<long[]> dropletPlacesList = new ArrayList<long[]>();
+		for (Long dropletId : dropletPlacesMap.keySet()) {
+			for (Long placeId : dropletPlacesMap.get(dropletId)) {
+				long[] dropletPlace = { dropletId, placeId };
+				dropletPlacesList.add(dropletPlace);
+			}
+		}
+		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			public void setValues(PreparedStatement ps, int i)
+					throws SQLException {
+				long[] dropletPlace = dropletPlacesList.get(i);
+				ps.setLong(1, dropletPlace[0]);
+				ps.setLong(2, dropletPlace[1]);
+			}
+
+			public int getBatchSize() {
+				return dropletPlacesList.size();
+			}
+		});
 	}
 
 }

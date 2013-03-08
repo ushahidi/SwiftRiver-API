@@ -16,20 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 
 public interface LinkDao  extends GenericDao<Link> {
 	
 	/**
-	 * Gets and returns a list of {@link Link} entities with the
-	 * specified hash values
+	 * Populate link IDs in the given list of drops while create any that are
+	 * missing.
 	 * 
-	 * @param linkHashes
+	 * @param drops
 	 */
-	public List<Link> findAllByHash(ArrayList<String> linkHashes);
+	public void getLinks(List<Drop> drops);
 	
 	/**
 	 * Gets the {@Link} record with the specified <code>hash</code>

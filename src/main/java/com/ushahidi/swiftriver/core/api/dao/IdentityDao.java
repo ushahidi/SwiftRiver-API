@@ -16,17 +16,18 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 
 public interface IdentityDao  extends GenericDao<Identity> {
 	
 	/**
-	 * Returns all identity entities with a hash in @param identityHashes
-	 * @param identityHashes
-	 * @return
+	 * Populate identity IDs in the given list of drops while
+	 * create any that are missing.
+	 * 
+	 * @param drops
 	 */
-	public List<Identity> findIdentitiesByHash(ArrayList<String> identityHashes);
+	public void getIdentities(List<Drop> drops);
 }

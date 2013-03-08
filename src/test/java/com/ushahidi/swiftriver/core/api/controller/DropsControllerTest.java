@@ -17,30 +17,15 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.MediaType;
 
-/**
- * Tests for {@link DropsController}
- * @author ekala
- *
- */
 public class DropsControllerTest extends AbstractControllerTest {
-
-	private Authentication authentication;
-
-	@Before
-	public void before() {
-		authentication = new UsernamePasswordAuthenticationToken("user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);		
-	}
 
 	/**
 	 * Tests {@link DropsController#getComments(long)}
@@ -53,5 +38,18 @@ public class DropsControllerTest extends AbstractControllerTest {
 			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.[*]").isArray())
 			.andExpect(jsonPath("$.[0].account.email").value("user1@myswiftriver.com"));
+	}
+	
+	@Test
+	public void createRiver() throws Exception {
+		String postBody = "[{\"source\": {\"origin_id\": \"the original identity id\"}, \"original_id\": \"the original\", \"channel\":\"manual channel\", \"title\":\"the title\", \"content\":\"the content\", \"date_published\":\"Tue, 7 Mar 2013 03:08:45 +0000\"}]";
+
+		this.mockMvc
+				.perform(
+						post("/v1/drops").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].id").value(11));
 	}
 }

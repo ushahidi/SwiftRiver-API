@@ -27,17 +27,23 @@
 	<bean id="roleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRoleDao" />
 	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
 	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
-	<bean id="riverDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDropDao" />
-	<bean id="bucketDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDropDao" />
+	<bean id="identityDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaIdentityDao" />
+	<bean id="riverDropDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDropDao" />
+	<bean id="bucketDropDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDropDao" />
 	<bean id="bucketDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDao" />
 	<bean id="channel" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaChannelDao" />
 	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />
 	<bean id="placeDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaPlaceDao" />
 	<bean id="tagDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaTagDao" />
+	<bean id="mediaDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaMediaDao" />
 	<bean id="riverCollaboratorDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverCollaboratorDao" />
 	<bean id="bucketCollaboratorDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
+	<bean id="sequenceDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaSequenceDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
@@ -96,7 +102,7 @@
 
 	<beans profile="test">
 		<context:property-placeholder location="classpath:db-test.properties" />
-		
+
 		<bean id="encryptionKey" class="java.lang.String">
 			<constructor-arg value="2344228477#97{7&amp;6&gt;82" />
 		</bean>
