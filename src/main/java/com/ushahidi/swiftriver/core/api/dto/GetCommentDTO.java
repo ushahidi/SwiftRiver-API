@@ -18,6 +18,8 @@ package com.ushahidi.swiftriver.core.api.dto;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO.Account;
+
 /**
  * DTO mapping class for getting drop comments
  * 
@@ -35,51 +37,6 @@ public class GetCommentDTO {
 	private String dateAdded;
 	
 	private Account account;
-	
-	public static class Account {
-		
-		private long id;
-		
-		private String name;
-		
-		@JsonProperty("account_path")
-		private String accountPath;
-		
-		private String email;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-
-		public String getEmail() {
-			return email;
-		}
-
-		public void setEmail(String email) {
-			this.email = email;
-		}		
-		
-	}
 
 	public long getId() {
 		return id;

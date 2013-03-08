@@ -198,10 +198,20 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		}
 		
 		if (requestParams.containsKey("photos")) {
-			sql += "AND droplets.droplet_image > 0 ";
+			sql += "AND droplets.droplet_image > 0";
+		}
+		
+		// Check for since_id
+		if (requestParams.containsKey("since_id")) {
+			sql += " AND `buckets_droplets`.`id` > " + (Long) requestParams.get("since_id");
+		}
+		
+		// Check for max_id
+		if (requestParams.containsKey("max_id")) {
+			sql += " AND `buckets_droplets`.`id` <= " + (Long) requestParams.get("max_id");
 		}
 
-		sql += "ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
+		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
 		
 		Integer dropCount = (Integer) requestParams.get("count");
 
