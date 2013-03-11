@@ -285,6 +285,7 @@ public class BucketsController extends AbstractController {
 	public List<GetDropDTO> getDrops(
 			@PathVariable Long id,
 			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "max_id", required = false) Long maxId,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
 			@RequestParam(value = "date_from", required = false) Date dateFrom,
@@ -301,9 +302,10 @@ public class BucketsController extends AbstractController {
 
 		Map<String, Object> requestParams = new HashMap<String, Object>();
 		requestParams.put("count", count);
+		requestParams.put("page", page);
 		
-		if (maxId != null) requestParams.put("max_id", maxId);
-		if (sinceId != null) requestParams.put("since_id", sinceId);
+		if (maxId != null && maxId > 0) requestParams.put("max_id", maxId);
+		if (sinceId != null && sinceId > 0) requestParams.put("since_id", sinceId);
 		if (dateFrom != null) requestParams.put("date_from", dateFrom);
 		if (dateTo != null) requestParams.put("dae_to", dateTo);
 		if (keywords != null) requestParams.put("keywords", keywords);

@@ -212,9 +212,12 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			sql += " AND `buckets_droplets`.`id` <= " + (Long) requestParams.get("max_id");
 		}
 
-		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
-		
 		Integer dropCount = (Integer) requestParams.get("count");
+		Integer page = (Integer) requestParams.get("page");
+
+		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
+		sql += String.format("LIMIT %d OFFSET %d", dropCount, ((page - 1) * dropCount));
+		
 
 		Query query = this.em.createNativeQuery(sql);
 		query.setParameter("bucketId", bucketId);
@@ -225,7 +228,6 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			query.setParameter("channels", channels);
 		}
 		
-		query.setMaxResults(dropCount);
 		List<Drop> drops = new ArrayList<Drop>();
 
 		for (Object row: query.getResultList()) {
