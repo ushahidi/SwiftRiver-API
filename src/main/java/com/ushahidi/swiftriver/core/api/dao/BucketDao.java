@@ -23,6 +23,7 @@ import java.util.Map;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 
@@ -130,5 +131,17 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 * @return
 	 */
 	public BucketDrop findDrop(Long bucketId, Long dropId);
+
+	/**
+	 * Adds a new comment by the {@link Account} specified in <code>account</code>
+	 * to the {@link Bucket} specified in <code>bucket</code>
+	 * 
+	 * @param bucket
+	 * @param commentText
+	 * @param account
+	 * @return
+	 */
+	public BucketComment addComment(Bucket bucket, String commentText,
+			Account account);
 
 }

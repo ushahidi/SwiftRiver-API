@@ -312,3 +312,13 @@ INSERT INTO `bucket_droplet_comments` (`buckets_droplets_id`, `account_id`, `com
 INSERT INTO `account_read_drops` (`account_id`, `droplet_id`) VALUES
 (3, 2),
 (3, 5);
+
+-- -----------------------------------------------------
+-- Data for table `bucket_comments`
+-- -----------------------------------------------------
+INSERT INTO `bucket_comments` (`id`, `bucket_id`, `account_id`, `comment_text`, `comment_date_add`) VALUES
+(1, 1, 3, 'Bucket 1 comment 1', '2013-03-04 05:00:21'),
+(2, 1, 1, 'Bucket 1 comment 2', '2013-03-04 08:00:23'),
+(3, 1, 4, 'Bucket 1 comment 3', '2013-03-02 21:21:21'),
+(4, 2, 5, 'Bucket 2 comment 1', '2013-02-04 16:17:18'),
+(5, 2, 4, 'Bucket 2 comment 2', '2013-02-05 04:36:28');

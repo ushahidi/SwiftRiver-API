@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.controller.BucketsController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketCollaboratorDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketCommentDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
@@ -62,6 +63,7 @@ import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -107,6 +109,9 @@ public class BucketService {
 
 	@Autowired
 	private RiverDropDao riverDropDao;
+
+	@Autowired
+	private BucketCommentDao bucketCommentDao;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
@@ -1020,6 +1025,7 @@ public class BucketService {
 	 * @param authUser
 	 * @return
 	 */
+	@Transactional
 	public GetCommentDTO addDropComment(Long bucketId, Long dropId,
 			CreateCommentDTO createDTO, String authUser) {
 
@@ -1050,6 +1056,7 @@ public class BucketService {
 	 * @param authUser
 	 * @return
 	 */
+	@Transactional
 	public List<GetCommentDTO> getDropComments(Long bucketId, Long dropId, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
 		if (!bucket.isPublished()) {
@@ -1075,6 +1082,7 @@ public class BucketService {
 	 * @param commentId
 	 * @param authUser
 	 */
+	@Transactional
 	public void deleteDropComment(Long bucketId, Long dropId, Long commentId,
 			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
@@ -1085,6 +1093,82 @@ public class BucketService {
 		if (!bucketDropDao.deleteComment(commentId)) {
 			throw new NotFoundException(String.format("Comment %d does not exist", commentId));
 		}
+	}
+
+	/**
+	 * Adds a comment to comment the {@link Bucket} with the ID specified in
+	 * <code>bucketId</code>. If the {@link Bucket} is private i.e. <code>published</code>
+	 * is <code>FALSE</code>, a permissions check is performed.
+	 * 
+	 * The created {@link BucketComment} entity is transformed to DTO for purposes
+	 * of consumption by {@link BucketsController}
+	 * 
+	 * @param bucketId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public GetCommentDTO addBucketComment(Long bucketId, CreateCommentDTO createDTO,
+			String authUser) {
+		if (createDTO.getCommentText() == null) {
+			throw new BadRequestException("The comment text has not been specified");
+		}
+		Bucket bucket = getBucketById(bucketId);
+		if (!bucket.isPublished()) {
+			checkPermissions(bucket, authUser);
+		}
+		Account account = accountDao.findByUsername(authUser);
+		BucketComment bucketComment = bucketDao.addComment(bucket, createDTO.getCommentText(), account);
+		
+		return mapper.map(bucketComment, GetCommentDTO.class);
+	}
+
+	/**
+	 * Gets and returns the list of {@link BucketComment} entities for the
+	 * {@link Bucket} with the ID specified in <code>bucketId</code>
+	 * 
+	 * @param bucketId
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public List<GetCommentDTO> getBucketComments(Long bucketId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		if (!bucket.isPublished()) {
+			checkPermissions(bucket, authUser);
+		}
+		
+		List<GetCommentDTO> dtoComments = new ArrayList<GetCommentDTO>();
+		for(BucketComment bucketComment: bucket.getComments()) {
+			dtoComments.add(mapper.map(bucketComment, GetCommentDTO.class));
+		}
+		
+		return dtoComments;
+	}
+
+	/**
+	 * Deletes the {@link BucketComment} entity with the ID specified in
+	 * <code>commentId</code> from the {@link Bucket} with the ID specified
+	 * in <code>bucketId</code>. If the {@link BucketComment} does not belong
+	 * to the specified bucket, a {@link NotFoundException} is thrown
+	 * 
+	 * @param bucketId
+	 * @param commentId
+	 * @param authUser
+	 */
+	@Transactional
+	public void deleteBucketComment(Long bucketId, Long commentId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		checkPermissions(bucket, authUser);
+		
+		BucketComment bucketComment = bucketCommentDao.findById(commentId);
+		
+		if (bucketComment == null || !bucketComment.getBucket().equals(bucket)) {
+			throw new NotFoundException(String.format("Comment %d does not exist", commentId));
+		}
+		
+		bucketCommentDao.delete(bucketComment);
 	}
 	
 }

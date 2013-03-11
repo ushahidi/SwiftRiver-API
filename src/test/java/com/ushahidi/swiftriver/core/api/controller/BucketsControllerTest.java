@@ -525,4 +525,55 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$.[*]").isArray());
 	}
 	
+	/**
+	 * Test for {@link BucketsController#addComment(Long, com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void addComment() throws Exception {
+		String comment = "{\"comment_text\": \"Test user 1 comment\"}";	
+		this.mockMvc.perform(post("/v1/buckets/1/comments")
+				.principal(getAuthentication("user1"))
+				.content(comment)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.comment_text").value("Test user 1 comment"));
+	}
+	
+	
+	/**
+	 * Test for {@link BucketsController#getComments(Long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void getComments() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/comments")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").isArray());
+	}
+	
+	/**
+	 * Test for {@link BucketsController#getComments(Long, java.security.Principal)} where
+	 * the bucket is private and the user does not have permission to access it
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getCommentsWithoutPermissions() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/2/comments")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isForbidden());
+	}
+
+	/**
+	 * Test for {@link BucketsController#deleteComment(Long, Long, java.security.Principal)}
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteComment() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/comments/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
 }

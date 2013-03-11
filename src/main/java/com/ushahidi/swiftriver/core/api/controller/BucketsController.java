@@ -478,4 +478,46 @@ public class BucketsController extends AbstractController {
 		bucketService.deleteDropComment(id, dropId, commentId, principal.getName());
 	}
 	
+	/**
+	 * Handler for adding a comment to a bucket
+	 * 
+	 * @param id
+	 * @param createDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/comments", method=RequestMethod.POST)
+	@ResponseBody
+	public GetCommentDTO addComment(@PathVariable Long id, @RequestBody CreateCommentDTO createDTO,
+			Principal principal) {
+		return bucketService.addBucketComment(id, createDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for fetching the list of bucket comments
+	 * 
+	 * @param id
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/comments", method=RequestMethod.GET)
+	@ResponseBody
+	public List<GetCommentDTO> getComments(@PathVariable Long id, Principal principal) {
+		return bucketService.getBucketComments(id, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a comment from a bucket
+	 * 
+	 * @param id
+	 * @param commentId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/comments/{commentId}", method=RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteComment(@PathVariable Long id, @PathVariable Long commentId,
+			Principal principal) {
+		bucketService.deleteBucketComment(id, commentId, principal.getName());
+	}
+	
 }

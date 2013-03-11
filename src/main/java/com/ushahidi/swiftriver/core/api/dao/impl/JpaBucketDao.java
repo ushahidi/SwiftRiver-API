@@ -36,6 +36,7 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropSource;
@@ -320,6 +321,24 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		List<BucketDrop> bucketDrops = query.getResultList();
 		
 		return bucketDrops.isEmpty() ? null : bucketDrops.get(0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addComment(com.ushahidi.swiftriver.core.model.Bucket, java.lang.String, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public BucketComment addComment(Bucket bucket, String commentText,
+			Account account) {
+		BucketComment bucketComment = new BucketComment();
+		
+		bucketComment.setBucket(bucket);
+		bucketComment.setAccount(account);
+		bucketComment.setCommentText(commentText);
+		bucketComment.setDateAdded(new Date());
+		
+		this.em.persist(bucketComment);
+		
+		return bucketComment;
 	}
 
 }

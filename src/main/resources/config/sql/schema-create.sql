@@ -238,19 +238,15 @@ CREATE TABLE IF NOT EXISTS `river_droplet_media` (
 -- Table `bucket_comments`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bucket_comments` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `bucket_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `user_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `parent_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `comment_content` text NOT NULL,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `bucket_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `comment_text` text NOT NULL,
   `comment_date_add` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `comment_date_modified` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `comment_sticky` tinyint(4) NOT NULL DEFAULT '0',
-  `comment_deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `comment_date_add_idx` (`comment_date_add`)
+  KEY `comment_date_add_idx` (`comment_date_add`),
+  KEY `idx_bucket_account_id` (`bucket_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 
 -- -----------------------------------------------------
 -- Table `places`
