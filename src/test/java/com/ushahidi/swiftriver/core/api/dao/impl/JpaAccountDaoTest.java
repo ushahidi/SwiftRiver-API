@@ -11,7 +11,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
-import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
 
@@ -62,6 +61,14 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 	}
 	
 	@Test
+	public void findByEmail() {
+		Account account = accountDao.findByEmail("user2@myswiftriver.com");
+		
+		assertNotNull(account);
+		assertEquals(4, account.getId());
+	}
+	
+	@Test
 	public void decreaseRiverQuota() {
 		Account account = accountDao.findById(1L);
 		accountDao.decreaseRiverQuota(account, 3);
@@ -72,35 +79,6 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 		assertEquals(7, quotaAfter);
 	}
 	
-	/**
-	 * Test for {@link AccountDao#populateAssets(Account, Account)} where
-	 * the querying account does not have access to the private assets
-	 * of the target account
-	 */
-	@Test	
-	public void populateAssets() {
-		Account targetAccount = accountDao.findByUsername("admin");
-		Account queryingAccount = accountDao.findByUsername("user1");
-		
-		accountDao.populateAssets(targetAccount, queryingAccount);
-		assertEquals(0, targetAccount.getBuckets().size());
-	}
-	
-	/**
-	 * Test for {@link AccountDao#populateAssets(Account, Account)} where
-	 * the target account has some public assets or the querying user is
-	 * collaborating on the private assets
-	 */
-	@Test
-	public void populateVisibleAssets() {
-		// User 1 querying user 2
-		Account targetAccount = accountDao.findByUsername("user2");		
-		Account queryingAccount = accountDao.findByUsername("user1");
-		
-		accountDao.populateAssets(targetAccount, queryingAccount);
-		assertTrue(targetAccount.getBuckets().size() > 0);
-	}
-
 	@Test
 	public void searchAccountPath() {
 		List<Account> accounts = accountDao.search("def");

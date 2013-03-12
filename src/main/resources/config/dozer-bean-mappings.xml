@@ -26,5 +26,20 @@
 		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.River</class-b>
 	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.Account</class-b>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO.User</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.User</class-b>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.Client</class-b>
+	</mapping>
 
 </mappings> 

@@ -7,8 +7,10 @@ SET time_zone = "+00:00";
 -- Data for table `roles`
 -- -----------------------------------------------------
 INSERT INTO `roles` (`id`, `name`, `description`, `permissions`) VALUES 
-(1, 'login', 'Login privileges, granted after account confirmation', NULL),
-(2, 'admin', 'Super Administrator', NULL);
+(1, 'user', 'Login privileges, granted after account confirmation', NULL),
+(2, 'admin', 'Super Administrator', NULL),
+(3, 'client', 'Client application', NULL),
+(4, 'trusted_client', 'Truested client application', NULL);
 
 
 -- -----------------------------------------------------
@@ -32,12 +34,13 @@ INSERT INTO `settings` (`id`, `key`, `value`) VALUES
 -- -----------------------------------------------------
 -- Data for table `users`
 -- -----------------------------------------------------
-INSERT INTO `users` (`id`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `api_key`, `created_date`) VALUES 
-(1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', 'c2bac288881c7dd9531c607e73b3af798499917760023656e9847b10b8e75542', 0, NULL, md5(rand()), '2013-01-01 00:00:00'),
-(2, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, '', '2013-01-01 00:00:01'),
-(3, 'user1@myswiftriver.com', 'User 1', 'user1', 'user1_password', 0, NULL, 'user1', '2013-01-01 00:00:02'),
-(4, 'user2@myswiftriver.com', 'User 2', 'user2', 'user2_password', 0, NULL, 'user2', '2013-01-01 00:00:03'),
-(5, 'user3@myswiftriver.com', 'User 3', 'user3', 'user3_password', 0, NULL, 'user3', '2013-01-01 00:00:04');
+INSERT INTO `users` (`id`, `active`, `email`, `name`, `username`, `password`, `logins`, `last_login`, `created_date`) VALUES 
+(1, 1, 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', '$2a$05$f0I9XjamKm4LEaF8av1Zy.tzBrzFM0smLMKvMAqUWicGAcEnkCdQe', 0, NULL, '2013-01-01 00:00:00'),
+(2, 1, 'public@myswiftriver.com', 'public', 'public', '', 0, NULL, '2013-01-01 00:00:01'),
+(3, 1, 'user1@myswiftriver.com', 'User 1', 'user1', 'user1_password', 0, NULL, '2013-01-01 00:00:02'),
+(4, 1, 'user2@myswiftriver.com', 'User 2', 'user2', 'user2_password', 0, NULL, '2013-01-01 00:00:03'),
+(5, 1, 'user3@myswiftriver.com', 'User 3', 'user3', 'user3_password', 0, NULL, '2013-01-01 00:00:04'),
+(6, 0, 'user4@myswiftriver.com', 'User 4', 'user4', 'user4_password', 0, NULL, '2013-01-01 00:00:05');
 
 -- -----------------------------------------------------
 -- Data for table `seq`
@@ -67,7 +70,8 @@ INSERT INTO `accounts` (`id`, `user_id`, `account_path`, `account_private`, `acc
 (2, 2, 'public', 0, '2013-01-01 00:00:01', '2013-01-02 00:00:01', 1, 15),
 (3, 3, 'user1', 0, '2013-01-01 00:00:02', '2013-01-02 00:00:02', 1, 20),
 (4, 4, 'user2', 0, '2013-01-01 00:00:03', '2013-01-02 00:00:03', 1, 0),
-(5, 5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30);
+(5, 5, 'user3', 0, '2013-01-01 00:00:04', '2013-01-02 00:00:04', 1, 30),
+(6, 6, 'user4', 0, '2013-01-01 00:00:05', '2013-01-02 00:00:05', 0, 10);
 
 -- -----------------------------------------------------
 -- Data for table `account_followers`
@@ -322,3 +326,24 @@ INSERT INTO `bucket_comments` (`id`, `bucket_id`, `account_id`, `comment_text`, 
 (3, 1, 4, 'Bucket 1 comment 3', '2013-03-02 21:21:21'),
 (4, 2, 5, 'Bucket 2 comment 1', '2013-02-04 16:17:18'),
 (5, 2, 4, 'Bucket 2 comment 2', '2013-02-05 04:36:28');
+
+-- -----------------------------------------------------
+-- Data for table `clients`
+-- -----------------------------------------------------
+INSERT INTO `clients` (`id`, `account_id`, `client_id`, `client_secret`, `redirect_uri`, `name`, `description`, `homepage`) VALUES
+(1, 1, 'trusted-client', '8b22f281afd911c3dfc59270af43db1995d5968a3447c780ba3e152e603fd9a0', 'http://example.com/oauth/redirect', 'my app', 'my app''s description', 'my app''s homepage');
+
+-- -----------------------------------------------------
+-- Data for table `roles_clients`
+-- -----------------------------------------------------
+INSERT INTO `roles_clients` (`client_id`, `role_id`) VALUES 
+(1, 3),
+(1, 4);
+
+-- -----------------------------------------------------
+-- Data for table `user_tokens`
+-- -----------------------------------------------------
+INSERT INTO `user_tokens` (`id`, `user_id`, `token`, `created`, `expires`) VALUES
+(1, 6, '18012e9d-0e26-47f5-848f-ad81c96fc3f4', '2013-02-14 14:20:44', '2021-02-14 14:20:44'),
+(2, 6, '4f3cf69c18da-f848-5f74-62e0-d9e21081', '2009-02-14 14:20:44', '2010-02-14 14:20:44'),
+(3, 5, '15f8cc2c-e7c1-4298-9f41-f42d1de3043e', '2013-02-14 14:20:44', '2021-02-14 14:20:44');

@@ -18,6 +18,7 @@ package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -65,7 +66,7 @@ public class Account {
 	@Column(name = "river_quota_remaining")
 	private int riverQuotaRemaining;
 
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "user_id")
 	private User owner;
 	
@@ -97,6 +98,9 @@ public class Account {
 	@OneToMany(cascade=CascadeType.ALL)
 	@JoinTable(name="bucket_collaborators", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="bucket_id"))
 	private List<Bucket> collaboratingBuckets;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+	private Set<Client> clients;
 	
 	@Version
 	private long version;
@@ -231,6 +235,14 @@ public class Account {
 
 	public void setFollowing(List<AccountFollower> following) {
 		this.following = following;
+	}
+
+	public Set<Client> getClients() {
+		return clients;
+	}
+
+	public void setClients(Set<Client> clients) {
+		this.clients = clients;
 	}
 
 	public long getVersion() {

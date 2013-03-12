@@ -15,6 +15,7 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +30,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
+import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
+import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.AccountService;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -51,8 +59,34 @@ public class AccountsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST)
-	public Account createAccount(@RequestBody Map<String, Object> body) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	@ResponseBody
+	public GetAccountDTO createAccount(@RequestBody CreateAccountDTO body) {
+
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		if (body.getName() == null) {
+			errors.add(new ErrorField("name", "missing"));
+		}
+
+		if (body.getAccountPath() == null) {
+			errors.add(new ErrorField("account_path", "missing"));
+		}
+
+		if (body.getEmail() == null) {
+			errors.add(new ErrorField("email", "missing"));
+		}
+
+		if (body.getPassword() == null) {
+			errors.add(new ErrorField("password", "missing"));
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return accountService.createAccount(body);
 	}
 
 	/**
@@ -60,39 +94,60 @@ public class AccountsController extends AbstractController {
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public GetAccountDTO getAccountById(@PathVariable Long id, Principal principal) throws NotFoundException {
+	public GetAccountDTO getAccountById(@PathVariable Long id,
+			Principal principal) throws NotFoundException {
 		return accountService.getAccountById(id, principal.getName());
 	}
-	
+
 	/**
-	 * Get account details for the specified id.
+	 * Get account details for the specified account_path
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	@RequestMapping(method = RequestMethod.GET, params="account_path")
+	@RequestMapping(method = RequestMethod.GET, params = "account_path")
 	@ResponseBody
-	public GetAccountDTO getAccountByName(@RequestParam("account_path") String accountPath,
+	public GetAccountDTO getAccountByName(
+			@RequestParam("account_path") String accountPath,
+			@RequestParam(value = "token", required = false) boolean getToken,
 			Principal principal) throws NotFoundException {
-		return accountService.getAccountByAccountPath(accountPath, principal.getName());
+		return accountService.getAccountByAccountPath(accountPath, getToken,
+				principal.getName());
 	}
-	
+
+	/**
+	 * Get account details for the specified email
+	 * 
+	 * @param id
+	 * @return
+	 * @throws NotFoundException
+	 */
+	@RequestMapping(method = RequestMethod.GET, params = "email")
+	@ResponseBody
+	public GetAccountDTO getAccountByEmail(@RequestParam("email") String email,
+			@RequestParam(value = "token", required = false) boolean getToken,
+			Principal principal) throws NotFoundException {
+		return accountService.getAccountByEmail(email, getToken,
+				principal.getName());
+	}
+
 	/**
 	 * Get account details for the specified id.
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
-	@RequestMapping(method = RequestMethod.GET, params="q")
+	@RequestMapping(method = RequestMethod.GET, params = "q")
 	@ResponseBody
-	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query) throws NotFoundException {
-		return accountService.searchAccounts(query);
+	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query, Principal principal)
+			throws NotFoundException {
+		return accountService.searchAccounts(query, principal.getName());
 	}
 
 	/**
@@ -100,20 +155,28 @@ public class AccountsController extends AbstractController {
 	 * 
 	 * @param id
 	 * @return
-	 * @throws NotFoundException 
+	 * @throws NotFoundException
 	 */
 	@RequestMapping(value = "/me", method = RequestMethod.GET)
 	@ResponseBody
-	public GetAccountDTO getAccount(Principal principal) throws NotFoundException {
+	public GetAccountDTO getAccount(Principal principal)
+			throws NotFoundException {
 		String username = principal.getName();
 		return accountService.getAccountByUsername(username);
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+	/**
+	 * Modify the given account
+	 * 
+	 * @param body
+	 * @param accountId
+	 * @return
+	 */
+	@RequestMapping(value = "/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account modifyAccount(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented ");
+	public GetAccountDTO modifyAccount(@RequestBody ModifyAccountDTO body,
+			@PathVariable Long accountId) {
+		return accountService.modifyAccount(accountId, body);
 	}
 
 	@RequestMapping(value = "/{id}/verify", method = RequestMethod.POST)
@@ -141,7 +204,7 @@ public class AccountsController extends AbstractController {
 			@RequestParam(value = "follower", required = false) Long accountId) {
 		return accountService.getFollowers(id, accountId);
 	}
-	
+
 	/**
 	 * Handles deletion of an account from the list of followers
 	 * 
@@ -150,7 +213,8 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/followers/{accountId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteFollower(@PathVariable Long id, @PathVariable Long accountId) {
+	public void deleteFollower(@PathVariable Long id,
+			@PathVariable Long accountId) {
 		accountService.deleteFollower(id, accountId);
 	}
 
@@ -166,29 +230,51 @@ public class AccountsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/apps", method = RequestMethod.POST)
+	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.POST)
 	@ResponseBody
-	public Account createApp(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetClientDTO createApp(@RequestBody CreateClientDTO body,
+			@PathVariable Long accountId, Principal principal) {
+
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		if (body.getName() == null) {
+			errors.add(new ErrorField("name", "missing"));
+		}
+
+		if (body.getRedirectUri() == null) {
+			errors.add(new ErrorField("redirect_uri", "missing"));
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return accountService
+				.createClient(accountId, body, principal.getName());
 	}
 
-	@RequestMapping(value = "/{id}/apps", method = RequestMethod.GET)
+	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getApps(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public List<GetClientDTO> getApps(@PathVariable Long accountId,
+			Principal principal) {
+		return accountService.getClients(accountId, principal.getName());
 	}
 
-	@RequestMapping(value = "/{id}/apps/{appId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public Account modifyApp(@RequestBody Map<String, Object> body,
-			@PathVariable Long id, @PathVariable Long appId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetClientDTO modifyApp(@RequestBody ModifyClientDTO body,
+			@PathVariable Long accountId, @PathVariable Long appId,
+			Principal principal) {
+		return accountService.modifyClient(accountId, appId, body,
+				principal.getName());
 	}
 
-	@RequestMapping(value = "/{id}/apps/{appId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{accountId}/apps/{appId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public Account deleteApp(@PathVariable Long id, @PathVariable Long appId) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public void deleteApp(@PathVariable Long accountId,
+			@PathVariable Long appId, Principal principal) {
+		accountService.deleteApp(accountId, appId, principal.getName());
 	}
 }

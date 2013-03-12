@@ -16,7 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -393,5 +393,32 @@ private BucketDao mockBucketDao;
 		bucketService.addDrop(1L, 12L, dropSource, "admin");
 		verify(mockBucketDropDao).findById(12L);
 		
+	}
+	
+	@Test
+	public void filterVisible() {
+		Account queryingAccount = new Account();
+		queryingAccount.setCollaboratingBuckets(new ArrayList<Bucket>());
+		Bucket ownedPrivateBucket = new Bucket();
+		ownedPrivateBucket.setPublished(false);
+		ownedPrivateBucket.setAccount(queryingAccount);
+		Bucket unOwnedPrivateBucket = new Bucket();
+		unOwnedPrivateBucket.setPublished(false);
+		unOwnedPrivateBucket.setAccount(new Account());
+		Bucket publicBucket = new Bucket();
+		publicBucket.setPublished(true);
+		publicBucket.setAccount(new Account());
+
+		List<Bucket> buckets = new ArrayList<Bucket>();
+		buckets.add(ownedPrivateBucket);
+		buckets.add(unOwnedPrivateBucket);
+		buckets.add(publicBucket);
+
+		List<Bucket> filtered = bucketService.filterVisible(buckets,
+				queryingAccount);
+		
+		assertEquals(2, filtered.size());
+		assertTrue(filtered.contains(ownedPrivateBucket));
+		assertTrue(filtered.contains(publicBucket));
 	}
 }

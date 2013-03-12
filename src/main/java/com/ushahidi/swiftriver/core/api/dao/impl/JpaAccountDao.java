@@ -87,6 +87,21 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 		return account;
 	}
 
+	@Override
+	public Account findByEmail(String email) {
+		String query = "SELECT a FROM Account a WHERE a.owner.email = :email";
+
+		Account account = null;
+		try {
+			account = (Account) em.createQuery(query)
+					.setParameter("email", email)
+					.getSingleResult();
+		} catch (NoResultException e) {
+			// Do nothing;
+		}
+		return account;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -142,76 +157,6 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 		query.setParameter("follower", follower);
 		
 		return query.executeUpdate() == 1;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#populateAssets(com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	public void populateAssets(Account targetAccount, Account queryingAccount) {
-		populateRivers(targetAccount, queryingAccount);
-		populateBuckets(targetAccount, queryingAccount);
-		
-	}
-
-	private void populateBuckets(Account targetAccount, Account queryingAccount) {
-		// Query to fetch the bucket ids
-		String sql = "SELECT `buckets`.`id` AS `id` ";
-		sql += "FROM `buckets` " ;
-		sql += "WHERE `bucket_publish` = 1 ";
-		sql += "AND `account_id` = :account_id ";
-		sql += "UNION ALL ";
-		sql += "SELECT `bucket_collaborators`.`bucket_id` AS id ";
-		sql += "FROM `bucket_collaborators` ";
-		sql += "INNER JOIN `buckets` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id`) ";
-		sql += "WHERE buckets.`bucket_publish` = 0 ";
-		sql += "AND buckets.account_id = :account_id ";
-		sql += "AND `bucket_collaborators`.`account_id` = :collaborator_account_id ";
-		
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("account_id", targetAccount.getId());
-		query.setParameter("collaborator_account_id", queryingAccount.getId());
-		
-		List<Long> bucketIds = new ArrayList<Long>();
-		for (Object row: query.getResultList()) {
-			Long bucketId = ((BigInteger) row).longValue();
-			bucketIds.add(bucketId);
-		}
-		
-		List<Bucket> accountBuckets = bucketIds.isEmpty() 
-				? new ArrayList<Bucket>() :bucketDao.findAll(bucketIds);
-
-		targetAccount.setBuckets(accountBuckets);
-	}
-
-	private void populateRivers(Account targetAccount, Account queryingAccount) {
-		// Query to fetch the river ids
-		String sql = "SELECT `rivers`.`id` AS `id` ";
-		sql += "FROM `rivers` " ;
-		sql += "WHERE `river_public` = 1 ";
-		sql += "AND `account_id` = :account_id ";
-		sql += "UNION ALL ";
-		sql += "SELECT `river_collaborators`.`river_id` AS `id` ";
-		sql += "FROM `river_collaborators` ";
-		sql += "INNER JOIN `rivers` ON (`river_collaborators`.`river_id` = `rivers`.`id`) ";
-		sql += "WHERE rivers.`river_public` = 0 ";
-		sql += "AND rivers.account_id = :account_id ";
-		sql += "AND `river_collaborators`.`account_id` = :collaborator_account_id ";
-		
-		Query query = em.createNativeQuery(sql);
-		query.setParameter("account_id", targetAccount.getId());
-		query.setParameter("collaborator_account_id", queryingAccount.getId());
-		
-		List<Long> riverIds = new ArrayList<Long>();
-		for (Object row: query.getResultList()) {
-			Long riverId = ((BigInteger) row).longValue();
-			riverIds.add(riverId);
-		}
-		
-		List<River> accountRivers = riverIds.isEmpty()
-				? new ArrayList<River>() : riverDao.findAll(riverIds);
-
-		targetAccount.setRivers(accountRivers);
 	}
 
 	/*

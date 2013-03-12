@@ -23,36 +23,6 @@
 	<!-- Imports user-defined @Controller beans that process client requests -->
 	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
 
-	<!-- Repository Beans -->
-	<bean id="accountDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
-	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
-	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
-	<bean id="bucketDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDao" />
-	<bean id="channel" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaChannelDao" />
-	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />
-	<bean id="placeDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaPlaceDao" />
-	<bean id="tagDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaTagDao" />
-	<bean id="bucketDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDropDao" />
-	<bean id="riverDropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDropDao" />
-	<bean id="riverCollaboratorDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverCollaboratorDao" />
-	<bean id="bucketCollaboratorDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
-	<bean id="bucketCommentDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
-
-	<!-- Service Beans -->
-	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService" />
-	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService" />
-	<bean id="bucketService" class="com.ushahidi.swiftriver.core.api.service.BucketService" />
-	<bean id="dropService" class="com.ushahidi.swiftriver.core.api.service.DropService" />
-
-	<!-- Bean Mapper -->
-	<bean id="mapper" class="org.dozer.DozerBeanMapper">
-		<property name="mappingFiles">
-			<list>
-				<value>config/dozer-bean-mappings.xml</value>
-			</list>
-		</property>
-	</bean>
-
 	<!-- Jackson Mapper -->
 	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" />
 	<bean
@@ -76,48 +46,4 @@
 			</bean>
 		</mvc:message-converters>
 	</mvc:annotation-driven>
-
-	<!-- Enable the configuration of transactional behavior based on annotations -->
-	<tx:annotation-driven transaction-manager="txManager" />
-
-	<bean id="txManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-		<property name="dataSource" ref="dataSource" />
-	</bean>
-
-	<!-- JPA EntityManagerFactory -->
-	<bean id="entityManagerFactory"
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		<property name="dataSource" ref="dataSource" />
-		<property name="packagesToScan" value="com.ushahidi.swiftriver.core.model" />
-		<property name="jpaVendorAdapter">
-			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
-				<property name="showSql" value="false" />
-				<property name="generateDdl" value="false" />
-				<property name="databasePlatform" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
-			</bean>
-		</property>
-	</bean>
-
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
-		destroy-method="close">
-		<property name="driverClassName" value="${db.class}" />
-		<property name="url" value="${db.url}" />
-		<property name="username" value="${db.username}" />
-		<property name="password" value="${db.password}" />
-	</bean>
-
-	<!-- Data Sources -->
-	<beans profile="prod">
-		<context:property-placeholder location="file://${database.config}" />
-	</beans>
-
-	<beans profile="test">
-		<context:property-placeholder location="classpath:db-test.properties" />
-
-		<jdbc:initialize-database data-source="dataSource">
-			<jdbc:script location="classpath:config/sql/schema-destroy.sql" />
-			<jdbc:script location="classpath:config/sql/schema-create.sql" />
-			<jdbc:script location="classpath:config/sql/test-data.sql" />
-		</jdbc:initialize-database>
-	</beans>
 </beans>

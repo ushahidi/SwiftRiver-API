@@ -401,32 +401,32 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` varchar(255) DEFAULT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `api_key` varchar(255) NOT NULL,
   `logins` int(10) unsigned NOT NULL DEFAULT '0',
+  `active` tinyint(1) DEFAULT '1',
   `invites` smallint(6) NOT NULL DEFAULT '10',
   `last_login` int(10) unsigned DEFAULT NULL,
-  `created_date` timestamp,
+  `created_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `expired` tinyint(1) DEFAULT '0',
+  `locked` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`),
-  UNIQUE KEY `username` (`username`),
-  UNIQUE KEY `un_api_key` (`api_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 
 -- -----------------------------------------------------
 -- Table `user_tokens`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `user_tokens` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) unsigned NOT NULL,
-  `user_agent` varchar(64) NOT NULL,
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(11) unsigned NOT NULL,
   `token` varchar(64) NOT NULL,
-  `created` int(10) unsigned NOT NULL,
-  `expires` int(10) unsigned NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `expires` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `token` (`token`),
   KEY `user_id_idx` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 
 -- -----------------------------------------------------
@@ -848,4 +848,30 @@ CREATE TABLE IF NOT EXISTS `bucket_droplet_comments` (
   PRIMARY KEY (`id`),
   KEY `idx_buckets_droplets_id` (`buckets_droplets_id`),
   KEY `idx_account_id` (`account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- TABLE 'clients'
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `clients` (
+  `id` bigint(11) unsigned NOT NULL AUTO_INCREMENT,
+  `account_id` bigint(11) NOT NULL,
+  `client_id` varchar(255) NOT NULL DEFAULT '',
+  `client_secret` varchar(255) NOT NULL DEFAULT '',
+  `redirect_uri` varchar(255) NOT NULL DEFAULT '',
+  `name` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `homepage` varchar(255) DEFAULT NULL,
+  `active` TINYINT(1)  NULL  DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `client_id` (`client_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- -----------------------------------------------------
+-- Table `roles_clients`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `roles_clients` (
+  `client_id` int(11) unsigned NOT NULL,
+  `role_id` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`client_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

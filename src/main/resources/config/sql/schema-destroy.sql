@@ -55,3 +55,5 @@ DROP TABLE IF EXISTS `user_subscriptions`;
 DROP TABLE IF EXISTS `user_tokens`;
 DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `account_read_drops`;
+DROP TABLE IF EXISTS `clients`;
+DROP TABLE IF EXISTS `roles_clients`;

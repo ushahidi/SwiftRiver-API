@@ -16,38 +16,75 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
+import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.encrypt.Encryptors;
+import org.springframework.security.crypto.encrypt.TextEncryptor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ClientDao;
+import com.ushahidi.swiftriver.core.api.dao.RoleDao;
+import com.ushahidi.swiftriver.core.api.dao.UserDao;
+import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
+import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.User;
+import com.ushahidi.swiftriver.core.model.UserToken;
+import com.ushahidi.swiftriver.core.util.TextUtil;
 
 public class AccountServiceTest {
-	
+
 	private Account account;
-	
+
 	private GetAccountDTO getAccountDTO;
 
-	private AccountDao mockedAccountDao;
-	
-	private Mapper mockedMapper;
-	
+	private AccountDao mockAccountDao;
+
+	private UserDao mockUserDao;
+
+	private UserTokenDao mockUserTokenDao;
+
+	private ClientDao mockClientDao;
+
+	private RoleDao mockRoleDao;
+
+	private Mapper mockMapper;
+
+	private Mapper mapper;
+
 	private AccountService accountService;
+
+	private RiverService mockRiverService;
+
+	private BucketService mockBucketService;
+
+	private PasswordEncoder passwordEncoder;
 
 	@Before
 	public void setup() {
@@ -56,68 +93,310 @@ public class AccountServiceTest {
 		account.setOwner(new User());
 		account.setFollowers(new ArrayList<AccountFollower>());
 		account.setFollowing(new ArrayList<AccountFollower>());
-		
+
 		getAccountDTO = new GetAccountDTO();
-		
-		mockedAccountDao = mock(AccountDao.class);		
-		when(mockedAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockedAccountDao.findByUsername(anyString())).thenReturn(account);
-		when(mockedAccountDao.findByAccountPath(anyString())).thenReturn(account);
-		
-		mockedMapper = mock(Mapper.class);
-		when(mockedMapper.map(account, GetAccountDTO.class)).thenReturn(getAccountDTO);
-		
+
+		mockAccountDao = mock(AccountDao.class);
+		mockUserDao = mock(UserDao.class);
+		mockUserTokenDao = mock(UserTokenDao.class);
+		mockClientDao = mock(ClientDao.class);
+		mockRoleDao = mock(RoleDao.class);
+		mockMapper = mock(Mapper.class);
+		mapper = new DozerBeanMapper();
+		passwordEncoder = new BCryptPasswordEncoder();
+		when(mockMapper.map(account, GetAccountDTO.class)).thenReturn(
+				getAccountDTO);
+		mockRiverService = mock(RiverService.class);
+		mockBucketService = mock(BucketService.class);
+
 		accountService = new AccountService();
-		accountService.setAccountDao(mockedAccountDao);
-		accountService.setMapper(mockedMapper);
+		accountService.setRiverService(mockRiverService);
+		accountService.setBucketService(mockBucketService);
+		accountService.setAccountDao(mockAccountDao);
+		accountService.setMapper(mockMapper);
+		accountService.setUserDao(mockUserDao);
+		accountService.setUserTokenDao(mockUserTokenDao);
+		accountService.setClientDao(mockClientDao);
+		accountService.setRoleDao(mockRoleDao);
+		accountService.setPasswordEncoder(passwordEncoder);
+		accountService.setKey("2344228477#97{7&6>82");
 	}
 
 	@Test
 	public void findById() throws NotFoundException {
-		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13L, "admin");
+		when(mockAccountDao.findById(anyLong())).thenReturn(account);
 
-		verify(mockedAccountDao).findById(13L);
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountById(13L,
+				"admin");
+
+		verify(mockAccountDao).findById(13L);
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
 	@Test
 	public void findByUsername() throws NotFoundException {
-		GetAccountDTO actualGetAccountDTO = accountService.getAccountByUsername("admin");
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 
-		verify(mockedAccountDao).findByUsername("admin");
+		GetAccountDTO actualGetAccountDTO = accountService
+				.getAccountByUsername("admin");
+
+		verify(mockAccountDao).findByUsername("admin");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
-	
+
 	@Test
 	public void findByName() throws NotFoundException {
-		GetAccountDTO actualGetAccountDTO = accountService.getAccountByAccountPath("default", "user1");
+		when(mockAccountDao.findByAccountPath(anyString())).thenReturn(account);
 
-		verify(mockedAccountDao).findByAccountPath("default");
+		GetAccountDTO actualGetAccountDTO = accountService
+				.getAccountByAccountPath("default", false, "user1");
+
+		verify(mockAccountDao).findByAccountPath("default");
+		assertEquals(getAccountDTO, actualGetAccountDTO);
+	}
+
+	@Test
+	public void findByEmail() throws NotFoundException {
+		when(mockAccountDao.findByEmail(anyString())).thenReturn(account);
+
+		GetAccountDTO actualGetAccountDTO = accountService.getAccountByEmail(
+				"email", false, "user1");
+
+		verify(mockAccountDao).findByEmail("email");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
 	@Test
 	public void mapGetAccountDTO() {
-		GetAccountDTO actualGetAccountDTO = accountService
-				.mapGetAccountDTO(account);
+		List<River> filteredRivers = new ArrayList();
+		filteredRivers.add(new River());
+		when(mockRiverService.filterVisible(anyList(), (Account) anyObject()))
+				.thenReturn(filteredRivers);
+		List<Bucket> filteredBuckets = new ArrayList();
+		filteredBuckets.add(new Bucket());
+		when(mockBucketService.filterVisible(anyList(), (Account) anyObject()))
+				.thenReturn(filteredBuckets);
 
-		verify(mockedMapper).map(account, GetAccountDTO.class);
+		GetAccountDTO actualGetAccountDTO = accountService.mapGetAccountDTO(
+				account, account);
+
 		assertEquals(getAccountDTO, actualGetAccountDTO);
+		
+		ArgumentCaptor<Account> argument = ArgumentCaptor
+				.forClass(Account.class);
+		verify(mockMapper).map(argument.capture(), any(Class.class));
+		Account modifiedAccount = argument.getValue();
+		assertEquals(filteredRivers, modifiedAccount.getRivers());
+		assertEquals(filteredRivers, modifiedAccount.getCollaboratingRivers());
+		assertEquals(filteredRivers, modifiedAccount.getFollowingRivers());
+		assertEquals(filteredBuckets, modifiedAccount.getBuckets());
+		assertEquals(filteredBuckets, modifiedAccount.getCollaboratingBuckets());
+		assertEquals(filteredBuckets, modifiedAccount.getFollowingBuckets());
 	}
-	
+
 	@Test
 	public void search() {
 		AccountDao mockAccountDao = mock(AccountDao.class);
 		List<Account> accounts = new ArrayList<Account>();
 		accounts.add(account);
 		when(mockAccountDao.search(anyString())).thenReturn(accounts);
-		
-		AccountService accountService = new AccountService();
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 		accountService.setAccountDao(mockAccountDao);
-		accountService.setMapper(mockedMapper);
-		List<GetAccountDTO> getAccountDTOs = accountService.searchAccounts("abcd");
-		
+
+		List<GetAccountDTO> getAccountDTOs = accountService.searchAccounts(
+				"abcd", "user1");
+
 		verify(mockAccountDao).search("abcd");
 		assertEquals(1, getAccountDTOs.size());
+	}
+
+	@Test
+	public void createAccount() {
+		when(mockMapper.map(any(Account.class), any(Class.class))).thenReturn(
+				getAccountDTO);
+
+		CreateAccountDTO createAccount = new CreateAccountDTO();
+		createAccount.setAccountPath("account_path");
+		createAccount.setAccountPrivate(true);
+		createAccount.setEmail("email@example.com");
+		createAccount.setName("account name");
+		createAccount.setPassword("totally secret");
+
+		GetAccountDTO actual = accountService.createAccount(createAccount);
+
+		ArgumentCaptor<User> userArgument = ArgumentCaptor.forClass(User.class);
+		verify(mockUserDao).create(userArgument.capture());
+		User user = userArgument.getValue();
+		assertEquals("email@example.com", user.getEmail());
+		assertEquals("account name", user.getName());
+		assertEquals("email@example.com", user.getUsername());
+		assertTrue(passwordEncoder
+				.matches("totally secret", user.getPassword()));
+
+		ArgumentCaptor<UserToken> tokenArgument = ArgumentCaptor
+				.forClass(UserToken.class);
+		verify(mockUserTokenDao).create(tokenArgument.capture());
+		UserToken token = tokenArgument.getValue();
+		assertEquals(user, token.getUser());
+		assertNotNull(token.getToken());
+
+		ArgumentCaptor<Account> accountArgument = ArgumentCaptor
+				.forClass(Account.class);
+		verify(mockAccountDao).create(accountArgument.capture());
+		Account account = accountArgument.getValue();
+		assertEquals("account_path", account.getAccountPath());
+		assertTrue(account.isAccountPrivate());
+		assertEquals(user, account.getOwner());
+
+		assertEquals(getAccountDTO, actual);
+	}
+
+	@Test
+	public void modifyAccount() {
+		accountService.setMapper(mapper);
+
+		User user = new User();
+		user.setActive(false);
+		user.setExpired(true);
+		user.setLocked(true);
+		user.setId(1);
+		Account account = new Account();
+		account.setActive(false);
+		account.setOwner(user);
+		UserToken userToken = new UserToken();
+		userToken.setUser(account.getOwner());
+		userToken.setExpires(new Date((new Date()).getTime() + 86400000L));
+
+		ModifyAccountDTO modifyAccount = new ModifyAccountDTO();
+		modifyAccount.setAccountPath("new account path");
+		modifyAccount.setAccountPrivate(true);
+		modifyAccount.setRiverQuotaRemaining(999);
+		modifyAccount.setToken("this is a token");
+
+		ModifyAccountDTO.User owner = new ModifyAccountDTO.User();
+		modifyAccount.setOwner(owner);
+		owner.setEmail("email@example.com");
+		owner.setName("owner's new name");
+		owner.setPassword("new password");
+		modifyAccount.setOwner(owner);
+
+		when(mockAccountDao.findById(anyLong())).thenReturn(account);
+		when(mockUserTokenDao.findByToken(anyString())).thenReturn(userToken);
+
+		accountService.modifyAccount(1L, modifyAccount);
+
+		ArgumentCaptor<Account> accountArgument = ArgumentCaptor
+				.forClass(Account.class);
+		verify(mockAccountDao).update(accountArgument.capture());
+		Account modifiedAccount = accountArgument.getValue();
+
+		assertEquals("new account path", modifiedAccount.getAccountPath());
+		assertTrue(modifiedAccount.isAccountPrivate());
+		assertEquals(999, modifiedAccount.getRiverQuotaRemaining());
+		assertTrue(modifiedAccount.isActive());
+		assertTrue(modifiedAccount.getOwner().getActive());
+		assertFalse(modifiedAccount.getOwner().getExpired());
+		assertFalse(modifiedAccount.getOwner().getLocked());
+		assertEquals("email@example.com", modifiedAccount.getOwner().getEmail());
+		assertEquals("email@example.com", modifiedAccount.getOwner()
+				.getUsername());
+		assertEquals("owner's new name", modifiedAccount.getOwner().getName());
+		assertTrue(passwordEncoder.matches("new password", modifiedAccount
+				.getOwner().getPassword()));
+	}
+
+	@Test
+	public void createUserToken() {
+		User user = new User();
+
+		accountService.createUserToken(user);
+
+		ArgumentCaptor<UserToken> userTokenArgument = ArgumentCaptor
+				.forClass(UserToken.class);
+		verify(mockUserTokenDao).create(userTokenArgument.capture());
+		User tokenUser = userTokenArgument.getValue().getUser();
+
+		assertEquals(user, tokenUser);
+	}
+
+	@Test
+	public void getClients() {
+		Account account = new Account();
+		account.setClients(new HashSet<Client>());
+		Client client = new Client();
+		client.setId(1L);
+		client.setClientId("trusted-client");
+		client.setClientSecret("8b22f281afd911c3dfc59270af43db1995d5968a3447c780ba3e152e603fd9a0");
+		client.setDescription("the description");
+		client.setHomepage("the homepage");
+		client.setRedirectUri("the redirect uri");
+		account.getClients().add(client);
+
+		when(mockAccountDao.findById(anyLong())).thenReturn(account);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+
+		accountService.setMapper(mapper);
+		List<GetClientDTO> clients = accountService.getClients(1L, "username");
+
+		assertEquals(1, clients.size());
+
+		GetClientDTO dto = clients.get(0);
+		assertEquals(1, dto.getId());
+		assertEquals("trusted-client", dto.getClientId());
+		assertEquals("somesecret", dto.getClientSecret());
+		assertEquals("the description", dto.getDescription());
+		assertEquals("the homepage", dto.getHomepage());
+		assertEquals("the redirect uri", dto.getRedirectUri());
+	}
+
+	@Test
+	public void createClient() {
+		Account account = new Account();
+		Role role = new Role();
+		CreateClientDTO createClientDTO = new CreateClientDTO();
+		createClientDTO.setName("new app's name");
+		createClientDTO.setDescription("new app's description");
+		createClientDTO.setHomepage("http://example.com");
+		createClientDTO.setRedirectUri("http://example.com/redirect");
+
+		when(mockAccountDao.findById(anyLong())).thenReturn(account);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockRoleDao.findByName(anyString())).thenReturn(role);
+
+		accountService.setMapper(mapper);
+		GetClientDTO getClientDTO = accountService.createClient(1L,
+				createClientDTO, "admin");
+
+		ArgumentCaptor<Client> argument = ArgumentCaptor.forClass(Client.class);
+		verify(mockClientDao).create(argument.capture());
+		Client client = argument.getValue();
+		assertEquals("new app's name", client.getName());
+		assertEquals("new app's description", client.getDescription());
+		assertEquals("http://example.com", client.getHomepage());
+		assertEquals("http://example.com/redirect", client.getRedirectUri());
+		assertTrue(client.getActive());
+		assertTrue(client.getRoles().contains(role));
+		assertNotNull(client.getClientId());
+		assertNotNull(client.getClientSecret());
+
+		TextEncryptor encryptor = Encryptors.text(
+				TextUtil.convertStringToHex(accountService.getKey()),
+				TextUtil.convertStringToHex(client.getClientId()));
+		assertEquals(getClientDTO.getClientSecret(),
+				encryptor.decrypt(client.getClientSecret()));
+	}
+
+	@Test
+	public void deleteClient() {
+		Account account = new Account();
+		Client client = new Client();
+
+		when(mockAccountDao.findById(anyLong())).thenReturn(account);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockClientDao.findById(anyLong())).thenReturn(client);
+
+		accountService.deleteApp(1L, 1L, "admin");
+
+		verify(mockClientDao).delete(client);
 	}
 }

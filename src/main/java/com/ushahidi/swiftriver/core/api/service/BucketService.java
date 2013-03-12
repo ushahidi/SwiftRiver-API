@@ -103,7 +103,7 @@ public class BucketService {
 
 	@Autowired
 	private PlaceDao placeDao;
-	
+
 	@Autowired
 	private BucketCollaboratorDao bucketCollaboratorDao;
 
@@ -144,12 +144,13 @@ public class BucketService {
 		return bucketCollaboratorDao;
 	}
 
-	public void setBucketCollaboratorDao(BucketCollaboratorDao bucketCollaboratorDao) {
+	public void setBucketCollaboratorDao(
+			BucketCollaboratorDao bucketCollaboratorDao) {
 		this.bucketCollaboratorDao = bucketCollaboratorDao;
 	}
 
 	public void setBucketDropDao(BucketDropDao bucketDropDao) {
-		this.bucketDropDao = bucketDropDao;		
+		this.bucketDropDao = bucketDropDao;
 	}
 
 	public void setTagDao(TagDao tagDao) {
@@ -486,8 +487,8 @@ public class BucketService {
 
 		// Is the account already following the bucket
 		if (bucket.getFollowers().contains(account)) {
-			throw new BadRequestException(String.format("%s  is already following bucket %d", 
-					accountId, id));
+			throw new BadRequestException(String.format(
+					"%s  is already following bucket %d", accountId, id));
 		}
 
 		bucket.getFollowers().add(account);
@@ -496,10 +497,9 @@ public class BucketService {
 	}
 
 	/**
-	 * Gets and returns the list of followers for the {@link Bucket}
-	 * with the specified <code>id</code>. If <code>accountId</code>
-	 * is specified, checks if the {@link Account} associated with
-	 * that id is following the bucket
+	 * Gets and returns the list of followers for the {@link Bucket} with the
+	 * specified <code>id</code>. If <code>accountId</code> is specified, checks
+	 * if the {@link Account} associated with that id is following the bucket
 	 * 
 	 * @param id
 	 * @param accountId
@@ -515,19 +515,19 @@ public class BucketService {
 		if (accountId != null) {
 			Account follower = accountDao.findById(accountId);
 			if (follower == null) {
-				throw new NotFoundException(String.format("The account %d does not exist",
-						accountId));
+				throw new NotFoundException(String.format(
+						"The account %d does not exist", accountId));
 			}
 
 			if (bucket.getFollowers().contains(follower)) {
 				followers.add(mapFollowerDTO(follower));
 			} else {
-				throw new NotFoundException(String.format("Account %d does not follow bucket %d",
-						accountId, id));
+				throw new NotFoundException(String.format(
+						"Account %d does not follow bucket %d", accountId, id));
 			}
 		} else {
 
-			for (Account account: bucket.getFollowers()) {
+			for (Account account : bucket.getFollowers()) {
 				followers.add(mapFollowerDTO(account));
 			}
 		}
@@ -541,7 +541,7 @@ public class BucketService {
 		// Set the name and email address
 		dto.setName(account.getOwner().getName());
 		dto.setEmail(account.getOwner().getEmail());
-		
+
 		return dto;
 	}
 
@@ -559,7 +559,8 @@ public class BucketService {
 
 		Account account = accountDao.findById(accountId);
 		if (account == null) {
-			throw new NotFoundException(String.format("Account %d does not exist", accountId));
+			throw new NotFoundException(String.format(
+					"Account %d does not exist", accountId));
 		}
 
 		// Does the account exist as a follower?
@@ -567,8 +568,8 @@ public class BucketService {
 			bucket.getFollowers().remove(account);
 			bucketDao.update(bucket);
 		} else {
-			throw new NotFoundException(String.format("Account %d does not follow bucket %d",
-					accountId, id));
+			throw new NotFoundException(String.format(
+					"Account %d does not follow bucket %d", accountId, id));
 		}
 	}
 
@@ -629,28 +630,31 @@ public class BucketService {
 	@Transactional
 	public void deleteDrop(Long bucketId, Long dropId, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
 
 		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
 		if (bucketDrop == null) {
 			throw new NotFoundException("The requested drop does not exist");
 		}
-		
-		// Use the main drop id to find the bucket drop 
-		BucketDrop targetBucketDrop = bucketDao.findDrop(bucketId, bucketDrop.getDrop().getId());
+
+		// Use the main drop id to find the bucket drop
+		BucketDrop targetBucketDrop = bucketDao.findDrop(bucketId, bucketDrop
+				.getDrop().getId());
 		if (targetBucketDrop == null) {
 			throw new NotFoundException("The requested drop does not exist");
 		}
-		
+
 		// Delete the drop
 		bucketDropDao.delete(targetBucketDrop);
 	}
 
 	/**
 	 * Adds the {@link Drop} specified in <code>dropId</code> to the
-	 * {@link Bucket} in <code>bucketId</code>. The {@link Account} associated with
-	 * <code>username</code> is used to verify whether the user submitting the
-	 * request is authorized
+	 * {@link Bucket} in <code>bucketId</code>. The {@link Account} associated
+	 * with <code>username</code> is used to verify whether the user submitting
+	 * the request is authorized
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -658,32 +662,35 @@ public class BucketService {
 	 * @param username
 	 */
 	@Transactional
-	public void addDrop(Long bucketId, Long dropId, DropSourceDTO dropSourceTO, String username) {
+	public void addDrop(Long bucketId, Long dropId, DropSourceDTO dropSourceTO,
+			String username) {
 		// Validate the source
-		if (!(dropSourceTO.getSource().equals("river") ||
-				dropSourceTO.getSource().equals("bucket"))) {
-			throw new BadRequestException(String.format("Invalid drop source %s",
-					dropSourceTO.getSource()));
+		if (!(dropSourceTO.getSource().equals("river") || dropSourceTO
+				.getSource().equals("bucket"))) {
+			throw new BadRequestException(String.format(
+					"Invalid drop source %s", dropSourceTO.getSource()));
 		}
 
 		Bucket bucket = getBucketById(bucketId);
 		Account account = accountDao.findByUsername(username);
 
 		if (!isOwner(bucket, account)) {
-			throw new UnauthorizedExpection(String.format("%s does not have permission to put drops in bucket %d",
+			throw new UnauthorizedExpection(String.format(
+					"%s does not have permission to put drops in bucket %d",
 					username, bucketId));
 		}
-		
+
 		BucketDrop bucketDrop = null;
 
 		if (dropSourceTO.getSource().equals("river")) {
 			RiverDrop riverDrop = riverDropDao.findById(dropId);
 			if (riverDrop == null) {
-				throw new NotFoundException(String.format("Drop %d is not a river drop", dropId));
+				throw new NotFoundException(String.format(
+						"Drop %d is not a river drop", dropId));
 			}
 			Drop drop = riverDrop.getDrop();
 			bucketDrop = bucketDao.findDrop(bucketId, drop.getId());
-			
+
 			if (bucketDrop != null) {
 				bucketDropDao.increaseVeracity(bucketDrop);
 			} else {
@@ -692,18 +699,20 @@ public class BucketService {
 		} else if (dropSourceTO.getSource().equals("bucket")) {
 			bucketDrop = bucketDropDao.findById(dropId);
 			if (bucketDrop == null) {
-				throw new NotFoundException(String.format("Drop %d is not a bucket drop", dropId));
+				throw new NotFoundException(String.format(
+						"Drop %d is not a bucket drop", dropId));
 			}
 
 			if (bucketDrop.getBucket().equals(bucket)) {
-				throw new BadRequestException(String.format("Drop %d already exists in bucket %d",
-						dropId, bucketId));
+				throw new BadRequestException(
+						String.format("Drop %d already exists in bucket %d",
+								dropId, bucketId));
 			}
 
 			// Create a new bucket drop from an existing
 			bucketDropDao.createFromExisting(bucketDrop, bucket);
 		}
-		
+
 	}
 
 	/**
@@ -716,18 +725,33 @@ public class BucketService {
 	private Bucket getBucketById(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
-			throw new NotFoundException(String.format("Bucket %d does not exist", id));
+			throw new NotFoundException(String.format(
+					"Bucket %d does not exist", id));
 		}
 
 		return bucket;
 	}
 
 	/**
+	 * Helper method for verifying whether the user submitting the request has
+	 * authorization to add/remove metadata to/from the {@link Bucket} specified
+	 * in <code>bucketId</code>
+	 * 
+	 * @param bucket
+	 * @param authUser
+	 */
+	public boolean isOwner(Bucket bucket, String authUser) {
+		Account account = accountDao.findByUsername(authUser);
+		return isOwner(bucket, account);
+	}
+
+	/**
 	 * Verifies whether the {@link Account} in <code>account</code> is an owner
 	 * of the {@link Bucket} specified in <code>bucket</code>
 	 * 
-	 * An owner is an {@link Account} that is a creator of the {@Bucket} or 
-	 * a {@link BucketCollaborator} with edit privileges i.e. the
+	 * An owner is an {@link Account} that is a creator of the {@Bucket
+	 * 
+	 * } or a {@link BucketCollaborator} with edit privileges i.e. the
 	 * <code>readOnly</code> property is false
 	 * 
 	 * @param bucket
@@ -741,27 +765,29 @@ public class BucketService {
 	}
 
 	/**
-	 * Verifies whether the {@link Account} in <code>account</code> is collaborating
-	 * on the {@link Bucket} in <code>bucket</code>
+	 * Verifies whether the {@link Account} in <code>account</code> is
+	 * collaborating on the {@link Bucket} in <code>bucket</code>
 	 * 
 	 * @param bucket
 	 * @param account
 	 * @param readOnly
 	 * @return
 	 */
-	private boolean isCollaborator(Bucket bucket, Account account, boolean readOnly) {
-		BucketCollaborator collaborator = bucketDao.findCollaborator(bucket.getId(), 
-				account.getId());
+	private boolean isCollaborator(Bucket bucket, Account account,
+			boolean readOnly) {
+		BucketCollaborator collaborator = bucketDao.findCollaborator(
+				bucket.getId(), account.getId());
 		if (collaborator == null) {
 			return false;
 		}
-		
-		return (readOnly && collaborator.isReadOnly()); 
+
+		return (readOnly && collaborator.isReadOnly());
 	}
 
 	/**
-	 * Adds a {@link Tag} to the {@link BucketDrop} with the specified <code>dropId</code>
-	 * The drop must be in the {@link Bucket} whose ID is specified in <code>bucketId</code>
+	 * Adds a {@link Tag} to the {@link BucketDrop} with the specified
+	 * <code>dropId</code> The drop must be in the {@link Bucket} whose ID is
+	 * specified in <code>bucketId</code>
 	 * 
 	 * The created {@link Tag} entity is transformed to a DTO for purposes of
 	 * consumption by {@link BucketsController}
@@ -773,13 +799,16 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional
-	public GetTagDTO addDropTag(Long bucketId, Long dropId, CreateTagDTO createDTO, String authUser) {
+	public GetTagDTO addDropTag(Long bucketId, Long dropId,
+			CreateTagDTO createDTO, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
 
 		// Get the bucket drop
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-		
+
 		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
 		if (tag == null) {
@@ -791,48 +820,57 @@ public class BucketService {
 		} else {
 			// Check if the tag exists in the bucket drop
 			if (bucketDropDao.findTag(bucketDrop, tag) != null) {
-				throw new BadRequestException(String.format("Tag %s of type %s has already been added to drop %d",
+				throw new BadRequestException(String.format(
+						"Tag %s of type %s has already been added to drop %d",
 						tag.getTag(), tag.getType(), dropId));
 			}
 		}
-		 
+
 		bucketDropDao.addTag(bucketDrop, tag);
 		return mapper.map(tag, GetTagDTO.class);
 	}
 
 	/**
-	 * Deletes the {@link Tag} with the id specified in <code>tagId</code>
-	 * from the {@link BucketDrop} specified in <code>dropId</code>
+	 * Deletes the {@link Tag} with the id specified in <code>tagId</code> from
+	 * the {@link BucketDrop} specified in <code>dropId</code>
 	 * 
 	 * The request {@link BucketDrop} must be a member of the {@link Bucket}
-	 * with the ID specified in <code>bucketId</code> else a {@link NotFoundException}
-	 * is thrown
+	 * with the ID specified in <code>bucketId</code> else a
+	 * {@link NotFoundException} is thrown
 	 * 
 	 * @param bucketId
 	 * @param dropId
 	 * @param tagId
-	 * @param authUser TODO
+	 * @param authUser
+	 *            TODO
 	 */
 	@Transactional
-	public void deleteDropTag(Long bucketId, Long dropId, Long tagId, String authUser) {
+	public void deleteDropTag(Long bucketId, Long dropId, Long tagId,
+			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
 		Tag tag = tagDao.findById(tagId);
 
 		if (tag == null) {
-			throw new NotFoundException(String.format("Tag %d does not exist", tagId));
+			throw new NotFoundException(String.format("Tag %d does not exist",
+					tagId));
 		}
 
 		if (!bucketDropDao.deleteTag(bucketDrop, tag)) {
-			throw new NotFoundException(String.format("Drop %d does not have tag %d", dropId, tagId));
+			throw new NotFoundException(String.format(
+					"Drop %d does not have tag %d", dropId, tagId));
 		}
 	}
 
 	/**
-	 * Adds a {@link Link} to the {@link BucketDrop} with the specified <code>dropId</code>
-	 * The drop must be in the {@link Bucket} whose ID is specified in <code>bucketId</code>
+	 * Adds a {@link Link} to the {@link BucketDrop} with the specified
+	 * <code>dropId</code> The drop must be in the {@link Bucket} whose ID is
+	 * specified in <code>bucketId</code>
 	 * 
 	 * The created {@link Link} entity is transformed to a DTO for purposes of
 	 * consumption by {@link BucketsController}
@@ -844,9 +882,13 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional
-	public GetLinkDTO addDropLink(Long bucketId, Long dropId, CreateLinkDTO createDTO, String authUser) {
+	public GetLinkDTO addDropLink(Long bucketId, Long dropId,
+			CreateLinkDTO createDTO, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
 		String hash = HashUtil.md5(createDTO.getUrl());
@@ -855,16 +897,17 @@ public class BucketService {
 			link = new Link();
 			link.setUrl(createDTO.getUrl());
 			link.setHash(hash);
-			
+
 			linkDao.create(link);
 		} else {
 			// Has the link already been added ?
 			if (bucketDropDao.findLink(bucketDrop, link) != null) {
-				throw new BadRequestException(String.format("%s has already been added to drop %d",
-						link.getUrl(), dropId));
+				throw new BadRequestException(String.format(
+						"%s has already been added to drop %d", link.getUrl(),
+						dropId));
 			}
 		}
-		
+
 		bucketDropDao.addLink(bucketDrop, link);
 		return mapper.map(link, GetLinkDTO.class);
 	}
@@ -874,8 +917,8 @@ public class BucketService {
 	 * from the {@link BucketDrop} specified in <code>dropId</code>
 	 * 
 	 * The request {@link BucketDrop} must be a member of the {@link Bucket}
-	 * with the ID specified in <code>bucketId</code> else a {@link NotFoundException}
-	 * is thrown
+	 * with the ID specified in <code>bucketId</code> else a
+	 * {@link NotFoundException} is thrown
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -883,24 +926,31 @@ public class BucketService {
 	 * @param authUser
 	 */
 	@Transactional
-	public void deleteDropLink(Long bucketId, Long dropId, Long linkId, String authUser) {
+	public void deleteDropLink(Long bucketId, Long dropId, Long linkId,
+			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		Link link = linkDao.findById(linkId);
 
 		if (link == null) {
-			throw new NotFoundException(String.format("Link %d does not exist", linkId));
+			throw new NotFoundException(String.format("Link %d does not exist",
+					linkId));
 		}
 
 		if (!bucketDropDao.deleteLink(bucketDrop, link)) {
-			throw new NotFoundException(String.format("Drop %d does not have link %d", dropId, linkId));
-		}		
+			throw new NotFoundException(String.format(
+					"Drop %d does not have link %d", dropId, linkId));
+		}
 	}
 
 	/**
-	 * Adds a {@link Place} to the {@link BucketDrop} with the specified <code>dropId</code>
-	 * The drop must be in the {@link Bucket} whose ID is specified in <code>bucketId</code>
+	 * Adds a {@link Place} to the {@link BucketDrop} with the specified
+	 * <code>dropId</code> The drop must be in the {@link Bucket} whose ID is
+	 * specified in <code>bucketId</code>
 	 * 
 	 * The created {@link Place} entity is transformed to a DTO for purposes of
 	 * consumption by {@link BucketsController}
@@ -912,37 +962,44 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional
-	public GetPlaceDTO addDropPlace(Long bucketId, Long dropId, CreatePlaceDTO createDTO, String authUser) {
+	public GetPlaceDTO addDropPlace(Long bucketId, Long dropId,
+			CreatePlaceDTO createDTO, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-		
+
 		String hashInput = createDTO.getName();
 		hashInput += Float.toString(createDTO.getLongitude());
 		hashInput += Float.toString(createDTO.getLatitude());
-		 
-		 String hash = HashUtil.md5(hashInput);
 
-		 // Generate a hash for the place name
-		 Place place = placeDao.findByHash(hash);
-		 if (place == null) {
-			 place = new Place();
-			 place.setPlaceName(createDTO.getName());
-			 place.setPlaceNameCanonical(createDTO.getName().toLowerCase());
-			 place.setHash(hash);
-			 place.setLatitude(createDTO.getLatitude());
-			 place.setLongitude(createDTO.getLongitude());
+		String hash = HashUtil.md5(hashInput);
 
-			 placeDao.create(place);
-		 } else {
-			 if (bucketDropDao.findPlace(bucketDrop, place) != null) {
-				 throw new BadRequestException(String.format("Drop %d already has the place %s with coordinates [%f, %f]",
-						 dropId, place.getPlaceName(), place.getLatitude(), place.getLongitude()));
-			 }
-		 }
+		// Generate a hash for the place name
+		Place place = placeDao.findByHash(hash);
+		if (place == null) {
+			place = new Place();
+			place.setPlaceName(createDTO.getName());
+			place.setPlaceNameCanonical(createDTO.getName().toLowerCase());
+			place.setHash(hash);
+			place.setLatitude(createDTO.getLatitude());
+			place.setLongitude(createDTO.getLongitude());
 
-		 bucketDropDao.addPlace(bucketDrop, place);
-		 return mapper.map(place, GetPlaceDTO.class);
+			placeDao.create(place);
+		} else {
+			if (bucketDropDao.findPlace(bucketDrop, place) != null) {
+				throw new BadRequestException(
+						String.format(
+								"Drop %d already has the place %s with coordinates [%f, %f]",
+								dropId, place.getPlaceName(),
+								place.getLatitude(), place.getLongitude()));
+			}
+		}
+
+		bucketDropDao.addPlace(bucketDrop, place);
+		return mapper.map(place, GetPlaceDTO.class);
 	}
 
 	/**
@@ -950,8 +1007,8 @@ public class BucketService {
 	 * from the {@link BucketDrop} specified in <code>dropId</code>
 	 * 
 	 * The request {@link BucketDrop} must be a member of the {@link Bucket}
-	 * with the ID specified in <code>bucketId</code> else a {@link NotFoundException}
-	 * is thrown
+	 * with the ID specified in <code>bucketId</code> else a
+	 * {@link NotFoundException} is thrown
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -959,43 +1016,31 @@ public class BucketService {
 	 * @param authUser
 	 */
 	@Transactional
-	public void deleteDropPlace(Long bucketId, Long dropId, Long placeId, String authUser) {
+	public void deleteDropPlace(Long bucketId, Long dropId, Long placeId,
+			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
 
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		Place place = placeDao.findById(placeId);
 
 		if (place == null) {
-			throw new NotFoundException(String.format("Place %d does not exist", placeId));
+			throw new NotFoundException(String.format(
+					"Place %d does not exist", placeId));
 		}
 
 		if (!bucketDropDao.deletePlace(bucketDrop, place)) {
-			throw new NotFoundException(String.format("Drop %d does not have place %d", dropId, placeId));
+			throw new NotFoundException(String.format(
+					"Drop %d does not have place %d", dropId, placeId));
 		}
 	}
 
 	/**
-	 * Helper method for verifying whether the user submitting the request
-	 * has authorization to add/remove metadata to/from the {@link Bucket}
-	 * specified in <code>bucketId</code>
-	 * 
-	 * @param bucket
-	 * @param authUser
-	 */
-	private void checkPermissions(Bucket bucket, String authUser){
-		Account account = accountDao.findByUsername(authUser);
-
-		if (!(bucket.getAccount().equals(account) || 
-				bucket.getCollaborators().contains(account))) {
-			throw new ForbiddenException("Permission denied");
-		}
-	}
-
-	/**
-	 * Helper method to retrieve a {@link BucketDrop} record from
-	 * the database and verify that the retrieved entity belongs
-	 * to the {@link Bucket} specified in <code>bucket</code>
+	 * Helper method to retrieve a {@link BucketDrop} record from the database
+	 * and verify that the retrieved entity belongs to the {@link Bucket}
+	 * specified in <code>bucket</code>
 	 * 
 	 * @param dropId
 	 * @param bucket
@@ -1004,20 +1049,42 @@ public class BucketService {
 	private BucketDrop getBucketDrop(Long dropId, Bucket bucket) {
 		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
 
-		if (bucketDrop == null ||
-				(bucketDrop != null && !bucketDrop.getBucket().equals(bucket))) {
-			throw new NotFoundException(String.format("Drop %d does is not in bucket %d",
-					dropId,  bucket.getId()));
+		if (bucketDrop == null
+				|| (bucketDrop != null && !bucketDrop.getBucket()
+						.equals(bucket))) {
+			throw new NotFoundException(String.format(
+					"Drop %d does is not in bucket %d", dropId, bucket.getId()));
 		}
-		
+
 		return bucketDrop;
 	}
 
 	/**
-	 * Adds a comment to the {@link BucketDrop} entity specified 
-	 * in <code>dropId</code>. This entity must be associated with
-	 * the {@link Bucket} entity specified in <code>bucketId</code>
-	 * otherwise a {@link NotFoundException} will be thrown.
+	 * Filter the given list of buckets returning only those that are visible to
+	 * the given queryingAccount.
+	 * 
+	 * @param buckets
+	 * @param queryingAccount
+	 * @return
+	 */
+	public List<Bucket> filterVisible(List<Bucket> buckets,
+			Account queryingAccount) {
+		List<Bucket> visible = new ArrayList<Bucket>();
+
+		for (Bucket bucket : buckets) {
+			if (isOwner(bucket, queryingAccount) || bucket.isPublished()) {
+				visible.add(bucket);
+			}
+		}
+
+		return visible;
+	}
+
+	/**
+	 * Adds a comment to the {@link BucketDrop} entity specified in
+	 * <code>dropId</code>. This entity must be associated with the
+	 * {@link Bucket} entity specified in <code>bucketId</code> otherwise a
+	 * {@link NotFoundException} will be thrown.
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -1029,15 +1096,15 @@ public class BucketService {
 	public GetCommentDTO addDropComment(Long bucketId, Long dropId,
 			CreateCommentDTO createDTO, String authUser) {
 
-		if (createDTO.getCommentText() == null || 
-				createDTO.getCommentText().trim().length() == 0) {
+		if (createDTO.getCommentText() == null
+				|| createDTO.getCommentText().trim().length() == 0) {
 			throw new BadRequestException("The no comment text specified");
 		}
 
 		Bucket bucket = getBucketById(bucketId);
-		if (!bucket.isPublished()) {
-			checkPermissions(bucket, authUser);
-		}
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
 
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		Account account = accountDao.findByUsername(authUser);
@@ -1048,8 +1115,8 @@ public class BucketService {
 	}
 
 	/**
-	 * Get and return the list of {@link BucketDropComment} entities
-	 * for the {@link BucketDrop} with the ID specified in <code>dropId</code>
+	 * Get and return the list of {@link BucketDropComment} entities for the
+	 * {@link BucketDrop} with the ID specified in <code>dropId</code>
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -1057,25 +1124,28 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional
-	public List<GetCommentDTO> getDropComments(Long bucketId, Long dropId, String authUser) {
+	public List<GetCommentDTO> getDropComments(Long bucketId, Long dropId,
+			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		if (!bucket.isPublished()) {
-			checkPermissions(bucket, authUser);
-		}
-		
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 		List<GetCommentDTO> commentsList = new ArrayList<GetCommentDTO>();
-		for (BucketDropComment dropComment: bucketDrop.getComments()) {
-			GetCommentDTO commentDTO = mapper.map(dropComment, GetCommentDTO.class);
+		for (BucketDropComment dropComment : bucketDrop.getComments()) {
+			GetCommentDTO commentDTO = mapper.map(dropComment,
+					GetCommentDTO.class);
 			commentsList.add(commentDTO);
 		}
-		
+
 		return commentsList;
 	}
 
 	/**
-	 * Deletes the {@link BucketDropComment} entity specified in <code>commentId</code>
-	 * from the {@link BucketDrop} entity specified in <code>dropId</code>
+	 * Deletes the {@link BucketDropComment} entity specified in
+	 * <code>commentId</code> from the {@link BucketDrop} entity specified in
+	 * <code>dropId</code>
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -1086,22 +1156,26 @@ public class BucketService {
 	public void deleteDropComment(Long bucketId, Long dropId, Long commentId,
 			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
-		
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
 		getBucketDrop(dropId, bucket);
-		
+
 		if (!bucketDropDao.deleteComment(commentId)) {
-			throw new NotFoundException(String.format("Comment %d does not exist", commentId));
+			throw new NotFoundException(String.format(
+					"Comment %d does not exist", commentId));
 		}
 	}
 
 	/**
 	 * Adds a comment to comment the {@link Bucket} with the ID specified in
-	 * <code>bucketId</code>. If the {@link Bucket} is private i.e. <code>published</code>
-	 * is <code>FALSE</code>, a permissions check is performed.
+	 * <code>bucketId</code>. If the {@link Bucket} is private i.e.
+	 * <code>published</code> is <code>FALSE</code>, a permissions check is
+	 * performed.
 	 * 
-	 * The created {@link BucketComment} entity is transformed to DTO for purposes
-	 * of consumption by {@link BucketsController}
+	 * The created {@link BucketComment} entity is transformed to DTO for
+	 * purposes of consumption by {@link BucketsController}
 	 * 
 	 * @param bucketId
 	 * @param createDTO
@@ -1109,18 +1183,21 @@ public class BucketService {
 	 * @return
 	 */
 	@Transactional
-	public GetCommentDTO addBucketComment(Long bucketId, CreateCommentDTO createDTO,
-			String authUser) {
+	public GetCommentDTO addBucketComment(Long bucketId,
+			CreateCommentDTO createDTO, String authUser) {
 		if (createDTO.getCommentText() == null) {
-			throw new BadRequestException("The comment text has not been specified");
+			throw new BadRequestException(
+					"The comment text has not been specified");
 		}
 		Bucket bucket = getBucketById(bucketId);
-		if (!bucket.isPublished()) {
-			checkPermissions(bucket, authUser);
-		}
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
 		Account account = accountDao.findByUsername(authUser);
-		BucketComment bucketComment = bucketDao.addComment(bucket, createDTO.getCommentText(), account);
-		
+		BucketComment bucketComment = bucketDao.addComment(bucket,
+				createDTO.getCommentText(), account);
+
 		return mapper.map(bucketComment, GetCommentDTO.class);
 	}
 
@@ -1135,40 +1212,44 @@ public class BucketService {
 	@Transactional
 	public List<GetCommentDTO> getBucketComments(Long bucketId, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		if (!bucket.isPublished()) {
-			checkPermissions(bucket, authUser);
-		}
-		
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
 		List<GetCommentDTO> dtoComments = new ArrayList<GetCommentDTO>();
-		for(BucketComment bucketComment: bucket.getComments()) {
+		for (BucketComment bucketComment : bucket.getComments()) {
 			dtoComments.add(mapper.map(bucketComment, GetCommentDTO.class));
 		}
-		
+
 		return dtoComments;
 	}
 
 	/**
 	 * Deletes the {@link BucketComment} entity with the ID specified in
-	 * <code>commentId</code> from the {@link Bucket} with the ID specified
-	 * in <code>bucketId</code>. If the {@link BucketComment} does not belong
-	 * to the specified bucket, a {@link NotFoundException} is thrown
+	 * <code>commentId</code> from the {@link Bucket} with the ID specified in
+	 * <code>bucketId</code>. If the {@link BucketComment} does not belong to
+	 * the specified bucket, a {@link NotFoundException} is thrown
 	 * 
 	 * @param bucketId
 	 * @param commentId
 	 * @param authUser
 	 */
 	@Transactional
-	public void deleteBucketComment(Long bucketId, Long commentId, String authUser) {
+	public void deleteBucketComment(Long bucketId, Long commentId,
+			String authUser) {
 		Bucket bucket = getBucketById(bucketId);
-		checkPermissions(bucket, authUser);
-		
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
 		BucketComment bucketComment = bucketCommentDao.findById(commentId);
-		
+
 		if (bucketComment == null || !bucketComment.getBucket().equals(bucket)) {
-			throw new NotFoundException(String.format("Comment %d does not exist", commentId));
+			throw new NotFoundException(String.format(
+					"Comment %d does not exist", commentId));
 		}
-		
+
 		bucketCommentDao.delete(bucketComment);
 	}
-	
+
 }
