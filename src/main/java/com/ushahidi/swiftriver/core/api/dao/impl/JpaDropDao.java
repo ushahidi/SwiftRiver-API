@@ -300,14 +300,14 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, `droplet_date_pub`, `channel`) VALUES (?,?,?,?,?)";
 
 		final List<long[]> dropRiverList = new ArrayList<long[]>();
-		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
-
 		for (Long dropletId : dropRiversMap.keySet()) {
 			for (Long riverId : dropRiversMap.get(dropletId)) {
 				long[] riverDrop = { dropletId, riverId };
 				dropRiverList.add(riverDrop);
 			}
 		}
+		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
+		
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
 					throws SQLException {

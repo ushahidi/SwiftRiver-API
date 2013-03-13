@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
+import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Media;
@@ -22,6 +23,9 @@ public class JpaDropDaoTest extends AbstractDaoTest {
 
 	@Autowired
 	JpaDropDao dropDao;
+	
+	@Autowired
+	SequenceDao sequenceDao;
 
 	@Test
 	public void createDrops() {
@@ -94,5 +98,8 @@ public class JpaDropDaoTest extends AbstractDaoTest {
 		assertEquals(1L, ((BigInteger) results.get("river_id")).longValue());
 		assertEquals(drop.getDatePublished().getTime(), ((Date)results.get("droplet_date_pub")).getTime());
 		assertEquals("test channel", results.get("channel"));
+		
+		// Ensure rivers_droplets sequence was updated correctly
+		assertEquals(6, sequenceDao.findById("rivers_droplets").getId());
 	}
 }
