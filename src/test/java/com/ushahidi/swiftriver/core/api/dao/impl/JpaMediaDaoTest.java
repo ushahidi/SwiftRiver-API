@@ -55,4 +55,30 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 		assertEquals(3, dropletMedia.size());
 		assertTrue(dropletMedia.contains(newMedia.getId()));
 	}
+	
+	/**
+	 * Drop with null media in list should not cause exception
+	 */
+	@Test
+	public void getMediaWithDropInListMissingMedia() {
+		List<Media> media = new ArrayList<Media>();
+		Media existingMedia = new Media();
+		existingMedia
+				.setUrl("http://gigaom2.files.wordpress.com/2012/11/percolate.jpg ");
+		media.add(existingMedia);
+		Media newMedia = new Media();
+		newMedia.setUrl("http://example.com/new ");
+		media.add(newMedia);
+
+		List<Drop> drops = new ArrayList<Drop>();
+		Drop dropWithoutMedia = new Drop();
+		dropWithoutMedia.setId(1);
+		drops.add(dropWithoutMedia);
+		Drop drop = new Drop();
+		drop.setId(5);
+		drop.setMedia(media);
+		drops.add(drop);
+
+		mediaDao.getMedia(drops);
+	}
 }

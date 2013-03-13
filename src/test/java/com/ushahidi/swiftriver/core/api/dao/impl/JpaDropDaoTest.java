@@ -87,9 +87,10 @@ public class JpaDropDaoTest extends AbstractDaoTest {
 		assertNotNull(place.getId());
 		assertNotNull(newMedia.getId());
 
-		sql = "SELECT `river_id`, `droplet_date_pub`, `channel` FROM `rivers_droplets` WHERE `droplet_id` = ?";
+		sql = "SELECT `id`, `river_id`, `droplet_date_pub`, `channel` FROM `rivers_droplets` WHERE `droplet_id` = ?";
 
 		results = this.jdbcTemplate.queryForMap(sql, drop.getId());
+		assertEquals(6L, ((BigInteger) results.get("id")).longValue());
 		assertEquals(1L, ((BigInteger) results.get("river_id")).longValue());
 		assertEquals(drop.getDatePublished().getTime(), ((Date)results.get("droplet_date_pub")).getTime());
 		assertEquals("test channel", results.get("channel"));

@@ -84,4 +84,46 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 		assertEquals(3, dropletLinks.size());
 		assertTrue(dropletLinks.contains(newLink.getId()));
 	}
+	
+	/**
+	 * Drop with null links in list should not cause exception
+	 */
+	@Test
+	public void getLinksWithDropInListMissingLinks() {
+		List<Link> links = new ArrayList<Link>();
+		Link existingLink = new Link();
+		existingLink.setUrl("http://www.bbc.co.uk/sport/0/football/20319573");
+		links.add(existingLink);
+		Link newLink = new Link();
+		newLink.setUrl("http://example.com/new ");
+		links.add(newLink);
+
+		List<Drop> drops = new ArrayList<Drop>();
+		Drop dropWithoutLinks = new Drop();
+		dropWithoutLinks.setId(5);
+		drops.add(dropWithoutLinks);
+		Drop drop = new Drop();
+		drop.setId(5);
+		drop.setLinks(links);
+		drops.add(drop);
+
+		linkDao.getLinks(drops);
+
+		assertEquals(10, existingLink.getId());
+
+		String sql = "SELECT `hash`, `url` " + "FROM `links` WHERE `id` = ?";
+
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
+				newLink.getId());
+
+		assertEquals("44b764d6f4dab845f031ba9e52f61d95", results.get("hash"));
+		assertEquals("http://example.com/new", results.get("url"));
+
+		sql = "SELECT `link_id` FROM `droplets_links` WHERE `droplet_id` = 5";
+
+		List<Long> dropletLinks = this.jdbcTemplate
+				.queryForList(sql, Long.class);
+		assertEquals(3, dropletLinks.size());
+		assertTrue(dropletLinks.contains(newLink.getId()));
+	}
 }

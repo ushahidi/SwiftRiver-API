@@ -95,4 +95,31 @@ public class JpaTagDaoTest extends AbstractDaoTest {
 		assertEquals(3, dropletTags.size());
 		assertTrue(dropletTags.contains(newTag.getId()));
 	}
+	
+	/**
+	 * A drop with null tags should not cause any exception
+	 */
+	@Test
+	public void getTagsWithDropInListMissingTags() {
+		List<Tag> tags = new ArrayList<Tag>();
+		Tag existingTag = new Tag();
+		existingTag.setTag("NHS");
+		existingTag.setType("organization");
+		tags.add(existingTag);
+		Tag newTag = new Tag();
+		newTag.setTag(" Test tag ");
+		newTag.setType(" Just a test ");
+		tags.add(newTag);
+		
+		List<Drop> drops = new ArrayList<Drop>();
+		Drop dropWithoutTags = new Drop();
+		dropWithoutTags.setId(1);
+		drops.add(dropWithoutTags);
+		Drop drop = new Drop();
+		drop.setId(5);
+		drop.setTags(tags);
+		drops.add(drop);
+		
+		tagDao.getTags(drops);
+	}
 }

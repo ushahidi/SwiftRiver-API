@@ -111,13 +111,15 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		Map<String, List<int[]>> newMediaIndex = new HashMap<String, List<int[]>>();
 
 		// Generate hashes for each new drops i.e. those without an id
-		int i = 0;
-		for (Drop drop : drops) {
+		for (int i = 0; i < drops.size(); i++) {
+			Drop drop = drops.get(i);
+		
 			if (drop.getMedia() == null)
 				continue;
 
-			int j = 0;
-			for (Media media : drop.getMedia()) {
+			for (int j = 0; j < drop.getMedia().size(); j++) {
+				Media media = drop.getMedia().get(j);
+				
 				// Cleanup the media
 				media.setUrl(media.getUrl().trim());
 
@@ -134,11 +136,9 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 				}
 
 				// Location of the media in the drops array is an i,j tuple
-				int[] loc = { i, j++ };
+				int[] loc = { i, j };
 				indexes.add(loc);
 			}
-
-			i += 1;
 		}
 
 		return newMediaIndex;
@@ -234,6 +234,10 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		// List of media in a drop
 		Map<Long, Set<Long>> dropletMediaMap = new HashMap<Long, Set<Long>>();
 		for (Drop drop : drops) {
+			
+			if (drop.getMedia() == null)
+				continue;
+			
 			dropIds.add(drop.getId());
 
 			for (Media media : drop.getMedia()) {

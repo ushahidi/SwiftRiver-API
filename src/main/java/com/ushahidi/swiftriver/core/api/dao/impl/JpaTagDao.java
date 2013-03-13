@@ -126,13 +126,16 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		Map<String, List<int[]>> newTagIndex = new HashMap<String, List<int[]>>();
 
 		// Generate hashes for each new drops i.e. those without an id
-		int i = 0;
-		for (Drop drop : drops) {
+		for (int i = 0; i < drops.size(); i++) {
+			Drop drop = drops.get(i);
+			
 			if (drop.getTags() == null)
 				continue;
 
-			int j = 0;
-			for (Tag tag : drop.getTags()) {
+			List<Tag> tags = drop.getTags();
+			for (int j = 0; j < tags.size(); j++) {
+				Tag tag = tags.get(j);
+			
 				// Cleanup the tag
 				tag = formatTag(tag);
 
@@ -149,11 +152,9 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 				}
 
 				// Location of the tag in the drops array is an i,j tuple
-				int[] loc = { i, j++ };
+				int[] loc = { i, j };
 				indexes.add(loc);
 			}
-
-			i += 1;
 		}
 
 		return newTagIndex;
@@ -251,6 +252,10 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		// List of tags in a drop
 		Map<Long, Set<Long>> dropletTagsMap = new HashMap<Long, Set<Long>>(); 
 		for (Drop drop : drops) {
+			
+			if (drop.getTags() == null)
+				continue;
+			
 			dropIds.add(drop.getId());
 			
 			for (Tag tag : drop.getTags()) {

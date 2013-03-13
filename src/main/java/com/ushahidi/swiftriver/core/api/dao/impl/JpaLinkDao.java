@@ -105,13 +105,16 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		Map<String, List<int[]>> newLinkIndex = new HashMap<String, List<int[]>>();
 
 		// Generate hashes for each new drops i.e. those without an id
-		int i = 0;
-		for (Drop drop : drops) {
-			if (drop.getLinks() == null)
+		for (int i = 0; i < drops.size(); i++) {
+			Drop drop = drops.get(i);
+		
+			List<Link> links = drop.getLinks();
+			if (links == null)
 				continue;
 
-			int j = 0;
-			for (Link link : drop.getLinks()) {
+			for (int j = 0; j < links.size(); j++) {
+				Link link = links.get(j);
+			
 				// Cleanup the link
 				link.setUrl(link.getUrl().trim());
 
@@ -128,11 +131,9 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 				}
 
 				// Location of the link in the drops array is an i,j tuple
-				int[] loc = { i, j++ };
+				int[] loc = { i, j };
 				indexes.add(loc);
 			}
-
-			i += 1;
 		}
 
 		return newLinkIndex;
@@ -228,6 +229,10 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		// List of links in a drop
 		Map<Long, Set<Long>> dropletLinksMap = new HashMap<Long, Set<Long>>();
 		for (Drop drop : drops) {
+			
+			if (drop.getLinks() == null)
+				continue;
+			
 			dropIds.add(drop.getId());
 
 			for (Link link : drop.getLinks()) {

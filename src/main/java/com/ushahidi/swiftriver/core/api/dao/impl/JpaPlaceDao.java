@@ -134,13 +134,17 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 		Map<String, List<int[]>> newPlaceIndex = new HashMap<String, List<int[]>>();
 
 		// Generate hashes for each new drops i.e. those without an id
-		int i = 0;
-		for (Drop drop : drops) {
-			if (drop.getPlaces() == null)
+		for (int i = 0; i < drops.size(); i++) {
+			Drop drop = drops.get(i);
+		
+			List<Place> places = drop.getPlaces();
+			
+			if (places == null)
 				continue;
 
-			int j = 0;
-			for (Place place : drop.getPlaces()) {
+			for (int j = 0; j < places.size(); j++) {
+				Place place = places.get(j);
+			
 				// Cleanup the place
 				place = formatPlace(place);
 
@@ -157,11 +161,9 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 				}
 
 				// Location of the place in the drops array is an i,j tuple
-				int[] loc = { i, j++ };
+				int[] loc = { i, j };
 				indexes.add(loc);
 			}
-
-			i += 1;
 		}
 
 		return newPlaceIndex;
@@ -261,6 +263,10 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 		// List of places in a drop
 		Map<Long, Set<Long>> dropletPlacesMap = new HashMap<Long, Set<Long>>();
 		for (Drop drop : drops) {
+			
+			if (drop.getPlaces() == null)
+				continue;
+			
 			dropIds.add(drop.getId());
 
 			for (Place place : drop.getPlaces()) {

@@ -97,4 +97,33 @@ public class JpaPlaceDaoTest extends AbstractDaoTest {
 		assertEquals(3, dropletPlaces.size());
 		assertTrue(dropletPlaces.contains(newPlace.getId()));
 	}
+	
+	/**
+	 * A drop with a null places entry should not cause an exception
+	 */
+	@Test
+	public void getPlacesWithDropInListMissingPlaces() {
+		List<Place> places = new ArrayList<Place>();
+		Place existingPlace = new Place();
+		existingPlace.setPlaceName("Freetown ");
+		existingPlace.setLongitude(-13.2299f);
+		existingPlace.setLatitude(8.484f);
+		places.add(existingPlace);
+		Place newPlace = new Place();
+		newPlace.setPlaceName(" Neverland ");
+		newPlace.setLongitude(-35.2033f);
+		newPlace.setLatitude(31.9216f);
+		places.add(newPlace);
+
+		List<Drop> drops = new ArrayList<Drop>();
+		Drop dropWithoutPlaces = new Drop();
+		dropWithoutPlaces.setId(1);
+		drops.add(dropWithoutPlaces);
+		Drop drop = new Drop();
+		drop.setId(5);
+		drop.setPlaces(places);
+		drops.add(drop);
+
+		placeDao.getPlaces(drops);
+	}
 }
