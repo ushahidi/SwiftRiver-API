@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.persistence.Query;
@@ -306,25 +307,70 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				dropRiverList.add(riverDrop);
 			}
 		}
-		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
 		
+		if (dropRiverList.size() == 0)
+			return;
+
+		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
+		// A map to hold the new max_drop_id and drop_count per river
+		final Map<Long, long[]> riverDropsMap = new HashMap<Long, long[]>();
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
 					throws SQLException {
 				long[] riverDrop = dropRiverList.get(i);
+				long id = startKey + i;
 				Drop drop = drops.get(dropIndex.get(riverDrop[0]));
-				ps.setLong(1, startKey + i);
+				ps.setLong(1, id);
 				ps.setLong(2, riverDrop[0]);
 				ps.setLong(3, riverDrop[1]);
 				ps.setTimestamp(4, new java.sql.Timestamp(drop
 						.getDatePublished().getTime()));
 				ps.setString(5, drop.getChannel());
+
+				// Get updated max_drop_id and drop_count for the rivers table
+				long[] update = riverDropsMap.get(riverDrop[1]);
+				if (update == null) {
+					long[] u = { id, 1 };
+					riverDropsMap.put(riverDrop[1], u);
+				} else {
+					update[0] = Math.max(update[0], id);
+					update[1] = update[1] + 1;
+				}
 			}
 
 			public int getBatchSize() {
 				return dropRiverList.size();
 			}
 		});
+
+		// Create a temp table sql for updating the rivers table
+		String riverUpdateSql = "";
+		for (Entry<Long, long[]> entry : riverDropsMap.entrySet()) {
+			long[] update = entry.getValue();
+
+			if (riverUpdateSql.length() > 0) {
+				riverUpdateSql += " UNION ALL ";
+			}
+
+			riverUpdateSql += String.format("SELECT %d id, %d max_id, %d cnt",
+					entry.getKey(), update[0], update[1]);
+		}
+
+		// Update max_drop_id using the temp table
+		sql = "UPDATE `rivers` " + "JOIN (" + riverUpdateSql + ") a "
+				+ "USING (`id`) "
+				+ "SET `rivers`.`max_drop_id` = `a`.`max_id` "
+				+ "WHERE `rivers`.`max_drop_id` < `a`.`max_id`";
+		this.jdbcTemplate.update(sql);
+
+		// Update drop_count using the temp table
+		sql = "UPDATE `rivers` "
+				+ "JOIN ("
+				+ riverUpdateSql
+				+ ") a "
+				+ "USING (`id`) "
+				+ "SET `rivers`.`drop_count` = `rivers`.`drop_count` + `a`.`cnt`";
+		this.jdbcTemplate.update(sql);
 	}
 
 	/**

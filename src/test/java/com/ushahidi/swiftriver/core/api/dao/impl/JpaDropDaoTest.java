@@ -101,5 +101,10 @@ public class JpaDropDaoTest extends AbstractDaoTest {
 		
 		// Ensure rivers_droplets sequence was updated correctly
 		assertEquals(6, sequenceDao.findById("rivers_droplets").getId());
-	}
+		
+		sql = "SELECT `max_drop_id`, `drop_count` FROM 	`rivers` WHERE `id` = ?";
+		results = this.jdbcTemplate.queryForMap(sql, 1L);
+		assertEquals(6L, results.get("max_drop_id"));
+		assertEquals(7, results.get("drop_count"));
+	}	
 }
