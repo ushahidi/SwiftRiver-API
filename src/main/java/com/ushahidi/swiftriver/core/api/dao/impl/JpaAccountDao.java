@@ -16,8 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,8 +31,6 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
-import com.ushahidi.swiftriver.core.model.Bucket;
-import com.ushahidi.swiftriver.core.model.River;
 
 @Repository
 public class JpaAccountDao extends AbstractJpaDao<Account> implements

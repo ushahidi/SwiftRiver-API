@@ -1,8 +1,7 @@
 package com.ushahidi.swiftriver.core.util;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.commons.codec.DecoderException;
 import org.junit.Test;
 
 public class TextUtilTest {

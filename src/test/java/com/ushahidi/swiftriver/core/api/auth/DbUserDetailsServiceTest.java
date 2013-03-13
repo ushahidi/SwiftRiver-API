@@ -1,19 +1,19 @@
 package com.ushahidi.swiftriver.core.api.auth;
 
 
-import java.util.ArrayList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
 
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.model.Role;
@@ -32,6 +32,7 @@ public class DbUserDetailsServiceTest {
 		dbUserDetailsService.setUserDao(mockUserDao);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void loadUserByUsername() {
 		User user = new User();
