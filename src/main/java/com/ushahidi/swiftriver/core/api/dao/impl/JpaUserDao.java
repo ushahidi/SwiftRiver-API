@@ -14,6 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.Date;
+
 import javax.persistence.NoResultException;
 
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
@@ -36,6 +38,15 @@ public class JpaUserDao extends AbstractJpaDao<User> implements UserDao {
 			// Do nothing
 		}
 		return user;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.UserDao#updateLastLogin(com.ushahidi.swiftriver.core.model.User)
+	 */
+	public void updateLastLogin(User user) {
+		user.setLastLoginDate(new Date());
+		this.update(user);
 	}
 
 }

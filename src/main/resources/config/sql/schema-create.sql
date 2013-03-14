@@ -404,7 +404,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `logins` int(10) unsigned NOT NULL DEFAULT '0',
   `active` tinyint(1) DEFAULT '1',
   `invites` smallint(6) NOT NULL DEFAULT '10',
-  `last_login` int(10) unsigned DEFAULT NULL,
+  `last_login` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created_date` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `expired` tinyint(1) DEFAULT '0',
   `locked` tinyint(1) DEFAULT '0',

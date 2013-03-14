@@ -27,4 +27,11 @@ public interface UserDao extends GenericDao<User> {
 	 * @return
 	 */
 	public User findByUsername(String username);
+
+	/**
+	 * Updates the date when the user specified in <code>user</code> last logged in
+	 * 
+	 * @param dbUser
+	 */
+	public void updateLastLogin(User user);
 }
