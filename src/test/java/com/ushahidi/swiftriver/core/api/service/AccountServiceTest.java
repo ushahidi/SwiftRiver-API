@@ -272,6 +272,8 @@ public class AccountServiceTest {
 		Account account = new Account();
 		account.setActive(false);
 		account.setOwner(user);
+		account.setFollowers(new ArrayList<AccountFollower>());
+		account.setFollowing(new ArrayList<AccountFollower>());
 		UserToken userToken = new UserToken();
 		userToken.setUser(account.getOwner());
 		userToken.setExpires(new Date((new Date()).getTime() + 86400000L));
@@ -291,8 +293,9 @@ public class AccountServiceTest {
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
 		when(mockUserTokenDao.findByToken(anyString())).thenReturn(userToken);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 
-		accountService.modifyAccount(1L, modifyAccount);
+		accountService.modifyAccount(1L, modifyAccount, "admin");
 
 		ArgumentCaptor<Account> accountArgument = ArgumentCaptor
 				.forClass(Account.class);
@@ -307,8 +310,6 @@ public class AccountServiceTest {
 		assertFalse(modifiedAccount.getOwner().getExpired());
 		assertFalse(modifiedAccount.getOwner().getLocked());
 		assertEquals("email@example.com", modifiedAccount.getOwner().getEmail());
-		assertEquals("email@example.com", modifiedAccount.getOwner()
-				.getUsername());
 		assertEquals("owner's new name", modifiedAccount.getOwner().getName());
 		assertTrue(passwordEncoder.matches("new password", modifiedAccount
 				.getOwner().getPassword()));

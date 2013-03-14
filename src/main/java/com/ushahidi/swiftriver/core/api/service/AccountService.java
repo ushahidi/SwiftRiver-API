@@ -48,6 +48,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Client;
@@ -328,32 +329,46 @@ public class AccountService {
 	 * 
 	 * @param accountId
 	 * @param modifyAccountTO
+	 * @param authUser
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public GetAccountDTO modifyAccount(Long accountId,
-			ModifyAccountDTO modifyAccountTO) {
+	public GetAccountDTO modifyAccount(Long accountId, ModifyAccountDTO modifyAccountTO,
+			String authUser) {
 
-		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
 		Account account = accountDao.findById(accountId);
+		Account queryingAccount = accountDao.findByUsername(authUser);
 
 		if (account == null)
 			throw new NotFoundException("Account not found.");
 
+		// If the querying account is not the the same as the account being modified
+		// raise an error
+		if (!account.equals(queryingAccount)) {
+			throw new UnauthorizedExpection("You do not have sufficient privileges to modify this account");
+		}
+
+		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
+
+		// If another account already has the specified account path, raise an error
 		if (modifyAccountTO.getAccountPath() != null) {
-			if (accountDao.findByAccountPath(modifyAccountTO.getAccountPath()) != null) {
+			String accountPath = modifyAccountTO.getAccountPath();
+			Account otherAccount = accountDao.findByAccountPath(accountPath); 
+			if (otherAccount != null && !otherAccount.equals(account)) {
 				throw ErrorUtil.getBadRequestException("account_path",
 						"duplicate");
 			}
+			account.setAccountPath(accountPath);
 		}
-
-		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
-			String email = modifyAcOwner.getEmail();
-			if (accountDao.findByEmail(email) != null) {
-				throw ErrorUtil.getBadRequestException("owner.email",
-						"duplicate");
-			}
-			account.getOwner().setUsername(email);
+		
+		// Account privacy
+		if (modifyAccountTO.getAccountPrivate() != null) {
+			account.setAccountPrivate(modifyAccountTO.getAccountPrivate());
+		}
+		
+		// Remaining river quota
+		if (modifyAccountTO.getRiverQuotaRemaining() != null) {
+			account.setRiverQuotaRemaining(modifyAccountTO.getRiverQuotaRemaining());
 		}
 
 		// If modifying password without a token, raise an error
@@ -383,20 +398,37 @@ public class AccountService {
 				user.setRoles(new HashSet<Role>());
 				user.getRoles().add(roleDao.findByName("user"));
 			}
+		}
 
+		//> Account Owner properties
+		if (modifyAcOwner != null) {
+			// Modify name is different
+			if (modifyAcOwner.getName() != null) {
+				account.getOwner().setName(modifyAcOwner.getName());
+			}
+			
+			// Modify email is different
+			if (modifyAcOwner.getEmail() != null) {
+				String email = modifyAcOwner.getEmail();
+				Account otherAccount = accountDao.findByEmail(email);
+				if (otherAccount != null && !otherAccount.equals(account)) {
+					throw ErrorUtil.getBadRequestException("owner.email",
+							"duplicate");
+				}
+				account.getOwner().setEmail(email);
+			}
+			
 			// Modify password if different
-			if (modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
-
+			if (modifyAcOwner.getPassword() != null) {
 				String password = passwordEncoder.encode(modifyAccountTO
 						.getOwner().getPassword());
-				modifyAcOwner.setPassword(password);
+				account.getOwner().setPassword(password);
 			}
 		}
 
-		mapper.map(modifyAccountTO, account);
+//		mapper.map(modifyAccountTO, account);
 		accountDao.update(account);
-
-		return mapper.map(account, GetAccountDTO.class);
+		return mapGetAccountDTO(account, account);
 	}
 
 	/**
@@ -535,6 +567,7 @@ public class AccountService {
 		return dto;
 	}
 
+	@Transactional(readOnly = false)
 	public void deleteApp(Long accountId, Long clientId, String authUser) {
 		Account account = accountDao.findById(accountId);
 
@@ -560,6 +593,7 @@ public class AccountService {
 	 * @param authUser
 	 * @return
 	 */
+	@Transactional(readOnly = false)
 	public GetClientDTO modifyClient(Long accountId, Long dbClientId,
 			ModifyClientDTO modifyClientDTO, String authUser) {
 
