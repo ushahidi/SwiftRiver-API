@@ -105,7 +105,7 @@ public class RiverService {
 
 	@Autowired
 	private PlaceDao placeDao;
-	
+
 	@Autowired
 	private AmqpTemplate amqpTemplate;
 
@@ -268,12 +268,13 @@ public class RiverService {
 		Channel channel = mapper.map(createChannelTO, Channel.class);
 		channel.setRiver(river);
 		channelDao.create(channel);
-		
+
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
 		notification.setChannel(channel.getChannel());
 		notification.setRiverId(riverId);
 		notification.setParameters(channel.getParameters());
-		amqpTemplate.convertAndSend("web.channel.rss.add", notification);
+		amqpTemplate.convertAndSend("web.channel." + notification.getChannel()
+				+ ".add", notification);
 
 		return mapper.map(channel, GetChannelDTO.class);
 	}
@@ -286,36 +287,41 @@ public class RiverService {
 	public void deleteChannel(Long riverId, Long channelId, String authUser) {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
 		channelDao.delete(channel);
-		
+
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
 		notification.setChannel(channel.getChannel());
 		notification.setRiverId(riverId);
 		notification.setParameters(channel.getParameters());
-		amqpTemplate.convertAndSend("web.channel.rss.delete", notification);
+		amqpTemplate.convertAndSend("web.channel." + notification.getChannel()
+				+ ".delete", notification);
 	}
 
 	@Transactional(readOnly = false)
 	public GetChannelDTO modifyChannel(Long riverId, Long channelId,
 			ModifyChannelDTO modifyChannelTO, String authUser) {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
-		
+
 		// Get the channel before modification for a deletion notification
 		ChannelUpdateNotification beforeNotification = new ChannelUpdateNotification();
 		beforeNotification.setChannel(channel.getChannel());
 		beforeNotification.setRiverId(riverId);
 		beforeNotification.setParameters(channel.getParameters());
-		
+
 		mapper.map(modifyChannelTO, channel);
 		channelDao.update(channel);
-		
+
 		// Get the channel after modification for an add notification
 		ChannelUpdateNotification afterNotification = new ChannelUpdateNotification();
 		afterNotification.setChannel(channel.getChannel());
 		afterNotification.setRiverId(riverId);
 		afterNotification.setParameters(channel.getParameters());
-		
-		amqpTemplate.convertAndSend("web.channel.rss.delete", beforeNotification);
-		amqpTemplate.convertAndSend("web.channel.rss.add", afterNotification);
+
+		amqpTemplate.convertAndSend(
+				"web.channel." + beforeNotification.getChannel() + ".delete",
+				beforeNotification);
+		amqpTemplate.convertAndSend(
+				"web.channel." + afterNotification.getChannel() + ".add",
+				afterNotification);
 
 		return mapper.map(channel, GetChannelDTO.class);
 	}
@@ -360,7 +366,8 @@ public class RiverService {
 			String username) throws NotFoundException {
 
 		if (riverDao.findById(id) == null) {
-			throw new NotFoundException(String.format("River %d does not exist", id));
+			throw new NotFoundException(String.format(
+					"River %d does not exist", id));
 		}
 
 		Account queryingAccount = accountDao.findByUsername(username);
@@ -556,9 +563,9 @@ public class RiverService {
 	 * DTO for purposes of consumption by {@link RiversController}.
 	 * 
 	 * <code>accountId</code> can be null. When specified, the method verifies
-	 * that the {@link Account} associated with it is following the river.
-	 * If following, the return list contains only a single {@link FollowerDTO}
-	 * object else, a {@link NotFoundException} is thrown 
+	 * that the {@link Account} associated with it is following the river. If
+	 * following, the return list contains only a single {@link FollowerDTO}
+	 * object else, a {@link NotFoundException} is thrown
 	 * 
 	 * @param id
 	 * @param accountId
@@ -572,14 +579,15 @@ public class RiverService {
 		if (accountId != null) {
 			Account account = accountDao.findById(accountId);
 			if (account == null) {
-				throw new NotFoundException(String.format("Account %d does not exist", accountId));
+				throw new NotFoundException(String.format(
+						"Account %d does not exist", accountId));
 			}
-			
+
 			if (river.getFollowers().contains(account)) {
 				followerList.add(mapFollowerDTO(account));
 			} else {
-				throw new NotFoundException(String.format("Account %d does not follow river %d",
-						accountId, id));
+				throw new NotFoundException(String.format(
+						"Account %d does not follow river %d", accountId, id));
 			}
 		} else {
 			for (Account account : river.getFollowers()) {
@@ -591,8 +599,8 @@ public class RiverService {
 	}
 
 	/**
-	 * Helper method for transforming an {@link Account} entity
-	 * to a {@link FollowerDTO} object
+	 * Helper method for transforming an {@link Account} entity to a
+	 * {@link FollowerDTO} object
 	 * 
 	 * @param account
 	 * @return
@@ -602,7 +610,7 @@ public class RiverService {
 
 		accountDto.setName(account.getOwner().getName());
 		accountDto.setEmail(account.getOwner().getEmail());
-		
+
 		return accountDto;
 	}
 
@@ -641,7 +649,7 @@ public class RiverService {
 	}
 
 	public boolean isOwner(River river, String authUser) {
-		Account account = accountDao.findByUsername(authUser);		
+		Account account = accountDao.findByUsername(authUser);
 		return isOwner(river, account);
 	}
 
@@ -653,15 +661,17 @@ public class RiverService {
 	private River getRiver(Long id) {
 		River river = riverDao.findById(id);
 		if (river == null) {
-			throw new NotFoundException(String.format("River with id %d not found", id));
+			throw new NotFoundException(String.format(
+					"River with id %d not found", id));
 		}
-		
+
 		return river;
 	}
 
 	/**
-	 * Adds a {@link Tag} to the {@link RiverDrop} with the specified <code>dropId</code>
-	 * The drop must be in the {@link River} whose ID is specified in <code>id</code>
+	 * Adds a {@link Tag} to the {@link RiverDrop} with the specified
+	 * <code>dropId</code> The drop must be in the {@link River} whose ID is
+	 * specified in <code>id</code>
 	 * 
 	 * The created {@link Tag} entity is transformed to a DTO for purposes of
 	 * consumption by {@link RiversController}
@@ -673,17 +683,17 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public GetTagDTO addDropTag(Long riverId, Long dropId, CreateTagDTO createDTO,
-			String authUser) {
+	public GetTagDTO addDropTag(Long riverId, Long dropId,
+			CreateTagDTO createDTO, String authUser) {
 
 		River river = getRiver(riverId);
-		
-		if (! isOwner(river, authUser))
+
+		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
 		// Get the bucket drop
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
-		
+
 		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
 		if (tag == null) {
@@ -695,22 +705,23 @@ public class RiverService {
 		} else {
 			// Check if the tag exists in the bucket drop
 			if (riverDropDao.findTag(riverDrop, tag) != null) {
-				throw new BadRequestException(String.format("Tag %s of type %s has already been added to drop %d",
+				throw new BadRequestException(String.format(
+						"Tag %s of type %s has already been added to drop %d",
 						tag.getTag(), tag.getType(), dropId));
 			}
 		}
-		 
+
 		riverDropDao.addTag(riverDrop, tag);
 		return mapper.map(tag, GetTagDTO.class);
 	}
 
 	/**
-	 * Deletes the {@link Tag} with the id specified in <code>tagId</code>
-	 * from the {@link RiverDrop} specified in <code>dropId</code>
+	 * Deletes the {@link Tag} with the id specified in <code>tagId</code> from
+	 * the {@link RiverDrop} specified in <code>dropId</code>
 	 * 
-	 * The request {@link BucketDrop} must be a member of the {@link River}
-	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
-	 * is thrown
+	 * The request {@link BucketDrop} must be a member of the {@link River} with
+	 * the ID specified in <code>id</code> else a {@link NotFoundException} is
+	 * thrown
 	 * 
 	 * @param riverId
 	 * @param dropId
@@ -718,9 +729,10 @@ public class RiverService {
 	 * @param authUser
 	 */
 	@Transactional
-	public void deleteDropTag(Long riverId, Long dropId, Long tagId, String authUser) {
+	public void deleteDropTag(Long riverId, Long dropId, Long tagId,
+			String authUser) {
 		River river = getRiver(riverId);
-		if (! isOwner(river, authUser))
+		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
@@ -728,18 +740,21 @@ public class RiverService {
 		Tag tag = tagDao.findById(tagId);
 
 		if (tag == null) {
-			throw new NotFoundException(String.format("Tag %d does not exist", tagId));
+			throw new NotFoundException(String.format("Tag %d does not exist",
+					tagId));
 		}
 
 		if (!riverDropDao.deleteTag(riverDrop, tag)) {
-			throw new NotFoundException(String.format("Drop %d does not have tag %d", dropId, tagId));
+			throw new NotFoundException(String.format(
+					"Drop %d does not have tag %d", dropId, tagId));
 		}
-		
+
 	}
 
 	/**
-	 * Adds a {@link Link} to the {@link RiverDrop} with the specified <code>dropId</code>
-	 * The drop must be in the {@link River} whose ID is specified in <code>id</code>
+	 * Adds a {@link Link} to the {@link RiverDrop} with the specified
+	 * <code>dropId</code> The drop must be in the {@link River} whose ID is
+	 * specified in <code>id</code>
 	 * 
 	 * The created {@link Link} entity is transformed to a DTO for purposes of
 	 * consumption by {@link RiversController}
@@ -751,12 +766,13 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public GetLinkDTO addDropLink(Long riverId, Long dropId, CreateLinkDTO createDTO, String authUser) {
+	public GetLinkDTO addDropLink(Long riverId, Long dropId,
+			CreateLinkDTO createDTO, String authUser) {
 		River river = getRiver(riverId);
-		
-		if (! isOwner(river, authUser))
+
+		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
-		
+
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
 
 		String hash = HashUtil.md5(createDTO.getUrl());
@@ -765,16 +781,17 @@ public class RiverService {
 			link = new Link();
 			link.setUrl(createDTO.getUrl());
 			link.setHash(hash);
-			
+
 			linkDao.create(link);
 		} else {
 			// Has the link already been added ?
 			if (riverDropDao.findLink(riverDrop, link) != null) {
-				throw new BadRequestException(String.format("%s has already been added to drop %d",
-						link.getUrl(), dropId));
+				throw new BadRequestException(String.format(
+						"%s has already been added to drop %d", link.getUrl(),
+						dropId));
 			}
 		}
-		
+
 		riverDropDao.addLink(riverDrop, link);
 		return mapper.map(link, GetLinkDTO.class);
 	}
@@ -783,9 +800,9 @@ public class RiverService {
 	 * Deletes the {@link Link} with the id specified in <code>linkId</code>
 	 * from the {@link RiverDrop} specified in <code>dropId</code>
 	 * 
-	 * The request {@link RiverDrop} must be a member of the {@link River}
-	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
-	 * is thrown
+	 * The request {@link RiverDrop} must be a member of the {@link River} with
+	 * the ID specified in <code>id</code> else a {@link NotFoundException} is
+	 * thrown
 	 * 
 	 * @param id
 	 * @param dropId
@@ -793,27 +810,31 @@ public class RiverService {
 	 * @param authUser
 	 */
 	@Transactional
-	public void deleteDropLink(Long riverId, Long dropId, Long linkId, String authUser) {
+	public void deleteDropLink(Long riverId, Long dropId, Long linkId,
+			String authUser) {
 		River river = getRiver(riverId);
-		
-		if (! isOwner(river, authUser))
+
+		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
-		
+
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
 		Link link = linkDao.findById(linkId);
 
 		if (link == null) {
-			throw new NotFoundException(String.format("Link %d does not exist", linkId));
+			throw new NotFoundException(String.format("Link %d does not exist",
+					linkId));
 		}
 
 		if (!riverDropDao.deleteLink(riverDrop, link)) {
-			throw new NotFoundException(String.format("Drop %d does not have link %d", dropId, linkId));
-		}		
+			throw new NotFoundException(String.format(
+					"Drop %d does not have link %d", dropId, linkId));
+		}
 	}
-	
+
 	/**
-	 * Adds a {@link Place} to the {@link RiverDrop} with the specified <code>dropId</code>
-	 * The drop must be in the {@link River} whose ID is specified in <code>id</code>
+	 * Adds a {@link Place} to the {@link RiverDrop} with the specified
+	 * <code>dropId</code> The drop must be in the {@link River} whose ID is
+	 * specified in <code>id</code>
 	 * 
 	 * The created {@link Place} entity is transformed to a DTO for purposes of
 	 * consumption by {@link RiversController}
@@ -825,48 +846,51 @@ public class RiverService {
 	 * @return
 	 */
 	@Transactional
-	public GetPlaceDTO addDropPlace(Long riverId, Long dropId, CreatePlaceDTO createDTO, String authUser) {
+	public GetPlaceDTO addDropPlace(Long riverId, Long dropId,
+			CreatePlaceDTO createDTO, String authUser) {
 		River river = getRiver(riverId);
-		
-		if (! isOwner(river, authUser))
+
+		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
-		
+
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
-		
+
 		String hashInput = createDTO.getName();
 		hashInput += Float.toString(createDTO.getLongitude());
 		hashInput += Float.toString(createDTO.getLatitude());
-		 
-		 String hash = HashUtil.md5(hashInput);
 
-		 // Generate a hash for the place name
-		 Place place = placeDao.findByHash(hash);
-		 if (place == null) {
-			 place = new Place();
-			 place.setPlaceName(createDTO.getName());
-			 place.setLatitude(createDTO.getLatitude());
-			 place.setLongitude(createDTO.getLongitude());
+		String hash = HashUtil.md5(hashInput);
 
-			 placeDao.create(place);
-		 } else {
-			 if (riverDropDao.findPlace(riverDrop, place) != null) {
-				 throw new BadRequestException(String.format(
-						 "Drop %d already has the place %s with coordinates [%f, %f]",
-						 dropId, place.getPlaceName(), place.getLatitude(), place.getLongitude()));
-			 }
-		 }
+		// Generate a hash for the place name
+		Place place = placeDao.findByHash(hash);
+		if (place == null) {
+			place = new Place();
+			place.setPlaceName(createDTO.getName());
+			place.setLatitude(createDTO.getLatitude());
+			place.setLongitude(createDTO.getLongitude());
 
-		 riverDropDao.addPlace(riverDrop, place);
-		 return mapper.map(place, GetPlaceDTO.class);
+			placeDao.create(place);
+		} else {
+			if (riverDropDao.findPlace(riverDrop, place) != null) {
+				throw new BadRequestException(
+						String.format(
+								"Drop %d already has the place %s with coordinates [%f, %f]",
+								dropId, place.getPlaceName(),
+								place.getLatitude(), place.getLongitude()));
+			}
+		}
+
+		riverDropDao.addPlace(riverDrop, place);
+		return mapper.map(place, GetPlaceDTO.class);
 	}
 
 	/**
 	 * Deletes the {@link Link} with the id specified in <code>linkId</code>
 	 * from the {@link RiverDrop} specified in <code>dropId</code>
 	 * 
-	 * The request {@link RiverDrop} must be a member of the {@link Bucket}
-	 * with the ID specified in <code>id</code> else a {@link NotFoundException}
-	 * is thrown
+	 * The request {@link RiverDrop} must be a member of the {@link Bucket} with
+	 * the ID specified in <code>id</code> else a {@link NotFoundException} is
+	 * thrown
 	 * 
 	 * @param riverId
 	 * @param dropId
@@ -874,29 +898,32 @@ public class RiverService {
 	 * @param authUser
 	 */
 	@Transactional
-	public void deleteDropPlace(Long riverId, Long dropId, Long placeId, String authUser) {
+	public void deleteDropPlace(Long riverId, Long dropId, Long placeId,
+			String authUser) {
 		River river = getRiver(riverId);
-		
-		if (! isOwner(river, authUser))
+
+		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
 		Place place = placeDao.findById(placeId);
 
 		if (place == null) {
-			throw new NotFoundException(String.format("Place %d does not exist", placeId));
+			throw new NotFoundException(String.format(
+					"Place %d does not exist", placeId));
 		}
 
 		if (!riverDropDao.deletePlace(riverDrop, place)) {
-			throw new NotFoundException(String.format("Drop %d does not have place %d", dropId, placeId));
+			throw new NotFoundException(String.format(
+					"Drop %d does not have place %d", dropId, placeId));
 		}
-		
+
 	}
 
 	/**
-	 * Helper method to retrieve a {@link RiverDrop} record from
-	 * the database and verify that the retrieved entity belongs
-	 * to the {@link River} specified in <code>river</code>
+	 * Helper method to retrieve a {@link RiverDrop} record from the database
+	 * and verify that the retrieved entity belongs to the {@link River}
+	 * specified in <code>river</code>
 	 * 
 	 * @param dropId
 	 * @param river
@@ -904,17 +931,18 @@ public class RiverService {
 	 */
 	private RiverDrop getRiverDrop(Long dropId, River river) {
 		RiverDrop riverDrop = riverDropDao.findById(dropId);
-		if (riverDrop == null || 
-				(riverDrop != null && !riverDrop.getRiver().equals(river))) {
-			throw new NotFoundException(String.format("Drop %d does not exist in river %d",
-					dropId, river.getId()));
+		if (riverDrop == null
+				|| (riverDrop != null && !riverDrop.getRiver().equals(river))) {
+			throw new NotFoundException(
+					String.format("Drop %d does not exist in river %d", dropId,
+							river.getId()));
 		}
 		return riverDrop;
 	}
 
 	/**
-	 * Filter the given list of rivers returning only those that are visible
-	 * to the given queryingAccount.
+	 * Filter the given list of rivers returning only those that are visible to
+	 * the given queryingAccount.
 	 * 
 	 * @param rivers
 	 * @param queryingAccount
@@ -922,13 +950,13 @@ public class RiverService {
 	 */
 	public List<River> filterVisible(List<River> rivers, Account queryingAccount) {
 		List<River> visible = new ArrayList<River>();
-		
-		for(River river : rivers) {
+
+		for (River river : rivers) {
 			if (isOwner(river, queryingAccount) || river.getRiverPublic()) {
 				visible.add(river);
 			}
 		}
-		
+
 		return visible;
 	}
 

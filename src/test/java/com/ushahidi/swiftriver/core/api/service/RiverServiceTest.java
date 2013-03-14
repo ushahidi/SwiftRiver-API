@@ -183,7 +183,7 @@ public class RiverServiceTest {
 		assertEquals("a channel", notification.getChannel());
 		assertEquals("channel parameters", notification.getParameters());
 		assertEquals(1L, notification.getRiverId());
-		assertEquals("web.channel.rss.add", routingKeyArgument.getValue());
+		assertEquals("web.channel.a channel.add", routingKeyArgument.getValue());
 
 		ArgumentCaptor<Channel> channelArgument = ArgumentCaptor
 				.forClass(Channel.class);
@@ -293,7 +293,7 @@ public class RiverServiceTest {
 		assertEquals("the channel", notification.getChannel());
 		assertEquals("the parameters", notification.getParameters());
 		assertEquals(1L, notification.getRiverId());
-		assertEquals("web.channel.rss.delete", routingKeyArgument.getValue());
+		assertEquals("web.channel.the channel.delete", routingKeyArgument.getValue());
 
 		verify(mockChannelDao).delete(channel);
 	}
@@ -347,8 +347,8 @@ public class RiverServiceTest {
 		assertEquals(1L, notifications.get(0).getRiverId());
 
 		List<String> routingKeys = routingKeyArgument.getAllValues();
-		assertEquals("web.channel.rss.delete", routingKeys.get(0));
-		assertEquals("web.channel.rss.add", routingKeys.get(1));
+		assertEquals("web.channel.channel before.delete", routingKeys.get(0));
+		assertEquals("web.channel.channel after.add", routingKeys.get(1));
 	}
 
 	@Test
