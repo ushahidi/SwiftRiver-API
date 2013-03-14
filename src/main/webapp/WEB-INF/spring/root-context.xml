@@ -66,22 +66,6 @@
 		</property>
 	</bean>
 
-	<!-- RabbitMQ Connection -->
-	<rabbit:connection-factory id="rabbitConnectionFactory"
-		host="${mq.host}" username="${mq.username}" password="${mq.password}" />
-
-	<!-- Metadata Exchange -->
-	<rabbit:topic-exchange name="chatter" durable="true" />
-
-	<!-- Declare the Queues, Exchanged defined here. -->
-	<rabbit:admin connection-factory="rabbitConnectionFactory" />
-
-	<bean id="messageConverter"
-		class="org.springframework.amqp.support.converter.JsonMessageConverter" />
-
-	<rabbit:template id="amqpTemplate" connection-factory="rabbitConnectionFactory"
-		exchange="chatter" message-converter="messageConverter" />
-
 	<!-- Enable the configuration of transactional behavior based on annotations -->
 	<tx:annotation-driven transaction-manager="txManager" />
 
@@ -118,6 +102,22 @@
 		<bean id="encryptionKey" class="java.lang.String">
 			<constructor-arg value="${encrypt.key}" />
 		</bean>
+
+		<!-- RabbitMQ Connection -->
+		<rabbit:connection-factory id="rabbitConnectionFactory"
+			host="${mq.host}" username="${mq.username}" password="${mq.password}" />
+
+		<!-- Metadata Exchange -->
+		<rabbit:topic-exchange name="chatter" durable="true" />
+
+		<!-- Declare the Queues, Exchanged defined here. -->
+		<rabbit:admin connection-factory="rabbitConnectionFactory" />
+
+		<bean id="messageConverter"
+			class="org.springframework.amqp.support.converter.JsonMessageConverter" />
+
+		<rabbit:template id="amqpTemplate" connection-factory="rabbitConnectionFactory"
+			exchange="chatter" message-converter="messageConverter" />
 	</beans>
 
 	<beans profile="test">
@@ -132,5 +132,7 @@
 			<jdbc:script location="classpath:config/sql/schema-create.sql" />
 			<jdbc:script location="classpath:config/sql/test-data.sql" />
 		</jdbc:initialize-database>
+		
+		<bean id="amqpTemplate" class="com.ushahidi.swiftriver.core.support.MockAmqpTemplate" />
 	</beans>
 </beans>
