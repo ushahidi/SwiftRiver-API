@@ -361,7 +361,7 @@ public class AccountService {
 		
 		// If modifying password without a token, raise an error
 		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
-				&& modifyAcOwner.getPassword() != null)
+				&& modifyAcOwner.getPassword() != null && modifyAcOwner.getCurrentPassword() == null)
 			throw ErrorUtil.getBadRequestException("token", "missing");
 
 		//> Account Owner properties
@@ -374,6 +374,29 @@ public class AccountService {
 			}
 		}
 
+		// Password change
+		if (modifyAcOwner != null && modifyAcOwner.getCurrentPassword() != null) {
+			// No token required for a change password 
+			if (modifyAccountTO.getToken() != null) {
+				throw ErrorUtil.getBadRequestException("token", "Invalid parameter");
+			}
+			
+			// Check for new password 
+			if (modifyAcOwner.getPassword() == null) {
+				throw ErrorUtil.getBadRequestException("password", "missing");
+			}
+			
+			// Current password
+			if (!passwordEncoder.matches(modifyAcOwner.getCurrentPassword(), 
+					account.getOwner().getPassword())) {
+				throw ErrorUtil.getBadRequestException("password", "invalid");
+			}
+			
+			String password = passwordEncoder.encode(modifyAcOwner.getPassword());
+			modifyAcOwner.setPassword(password);
+		}
+
+		// Account activation or password reset
 		if (modifyAccountTO.getToken() != null) {
 			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
 				throw ErrorUtil.getBadRequestException("token", "invalid");
@@ -397,14 +420,14 @@ public class AccountService {
 				user.getRoles().add(roleDao.findByName("user"));
 			}
 
-			// Modify password
-			if (modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
-				String password = passwordEncoder.encode(modifyAccountTO
-						.getOwner().getPassword());
+			// Encode and set the new password
+			if (modifyAccountTO.getToken() != null && 
+					modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
+				String password = passwordEncoder.encode(modifyAcOwner.getPassword());
 				modifyAcOwner.setPassword(password);
 			}
 		}
-
+		
 		mapper.map(modifyAccountTO, account);
 		accountDao.update(account);
 		return mapGetAccountDTO(account, account);

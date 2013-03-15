@@ -289,7 +289,27 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPassword() throws Exception {
+	public void changePassword() throws Exception {
+		String postBody = "{\"owner\":{\"current_password\": \"password\", \"password\": \"password2\"}}";
+		this.mockMvc.perform(put("/v1/accounts/1")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("admin")))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	public void changePasswordWithInvalidCurrentPassword() throws Exception {
+		String postBody = "{\"owner\":{\"current_password\": \"invalidpassword\", \"password\": \"password2\"}}";
+		this.mockMvc.perform(put("/v1/accounts/1")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("admin")))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	public void resetPassword() throws Exception {
 		String postBody = "{\"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\",\"owner\":{\"password\":\"new password\"}}";
 
 		this.mockMvc.perform(put("/v1/accounts/6")
@@ -300,7 +320,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPasswordWithoutOwnerArray() throws Exception {
+	public void resetPasswordWithoutOwnerArray() throws Exception {
 		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\"}";
 
 		this.mockMvc.perform(put("/v1/accounts/5")
@@ -314,7 +334,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPasswordWithoutPasswordInOwnerArray() throws Exception {
+	public void resetasswordWithoutPasswordInOwnerArray() throws Exception {
 		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\",\"owner\":{}}";
 
 		this.mockMvc.perform(put("/v1/accounts/5")
@@ -328,7 +348,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPasswordWithoutToken() throws Exception {
+	public void resetPasswordWithoutToken() throws Exception {
 		String postBody = "{\"owner\":{\"password\":\"new password\"}}";
 
 		this.mockMvc.perform(put("/v1/accounts/1")
@@ -342,7 +362,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPasswordWithInvalidTokenToken() throws Exception {
+	public void resetPasswordWithInvalidTokenToken() throws Exception {
 		String postBody = "{\"token\":\"This is invalid\",\"owner\":{\"password\":\"new password\"}}";
 
 		this.mockMvc.perform(put("/v1/accounts/1")
@@ -356,7 +376,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void modifyPasswordWithExpiredTokenToken() throws Exception {
+	public void resetPasswordWithExpiredTokenToken() throws Exception {
 		String postBody = "{\"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\",\"owner\":{\"password\":\"new password\"}}";
 
 		this.mockMvc.perform(put("/v1/accounts/1")
