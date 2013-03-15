@@ -42,6 +42,13 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 	@Autowired
 	private RiverDao riverDao;
 
+
+	@Override
+	public Account update(Account t) {
+		t.setDateModified(new Date());
+		return super.update(t);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

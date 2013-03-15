@@ -48,7 +48,6 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
-import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Client;
@@ -345,7 +344,7 @@ public class AccountService {
 		// If the querying account is not the the same as the account being modified
 		// raise an error
 		if (!account.equals(queryingAccount)) {
-			throw new UnauthorizedExpection("You do not have sufficient privileges to modify this account");
+			throw new ForbiddenException("You do not have sufficient privileges to modify this account");
 		}
 
 		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
@@ -358,23 +357,22 @@ public class AccountService {
 				throw ErrorUtil.getBadRequestException("account_path",
 						"duplicate");
 			}
-			account.setAccountPath(accountPath);
 		}
 		
-		// Account privacy
-		if (modifyAccountTO.getAccountPrivate() != null) {
-			account.setAccountPrivate(modifyAccountTO.getAccountPrivate());
-		}
-		
-		// Remaining river quota
-		if (modifyAccountTO.getRiverQuotaRemaining() != null) {
-			account.setRiverQuotaRemaining(modifyAccountTO.getRiverQuotaRemaining());
-		}
-
 		// If modifying password without a token, raise an error
 		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
 				&& modifyAcOwner.getPassword() != null)
 			throw ErrorUtil.getBadRequestException("token", "missing");
+
+		//> Account Owner properties
+		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
+			String email = modifyAcOwner.getEmail();
+			Account otherAccount = accountDao.findByEmail(email);
+			if (otherAccount != null && !otherAccount.equals(account)) {
+				throw ErrorUtil.getBadRequestException("owner.email",
+						"duplicate");
+			}
+		}
 
 		if (modifyAccountTO.getToken() != null) {
 			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
@@ -398,35 +396,16 @@ public class AccountService {
 				user.setRoles(new HashSet<Role>());
 				user.getRoles().add(roleDao.findByName("user"));
 			}
-		}
 
-		//> Account Owner properties
-		if (modifyAcOwner != null) {
-			// Modify name is different
-			if (modifyAcOwner.getName() != null) {
-				account.getOwner().setName(modifyAcOwner.getName());
-			}
-			
-			// Modify email is different
-			if (modifyAcOwner.getEmail() != null) {
-				String email = modifyAcOwner.getEmail();
-				Account otherAccount = accountDao.findByEmail(email);
-				if (otherAccount != null && !otherAccount.equals(account)) {
-					throw ErrorUtil.getBadRequestException("owner.email",
-							"duplicate");
-				}
-				account.getOwner().setEmail(email);
-			}
-			
-			// Modify password if different
-			if (modifyAcOwner.getPassword() != null) {
+			// Modify password
+			if (modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
 				String password = passwordEncoder.encode(modifyAccountTO
 						.getOwner().getPassword());
-				account.getOwner().setPassword(password);
+				modifyAcOwner.setPassword(password);
 			}
 		}
 
-//		mapper.map(modifyAccountTO, account);
+		mapper.map(modifyAccountTO, account);
 		accountDao.update(account);
 		return mapGetAccountDTO(account, account);
 	}
