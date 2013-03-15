@@ -113,13 +113,13 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		// Generate hashes for each new drops i.e. those without an id
 		for (int i = 0; i < drops.size(); i++) {
 			Drop drop = drops.get(i);
-		
+
 			if (drop.getMedia() == null)
 				continue;
 
 			for (int j = 0; j < drop.getMedia().size(); j++) {
 				Media media = drop.getMedia().get(j);
-				
+
 				// Cleanup the media
 				media.setUrl(media.getUrl().trim());
 
@@ -233,11 +233,13 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		List<Long> dropIds = new ArrayList<Long>();
 		// List of media in a drop
 		Map<Long, Set<Long>> dropletMediaMap = new HashMap<Long, Set<Long>>();
+		// List of drops and the media that is the drop image
+		List<long[]> dropImages = new ArrayList<long[]>();
 		for (Drop drop : drops) {
-			
+
 			if (drop.getMedia() == null)
 				continue;
-			
+
 			dropIds.add(drop.getId());
 
 			for (Media media : drop.getMedia()) {
@@ -247,6 +249,13 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 				} else {
 					m = new HashSet<Long>();
 					dropletMediaMap.put(drop.getId(), m);
+				}
+
+				// Is this the drop image?
+				if (drop.getImage() != null
+						&& media.getUrl().equals(drop.getImage().getUrl())) {
+					long[] dropImage = { drop.getId(), media.getId() };
+					dropImages.add(dropImage);
 				}
 
 				m.add(media.getId());
@@ -296,6 +305,26 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 				return dropletMediaList.size();
 			}
 		});
+		
+		if (dropImages.size() > 0) {
+			// Create a temp table for updating drop images 
+			String dropUpdateSql = "";
+			for (long[] dropImage : dropImages) {
+
+				if (dropUpdateSql.length() > 0) {
+					dropUpdateSql += " UNION ALL ";
+				}
+
+				dropUpdateSql += String.format("SELECT %d id, %d media_id",
+						dropImage[0], dropImage[1]);
+			}
+
+			// Update max_drop_id using the temp table
+			sql = "UPDATE `droplets` " + "JOIN (" + dropUpdateSql + ") a "
+					+ "USING (`id`) "
+					+ "SET `droplets`.`droplet_image` = `a`.`media_id` ";
+			this.jdbcTemplate.update(sql);
+		}
 	}
 
 }

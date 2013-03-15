@@ -34,6 +34,7 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 		Drop drop = new Drop();
 		drop.setId(5);
 		drop.setMedia(media);
+		drop.setImage(newMedia);
 		drops.add(drop);
 
 		mediaDao.getMedia(drops);
@@ -54,6 +55,9 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 				Long.class);
 		assertEquals(3, dropletMedia.size());
 		assertTrue(dropletMedia.contains(newMedia.getId()));
+		
+		sql = "SELECT `droplet_image` FROM `droplets` WHERE `id` = 5";
+		assertEquals(newMedia.getId(), this.jdbcTemplate.queryForLong(sql));
 	}
 	
 	/**

@@ -40,7 +40,7 @@ public class CreateDropDTO {
 	@JsonProperty("original_id")
 	private String originalId;
 	
-	private Media image;
+	private String image;
 	
 	private List<Tag> tags;
 	
@@ -109,11 +109,11 @@ public class CreateDropDTO {
 		this.originalId = originalId;
 	}
 
-	public Media getImage() {
+	public String getImage() {
 		return image;
 	}
 
-	public void setImage(Media image) {
+	public void setImage(String image) {
 		this.image = image;
 	}
 
