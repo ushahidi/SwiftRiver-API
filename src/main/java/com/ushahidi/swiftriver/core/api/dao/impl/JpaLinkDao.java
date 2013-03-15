@@ -107,14 +107,14 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		// Generate hashes for each new drops i.e. those without an id
 		for (int i = 0; i < drops.size(); i++) {
 			Drop drop = drops.get(i);
-		
+
 			List<Link> links = drop.getLinks();
 			if (links == null)
 				continue;
 
 			for (int j = 0; j < links.size(); j++) {
 				Link link = links.get(j);
-			
+
 				// Cleanup the link
 				link.setUrl(link.getUrl().trim());
 
@@ -228,11 +228,13 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		List<Long> dropIds = new ArrayList<Long>();
 		// List of links in a drop
 		Map<Long, Set<Long>> dropletLinksMap = new HashMap<Long, Set<Long>>();
+		// List of drops and the link that is their original url
+		List<long[]> originalUrls = new ArrayList<long[]>();
 		for (Drop drop : drops) {
-			
+
 			if (drop.getLinks() == null)
 				continue;
-			
+
 			dropIds.add(drop.getId());
 
 			for (Link link : drop.getLinks()) {
@@ -242,6 +244,13 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 				} else {
 					links = new HashSet<Long>();
 					dropletLinksMap.put(drop.getId(), links);
+				}
+
+				// Is this link the original url?
+				if (drop.getOriginalUrl() != null
+						&& link.getUrl().equals(drop.getOriginalUrl().getUrl())) {
+					long[] originalUrl = { drop.getId(), link.getId() };
+					originalUrls.add(originalUrl);
 				}
 
 				links.add(link.getId());
@@ -291,6 +300,26 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 				return dropletLinksList.size();
 			}
 		});
+
+		if (originalUrls.size() > 0) {
+			// Create a temp table for update drop original urls
+			String dropUpdateSql = "";
+			for (long[] originalUrl : originalUrls) {
+
+				if (dropUpdateSql.length() > 0) {
+					dropUpdateSql += " UNION ALL ";
+				}
+
+				dropUpdateSql += String.format("SELECT %d id, %d link_id",
+						originalUrl[0], originalUrl[1]);
+			}
+
+			// Update max_drop_id using the temp table
+			sql = "UPDATE `droplets` " + "JOIN (" + dropUpdateSql + ") a "
+					+ "USING (`id`) "
+					+ "SET `droplets`.`original_url` = `a`.`link_id` ";
+			this.jdbcTemplate.update(sql);
+		}
 	}
 
 }

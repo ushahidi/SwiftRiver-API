@@ -63,6 +63,7 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 		Drop drop = new Drop();
 		drop.setId(5);
 		drop.setLinks(links);
+		drop.setOriginalUrl(newLink);
 		drops.add(drop);
 
 		linkDao.getLinks(drops);
@@ -83,6 +84,9 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 				.queryForList(sql, Long.class);
 		assertEquals(3, dropletLinks.size());
 		assertTrue(dropletLinks.contains(newLink.getId()));
+		
+		sql = "SELECT `original_url` FROM `droplets` WHERE `id` = 5";
+		assertEquals(newLink.getId(), this.jdbcTemplate.queryForLong(sql));
 	}
 	
 	/**
