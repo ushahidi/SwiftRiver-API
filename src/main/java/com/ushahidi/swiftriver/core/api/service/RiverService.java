@@ -52,6 +52,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.RuleUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
@@ -1093,7 +1094,16 @@ public class RiverService {
 
 		ruleDao.create(rule);
 		
-		// TODO: Send add_rule message on the MQ
+		// Send add_rule message on the MQ
+		RuleUpdateNotification notification = new RuleUpdateNotification();
+		notification.setId(rule.getId());
+		notification.setRiverId(riverId);
+		notification.setType(rule.getType());
+		notification.setConditions(rule.getConditions());
+		notification.setActions(rule.getActions());
+
+		amqpTemplate.convertAndSend("web.rule.add", notification);
+
 		return mapper.map(rule, GetRuleDTO.class);
 	}
 
@@ -1125,7 +1135,15 @@ public class RiverService {
 		mapper.map(createRuleDTO, rule);
 		ruleDao.update(rule);
 
-		//TODO Send update_rule message on MQ
+		RuleUpdateNotification notification = new RuleUpdateNotification();
+		notification.setId(ruleId);
+		notification.setRiverId(riverId);
+		rule.setType(rule.getType());
+		notification.setConditions(rule.getConditions());
+		notification.setActions(rule.getActions());
+		
+		amqpTemplate.convertAndSend("web.rule.update", notification);
+
 		return mapper.map(rule, GetRuleDTO.class);
 	}
 
@@ -1150,9 +1168,13 @@ public class RiverService {
 			throw new NotFoundException(String.format("Rule %d not found", ruleId));
 		}
 
-		// TODO: Send delete_rule message on MQ
-
 		ruleDao.delete(rule);
+		
+		RuleUpdateNotification notification = new RuleUpdateNotification();
+		notification.setId(ruleId);
+		notification.setRiverId(riverId);
+		
+		amqpTemplate.convertAndSend("web.rule.delete", notification);
 	}
 	
 }
