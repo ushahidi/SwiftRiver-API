@@ -42,4 +42,19 @@
 		<class-b>com.ushahidi.swiftriver.core.model.Client</class-b>
 	</mapping>
 
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.Rule</class-b>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.dozer.converters.ListToStringConverter">
+			<a>conditions</a>
+			<b>conditions</b>
+		</field>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.dozer.converters.ListToStringConverter">
+			<a>actions</a>
+			<b>actions</b>
+		</field>
+	</mapping>
+
 </mappings> 

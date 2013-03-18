@@ -42,6 +42,7 @@
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
 	<bean id="bucketCommentDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
+	<bean id="ruleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRuleDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
@@ -91,7 +92,7 @@
 
 	<!-- Data Sources -->
 	<beans profile="prod">
-		<context:property-placeholder location="file:///${ext.prop.dir}/*.properties" />
+		<context:property-placeholder location="classpath:*.properties" />
 
 		<bean id="encryptionKey" class="java.lang.String">
 			<constructor-arg value="${encrypt.key}" />

@@ -35,6 +35,7 @@ import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
+import com.ushahidi.swiftriver.core.api.dao.RuleDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
@@ -42,6 +43,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
@@ -52,6 +54,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
@@ -70,6 +73,7 @@ import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
+import com.ushahidi.swiftriver.core.model.Rule;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
@@ -106,6 +110,9 @@ public class RiverService {
 
 	@Autowired
 	private PlaceDao placeDao;
+
+	@Autowired
+	private RuleDao ruleDao;
 
 	public RiverDao getRiverDao() {
 		return riverDao;
@@ -986,6 +993,7 @@ public class RiverService {
 	 * @param commentId
 	 * @param authUser
 	 */
+	@Transactional(readOnly = false)
 	public void deleteDropComment(Long riverId, Long dropId, Long commentId,
 			String authUser) {
 		River river = getRiver(riverId);
@@ -1001,4 +1009,103 @@ public class RiverService {
 		}
 	}
 
+	public List<GetRuleDTO> getRules(Long riverId, String authUser) {
+		River river = getRiver(riverId);
+		if (!isOwner(river, authUser)) {
+			throw new ForbiddenException("Permission denied");
+		}
+
+		List<GetRuleDTO> rulesDTOList = new ArrayList<GetRuleDTO>();
+		for (Rule rule: river.getRules()) {
+			rulesDTOList.add(mapper.map(rule, GetRuleDTO.class));
+		}
+		
+		return rulesDTOList;
+	}
+
+	/**
+	 * Creates a new {@link Rule} for the {@link River} with the ID specified in
+	 * <code>riverId</code>. The created entity is transformed to DTO for purposes
+	 * of consumption by {@link RiversController}
+	 * 
+	 * @param riverId
+	 * @param createRuleDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public GetRuleDTO addRule(Long riverId, CreateRuleDTO createRuleDTO, String authUser) {
+		River river = getRiver(riverId);
+		if (!isOwner(river, authUser)) {
+			throw new ForbiddenException("Permission denied");
+		}
+		
+		Rule rule = mapper.map(createRuleDTO, Rule.class);
+		rule.setRiver(river);
+		rule.setDateAdded(new Date());
+
+		ruleDao.create(rule);
+		
+		// TODO: Send add_rule message on the MQ
+		return mapper.map(rule, GetRuleDTO.class);
+	}
+
+	/**
+	 * Modifies the {@link RiverRule} specified in <code>ruleId</code>. 
+	 * The {@link RiverRule} must belong to the {@link River} with the ID
+	 * specified in <code>riverId</code> else a {@link NotFoundException} will
+	 * be thrown.
+	 * 
+	 * @param riverId
+	 * @param ruleId
+	 * @param createRuleDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public GetRuleDTO modifyRule(Long riverId, Long ruleId, CreateRuleDTO createRuleDTO,
+			String authUser) {
+		River river = getRiver(riverId);
+		if (!isOwner(river, authUser)) {
+			throw new ForbiddenException("Permission denied");
+		}
+		
+		Rule rule = ruleDao.findById(ruleId);
+		if (rule == null || (rule != null && !rule.getRiver().equals(river))) {
+			throw new NotFoundException(String.format("Rule %d not found", ruleId));
+		}
+		
+		mapper.map(createRuleDTO, rule);
+		ruleDao.update(rule);
+
+		//TODO Send update_rule message on MQ
+		return mapper.map(rule, GetRuleDTO.class);
+	}
+
+	/**
+	 * Deletes the {@link RiverRule} with the ID specified in <code>ruleId</code>
+	 * The {@link RiverRule} must belong to the {@link River} with the ID specified
+	 * in <code>riverId</code> else a {@link NotFoundException} will be thrown
+	 * 
+	 * @param riverId
+	 * @param ruleId
+	 * @param authUser
+	 */
+	@Transactional(readOnly = false)
+	public void deleteRule(Long riverId, Long ruleId, String authUser) {
+		River river = getRiver(riverId);
+		if (!isOwner(river, authUser)) {
+			throw new ForbiddenException("Permission denied");
+		}
+		
+		Rule rule = ruleDao.findById(ruleId);
+		if (rule == null || (rule != null && !rule.getRiver().equals(river))) {
+			throw new NotFoundException(String.format("Rule %d not found", ruleId));
+		}
+
+		// TODO: Send delete_rule message on MQ
+
+		ruleDao.delete(rule);
+	}
+	
 }

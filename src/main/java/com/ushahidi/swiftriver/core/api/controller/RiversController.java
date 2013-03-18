@@ -1,16 +1,18 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
@@ -36,24 +38,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
-import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetRuleDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -570,6 +574,63 @@ public class RiversController extends AbstractController {
 	public void deleteDropComment(@PathVariable Long id, @PathVariable Long dropId, 
 			@PathVariable Long commentId, Principal principal) {
 		riverService.deleteDropComment(id, dropId, commentId, principal.getName());
+	}
+	
+	/**
+	 * Handler for fetching the rules for the river
+	 * 
+	 * @param id
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/rules", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetRuleDTO> getRules(@PathVariable  Long id, Principal principal) {
+		return riverService.getRules(id, principal.getName());
+	}
+	
+	/**
+	 * Handler for creating a new rule
+	 * 
+	 * @param id
+	 * @param createRuleDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/rules", method = RequestMethod.POST)
+	@ResponseBody
+	public GetRuleDTO addRule(@PathVariable Long id, @RequestBody CreateRuleDTO createRuleDTO,
+			Principal principal) {
+		return riverService.addRule(id, createRuleDTO, principal.getName());
+	}
+
+	/**
+	 * Handler for modifying a rule
+	 * 
+	 * @param id
+	 * @param ruleId
+	 * @param createRuleDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/rules/{ruleId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public GetRuleDTO modifyRule(@PathVariable Long id, @PathVariable Long ruleId,
+			@RequestBody CreateRuleDTO createRuleDTO, Principal principal) {
+		return riverService.modifyRule(id, ruleId, createRuleDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for deleting a rule
+	 * 
+	 * @param id
+	 * @param ruleId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/rules/{ruleId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteRule(@PathVariable Long id, @PathVariable Long ruleId, Principal principal) {
+		riverService.deleteRule(id, ruleId, principal.getName());
 	}
 	
 }

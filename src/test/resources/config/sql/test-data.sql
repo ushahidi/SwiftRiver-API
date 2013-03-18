@@ -347,3 +347,11 @@ INSERT INTO `user_tokens` (`id`, `user_id`, `token`, `created`, `expires`) VALUE
 (1, 6, '18012e9d-0e26-47f5-848f-ad81c96fc3f4', '2013-02-14 14:20:44', '2021-02-14 14:20:44'),
 (2, 6, '4f3cf69c18da-f848-5f74-62e0-d9e21081', '2009-02-14 14:20:44', '2010-02-14 14:20:44'),
 (3, 5, '15f8cc2c-e7c1-4298-9f41-f42d1de3043e', '2013-02-14 14:20:44', '2021-02-14 14:20:44');
+
+-- -----------------------------------------------------
+-- Data for table `river_rules`
+-- -----------------------------------------------------
+INSERT INTO `river_rules` (`id`, `river_id`, `rule_name`, `rule_type`, `rule_conditions`, `rule_actions`, `rule_date_add`) VALUES
+(1, 1, 'Rule 1', 1, '[{"field": "title", "operator" :"contains", "value": "Kenya"}]', '[{"function", "addToBucket", "parameter": "2"}]', '2013-03-15 08:56:00'),
+(2, 1, 'Rule 2', 1, '[{"field": "content", "operator", "contains", "value", "Bieber"}]', '[{"function": "delete"}]', '2013-03-16 08:57:00'),
+(3, 2, 'Rule 3', 1, '[{"field": "source", "operator", "contains", "value", "Ushahidi"}]', '[{"function": "markAsRead"}]', '2013-03-17 08:58:00');

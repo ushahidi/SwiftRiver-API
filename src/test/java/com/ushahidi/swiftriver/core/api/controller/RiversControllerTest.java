@@ -678,5 +678,48 @@ public class RiversControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").isArray());
 	}
+	
+	@Test
+	public void getRules() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/rules")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").isArray());
+	}
+	
+	@Test
+	public void addRule() throws Exception {
+		String postBody = "{" +
+				"\"name\": \"Keyword Filter\", " +
+				"\"type\": \"1\", " + 
+				"\"conditions\": [{\"field\": \"title\", \"operator\": \"contains\", \"value\": \"kenya\"}], " +
+				"\"actions\": [{\"function\": \"addToBucket\", \"parameter\": \"2\"}]" +
+			"}";
+
+		this.mockMvc.perform(post("/v1/rivers/1/rules")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Keyword Filter"));
+	}
+	
+	@Test
+	public void deleteRule() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/rules/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void modifyRule() throws Exception {
+		String postBody = "{\"name\": \"Modified Rule\"}";
+		this.mockMvc.perform(put("/v1/rivers/1/rules/1")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Modified Rule"));
+	}
 
 }
