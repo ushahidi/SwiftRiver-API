@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
@@ -41,6 +42,7 @@ import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -283,6 +285,7 @@ public class BucketsController extends AbstractController {
 	public List<GetDropDTO> getDrops(
 			@PathVariable Long id,
 			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "max_id", required = false) Long maxId,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
 			@RequestParam(value = "date_from", required = false) Date dateFrom,
@@ -299,9 +302,10 @@ public class BucketsController extends AbstractController {
 
 		Map<String, Object> requestParams = new HashMap<String, Object>();
 		requestParams.put("count", count);
+		requestParams.put("page", page);
 		
-		if (maxId != null) requestParams.put("max_id", maxId);
-		if (sinceId != null) requestParams.put("since_id", sinceId);
+		if (maxId != null && maxId > 0) requestParams.put("max_id", maxId);
+		if (sinceId != null && sinceId > 0) requestParams.put("since_id", sinceId);
 		if (dateFrom != null) requestParams.put("date_from", dateFrom);
 		if (dateTo != null) requestParams.put("dae_to", dateTo);
 		if (keywords != null) requestParams.put("keywords", keywords);
@@ -430,5 +434,92 @@ public class BucketsController extends AbstractController {
 		bucketService.deleteDropPlace(id, dropId, placeId, principal.getName());
 	}
 	
+	/**
+	 * Handler for adding a comment to a bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.POST)
+	@ResponseBody
+	public GetCommentDTO addDropComment(@PathVariable Long id, @PathVariable Long dropId, 
+			@RequestBody CreateCommentDTO createDTO, Principal principal) {
+		
+		return bucketService.addDropComment(id, dropId, createDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for getting the comments of bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetCommentDTO> getDropComments(@PathVariable Long id, @PathVariable Long dropId,
+			Principal principal) {
+		return bucketService.getDropComments(id, dropId, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a comment from a bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param commentId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/drops/{dropId}/comments/{commentId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropComment(@PathVariable Long id, @PathVariable Long dropId, 
+			@PathVariable Long commentId, Principal principal) {
+		bucketService.deleteDropComment(id, dropId, commentId, principal.getName());
+	}
+	
+	/**
+	 * Handler for adding a comment to a bucket
+	 * 
+	 * @param id
+	 * @param createDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/comments", method=RequestMethod.POST)
+	@ResponseBody
+	public GetCommentDTO addComment(@PathVariable Long id, @RequestBody CreateCommentDTO createDTO,
+			Principal principal) {
+		return bucketService.addBucketComment(id, createDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for fetching the list of bucket comments
+	 * 
+	 * @param id
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/comments", method=RequestMethod.GET)
+	@ResponseBody
+	public List<GetCommentDTO> getComments(@PathVariable Long id, Principal principal) {
+		return bucketService.getBucketComments(id, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a comment from a bucket
+	 * 
+	 * @param id
+	 * @param commentId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/comments/{commentId}", method=RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteComment(@PathVariable Long id, @PathVariable Long commentId,
+			Principal principal) {
+		bucketService.deleteBucketComment(id, commentId, principal.getName());
+	}
 	
 }

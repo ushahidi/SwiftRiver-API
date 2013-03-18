@@ -16,9 +16,12 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropLink;
 import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
@@ -112,5 +115,26 @@ public interface RiverDropDao extends GenericDao<RiverDrop> {
 	 * @return
 	 */
 	public boolean deleteLink(RiverDrop riverDrop, Link link);
+
+	/**
+	 * Create a new {@link RiverDropComment} entity for the {@link River}
+	 * entity specified in <code>river</code>. 
+	 * 
+	 * @param riverDrop
+	 * @param account
+	 * @param commentText
+	 * @return
+	 */
+	public RiverDropComment addComment(RiverDrop riverDrop, Account account,
+			String commentText);
+
+	/**
+	 * Deletes the {@link RiverDropComment} with the ID specified
+	 * in <code>commentId</code> from the database.
+	 * 
+	 * @param commentId
+	 * @return
+	 */
+	public boolean deleteComment(Long commentId);
 
 }

@@ -40,6 +40,7 @@ import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
@@ -47,6 +48,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -69,6 +71,7 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
@@ -958,6 +961,91 @@ public class RiverService {
 		}
 
 		return visible;
+	}
+
+	/**
+	 * Adds a comment to the {@link RiverDrop} entity specified in
+	 * <code>dropId</code>. This entity must be associated with the
+	 * {@link River} entity specified in <code>riverId</code> otherwise a
+	 * {@link NotFoundException} will be thrown.
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	public GetCommentDTO addDropComment(Long riverId, Long dropId,
+			CreateCommentDTO createDTO, String authUser) {
+
+		if (createDTO.getCommentText() == null
+				|| createDTO.getCommentText().trim().length() == 0) {
+			throw new BadRequestException("The no comment text specified");
+		}
+
+		River river = getRiver(riverId);
+
+		if (!river.getRiverPublic() && !isOwner(river, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		Account account = accountDao.findByUsername(authUser);
+		RiverDropComment dropComment = riverDropDao.addComment(riverDrop,
+				account, createDTO.getCommentText());
+
+		return mapper.map(dropComment, GetCommentDTO.class);
+	}
+
+	/**
+	 * Get and return the list of {@link RiverDropComment} entities for the
+	 * {@link RiverDrop} with the ID specified in <code>dropId</code>
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetCommentDTO> getDropComments(Long riverId, Long dropId,
+			String authUser) {
+		River river = getRiver(riverId);
+
+		if (!river.getRiverPublic() && !isOwner(river, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		List<GetCommentDTO> commentsList = new ArrayList<GetCommentDTO>();
+		for (RiverDropComment dropComment : riverDrop.getComments()) {
+			GetCommentDTO commentDTO = mapper.map(dropComment,
+					GetCommentDTO.class);
+			commentsList.add(commentDTO);
+		}
+
+		return commentsList;
+	}
+
+	/**
+	 * Deletes the {@link RiverDropComment} entity specified in
+	 * <code>commentId</code> from the {@link RiverDrop} entity specified in
+	 * <code>dropId</code>
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param commentId
+	 * @param authUser
+	 */
+	public void deleteDropComment(Long riverId, Long dropId, Long commentId,
+			String authUser) {
+		River river = getRiver(riverId);
+
+		if (!isOwner(river, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		getRiverDrop(dropId, river);
+
+		if (!riverDropDao.deleteComment(commentId)) {
+			throw new NotFoundException(String.format(
+					"Comment %d does not exist", commentId));
+		}
 	}
 
 }

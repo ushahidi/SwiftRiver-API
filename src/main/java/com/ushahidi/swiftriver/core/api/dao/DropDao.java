@@ -22,7 +22,6 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.DropComment;
 import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
@@ -80,22 +79,4 @@ public interface DropDao extends GenericDao<Drop> {
 	 * @return
 	 */
 	public void populateMetadata(List<Drop> drops, DropSource dropSource, Account queryingAccount);
-
-	/**
-	 * Gets and returns the {@link DropComment} record with the specified
-	 * <code>commentId</code> 
-	 * 
-	 * @param commentId
-	 * 
-	 * @return {@link DropComment}
-	 */
-	public DropComment findCommentById(Long commentId);
-
-	/**
-	 * Deletes the specified {@link DropComment} from the database
-	 * 
-	 * @param dropComment
-	 */
-	public void deleteComment(DropComment dropComment);
-	
 }

@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.TypedQuery;
@@ -23,9 +24,11 @@ import javax.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropLink;
 import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
@@ -192,6 +195,32 @@ public class JpaRiverDropDao extends AbstractJpaDao<RiverDrop> implements RiverD
 		}
 
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addComment(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 */
+	public RiverDropComment addComment(RiverDrop riverDrop, Account account,
+			String commentText) {
+		RiverDropComment dropComment = new RiverDropComment();
+
+		dropComment.setRiverDrop(riverDrop);
+		dropComment.setAccount(account);
+		dropComment.setCommentText(commentText);
+		dropComment.setDateAdded(new Date());
+		
+		this.em.persist(dropComment);
+		return dropComment;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteComment(java.lang.Long)
+	 */
+	public boolean deleteComment(Long commentId) {
+		String sql = "DELETE FROM RiverDropComment WHERE id = ?1";
+		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;		
 	}
 
 

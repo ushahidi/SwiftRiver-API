@@ -14,36 +14,64 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dto;
+package com.ushahidi.swiftriver.core.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import java.util.Date;
 
-import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO.Account;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-/**
- * DTO mapping class for getting drop comments
- * 
- * @author ekala
- *
- */
-public class GetCommentDTO {
-	
+@Entity
+@Table(name="river_droplet_comments")
+public class RiverDropComment {
+
+	@Id
+	@GeneratedValue
 	private long id;
 	
-	@JsonProperty("comment_text")
+	@ManyToOne
+	@JoinColumn(name="rivers_droplets_id")
+	private RiverDrop riverDrop;
+	
+	@ManyToOne
+	private Account account;
+	
+	@Column(name="comment_text")
 	private String commentText;
 	
-	@JsonProperty("date_added")
-	private String dateAdded;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="comment_date_add")
+	private Date dateAdded;
 	
-	private Account account;
-
 	public long getId() {
 		return id;
 	}
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public RiverDrop getRiverDrop() {
+		return riverDrop;
+	}
+
+	public void setRiverDrop(RiverDrop riverDrop) {
+		this.riverDrop = riverDrop;
+	}
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
 	public String getCommentText() {
@@ -54,21 +82,12 @@ public class GetCommentDTO {
 		this.commentText = commentText;
 	}
 
-	public String getDateAdded() {
+	public Date getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDateAdded(String dateAdded) {
+	public void setDateAdded(Date dateAdded) {
 		this.dateAdded = dateAdded;
 	}
 
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-	
-	
 }

@@ -48,6 +48,8 @@
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
 	<bean id="sequenceDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaSequenceDao" />
+	<bean id="bucketCommentDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">

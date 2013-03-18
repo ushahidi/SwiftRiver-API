@@ -36,6 +36,7 @@ import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropSource;
@@ -198,12 +199,25 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		}
 		
 		if (requestParams.containsKey("photos")) {
-			sql += "AND droplets.droplet_image > 0 ";
+			sql += "AND droplets.droplet_image > 0";
+		}
+		
+		// Check for since_id
+		if (requestParams.containsKey("since_id")) {
+			sql += " AND `buckets_droplets`.`id` > " + (Long) requestParams.get("since_id");
+		}
+		
+		// Check for max_id
+		if (requestParams.containsKey("max_id")) {
+			sql += " AND `buckets_droplets`.`id` <= " + (Long) requestParams.get("max_id");
 		}
 
-		sql += "ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
-		
 		Integer dropCount = (Integer) requestParams.get("count");
+		Integer page = (Integer) requestParams.get("page");
+
+		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
+		sql += String.format("LIMIT %d OFFSET %d", dropCount, ((page - 1) * dropCount));
+		
 
 		Query query = this.em.createNativeQuery(sql);
 		query.setParameter("bucketId", bucketId);
@@ -214,7 +228,6 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			query.setParameter("channels", channels);
 		}
 		
-		query.setMaxResults(dropCount);
 		List<Drop> drops = new ArrayList<Drop>();
 
 		for (Object row: query.getResultList()) {
@@ -310,6 +323,24 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		List<BucketDrop> bucketDrops = query.getResultList();
 		
 		return bucketDrops.isEmpty() ? null : bucketDrops.get(0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addComment(com.ushahidi.swiftriver.core.model.Bucket, java.lang.String, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public BucketComment addComment(Bucket bucket, String commentText,
+			Account account) {
+		BucketComment bucketComment = new BucketComment();
+		
+		bucketComment.setBucket(bucket);
+		bucketComment.setAccount(account);
+		bucketComment.setCommentText(commentText);
+		bucketComment.setDateAdded(new Date());
+		
+		this.em.persist(bucketComment);
+		
+		return bucketComment;
 	}
 
 }

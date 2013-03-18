@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.controller.BucketsController;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketCollaboratorDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketCommentDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
@@ -41,6 +42,7 @@ import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
@@ -48,6 +50,7 @@ import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
@@ -60,7 +63,9 @@ import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
@@ -104,6 +109,9 @@ public class BucketService {
 
 	@Autowired
 	private RiverDropDao riverDropDao;
+
+	@Autowired
+	private BucketCommentDao bucketCommentDao;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
@@ -626,8 +634,20 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-		bucketDropDao.delete(bucketDrop);
+		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
+		if (bucketDrop == null) {
+			throw new NotFoundException("The requested drop does not exist");
+		}
+
+		// Use the main drop id to find the bucket drop
+		BucketDrop targetBucketDrop = bucketDao.findDrop(bucketId, bucketDrop
+				.getDrop().getId());
+		if (targetBucketDrop == null) {
+			throw new NotFoundException("The requested drop does not exist");
+		}
+
+		// Delete the drop
+		bucketDropDao.delete(targetBucketDrop);
 	}
 
 	/**
@@ -660,7 +680,6 @@ public class BucketService {
 					username, bucketId));
 		}
 
-		Drop drop = null;
 		BucketDrop bucketDrop = null;
 
 		if (dropSourceTO.getSource().equals("river")) {
@@ -669,14 +688,13 @@ public class BucketService {
 				throw new NotFoundException(String.format(
 						"Drop %d is not a river drop", dropId));
 			}
-
-			drop = riverDrop.getDrop();
+			Drop drop = riverDrop.getDrop();
 			bucketDrop = bucketDao.findDrop(bucketId, drop.getId());
 
 			if (bucketDrop != null) {
 				bucketDropDao.increaseVeracity(bucketDrop);
 			} else {
-				bucketDao.addDrop(bucket, drop);
+				bucketDropDao.createFromRiverDrop(riverDrop, bucket);
 			}
 		} else if (dropSourceTO.getSource().equals("bucket")) {
 			bucketDrop = bucketDropDao.findById(dropId);
@@ -684,14 +702,15 @@ public class BucketService {
 				throw new NotFoundException(String.format(
 						"Drop %d is not a bucket drop", dropId));
 			}
-			drop = bucketDrop.getDrop();
 
 			if (bucketDrop.getBucket().equals(bucket)) {
 				throw new BadRequestException(
 						String.format("Drop %d already exists in bucket %d",
 								dropId, bucketId));
 			}
-			bucketDao.addDrop(bucket, drop);
+
+			// Create a new bucket drop from an existing
+			bucketDropDao.createFromExisting(bucketDrop, bucket);
 		}
 
 	}
@@ -731,6 +750,7 @@ public class BucketService {
 	 * of the {@link Bucket} specified in <code>bucket</code>
 	 * 
 	 * An owner is an {@link Account} that is a creator of the {@Bucket
+	 * 
 	 * } or a {@link BucketCollaborator} with edit privileges i.e. the
 	 * <code>readOnly</code> property is false
 	 * 
@@ -1058,6 +1078,178 @@ public class BucketService {
 		}
 
 		return visible;
+	}
+
+	/**
+	 * Adds a comment to the {@link BucketDrop} entity specified in
+	 * <code>dropId</code>. This entity must be associated with the
+	 * {@link Bucket} entity specified in <code>bucketId</code> otherwise a
+	 * {@link NotFoundException} will be thrown.
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public GetCommentDTO addDropComment(Long bucketId, Long dropId,
+			CreateCommentDTO createDTO, String authUser) {
+
+		if (createDTO.getCommentText() == null
+				|| createDTO.getCommentText().trim().length() == 0) {
+			throw new BadRequestException("The no comment text specified");
+		}
+
+		Bucket bucket = getBucketById(bucketId);
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		Account account = accountDao.findByUsername(authUser);
+		BucketDropComment dropComment = bucketDropDao.addComment(bucketDrop,
+				account, createDTO.getCommentText());
+
+		return mapper.map(dropComment, GetCommentDTO.class);
+	}
+
+	/**
+	 * Get and return the list of {@link BucketDropComment} entities for the
+	 * {@link BucketDrop} with the ID specified in <code>dropId</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public List<GetCommentDTO> getDropComments(Long bucketId, Long dropId,
+			String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		List<GetCommentDTO> commentsList = new ArrayList<GetCommentDTO>();
+		for (BucketDropComment dropComment : bucketDrop.getComments()) {
+			GetCommentDTO commentDTO = mapper.map(dropComment,
+					GetCommentDTO.class);
+			commentsList.add(commentDTO);
+		}
+
+		return commentsList;
+	}
+
+	/**
+	 * Deletes the {@link BucketDropComment} entity specified in
+	 * <code>commentId</code> from the {@link BucketDrop} entity specified in
+	 * <code>dropId</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param commentId
+	 * @param authUser
+	 */
+	@Transactional
+	public void deleteDropComment(Long bucketId, Long dropId, Long commentId,
+			String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		getBucketDrop(dropId, bucket);
+
+		if (!bucketDropDao.deleteComment(commentId)) {
+			throw new NotFoundException(String.format(
+					"Comment %d does not exist", commentId));
+		}
+	}
+
+	/**
+	 * Adds a comment to comment the {@link Bucket} with the ID specified in
+	 * <code>bucketId</code>. If the {@link Bucket} is private i.e.
+	 * <code>published</code> is <code>FALSE</code>, a permissions check is
+	 * performed.
+	 * 
+	 * The created {@link BucketComment} entity is transformed to DTO for
+	 * purposes of consumption by {@link BucketsController}
+	 * 
+	 * @param bucketId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public GetCommentDTO addBucketComment(Long bucketId,
+			CreateCommentDTO createDTO, String authUser) {
+		if (createDTO.getCommentText() == null) {
+			throw new BadRequestException(
+					"The comment text has not been specified");
+		}
+		Bucket bucket = getBucketById(bucketId);
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		Account account = accountDao.findByUsername(authUser);
+		BucketComment bucketComment = bucketDao.addComment(bucket,
+				createDTO.getCommentText(), account);
+
+		return mapper.map(bucketComment, GetCommentDTO.class);
+	}
+
+	/**
+	 * Gets and returns the list of {@link BucketComment} entities for the
+	 * {@link Bucket} with the ID specified in <code>bucketId</code>
+	 * 
+	 * @param bucketId
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional
+	public List<GetCommentDTO> getBucketComments(Long bucketId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+
+		if (!bucket.isPublished() && !isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		List<GetCommentDTO> dtoComments = new ArrayList<GetCommentDTO>();
+		for (BucketComment bucketComment : bucket.getComments()) {
+			dtoComments.add(mapper.map(bucketComment, GetCommentDTO.class));
+		}
+
+		return dtoComments;
+	}
+
+	/**
+	 * Deletes the {@link BucketComment} entity with the ID specified in
+	 * <code>commentId</code> from the {@link Bucket} with the ID specified in
+	 * <code>bucketId</code>. If the {@link BucketComment} does not belong to
+	 * the specified bucket, a {@link NotFoundException} is thrown
+	 * 
+	 * @param bucketId
+	 * @param commentId
+	 * @param authUser
+	 */
+	@Transactional
+	public void deleteBucketComment(Long bucketId, Long commentId,
+			String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission Denied");
+
+		BucketComment bucketComment = bucketCommentDao.findById(commentId);
+
+		if (bucketComment == null || !bucketComment.getBucket().equals(bucket)) {
+			throw new NotFoundException(String.format(
+					"Comment %d does not exist", commentId));
+		}
+
+		bucketCommentDao.delete(bucketComment);
 	}
 
 }

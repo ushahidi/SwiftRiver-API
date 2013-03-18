@@ -23,7 +23,6 @@
 	<!-- Imports user-defined @Controller beans that process client requests -->
 	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
 
-
 	<!-- Jackson Mapper -->
 	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" />
 	<bean

@@ -82,6 +82,9 @@ public class Bucket {
 	@OneToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "bucket_followers", joinColumns = @JoinColumn(name = "bucket_id"), inverseJoinColumns = @JoinColumn(name = "account_id"))
 	private List<Account> followers;
+	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "bucket")
+	private List<BucketComment> comments;
 
 	public long getId() {
 		return id;
@@ -185,6 +188,14 @@ public class Bucket {
 
 	public void setFollowers(List<Account> followers) {
 		this.followers = followers;
+	}
+	
+	public List<BucketComment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<BucketComment> comments) {
+		this.comments = comments;
 	}
 
 	@Override

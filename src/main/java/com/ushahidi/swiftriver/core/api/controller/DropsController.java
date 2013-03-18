@@ -19,14 +19,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateDropDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
@@ -52,28 +50,29 @@ public class DropsController extends AbstractController {
 		for (CreateDropDTO drop : drops) {
 
 			List<ErrorField> errors = new ArrayList<ErrorField>();
-			
+
 			if (drop.getTitle() == null) {
 				errors.add(new ErrorField("title", "missing"));
 			}
-			
+
 			if (drop.getContent() == null) {
 				errors.add(new ErrorField("content", "missing"));
 			}
-			
+
 			if (drop.getChannel() == null) {
 				errors.add(new ErrorField("channel", "missing"));
 			}
-			
+
 			if (drop.getDatePublished() == null) {
 				errors.add(new ErrorField("date_published", "missing"));
 			}
-			
+
 			if (drop.getOriginalId() == null) {
 				errors.add(new ErrorField("original_id", "missing"));
 			}
-			
-			if (drop.getIdentity() != null && drop.getIdentity().getOriginId() == null) {
+
+			if (drop.getIdentity() != null
+					&& drop.getIdentity().getOriginId() == null) {
 				errors.add(new ErrorField("identity.origin_id", "missing"));
 			}
 
@@ -88,15 +87,4 @@ public class DropsController extends AbstractController {
 		return dropService.createDrops(drops);
 	}
 
-	/**
-	 * Handler for getting comments defined a drop.
-	 * 
-	 * @param body
-	 * @return
-	 */
-	@RequestMapping(value = "/{id}/comments", method = RequestMethod.GET)
-	@ResponseBody
-	public List<GetCommentDTO> getComments(@PathVariable long id) {
-		return dropService.getComments(id);
-	}
 }

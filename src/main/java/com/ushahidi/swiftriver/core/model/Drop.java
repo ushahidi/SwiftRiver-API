@@ -106,9 +106,6 @@ public class Drop {
 	@JoinTable(name = "droplets_media", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
 	private List<Media> media;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy="drop")
-	private List<DropComment> comments;
-	
 	@Transient
 	private List<Bucket> buckets;
 	
@@ -264,14 +261,6 @@ public class Drop {
 
 	public void setMedia(List<Media> media) {
 		this.media = media;
-	}
-
-	public List<DropComment> getComments() {
-		return comments;
-	}
-
-	public void setComments(List<DropComment> comments) {
-		this.comments = comments;
 	}
 
 	public List<Bucket> getBuckets() {

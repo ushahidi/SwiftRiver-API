@@ -13,7 +13,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
- */package com.ushahidi.swiftriver.core.api.service;
+ */
+package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,23 +32,19 @@ import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateDropDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
-import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.DropComment;
-
 
 @Service
 @Transactional(readOnly = true)
 public class DropService {
-	
+
 	final Logger logger = LoggerFactory.getLogger(DropService.class);
-	
+
 	@Autowired
 	private Mapper mapper;
 
-	@Autowired	 
+	@Autowired
 	private DropDao dropDao;
 
 	@Autowired
@@ -61,7 +58,7 @@ public class DropService {
 
 	@Autowired
 	private TagDao tagDao;
-	
+
 	public Mapper getMapper() {
 		return mapper;
 	}
@@ -111,85 +108,27 @@ public class DropService {
 	}
 
 	/**
-	 * Gets and returns the comments for the drop with the specified
-	 * <code>id</code>
-	 * 
-	 * @param id
-	 * @return
-	 */
-	@Transactional
-	public List<GetCommentDTO> getComments(long id) {
-		Drop drop = getDropById(id);
-
-		List<GetCommentDTO> dropComments = new ArrayList<GetCommentDTO>();
-		
-		for (DropComment comment: drop.getComments()) {
-			GetCommentDTO commentDTO = mapper.map(comment, GetCommentDTO.class);
-			commentDTO.getAccount().setEmail(comment.getAccount().getOwner().getEmail());
-			commentDTO.getAccount().setName(comment.getAccount().getOwner().getName());
-
-			dropComments.add(commentDTO);
-		}
-		
-		return dropComments;
-	 }
-
-	 /**
-	  * Deletes the comment 
-	  * @param id
-	  * @param commentId
-	  * @param username
-	  */
-	 @Transactional
-	 public void deleteComment(long id, long commentId) {
-		 // Does the comment exist
-		 DropComment dropComment = dropDao.findCommentById(commentId);
-		 if (dropComment == null || dropComment.isDeleted() || dropComment.getDrop().getId() != id) {
-			 throw new NotFoundException();
-		 }
-
-		 // Delete the comment
-		 dropDao.deleteComment(dropComment);
-	 }
-	 
-	 /**
-	  * Internal helper method to locate the drop in the
-	  * database
-	  * 
-	  * @param id
-	  * @return
-	  */
-	 private Drop getDropById(long id) {
-		 Drop drop = dropDao.findById(id);
-		 if (drop == null) {
-			 throw new NotFoundException("The requested drop does not exist");
-		 }
-		 return drop;
-	 }
-
-	/**
 	 * Create the given list of drops
 	 * 
 	 * @param drops
 	 * @return
 	 */
-	 @Transactional(readOnly = false)
+	@Transactional(readOnly = false)
 	public List<GetDropDTO> createDrops(List<CreateDropDTO> dropDTOs) {
-		 
-		List<Drop> drops = new ArrayList<Drop>();		
-		for(CreateDropDTO dto : dropDTOs) {
+
+		List<Drop> drops = new ArrayList<Drop>();
+		for (CreateDropDTO dto : dropDTOs) {
 			drops.add(mapper.map(dto, Drop.class));
 		}
-		
+
 		dropDao.createDrops(drops);
-		
+
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 		for (Drop drop : drops) {
 			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));
 		}
-		
+
 		return getDropDTOs;
 	}
-	 
-	 
+
 }

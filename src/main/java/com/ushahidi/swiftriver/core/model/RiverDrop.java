@@ -17,13 +17,16 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -46,6 +49,18 @@ public class RiverDrop {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="droplet_date_pub")
 	private Date datePublished;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	private List<RiverDropLink> links;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	private List<RiverDropPlace> places;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	private List<RiverDropTag> tags;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	private List<RiverDropComment> comments;
 
 	public long getId() {
 		return id;
@@ -78,5 +93,38 @@ public class RiverDrop {
 	public void setDatePublished(Date datePublished) {
 		this.datePublished = datePublished;
 	}
+
+	public List<RiverDropLink> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<RiverDropLink> links) {
+		this.links = links;
+	}
+
+	public List<RiverDropPlace> getPlaces() {
+		return places;
+	}
+
+	public void setPlaces(List<RiverDropPlace> places) {
+		this.places = places;
+	}
+
+	public List<RiverDropTag> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<RiverDropTag> tags) {
+		this.tags = tags;
+	}
+
+	public List<RiverDropComment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<RiverDropComment> comments) {
+		this.comments = comments;
+	}
+
 	
 }

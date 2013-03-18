@@ -28,23 +28,17 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-
-/**
- * Model for drop comments
- * @author ekala
- *
- */
 @Entity
-@Table(name="droplet_comments")
-public class DropComment {
+@Table(name="bucket_droplet_comments")
+public class BucketDropComment {
 	
 	@Id
 	@GeneratedValue
 	private long id;
 	
 	@ManyToOne
-	@JoinColumn(name="droplet_id")
-	private Drop drop;
+	@JoinColumn(name="buckets_droplets_id")
+	private BucketDrop bucketDrop;
 	
 	@ManyToOne
 	private Account account;
@@ -53,11 +47,9 @@ public class DropComment {
 	private String commentText;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="date_added")
+	@Column(name="comment_date_add")
 	private Date dateAdded;
 	
-	private boolean deleted;
-
 	public long getId() {
 		return id;
 	}
@@ -66,12 +58,12 @@ public class DropComment {
 		this.id = id;
 	}
 
-	public Drop getDrop() {
-		return drop;
+	public BucketDrop getBucketDrop() {
+		return bucketDrop;
 	}
 
-	public void setDrop(Drop drop) {
-		this.drop = drop;
+	public void setBucketDrop(BucketDrop bucketDrop) {
+		this.bucketDrop = bucketDrop;
 	}
 
 	public Account getAccount() {
@@ -98,13 +90,5 @@ public class DropComment {
 		this.dateAdded = dateAdded;
 	}
 
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
-	
 	
 }

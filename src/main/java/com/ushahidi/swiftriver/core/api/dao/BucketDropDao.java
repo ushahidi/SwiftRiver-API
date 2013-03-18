@@ -16,12 +16,16 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
+import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.BucketDropLink;
 import com.ushahidi.swiftriver.core.model.BucketDropPlace;
 import com.ushahidi.swiftriver.core.model.BucketDropTag;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 public interface BucketDropDao extends GenericDao<BucketDrop> {
@@ -120,5 +124,48 @@ public interface BucketDropDao extends GenericDao<BucketDrop> {
 	 * @param bucketDrop
 	 */
 	public void increaseVeracity(BucketDrop bucketDrop);
+
+	/**
+	 * Creates a {@link BucketDrop} entity from the {@link RiverDrop}
+	 * specified in <code>riverDrop> for the {@link Bucket} specified
+	 * in <code>bucket</code>
+	 * 
+	 * @param riverDrop
+	 * @param bucket
+	 */
+	public void createFromRiverDrop(RiverDrop riverDrop, Bucket bucket);
+
+	/**
+	 * Creates a {@link BucketDrop} entity from an existing {@link BucketDrop},
+	 * entity that is specified in <code>sourceBucketDrop</code>.
+	 * 
+	 * The newly created entity belongs to the bucket specified in
+	 * <code>bucket</code>
+	 * 
+	 * @param sourceBucketDrop
+	 * @param bucket
+	 */
+	public void createFromExisting(BucketDrop sourceBucketDrop, Bucket bucket);
+
+	/**
+	 * Create a new {@link BucketDropComment} entity for the {@link Bucket}
+	 * entity specified in <code>bucket</code>. 
+	 * 
+	 * @param bucketDrop
+	 * @param account
+	 * @param commentText
+	 * @return
+	 */
+	public BucketDropComment addComment(BucketDrop bucketDrop, Account account,
+			String commentText);
+
+	/**
+	 * Deletes the {@link BucketDropComment} entity with the ID specified 
+	 * in <code>commentId</code>
+	 * 
+	 * @param commentId
+	 * @return
+	 */
+	public boolean deleteComment(Long commentId);
 
 }

@@ -14,29 +14,39 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dto;
+package com.ushahidi.swiftriver.core.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import java.util.Date;
 
-import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO.Account;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
-/**
- * DTO mapping class for getting drop comments
- * 
- * @author ekala
- *
- */
-public class GetCommentDTO {
+@Entity
+@Table(name="bucket_comments")
+public class BucketComment {
 	
+	@Id
+	@GeneratedValue
 	private long id;
 	
-	@JsonProperty("comment_text")
-	private String commentText;
+	@ManyToOne
+	private Bucket bucket;
 	
-	@JsonProperty("date_added")
-	private String dateAdded;
-	
+	@ManyToOne
 	private Account account;
+	
+	@Column(name="comment_text")
+	public String commentText;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="comment_date_add")
+	private Date dateAdded;
 
 	public long getId() {
 		return id;
@@ -44,6 +54,22 @@ public class GetCommentDTO {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Bucket getBucket() {
+		return bucket;
+	}
+
+	public void setBucket(Bucket bucket) {
+		this.bucket = bucket;
+	}
+
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
 	}
 
 	public String getCommentText() {
@@ -54,21 +80,12 @@ public class GetCommentDTO {
 		this.commentText = commentText;
 	}
 
-	public String getDateAdded() {
+	public Date getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDateAdded(String dateAdded) {
+	public void setDateAdded(Date dateAdded) {
 		this.dateAdded = dateAdded;
-	}
-
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-	
+	}	
 	
 }

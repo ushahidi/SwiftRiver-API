@@ -650,4 +650,32 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.principal(getAuthentication("user1")))
 			.andExpect(status().isOk());
 	}
+
+	@Test
+	public void addDropComment() throws Exception {
+		String comment = "{\"comment_text\": \"River 1 Drop 1 Comment\"}";
+
+		this.mockMvc.perform(post("/v1/rivers/1/drops/1/comments")
+				.principal(getAuthentication("user1"))
+				.content(comment)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.comment_text").value("River 1 Drop 1 Comment"));
+	}
+
+	@Test
+	public void deleteDropComment() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/comments/3")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void getDropComments() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/drops/1/comments")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").isArray());
+	}
+
 }

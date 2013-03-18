@@ -30,7 +30,6 @@ import org.mockito.ArgumentCaptor;
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateDropDTO;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.User;
 
 public class DropServiceTest {
 	

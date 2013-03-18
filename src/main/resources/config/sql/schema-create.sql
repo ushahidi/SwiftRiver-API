@@ -238,19 +238,15 @@ CREATE TABLE IF NOT EXISTS `river_droplet_media` (
 -- Table `bucket_comments`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `bucket_comments` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `bucket_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `user_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `parent_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `comment_content` text NOT NULL,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `bucket_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `account_id` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `comment_text` text NOT NULL,
   `comment_date_add` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `comment_date_modified` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `comment_sticky` tinyint(4) NOT NULL DEFAULT '0',
-  `comment_deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `comment_date_add_idx` (`comment_date_add`)
+  KEY `comment_date_add_idx` (`comment_date_add`),
+  KEY `idx_bucket_account_id` (`bucket_id`,`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 
 -- -----------------------------------------------------
 -- Table `places`
@@ -781,21 +777,6 @@ CREATE TABLE IF NOT EXISTS `bucket_comment_scores` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
--- ----------------------------------------
--- TABLE 'droplet_comments'
--- ----------------------------------------
-CREATE TABLE IF NOT EXISTS `droplet_comments` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `droplet_id` bigint(20) NOT NULL,
-  `account_id` bigint(20) NOT NULL,
-  `comment_text` varchar(1024) NOT NULL DEFAULT '',
-  `date_added` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `deleted` tinyint(1) DEFAULT 0,
-  PRIMARY KEY (`id`),
-  KEY `droplet_id` (`droplet_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
 -- -----------------------------------------------------
 -- Table `channel_quotas`
 -- -----------------------------------------------------
@@ -839,6 +820,34 @@ CREATE TABLE IF NOT EXISTS `account_read_drops` (
   `account_id` bigint(20) NOT NULL,
   `droplet_id` bigint(20) NOT NULL,
   UNIQUE KEY `droplet_id` (`droplet_id`,`account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ------------------------------------
+-- TABLE `river_droplet_comments`
+-- ------------------------------------
+CREATE TABLE IF NOT EXISTS `river_droplet_comments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `rivers_droplets_id` bigint(20) unsigned NOT NULL,
+  `account_id` bigint(20) NOT NULL,
+  `comment_text` text NOT NULL,
+  `comment_date_add` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY `idx_rivers_droplets_id` (`rivers_droplets_id`),
+  KEY `idx_account_id` (`account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------------------
+-- TABLE `bucket_droplet_comments`
+-- ----------------------------------------
+CREATE TABLE IF NOT EXISTS `bucket_droplet_comments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `buckets_droplets_id` bigint(20) unsigned NOT NULL,
+  `account_id` bigint(20) NOT NULL,
+  `comment_text` text NOT NULL,
+  `comment_date_add` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`id`),
+  KEY `idx_buckets_droplets_id` (`buckets_droplets_id`),
+  KEY `idx_account_id` (`account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------------------
