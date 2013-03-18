@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -313,7 +314,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(4));
+				.andExpect(jsonPath("$.id").value(greaterThan(3)));
 	}
 
 	@Test

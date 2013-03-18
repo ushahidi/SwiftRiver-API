@@ -328,39 +328,75 @@ public class AccountService {
 	 * 
 	 * @param accountId
 	 * @param modifyAccountTO
+	 * @param authUser
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public GetAccountDTO modifyAccount(Long accountId,
-			ModifyAccountDTO modifyAccountTO) {
+	public GetAccountDTO modifyAccount(Long accountId, ModifyAccountDTO modifyAccountTO,
+			String authUser) {
 
-		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
 		Account account = accountDao.findById(accountId);
+		Account queryingAccount = accountDao.findByUsername(authUser);
 
 		if (account == null)
 			throw new NotFoundException("Account not found.");
 
+		// If the querying account is not the the same as the account being modified
+		// raise an error
+		if (!account.equals(queryingAccount)) {
+			throw new ForbiddenException("You do not have sufficient privileges to modify this account");
+		}
+
+		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
+
+		// If another account already has the specified account path, raise an error
 		if (modifyAccountTO.getAccountPath() != null) {
-			if (accountDao.findByAccountPath(modifyAccountTO.getAccountPath()) != null) {
+			String accountPath = modifyAccountTO.getAccountPath();
+			Account otherAccount = accountDao.findByAccountPath(accountPath); 
+			if (otherAccount != null && !otherAccount.equals(account)) {
 				throw ErrorUtil.getBadRequestException("account_path",
 						"duplicate");
 			}
 		}
+		
+		// If modifying password without a token, raise an error
+		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
+				&& modifyAcOwner.getPassword() != null && modifyAcOwner.getCurrentPassword() == null)
+			throw ErrorUtil.getBadRequestException("token", "missing");
 
+		//> Account Owner properties
 		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
 			String email = modifyAcOwner.getEmail();
-			if (accountDao.findByEmail(email) != null) {
+			Account otherAccount = accountDao.findByEmail(email);
+			if (otherAccount != null && !otherAccount.equals(account)) {
 				throw ErrorUtil.getBadRequestException("owner.email",
 						"duplicate");
 			}
-			account.getOwner().setUsername(email);
 		}
 
-		// If modifying password without a token, raise an error
-		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
-				&& modifyAcOwner.getPassword() != null)
-			throw ErrorUtil.getBadRequestException("token", "missing");
+		// Password change
+		if (modifyAcOwner != null && modifyAcOwner.getCurrentPassword() != null) {
+			// No token required for a change password 
+			if (modifyAccountTO.getToken() != null) {
+				throw ErrorUtil.getBadRequestException("token", "Invalid parameter");
+			}
+			
+			// Check for new password 
+			if (modifyAcOwner.getPassword() == null) {
+				throw ErrorUtil.getBadRequestException("password", "missing");
+			}
+			
+			// Current password
+			if (!passwordEncoder.matches(modifyAcOwner.getCurrentPassword(), 
+					account.getOwner().getPassword())) {
+				throw ErrorUtil.getBadRequestException("password", "invalid");
+			}
+			
+			String password = passwordEncoder.encode(modifyAcOwner.getPassword());
+			modifyAcOwner.setPassword(password);
+		}
 
+		// Account activation or password reset
 		if (modifyAccountTO.getToken() != null) {
 			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
 				throw ErrorUtil.getBadRequestException("token", "invalid");
@@ -384,19 +420,17 @@ public class AccountService {
 				user.getRoles().add(roleDao.findByName("user"));
 			}
 
-			// Modify password if different
-			if (modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
-
-				String password = passwordEncoder.encode(modifyAccountTO
-						.getOwner().getPassword());
+			// Encode and set the new password
+			if (modifyAccountTO.getToken() != null && 
+					modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
+				String password = passwordEncoder.encode(modifyAcOwner.getPassword());
 				modifyAcOwner.setPassword(password);
 			}
 		}
-
+		
 		mapper.map(modifyAccountTO, account);
 		accountDao.update(account);
-
-		return mapper.map(account, GetAccountDTO.class);
+		return mapGetAccountDTO(account, account);
 	}
 
 	/**
@@ -535,6 +569,7 @@ public class AccountService {
 		return dto;
 	}
 
+	@Transactional(readOnly = false)
 	public void deleteApp(Long accountId, Long clientId, String authUser) {
 		Account account = accountDao.findById(accountId);
 
@@ -560,6 +595,7 @@ public class AccountService {
 	 * @param authUser
 	 * @return
 	 */
+	@Transactional(readOnly = false)
 	public GetClientDTO modifyClient(Long accountId, Long dbClientId,
 			ModifyClientDTO modifyClientDTO, String authUser) {
 

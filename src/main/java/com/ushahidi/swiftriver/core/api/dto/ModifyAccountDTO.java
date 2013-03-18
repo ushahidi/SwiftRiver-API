@@ -65,6 +65,9 @@ public class ModifyAccountDTO {
 				
 		private String password;
 		
+		@JsonProperty("current_password")
+		private String currentPassword;
+		
 		public String getName() {
 			return name;
 		}
@@ -87,6 +90,14 @@ public class ModifyAccountDTO {
 
 		public void setPassword(String password) {
 			this.password = password;
+		}
+
+		public String getCurrentPassword() {
+			return currentPassword;
+		}
+
+		public void setCurrentPassword(String currentPassword) {
+			this.currentPassword = currentPassword;
 		}
 	}
 }

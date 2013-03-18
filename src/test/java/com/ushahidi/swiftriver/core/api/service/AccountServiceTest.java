@@ -16,8 +16,15 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,11 +56,11 @@ import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Client;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.Role;
-import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
 import com.ushahidi.swiftriver.core.util.TextUtil;
@@ -166,13 +173,14 @@ public class AccountServiceTest {
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void mapGetAccountDTO() {
-		List<River> filteredRivers = new ArrayList();
+		List<River> filteredRivers = new ArrayList<River>();
 		filteredRivers.add(new River());
 		when(mockRiverService.filterVisible(anyList(), (Account) anyObject()))
 				.thenReturn(filteredRivers);
-		List<Bucket> filteredBuckets = new ArrayList();
+		List<Bucket> filteredBuckets = new ArrayList<Bucket>();
 		filteredBuckets.add(new Bucket());
 		when(mockBucketService.filterVisible(anyList(), (Account) anyObject()))
 				.thenReturn(filteredBuckets);
@@ -210,6 +218,7 @@ public class AccountServiceTest {
 		assertEquals(1, getAccountDTOs.size());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createAccount() {
 		when(mockMapper.map(any(Account.class), any(Class.class))).thenReturn(
@@ -263,6 +272,8 @@ public class AccountServiceTest {
 		Account account = new Account();
 		account.setActive(false);
 		account.setOwner(user);
+		account.setFollowers(new ArrayList<AccountFollower>());
+		account.setFollowing(new ArrayList<AccountFollower>());
 		UserToken userToken = new UserToken();
 		userToken.setUser(account.getOwner());
 		userToken.setExpires(new Date((new Date()).getTime() + 86400000L));
@@ -282,8 +293,9 @@ public class AccountServiceTest {
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
 		when(mockUserTokenDao.findByToken(anyString())).thenReturn(userToken);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 
-		accountService.modifyAccount(1L, modifyAccount);
+		accountService.modifyAccount(1L, modifyAccount, "admin");
 
 		ArgumentCaptor<Account> accountArgument = ArgumentCaptor
 				.forClass(Account.class);
@@ -298,8 +310,6 @@ public class AccountServiceTest {
 		assertFalse(modifiedAccount.getOwner().getExpired());
 		assertFalse(modifiedAccount.getOwner().getLocked());
 		assertEquals("email@example.com", modifiedAccount.getOwner().getEmail());
-		assertEquals("email@example.com", modifiedAccount.getOwner()
-				.getUsername());
 		assertEquals("owner's new name", modifiedAccount.getOwner().getName());
 		assertTrue(passwordEncoder.matches("new password", modifiedAccount
 				.getOwner().getPassword()));

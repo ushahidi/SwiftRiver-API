@@ -42,6 +42,7 @@ public class DbUserDetailsService implements UserDetailsService {
 		this.userDao = userDao;
 	}
 
+	@Transactional(readOnly = false)
 	@Override
 	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
@@ -56,6 +57,10 @@ public class DbUserDetailsService implements UserDetailsService {
 		for (Role role : dbUser.getRoles()) {
 			authorities.add(new SimpleGrantedAuthority("ROLE_"
 					+ role.getName().toUpperCase()));
+		}
+		
+		if (!authorities.isEmpty()) {
+			userDao.updateLastLogin(dbUser);
 		}
 
 		return new org.springframework.security.core.userdetails.User(

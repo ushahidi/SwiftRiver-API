@@ -15,7 +15,8 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.collection.IsCollectionWithSize.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -364,7 +365,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(3));
+				.andExpect(jsonPath("$.id").value(greaterThan(2)));
 	}
 
 	@Test

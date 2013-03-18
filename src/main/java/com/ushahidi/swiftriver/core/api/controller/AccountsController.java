@@ -170,13 +170,14 @@ public class AccountsController extends AbstractController {
 	 * 
 	 * @param body
 	 * @param accountId
+	 * @param principal
 	 * @return
 	 */
 	@RequestMapping(value = "/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public GetAccountDTO modifyAccount(@RequestBody ModifyAccountDTO body,
-			@PathVariable Long accountId) {
-		return accountService.modifyAccount(accountId, body);
+			@PathVariable Long accountId, Principal principal) {
+		return accountService.modifyAccount(accountId, body, principal.getName());
 	}
 
 	@RequestMapping(value = "/{id}/verify", method = RequestMethod.POST)
