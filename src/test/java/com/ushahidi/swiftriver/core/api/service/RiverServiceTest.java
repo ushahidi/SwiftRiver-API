@@ -16,21 +16,18 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.amqp.core.AmqpTemplate;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
@@ -40,6 +37,7 @@ import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.api.dto.ChannelUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
@@ -75,6 +73,8 @@ public class RiverServiceTest {
 
 	private Mapper mockMapper;
 
+	private Mapper mapper;
+
 	private RiverService riverService;
 
 	private RiverDropDao mockRiverDropDao;
@@ -84,6 +84,8 @@ public class RiverServiceTest {
 	private LinkDao mockLinkDao;
 
 	private PlaceDao mockPlaceDao;
+
+	private AmqpTemplate mockAmqpTemplate;
 
 	@Before
 	public void setup() {
@@ -96,6 +98,8 @@ public class RiverServiceTest {
 		mockLinkDao = mock(LinkDao.class);
 		mockPlaceDao = mock(PlaceDao.class);
 		mockMapper = mock(Mapper.class);
+		mapper = new DozerBeanMapper();
+		mockAmqpTemplate = mock(AmqpTemplate.class);
 
 		riverService = new RiverService();
 		riverService.setRiverDao(mockRiverDao);
@@ -107,6 +111,7 @@ public class RiverServiceTest {
 		riverService.setLinkDao(mockLinkDao);
 		riverService.setPlaceDao(mockPlaceDao);
 		riverService.setMapper(mockMapper);
+		riverService.setAmqpTemplate(mockAmqpTemplate);
 	}
 
 	@Test
@@ -153,25 +158,40 @@ public class RiverServiceTest {
 
 	@Test
 	public void createChannel() {
-		CreateChannelDTO mockedCreateChannelTO = mock(CreateChannelDTO.class);
-		River mockRiver = mock(River.class);
-		Channel mockChannel = mock(Channel.class);
-		GetChannelDTO mockGetChannelTO = mock(GetChannelDTO.class);
+		CreateChannelDTO createChannelTO = new CreateChannelDTO();
+		createChannelTO.setChannel("a channel");
+		createChannelTO.setParameters("channel parameters");
 
-		when(mockRiverDao.findById(1L)).thenReturn(mockRiver);
-		when(mockMapper.map(mockedCreateChannelTO, Channel.class)).thenReturn(
-				mockChannel);
-		when(mockMapper.map(mockChannel, GetChannelDTO.class)).thenReturn(
-				mockGetChannelTO);
+		River river = new River();
+		when(mockRiverDao.findById(1L)).thenReturn(river);
+
+		riverService.setMapper(mapper);
 
 		GetChannelDTO actualChannelTO = riverService.createChannel(1L,
-				mockedCreateChannelTO);
+				createChannelTO);
 
-		verify(mockRiverDao).findById(1L);
-		verify(mockChannel).setRiver(mockRiver);
-		verify(mockChannelDao).create(mockChannel);
+		assertNotNull(actualChannelTO.getId());
 
-		assertEquals(mockGetChannelTO, actualChannelTO);
+		ArgumentCaptor<ChannelUpdateNotification> notificationArgument = ArgumentCaptor
+				.forClass(ChannelUpdateNotification.class);
+		ArgumentCaptor<String> routingKeyArgument = ArgumentCaptor
+				.forClass(String.class);
+		verify(mockAmqpTemplate).convertAndSend(routingKeyArgument.capture(),
+				notificationArgument.capture());
+		ChannelUpdateNotification notification = notificationArgument
+				.getValue();
+		assertEquals("a channel", notification.getChannel());
+		assertEquals("channel parameters", notification.getParameters());
+		assertEquals(1L, notification.getRiverId());
+		assertEquals("web.channel.a channel.add", routingKeyArgument.getValue());
+
+		ArgumentCaptor<Channel> channelArgument = ArgumentCaptor
+				.forClass(Channel.class);
+		verify(mockChannelDao).create(channelArgument.capture());
+		Channel channel = channelArgument.getValue();
+		assertEquals(river, channel.getRiver());
+		assertEquals("a channel", channel.getChannel());
+		assertEquals("channel parameters", channel.getParameters());
 	}
 
 	@Test
@@ -246,46 +266,89 @@ public class RiverServiceTest {
 
 	@Test
 	public void deleteChannel() {
-		Channel mockChannel = mock(Channel.class);
 		Account account = new Account();
 		account.setAccountPath("other-account");
 		account.setCollaboratingRivers(new ArrayList<River>());
 		River river = new River();
 		river.setId(1L);
 		river.setAccount(account);
+		Channel channel = new Channel();
+		channel.setChannel("the channel");
+		channel.setParameters("the parameters");
+		channel.setRiver(river);
 
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
-		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
-		when(mockChannel.getRiver()).thenReturn(river);
+		when(mockChannelDao.findById(anyLong())).thenReturn(channel);
 
 		riverService.deleteChannel(1L, 1L, "user");
 
-		verify(mockChannelDao).delete(mockChannel);
+		ArgumentCaptor<ChannelUpdateNotification> notificationArgument = ArgumentCaptor
+				.forClass(ChannelUpdateNotification.class);
+		ArgumentCaptor<String> routingKeyArgument = ArgumentCaptor
+				.forClass(String.class);
+		verify(mockAmqpTemplate).convertAndSend(routingKeyArgument.capture(),
+				notificationArgument.capture());
+		ChannelUpdateNotification notification = notificationArgument
+				.getValue();
+		assertEquals("the channel", notification.getChannel());
+		assertEquals("the parameters", notification.getParameters());
+		assertEquals(1L, notification.getRiverId());
+		assertEquals("web.channel.the channel.delete", routingKeyArgument.getValue());
+
+		verify(mockChannelDao).delete(channel);
 	}
 
 	@Test
 	public void modifyChannel() {
-		Channel mockChannel = mock(Channel.class);
-		ModifyChannelDTO modifyChannelTo = mock(ModifyChannelDTO.class);
-		GetChannelDTO mockGetChannelTO = mock(GetChannelDTO.class);
 		Account account = new Account();
 		account.setAccountPath("other-account");
 		account.setCollaboratingRivers(new ArrayList<River>());
+
 		River river = new River();
 		river.setId(1L);
 		river.setAccount(account);
 
+		Channel channel = new Channel();
+		channel.setChannel("channel before");
+		channel.setParameters("parameters before");
+		channel.setRiver(river);
+
+		ModifyChannelDTO modifyChannelTo = new ModifyChannelDTO();
+		modifyChannelTo.setChannel("channel after");
+		modifyChannelTo.setParameters("parameters after");
+
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
-		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
-		when(mockChannel.getRiver()).thenReturn(river);
-		when(mockMapper.map(mockChannel, GetChannelDTO.class)).thenReturn(
-				mockGetChannelTO);
+		when(mockChannelDao.findById(anyLong())).thenReturn(channel);
+		riverService.setMapper(mapper);
 
-		GetChannelDTO actualGetChannelDTO = riverService.modifyChannel(1L, 1L,
-				modifyChannelTo, "user");
+		riverService.modifyChannel(1L, 1L, modifyChannelTo, "user");
 
-		verify(mockChannelDao).update(mockChannel);
-		assertEquals(mockGetChannelTO, actualGetChannelDTO);
+		ArgumentCaptor<Channel> channelArgument = ArgumentCaptor
+				.forClass(Channel.class);
+		verify(mockChannelDao).update(channelArgument.capture());
+		Channel updatedChannel = channelArgument.getValue();
+		assertEquals(river, updatedChannel.getRiver());
+		assertEquals("channel after", updatedChannel.getChannel());
+		assertEquals("parameters after", updatedChannel.getParameters());
+
+		ArgumentCaptor<ChannelUpdateNotification> notificationArgument = ArgumentCaptor
+				.forClass(ChannelUpdateNotification.class);
+		ArgumentCaptor<String> routingKeyArgument = ArgumentCaptor
+				.forClass(String.class);
+		verify(mockAmqpTemplate, times(2)).convertAndSend(
+				routingKeyArgument.capture(), notificationArgument.capture());
+		List<ChannelUpdateNotification> notifications = notificationArgument
+				.getAllValues();
+		assertEquals("channel before", notifications.get(0).getChannel());
+		assertEquals("parameters before", notifications.get(0).getParameters());
+		assertEquals(1L, notifications.get(0).getRiverId());
+		assertEquals("channel after", notifications.get(1).getChannel());
+		assertEquals("parameters after", notifications.get(1).getParameters());
+		assertEquals(1L, notifications.get(0).getRiverId());
+
+		List<String> routingKeys = routingKeyArgument.getAllValues();
+		assertEquals("web.channel.channel before.delete", routingKeys.get(0));
+		assertEquals("web.channel.channel after.add", routingKeys.get(1));
 	}
 
 	@Test
@@ -563,7 +626,7 @@ public class RiverServiceTest {
 
 		List<River> filtered = riverService.filterVisible(rivers,
 				queryingAccount);
-		
+
 		assertEquals(2, filtered.size());
 		assertTrue(filtered.contains(ownedPrivateRiver));
 		assertTrue(filtered.contains(publicRiver));

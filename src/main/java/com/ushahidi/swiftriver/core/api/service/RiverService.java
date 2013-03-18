@@ -23,6 +23,7 @@ import java.util.List;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.api.dao.RuleDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.api.dto.ChannelUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
@@ -114,6 +116,9 @@ public class RiverService {
 	@Autowired
 	private RuleDao ruleDao;
 
+	@Autowired
+	private AmqpTemplate amqpTemplate;
+
 	public RiverDao getRiverDao() {
 		return riverDao;
 	}
@@ -169,6 +174,14 @@ public class RiverService {
 
 	public void setPlaceDao(PlaceDao placeDao) {
 		this.placeDao = placeDao;
+	}
+
+	public AmqpTemplate getAmqpTemplate() {
+		return amqpTemplate;
+	}
+
+	public void setAmqpTemplate(AmqpTemplate amqpTemplate) {
+		this.amqpTemplate = amqpTemplate;
 	}
 
 	/**
@@ -266,6 +279,13 @@ public class RiverService {
 		channel.setRiver(river);
 		channelDao.create(channel);
 
+		ChannelUpdateNotification notification = new ChannelUpdateNotification();
+		notification.setChannel(channel.getChannel());
+		notification.setRiverId(riverId);
+		notification.setParameters(channel.getParameters());
+		amqpTemplate.convertAndSend("web.channel." + notification.getChannel()
+				+ ".add", notification);
+
 		return mapper.map(channel, GetChannelDTO.class);
 	}
 
@@ -277,14 +297,41 @@ public class RiverService {
 	public void deleteChannel(Long riverId, Long channelId, String authUser) {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
 		channelDao.delete(channel);
+
+		ChannelUpdateNotification notification = new ChannelUpdateNotification();
+		notification.setChannel(channel.getChannel());
+		notification.setRiverId(riverId);
+		notification.setParameters(channel.getParameters());
+		amqpTemplate.convertAndSend("web.channel." + notification.getChannel()
+				+ ".delete", notification);
 	}
 
 	@Transactional(readOnly = false)
 	public GetChannelDTO modifyChannel(Long riverId, Long channelId,
 			ModifyChannelDTO modifyChannelTO, String authUser) {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
+
+		// Get the channel before modification for a deletion notification
+		ChannelUpdateNotification beforeNotification = new ChannelUpdateNotification();
+		beforeNotification.setChannel(channel.getChannel());
+		beforeNotification.setRiverId(riverId);
+		beforeNotification.setParameters(channel.getParameters());
+
 		mapper.map(modifyChannelTO, channel);
 		channelDao.update(channel);
+
+		// Get the channel after modification for an add notification
+		ChannelUpdateNotification afterNotification = new ChannelUpdateNotification();
+		afterNotification.setChannel(channel.getChannel());
+		afterNotification.setRiverId(riverId);
+		afterNotification.setParameters(channel.getParameters());
+
+		amqpTemplate.convertAndSend(
+				"web.channel." + beforeNotification.getChannel() + ".delete",
+				beforeNotification);
+		amqpTemplate.convertAndSend(
+				"web.channel." + afterNotification.getChannel() + ".add",
+				afterNotification);
 
 		return mapper.map(channel, GetChannelDTO.class);
 	}

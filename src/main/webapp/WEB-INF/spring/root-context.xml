@@ -2,6 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans.xsd 
@@ -10,7 +11,9 @@
 		http://www.springframework.org/schema/tx
         http://www.springframework.org/schema/tx/spring-tx.xsd
         http://www.springframework.org/schema/jdbc 
-        http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
+        http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+        http://www.springframework.org/schema/rabbit
+        http://www.springframework.org/schema/rabbit/spring-rabbit-1.1.xsd">
 
 	<!-- post-processors for all standard config annotations -->
 	<context:annotation-config />
@@ -27,6 +30,8 @@
 	<bean id="roleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRoleDao" />
 	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
 	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
+	<bean id="identityDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaIdentityDao" />
 	<bean id="riverDropDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDropDao" />
 	<bean id="bucketDropDao"
@@ -36,10 +41,13 @@
 	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />
 	<bean id="placeDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaPlaceDao" />
 	<bean id="tagDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaTagDao" />
+	<bean id="mediaDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaMediaDao" />
 	<bean id="riverCollaboratorDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverCollaboratorDao" />
 	<bean id="bucketCollaboratorDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
+	<bean id="sequenceDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaSequenceDao" />
 	<bean id="bucketCommentDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
 	<bean id="ruleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRuleDao" />
@@ -97,6 +105,22 @@
 		<bean id="encryptionKey" class="java.lang.String">
 			<constructor-arg value="${encrypt.key}" />
 		</bean>
+
+		<!-- RabbitMQ Connection -->
+		<rabbit:connection-factory id="rabbitConnectionFactory"
+			host="${mq.host}" username="${mq.username}" password="${mq.password}" />
+
+		<!-- Metadata Exchange -->
+		<rabbit:topic-exchange name="chatter" durable="true" />
+
+		<!-- Declare the Queues, Exchanged defined here. -->
+		<rabbit:admin connection-factory="rabbitConnectionFactory" />
+
+		<bean id="messageConverter"
+			class="org.springframework.amqp.support.converter.JsonMessageConverter" />
+
+		<rabbit:template id="amqpTemplate" connection-factory="rabbitConnectionFactory"
+			exchange="chatter" message-converter="messageConverter" />
 	</beans>
 
 	<beans profile="test">
@@ -111,5 +135,7 @@
 			<jdbc:script location="classpath:config/sql/schema-create.sql" />
 			<jdbc:script location="classpath:config/sql/test-data.sql" />
 		</jdbc:initialize-database>
+		
+		<bean id="amqpTemplate" class="com.ushahidi.swiftriver.core.support.MockAmqpTemplate" />
 	</beans>
 </beans>

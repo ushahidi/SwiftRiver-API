@@ -93,7 +93,7 @@ VALUES
 -- Data for table `rivers`
 -- -----------------------------------------------------
 INSERT INTO `rivers` (`id`, `account_id`, `river_name`, `river_name_canonical`, `description`, `river_active`, `river_public`, `drop_count`, `drop_quota`, `river_full`, `river_date_add`, `river_date_expiry`, `river_expired`, `extension_count`, `max_drop_id`) VALUES 
-(1, 3, 'Public River 1', 'public-river-1', 'Just a public river', 1, 1, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 100),
+(1, 3, 'Public River 1', 'public-river-1', 'Just a public river', 1, 1, 6, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 5),
 (2, 3, 'Private River 1', 'private-river-1', NULL, 1, 0, 100, 10000, 0, '2013-01-02 00:00:02', '2013-02-02 00:00:02', 0, 0, 1000);
 
 -- ------------------------------------
@@ -268,22 +268,22 @@ INSERT INTO `media_thumbnails` (`id`, `media_id`, `size`, `url`) VALUES
 INSERT INTO `droplets_media` (`id`, `droplet_id`, `media_id`) VALUES
 (1, 5, 1),
 (2, 4, 1),
-(3, 5, 2);
+(3, 5, 9);
 
 -- -----------------------------------------------------
 -- Data for table `places`
 -- -----------------------------------------------------
 INSERT INTO `places` (`id`, `hash`, `place_name`, `place_name_canonical`, `longitude`, `latitude`) VALUES
-(1, '867da1cf4e6bd9fc5512a19a90e0141f', 'Wales', 'wales', 146.11, -33),
+(1, 'a5f0514503a1076eea4febd1d49e3b06', 'Wales', 'wales', 146.11, -33),
 (2, '5f1823c378ecb68558282f7462e3fd87', 'England', 'england', -4, 54),
 (3, 'c01ceb95cdaf55355a89e7749a3f6c4d', 'China', 'china', 105, 35),
-(4, '67ec7056b9618e92b0f5f35c2372317d', 'Freetown', 'freetown', -13.2299, 8.484),
-(5, 'a0feadafb547fde23f26724d70fb5785', 'Gaza', 'gaza', 34.3333, 31.4167),
-(6, 'b48a4004999d58f41d876def626d2bd8', 'Palestinian', 'palestinian', 35.2033, 31.9216),
-(7, '7457a6c6a321cd1165d3efb4d523f4ba', 'US', 'us', -98.5, 39.76),
+(4, 'efa9514d3f0a8b8946453a16db1c0878', 'Freetown', 'freetown', -13.2299, 8.484),
+(5, 'ef804750eafdd1f061309936aca23f36', 'Gaza', 'gaza', 34.3333, 31.4167),
+(6, '1029ba06803e1f5d0cd03b99d9f45a68', 'Palestinian', 'palestinian', 35.2033, 31.9216),
+(7, '775e8cd530ca804bcc098f61560de061', 'US', 'us', -98.5, 39.76),
 (8, 'a03122d00783b59d218abbee8061129d', 'Pakistani', 'pakistani', 70, 30),
-(9, '7a17c2a0d99f5f274d882bdc3acc5e79', 'Heathrow', 'heathrow', -81.3722, 28.7633),
-(10, '6747703539026b8cd9bba1c68803bfe6', 'London City', 'london city', -0.09184, 51.5128);
+(9, '6f8225cfb55ab7a1eda96d05bb737e32', 'Heathrow', 'heathrow', -81.3722, 28.7633),
+(10, '5e1df0f9094710d86c6a3496522ec989', 'London City', 'london city', -0.09184, 51.5128);
 
 -- -----------------------------------------------------
 -- Data for table `droplets_links`
@@ -291,7 +291,7 @@ INSERT INTO `places` (`id`, `hash`, `place_name`, `place_name_canonical`, `longi
 INSERT INTO droplets_places(`id`, `droplet_id`, `place_id`) VALUES
 (1, 5, 1),
 (2, 4, 1),
-(3, 5, 2);
+(3, 5, 4);
 
 -- -----------------------------------------------------
 -- Data for table `river_droplet_comments`

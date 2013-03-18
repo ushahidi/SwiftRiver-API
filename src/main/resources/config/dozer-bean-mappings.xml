@@ -15,6 +15,11 @@
 			<a>originalUrl.url</a>
 			<b>originalUrl</b>
 		</field>
+		
+		<field>
+			<a>image.url</a>
+			<b>image</b>
+		</field>
 	</mapping>
 
 	<mapping map-null="false">
