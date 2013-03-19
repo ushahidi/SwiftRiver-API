@@ -93,13 +93,31 @@
 
 	<!-- Data Sources -->
 	<beans profile="prod">
-		<context:property-placeholder location="file:///${ext.prop.dir}/*.properties" />
-
 		<jee:jndi-lookup id="dataSource" jndi-name="jdbc/SwiftRiverDB"
 			expected-type="javax.sql.DataSource" />
 
-		<bean id="encryptionKey" class="java.lang.String">
-			<constructor-arg value="${encrypt.key}" />
+		<jee:jndi-lookup id="encryptionKey" jndi-name="encryptionKey"
+			expected-type="java.lang.String" />
+
+		<bean
+			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="properties">
+				<bean class="java.util.Properties">
+					<constructor-arg>
+						<map>
+							<entry key="mq.host">
+								<jee:jndi-lookup jndi-name="mqHost" />
+							</entry>
+							<entry key="mq.username">
+								<jee:jndi-lookup jndi-name="mqUser" />
+							</entry>
+							<entry key="mq.password">
+								<jee:jndi-lookup jndi-name="mqPass" />
+							</entry>
+						</map>
+					</constructor-arg>
+				</bean>
+			</property>
 		</bean>
 
 		<!-- RabbitMQ Connection -->
@@ -120,8 +138,6 @@
 	</beans>
 
 	<beans profile="test">
-		<context:property-placeholder location="classpath:db-test.properties" />
-
 		<bean id="encryptionKey" class="java.lang.String">
 			<constructor-arg value="2344228477#97{7&amp;6&gt;82" />
 		</bean>
