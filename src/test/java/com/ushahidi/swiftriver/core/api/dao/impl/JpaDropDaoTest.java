@@ -2,7 +2,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,16 +67,16 @@ public class JpaDropDaoTest extends AbstractDaoTest {
 
 		dropDao.createDrops(drops);
 
-		String sql = "SELECT `id`, `channel`, `droplet_hash`, "
-				+ "`droplet_orig_id`, `droplet_title`, "
-				+ "`droplet_content`, `droplet_date_pub`, "
-				+ "`droplet_date_add`, `identity_id` FROM `droplets` WHERE "
-				+ "`id` =  ?";
+		String sql = "SELECT id, channel, droplet_hash, "
+				+ "droplet_orig_id, droplet_title, "
+				+ "droplet_content, droplet_date_pub, "
+				+ "droplet_date_add, identity_id FROM droplets WHERE "
+				+ "id =  ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				drop.getId());
 
-		assertEquals(11L, ((BigInteger) results.get("id")).longValue());
+		assertEquals(11L, ((Number) results.get("id")).longValue());
 		assertEquals("test channel", results.get("channel"));
 		assertEquals("476029d4b6f84664ac56d93e9f6fd27a",
 				results.get("droplet_hash"));
@@ -86,23 +85,23 @@ public class JpaDropDaoTest extends AbstractDaoTest {
 		assertEquals("test original id", results.get("droplet_orig_id"));
 		assertNotNull(results.get("droplet_date_pub"));
 		assertNotNull(results.get("droplet_date_add"));
-		assertEquals(3L, ((BigInteger) results.get("identity_id")).longValue());
+		assertEquals(3L, ((Number) results.get("identity_id")).longValue());
 		assertNotNull(tag.getId());
 		assertNotNull(place.getId());
 		assertNotNull(newMedia.getId());
 
-		sql = "SELECT `id`, `river_id`, `droplet_date_pub`, `channel` FROM `rivers_droplets` WHERE `droplet_id` = ?";
+		sql = "SELECT id, river_id, droplet_date_pub, channel FROM rivers_droplets WHERE droplet_id = ?";
 
 		results = this.jdbcTemplate.queryForMap(sql, drop.getId());
-		assertEquals(6L, ((BigInteger) results.get("id")).longValue());
-		assertEquals(1L, ((BigInteger) results.get("river_id")).longValue());
+		assertEquals(6L, ((Number) results.get("id")).longValue());
+		assertEquals(1L, ((Number) results.get("river_id")).longValue());
 		assertEquals(drop.getDatePublished().getTime(), ((Date)results.get("droplet_date_pub")).getTime());
 		assertEquals("test channel", results.get("channel"));
 		
 		// Ensure rivers_droplets sequence was updated correctly
 		assertEquals(6, sequenceDao.findById("rivers_droplets").getId());
 		
-		sql = "SELECT `max_drop_id`, `drop_count` FROM 	`rivers` WHERE `id` = ?";
+		sql = "SELECT max_drop_id, drop_count FROM 	rivers WHERE id = ?";
 		results = this.jdbcTemplate.queryForMap(sql, 1L);
 		assertEquals(6L, results.get("max_drop_id"));
 		assertEquals(7, results.get("drop_count"));

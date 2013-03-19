@@ -44,11 +44,11 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 		channelDao.create(channel);
 
 		assertNotNull(channel.getId());
-		String sql = "SELECT `river_id`, `channel`, `active`, `parameters` FROM `river_channels` WHERE `id` = ?";
+		String sql = "SELECT river_id, channel, active, parameters FROM river_channels WHERE id = ?";
 
 		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql,
 				channel.getId());
-		assertEquals(2L, r.get("river_id"));
+		assertEquals(2L, ((Number)r.get("river_id")).longValue());
 		assertEquals("test channel", r.get("channel"));
 		assertEquals(true, r.get("active"));
 		assertEquals("test parameters", r.get("parameters"));
@@ -61,7 +61,7 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 		channelDao.delete(channel);
 		em.flush();
 		
-		String sql = "SELECT * FROM `river_channels` WHERE `id` = ?";
+		String sql = "SELECT * FROM river_channels WHERE id = ?";
 		
 		this.jdbcTemplate.queryForMap(sql, 3);
 	}
@@ -75,7 +75,7 @@ public class JpaChannelDaoTest extends AbstractDaoTest {
 		channelDao.update(channel);
 		em.flush();
 		
-		String sql = "SELECT `channel`, `parameters` FROM `river_channels` WHERE `id` = ?";
+		String sql = "SELECT channel, parameters FROM river_channels WHERE id = ?";
 		
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1);
 		assertEquals("updated-channel", (String)results.get("channel"));

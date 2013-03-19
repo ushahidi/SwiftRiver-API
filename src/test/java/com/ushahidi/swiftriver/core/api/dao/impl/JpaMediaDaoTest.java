@@ -28,6 +28,7 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 		media.add(existingMedia);
 		Media newMedia = new Media();
 		newMedia.setUrl("http://example.com/new ");
+		newMedia.setType("image");
 		media.add(newMedia);
 
 		List<Drop> drops = new ArrayList<Drop>();
@@ -41,7 +42,7 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 
 		assertEquals(9, existingMedia.getId());
 
-		String sql = "SELECT `hash`, `url` " + "FROM `media` WHERE `id` = ?";
+		String sql = "SELECT hash, url " + "FROM media WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				newMedia.getId());
@@ -49,14 +50,14 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 		assertEquals("44b764d6f4dab845f031ba9e52f61d95", results.get("hash"));
 		assertEquals("http://example.com/new", results.get("url"));
 
-		sql = "SELECT `media_id` FROM `droplets_media` WHERE `droplet_id` = 5";
+		sql = "SELECT media_id FROM droplets_media WHERE droplet_id = 5";
 
 		List<Long> dropletMedia = this.jdbcTemplate.queryForList(sql,
 				Long.class);
 		assertEquals(3, dropletMedia.size());
 		assertTrue(dropletMedia.contains(newMedia.getId()));
 		
-		sql = "SELECT `droplet_image` FROM `droplets` WHERE `id` = 5";
+		sql = "SELECT droplet_image FROM droplets WHERE id = 5";
 		assertEquals(newMedia.getId(), this.jdbcTemplate.queryForLong(sql));
 	}
 	
@@ -72,6 +73,7 @@ public class JpaMediaDaoTest extends AbstractDaoTest {
 		media.add(existingMedia);
 		Media newMedia = new Media();
 		newMedia.setUrl("http://example.com/new ");
+		newMedia.setType("image");
 		media.add(newMedia);
 
 		List<Drop> drops = new ArrayList<Drop>();

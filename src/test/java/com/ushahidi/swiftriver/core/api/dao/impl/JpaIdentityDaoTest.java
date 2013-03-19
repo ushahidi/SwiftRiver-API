@@ -16,7 +16,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,14 +49,14 @@ public class JpaIdentityDaoTest extends AbstractDaoTest {
 		
 		identityDao.getIdentities(drops);
 		
-		String sql = "SELECT `id`, `hash`, `channel`, `identity_orig_id`, " +
-				"`identity_username`, `identity_name`, `identity_avatar` " +
-				"FROM `identities` WHERE `id` = ?";
+		String sql = "SELECT id, hash, channel, identity_orig_id, " +
+				"identity_username, identity_name, identity_avatar " +
+				"FROM identities WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				drop.getIdentity().getId());
 		
-		assertEquals(3L, ((BigInteger)results.get("id")).longValue());
+		assertEquals(3L, ((Number)results.get("id")).longValue());
 		assertEquals("f335db65e19fd5ebf49d5f9ad21f1f07", results.get("hash"));
 		assertEquals("test channel", results.get("channel"));
 		assertEquals("test identity original id", results.get("identity_orig_id"));

@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -173,7 +172,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	private void updateNewDropIndex(Map<String, List<Integer>> newDropIndex,
 			List<Drop> drops) {
 		// First find and update existing drops with their ids.
-		String sql = "SELECT `id`, `droplet_hash` FROM `droplets` WHERE `droplet_hash` IN (:hashes)";
+		String sql = "SELECT id, droplet_hash FROM droplets WHERE droplet_hash IN (:hashes)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("hashes", newDropIndex.keySet());
@@ -184,7 +183,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		// Update id for the drops that were found
 		for (Map<String, Object> result : results) {
 			String hash = (String) result.get("droplet_hash");
-			Long id = ((BigInteger) result.get("id")).longValue();
+			Long id = ((Number) result.get("id")).longValue();
 
 			List<Integer> indexes = newDropIndex.get(hash);
 			for (Integer index : indexes) {
@@ -209,10 +208,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		hashes.addAll(newDropIndex.keySet());
 		final long startKey = sequenceDao.getIds(seq, hashes.size());
 
-		String sql = "INSERT INTO `droplets` (`id`, `channel`, `droplet_hash`, "
-				+ "`droplet_orig_id`, `droplet_title`, "
-				+ "`droplet_content`, `droplet_date_pub`, `droplet_date_add`, "
-				+ "`identity_id`) VALUES (?,?,?,?,?,?,?,?,?)";
+		String sql = "INSERT INTO droplets (id, channel, droplet_hash, "
+				+ "droplet_orig_id, droplet_title, "
+				+ "droplet_content, droplet_date_pub, droplet_date_add, "
+				+ "identity_id) VALUES (?,?,?,?,?,?,?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
@@ -276,7 +275,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			return;
 
 		// Find already existing rivers_droplets
-		String sql = "SELECT `droplet_id`, `river_id` FROM `rivers_droplets` WHERE `droplet_id` in (:ids)";
+		String sql = "SELECT droplet_id, river_id FROM rivers_droplets WHERE droplet_id in (:ids)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("ids", dropIndex.keySet());
@@ -286,9 +285,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		// Remove already existing rivers_droplets from our Set
 		for (Map<String, Object> result : results) {
-			long dropletId = ((BigInteger) result.get("droplet_id"))
+			long dropletId = ((Number) result.get("droplet_id"))
 					.longValue();
-			long riverId = ((BigInteger) result.get("river_id")).longValue();
+			long riverId = ((Number) result.get("river_id")).longValue();
 
 			Set<Long> riverSet = dropRiversMap.get(dropletId);
 			if (riverSet != null) {
@@ -297,7 +296,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		}
 
 		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, `droplet_date_pub`, `channel`) VALUES (?,?,?,?,?)";
+		sql = "INSERT INTO rivers_droplets (id, droplet_id, river_id, droplet_date_pub, channel) VALUES (?,?,?,?,?)";
 
 		final List<long[]> dropRiverList = new ArrayList<long[]>();
 		for (Long dropletId : dropRiversMap.keySet()) {
@@ -341,35 +340,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				return dropRiverList.size();
 			}
 		});
+		
+		// Update river max_drop_id and drop_count
+		sql = "UPDATE rivers SET max_drop_id = ?, drop_count = drop_count + ? WHERE id = ?";
+		final List<Entry<Long, long[]>> riverUpdate = new ArrayList<Entry<Long, long[]>>();
+		riverUpdate.addAll(riverDropsMap.entrySet());		
+		this.jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+            	Entry<Long, long[]> entry = riverUpdate.get(i);
+                ps.setLong(1, entry.getValue()[0]);
+                ps.setLong(2, entry.getValue()[1]);
+                ps.setLong(3, entry.getKey());
+            }
 
-		// Create a temp table sql for updating the rivers table
-		String riverUpdateSql = "";
-		for (Entry<Long, long[]> entry : riverDropsMap.entrySet()) {
-			long[] update = entry.getValue();
-
-			if (riverUpdateSql.length() > 0) {
-				riverUpdateSql += " UNION ALL ";
-			}
-
-			riverUpdateSql += String.format("SELECT %d id, %d max_id, %d cnt",
-					entry.getKey(), update[0], update[1]);
-		}
-
-		// Update max_drop_id using the temp table
-		sql = "UPDATE `rivers` " + "JOIN (" + riverUpdateSql + ") a "
-				+ "USING (`id`) "
-				+ "SET `rivers`.`max_drop_id` = `a`.`max_id` "
-				+ "WHERE `rivers`.`max_drop_id` < `a`.`max_id`";
-		this.jdbcTemplate.update(sql);
-
-		// Update drop_count using the temp table
-		sql = "UPDATE `rivers` "
-				+ "JOIN ("
-				+ riverUpdateSql
-				+ ") a "
-				+ "USING (`id`) "
-				+ "SET `rivers`.`drop_count` = `rivers`.`drop_count` + `a`.`cnt`";
-		this.jdbcTemplate.update(sql);
+            public int getBatchSize() {
+                return riverUpdate.size();
+            }
+        } );
 	}
 
 	/**
@@ -465,9 +452,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		for (Object oRow : query.getResultList()) {
 			Object[] r = (Object[]) oRow;
 
-			Long dropId = ((BigInteger) r[0]).longValue();
+			Long dropId = ((Number) r[0]).longValue();
 			Tag tag = new Tag();
-			tag.setId(((BigInteger) r[1]).longValue());
+			tag.setId(((Number) r[1]).longValue());
 			tag.setTag((String) r[2]);
 			tag.setType((String) r[4]);
 
@@ -499,21 +486,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getBucketTagsQuery() {
-		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type` ";
-		sql += "FROM `droplets_tags`  ";
-		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
-		sql += "INNER JOIN buckets_droplets ON (`buckets_droplets`.`droplet_id` = `droplets_tags`.`droplet_id`)";
-		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids  ";
-		sql += "AND `tags`.`id` NOT IN ( ";
-		sql += "	SELECT `tag_id` FROM `bucket_droplet_tags`  ";
-		sql += "	WHERE `buckets_droplets_id` IN :drop_ids  ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT buckets_droplets.id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type ";
+		sql += "FROM droplets_tags  ";
+		sql += "INNER JOIN tags ON (tags.id = tag_id)  ";
+		sql += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_tags.droplet_id)";
+		sql += "WHERE buckets_droplets.id IN :drop_ids  ";
+		sql += "AND tags.id NOT IN ( ";
+		sql += "	SELECT tag_id FROM bucket_droplet_tags  ";
+		sql += "	WHERE buckets_droplets_id IN :drop_ids  ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL  ";
-		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type`  ";
-		sql += "FROM `bucket_droplet_tags` ";
-		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
-		sql += "WHERE `buckets_droplets_id` IN :drop_ids  ";
-		sql += "AND `deleted` = 0 ";
+		sql += "SELECT buckets_droplets_id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type  ";
+		sql += "FROM bucket_droplet_tags ";
+		sql += "INNER JOIN tags ON (tags.id = tag_id)  ";
+		sql += "WHERE buckets_droplets_id IN :drop_ids  ";
+		sql += "AND deleted = 0 ";
 
 		return sql;
 	}
@@ -525,21 +512,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getRiverTagsQuery() {
-		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type` ";
-		sql += "FROM `droplets_tags`  ";
-		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
-		sql += "INNER JOIN rivers_droplets ON (`rivers_droplets`.`droplet_id` = `droplets_tags`.`droplet_id`)";
-		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids  ";
-		sql += "AND `tags`.`id` NOT IN ( ";
-		sql += "	SELECT `tag_id` FROM `river_droplet_tags`  ";
-		sql += "	WHERE `rivers_droplets_id` IN :drop_ids  ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT rivers_droplets.id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type ";
+		sql += "FROM droplets_tags  ";
+		sql += "INNER JOIN tags ON (tags.id = tag_id)  ";
+		sql += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets_tags.droplet_id)";
+		sql += "WHERE rivers_droplets.id IN :drop_ids  ";
+		sql += "AND tags.id NOT IN ( ";
+		sql += "	SELECT tag_id FROM river_droplet_tags  ";
+		sql += "	WHERE rivers_droplets_id IN :drop_ids  ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL  ";
-		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `tag_id` AS `id`, `tag`, `tag_canonical`, `tag_type`  ";
-		sql += "FROM `river_droplet_tags` ";
-		sql += "INNER JOIN `tags` ON (`tags`.`id` = `tag_id`)  ";
-		sql += "WHERE `rivers_droplets_id` IN :drop_ids  ";
-		sql += "AND `deleted` = 0 ";
+		sql += "SELECT rivers_droplets_id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type  ";
+		sql += "FROM river_droplet_tags ";
+		sql += "INNER JOIN tags ON (tags.id = tag_id)  ";
+		sql += "WHERE rivers_droplets_id IN :drop_ids  ";
+		sql += "AND deleted = 0 ";
 
 		return sql;
 	}
@@ -576,9 +563,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		for (Object oRow : query.getResultList()) {
 			Object[] r = (Object[]) oRow;
 
-			Long dropId = ((BigInteger) r[0]).longValue();
+			Long dropId = ((Number) r[0]).longValue();
 			Link link = new Link();
-			link.setId(((BigInteger) r[1]).longValue());
+			link.setId(((Number) r[1]).longValue());
 			link.setUrl((String) r[2]);
 
 			List<Link> l = links.get(dropId);
@@ -608,21 +595,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getBucketLinksQuery() {
-		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `link_id` AS `id`, `url` ";
-		sql += "FROM `droplets_links`  ";
-		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
-		sql += "INNER JOIN buckets_droplets ON (`buckets_droplets`.`droplet_id` = `droplets_links`.`droplet_id`)";
-		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids  ";
-		sql += "AND `links`.`id` NOT IN ( ";
-		sql += "	SELECT `link_id` FROM `bucket_droplet_links`  ";
-		sql += "	WHERE `buckets_droplets_id` IN :drop_ids  ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT buckets_droplets.id AS droplet_id, link_id AS id, url ";
+		sql += "FROM droplets_links  ";
+		sql += "INNER JOIN links ON (links.id = link_id)  ";
+		sql += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_links.droplet_id)";
+		sql += "WHERE buckets_droplets.id IN :drop_ids  ";
+		sql += "AND links.id NOT IN ( ";
+		sql += "	SELECT link_id FROM bucket_droplet_links  ";
+		sql += "	WHERE buckets_droplets_id IN :drop_ids  ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL  ";
-		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `link_id` AS `id`, `url`  ";
-		sql += "FROM `bucket_droplet_links`  ";
-		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
-		sql += "WHERE `buckets_droplets_id` IN :drop_ids  ";
-		sql += "AND `deleted` = 0 ";
+		sql += "SELECT buckets_droplets_id AS droplet_id, link_id AS id, url  ";
+		sql += "FROM bucket_droplet_links  ";
+		sql += "INNER JOIN links ON (links.id = link_id)  ";
+		sql += "WHERE buckets_droplets_id IN :drop_ids  ";
+		sql += "AND deleted = 0 ";
 
 		return sql;
 	}
@@ -634,21 +621,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getRiverLinksQuery() {
-		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `link_id` AS `id`, `url` ";
-		sql += "FROM `droplets_links`  ";
-		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
-		sql += "INNER JOIN rivers_droplets ON (`rivers_droplets`.`droplet_id` = `droplets_links`.`droplet_id`)";
-		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids  ";
-		sql += "AND `links`.`id` NOT IN ( ";
-		sql += "	SELECT `link_id` FROM `river_droplet_links`  ";
-		sql += "	WHERE `rivers_droplets_id` IN :drop_ids  ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT rivers_droplets.id AS droplet_id, link_id AS id, url ";
+		sql += "FROM droplets_links  ";
+		sql += "INNER JOIN links ON (links.id = link_id)  ";
+		sql += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets_links.droplet_id)";
+		sql += "WHERE rivers_droplets.id IN :drop_ids  ";
+		sql += "AND links.id NOT IN ( ";
+		sql += "	SELECT link_id FROM river_droplet_links  ";
+		sql += "	WHERE rivers_droplets_id IN :drop_ids  ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL  ";
-		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `link_id` AS `id`, `url`  ";
-		sql += "FROM `river_droplet_links`  ";
-		sql += "INNER JOIN `links` ON (`links`.`id` = `link_id`)  ";
-		sql += "WHERE `rivers_droplets_id` IN :drop_ids  ";
-		sql += "AND `deleted` = 0 ";
+		sql += "SELECT rivers_droplets_id AS droplet_id, link_id AS id, url  ";
+		sql += "FROM river_droplet_links  ";
+		sql += "INNER JOIN links ON (links.id = link_id)  ";
+		sql += "WHERE rivers_droplets_id IN :drop_ids  ";
+		sql += "AND deleted = 0 ";
 
 		return sql;
 	}
@@ -672,19 +659,19 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		String sql = null;
 		switch (dropSource) {
 		case BUCKET:
-			sql = "SELECT `buckets_droplets`.`id`, `droplet_image` FROM `droplets` ";
-			sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
-			sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
+			sql = "SELECT buckets_droplets.id, droplet_image FROM droplets ";
+			sql += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets.id) ";
+			sql += "WHERE buckets_droplets.id IN :drop_ids ";
 			break;
 
 		case RIVER:
-			sql = "SELECT `rivers_droplets`.`id`, `droplet_image` FROM `droplets` ";
-			sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
-			sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
+			sql = "SELECT rivers_droplets.id, droplet_image FROM droplets ";
+			sql += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets.id) ";
+			sql += "WHERE rivers_droplets.id IN :drop_ids ";
 			break;
 		}
 
-		sql += "AND `droplets`.`droplet_image` > 0";
+		sql += "AND droplets.droplet_image > 0";
 
 		Query query = em.createNativeQuery(sql);
 		query.setParameter("drop_ids", dropIndex.keySet());
@@ -692,8 +679,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		Map<Long, Long> dropImagesMap = new HashMap<Long, Long>();
 		for (Object oRow2 : query.getResultList()) {
 			Object[] r2 = (Object[]) oRow2;
-			dropImagesMap.put(((BigInteger) r2[0]).longValue(),
-					((BigInteger) r2[1]).longValue());
+			dropImagesMap.put(((Number) r2[0]).longValue(),
+					((Number) r2[1]).longValue());
 		}
 
 		// Get the query to fetch the drop media
@@ -714,13 +701,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		for (Object oRow : query.getResultList()) {
 			Object[] r = (Object[]) oRow;
 
-			Long dropId = ((BigInteger) r[0]).longValue();
+			Long dropId = ((Number) r[0]).longValue();
 			Drop drop = drops.get(dropIndex.get(dropId));
 			if (drop.getMedia() == null) {
 				drop.setMedia(new ArrayList<Media>());
 			}
 
-			Long mediaId = ((BigInteger) r[1]).longValue();
+			Long mediaId = ((Number) r[1]).longValue();
 			Media m = null;
 			for (Media x : drop.getMedia()) {
 				if (x.getId() == mediaId) {
@@ -769,25 +756,25 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getBucketMediaQuery() {
-		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, ";
-		sql += "`media_thumbnails`.`url` AS `thumbnail_url` ";
-		sql += "FROM `droplets_media` ";
-		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
-		sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets_media`.`droplet_id`) ";
-		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
-		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
-		sql += "AND `media`.`id` NOT IN ( ";
-		sql += "	SELECT `media_id` ";
-		sql += "	FROM `bucket_droplet_media` ";
-		sql += "	WHERE `buckets_droplets_id` IN :drop_ids ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT buckets_droplets.id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, ";
+		sql += "media_thumbnails.url AS thumbnail_url ";
+		sql += "FROM droplets_media ";
+		sql += "INNER JOIN media ON (media.id = droplets_media.media_id) ";
+		sql += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_media.droplet_id) ";
+		sql += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
+		sql += "WHERE buckets_droplets.id IN :drop_ids ";
+		sql += "AND media.id NOT IN ( ";
+		sql += "	SELECT media_id ";
+		sql += "	FROM bucket_droplet_media ";
+		sql += "	WHERE buckets_droplets_id IN :drop_ids ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL ";
-		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
-		sql += "FROM `bucket_droplet_media` ";
-		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
-		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
-		sql += "WHERE `buckets_droplets_id` IN :drop_ids ";
-		sql += "AND `deleted` = 0; ";
+		sql += "SELECT buckets_droplets_id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, media_thumbnails.url AS thumbnail_url ";
+		sql += "FROM bucket_droplet_media ";
+		sql += "INNER JOIN media ON (media.id = bucket_droplet_media.media_id) ";
+		sql += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
+		sql += "WHERE buckets_droplets_id IN :drop_ids ";
+		sql += "AND deleted = 0; ";
 
 		return sql;
 	}
@@ -799,25 +786,25 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getRiverMediaQuery() {
-		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, ";
-		sql += "`media_thumbnails`.`url` AS `thumbnail_url` ";
-		sql += "FROM `droplets_media` ";
-		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
-		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets_media`.`droplet_id`) ";
-		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
-		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
-		sql += "AND `media`.`id` NOT IN ( ";
-		sql += "	SELECT `media_id` ";
-		sql += "	FROM `river_droplet_media` ";
-		sql += "	WHERE `rivers_droplets_id` IN :drop_ids ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT rivers_droplets.id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, ";
+		sql += "media_thumbnails.url AS thumbnail_url ";
+		sql += "FROM droplets_media ";
+		sql += "INNER JOIN media ON (media.id = droplets_media.media_id) ";
+		sql += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets_media.droplet_id) ";
+		sql += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
+		sql += "WHERE rivers_droplets.id IN :drop_ids ";
+		sql += "AND media.id NOT IN ( ";
+		sql += "	SELECT media_id ";
+		sql += "	FROM river_droplet_media ";
+		sql += "	WHERE rivers_droplets_id IN :drop_ids ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL ";
-		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `media`.`id` AS `id`, `media`.`url` AS `url`, `type`, `media_thumbnails`.`size` AS `thumbnail_size`, `media_thumbnails`.`url` AS `thumbnail_url` ";
-		sql += "FROM `river_droplet_media` ";
-		sql += "INNER JOIN `media` ON (`media`.`id` = `media_id`) ";
-		sql += "LEFT JOIN `media_thumbnails` ON (`media_thumbnails`.`media_id` = `media`.`id`) ";
-		sql += "WHERE `rivers_droplets_id` IN :drop_ids ";
-		sql += "AND `deleted` = 0; ";
+		sql += "SELECT rivers_droplets_id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, media_thumbnails.url AS thumbnail_url ";
+		sql += "FROM river_droplet_media ";
+		sql += "INNER JOIN media ON (media.id = river_droplet_media.media_id) ";
+		sql += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
+		sql += "WHERE rivers_droplets_id IN :drop_ids ";
+		sql += "AND deleted = 0; ";
 
 		return sql;
 	}
@@ -857,21 +844,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		for (Object oRow : query.getResultList()) {
 			Object[] r = (Object[]) oRow;
 
-			Long dropId = ((BigInteger) r[0]).longValue();
+			Long dropId = ((Number) r[0]).longValue();
 			Drop drop = drops.get(dropIndex.get(dropId));
 			if (drop.getPlaces() == null) {
 				drop.setPlaces(new ArrayList<Place>());
 			}
 
-			Long placeId = ((BigInteger) r[1]).longValue();
+			Long placeId = ((Number) r[1]).longValue();
 			Place p = places.get(placeId);
 
 			if (p == null) {
 				p = new Place();
 				p.setId(placeId);
 				p.setPlaceName((String) r[2]);
-				p.setLatitude((Float) r[5]);
-				p.setLongitude((Float) r[6]);
+				p.setLatitude(((Number) r[5]).floatValue());
+				p.setLongitude(((Number) r[6]).floatValue());
 
 				places.put(placeId, p);
 			}
@@ -890,23 +877,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getBucketPlacesQuery() {
-		String sql = "SELECT `buckets_droplets`.`id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, ";
-		sql += "`places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
-		sql += "FROM `droplets_places` ";
-		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
-		sql += "INNER JOIN `buckets_droplets` ON (`buckets_droplets`.`droplet_id` = `droplets_places`.`droplet_id`) ";
-		sql += "WHERE `buckets_droplets`.`id` IN :drop_ids ";
-		sql += "AND `places`.`id` NOT IN ( ";
-		sql += "	SELECT `place_id` ";
-		sql += "	FROM `bucket_droplet_places` ";
-		sql += "	WHERE `buckets_droplets_id` IN :drop_ids ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT buckets_droplets.id AS droplet_id, place_id AS id, place_name, place_name_canonical, ";
+		sql += "places.hash AS place_hash, latitude, longitude ";
+		sql += "FROM droplets_places ";
+		sql += "INNER JOIN places ON (places.id = place_id) ";
+		sql += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_places.droplet_id) ";
+		sql += "WHERE buckets_droplets.id IN :drop_ids ";
+		sql += "AND places.id NOT IN ( ";
+		sql += "	SELECT place_id ";
+		sql += "	FROM bucket_droplet_places ";
+		sql += "	WHERE buckets_droplets_id IN :drop_ids ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL ";
-		sql += "SELECT `buckets_droplets_id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, `places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
-		sql += "FROM `bucket_droplet_places` ";
-		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
-		sql += "WHERE `buckets_droplets_id` IN :drop_ids ";
-		sql += "AND `deleted` = 0 ";
+		sql += "SELECT buckets_droplets_id AS droplet_id, place_id AS id, place_name, place_name_canonical, places.hash AS place_hash, latitude, longitude ";
+		sql += "FROM bucket_droplet_places ";
+		sql += "INNER JOIN places ON (places.id = place_id) ";
+		sql += "WHERE buckets_droplets_id IN :drop_ids ";
+		sql += "AND deleted = 0 ";
 
 		return sql;
 	}
@@ -918,23 +905,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @return
 	 */
 	private String getRiverPlacesQuery() {
-		String sql = "SELECT `rivers_droplets`.`id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, ";
-		sql += "`places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
-		sql += "FROM `droplets_places` ";
-		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
-		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets_places`.`droplet_id`) ";
-		sql += "WHERE `rivers_droplets`.`id` IN :drop_ids ";
-		sql += "AND `places`.`id` NOT IN ( ";
-		sql += "	SELECT `place_id` ";
-		sql += "	FROM `river_droplet_places` ";
-		sql += "	WHERE `rivers_droplets_id` IN :drop_ids ";
-		sql += "	AND `deleted` = 1) ";
+		String sql = "SELECT rivers_droplets.id AS droplet_id, place_id AS id, place_name, place_name_canonical, ";
+		sql += "places.hash AS place_hash, latitude, longitude ";
+		sql += "FROM droplets_places ";
+		sql += "INNER JOIN places ON (places.id = place_id) ";
+		sql += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets_places.droplet_id) ";
+		sql += "WHERE rivers_droplets.id IN :drop_ids ";
+		sql += "AND places.id NOT IN ( ";
+		sql += "	SELECT place_id ";
+		sql += "	FROM river_droplet_places ";
+		sql += "	WHERE rivers_droplets_id IN :drop_ids ";
+		sql += "	AND deleted = 1) ";
 		sql += "UNION ALL ";
-		sql += "SELECT `rivers_droplets_id` AS `droplet_id`, `place_id` AS `id`, `place_name`, `place_name_canonical`, `places`.`hash` AS `place_hash`, `latitude`, `longitude` ";
-		sql += "FROM `river_droplet_places` ";
-		sql += "INNER JOIN `places` ON (`places`.`id` = `place_id`) ";
-		sql += "WHERE `rivers_droplets_id` IN :drop_ids ";
-		sql += "AND `deleted` = 0 ";
+		sql += "SELECT rivers_droplets_id AS droplet_id, place_id AS id, place_name, place_name_canonical, places.hash AS place_hash, latitude, longitude ";
+		sql += "FROM river_droplet_places ";
+		sql += "INNER JOIN places ON (places.id = place_id) ";
+		sql += "WHERE rivers_droplets_id IN :drop_ids ";
+		sql += "AND deleted = 0 ";
 
 		return sql;
 	}
@@ -958,21 +945,21 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		Map<Long, Long> bucketDropsIndex = getBucketDropsIndex(dropsIndex.keySet(), dropSource);
 
 		// Query to fetch the buckets
-		String sql = "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
-		sql += "`buckets`.`bucket_name` ";
-		sql += "FROM `buckets` ";
-		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
-		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
-		sql += "AND `buckets`.`bucket_publish` = 1 ";
+		String sql = "SELECT buckets_droplets.droplet_id AS id, buckets.id AS bucket_id, ";
+		sql += "buckets.bucket_name ";
+		sql += "FROM buckets ";
+		sql += "INNER JOIN buckets_droplets ON (buckets.id = buckets_droplets.bucket_id) ";
+		sql += "WHERE buckets_droplets.droplet_id IN (:dropletIds) ";
+		sql += "AND buckets.bucket_publish = 1 ";
 		sql += "UNION ALL ";
-		sql += "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
-		sql += "`buckets`.`bucket_name` ";
-		sql += "FROM `buckets` ";
-		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
-		sql += "LEFT JOIN `accounts` ON (`buckets`.`account_id` = `accounts`.`id` AND `buckets`.`account_id` = :accountId) ";
-		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId) ";
-		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
-		sql += "AND `buckets`.`bucket_publish` = 0 ";
+		sql += "SELECT buckets_droplets.droplet_id AS id, buckets.id AS bucket_id, ";
+		sql += "buckets.bucket_name ";
+		sql += "FROM buckets ";
+		sql += "INNER JOIN buckets_droplets ON (buckets.id = buckets_droplets.bucket_id) ";
+		sql += "LEFT JOIN accounts ON (buckets.account_id = accounts.id AND buckets.account_id = :accountId) ";
+		sql += "LEFT JOIN bucket_collaborators ON (bucket_collaborators.bucket_id = buckets.id AND bucket_collaborators.account_id = :accountId) ";
+		sql += "WHERE buckets_droplets.droplet_id IN (:dropletIds) ";
+		sql += "AND buckets.bucket_publish = 0 ";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("dropletIds", bucketDropsIndex.keySet());
@@ -983,7 +970,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		Map<Long, List<Bucket>> dropBucketsMap = new HashMap<Long, List<Bucket>>();
 		for (Map<String, Object> row: results) {
 			
-			Long dropId = ((BigInteger)row.get("id")).longValue();
+			Long dropId = ((Number)row.get("id")).longValue();
 			List<Bucket> dropBuckets = dropBucketsMap.get(dropId);
 			if (dropBuckets == null) {
 				dropBuckets = new ArrayList<Bucket>();
@@ -991,7 +978,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 			// Create the bucket
 			Bucket bucket = new Bucket();
-			bucket.setId(((BigInteger) row.get("bucket_id")).longValue());
+			bucket.setId(((Number) row.get("bucket_id")).longValue());
 			bucket.setName((String)row.get("bucket_name"));
 
 			// Add to the list of buckets for the current drop
@@ -1015,10 +1002,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		switch(dropSource) {
 			case BUCKET:
-				sql = "SELECT `id`, `droplet_id` FROM `buckets_droplets` WHERE `id` IN :dropIds";
+				sql = "SELECT id, droplet_id FROM buckets_droplets WHERE id IN :dropIds";
 			break;
 			case RIVER:
-				sql = "SELECT `id`, `droplet_id` FROM `rivers_droplets` WHERE `id` IN :dropIds";
+				sql = "SELECT id, droplet_id FROM rivers_droplets WHERE id IN :dropIds";
 			break;
 		}
 		
@@ -1029,8 +1016,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		for (Object row: query.getResultList()) {
 			Object[] rowArray = (Object[]) row;
 
-			Long dropId = ((BigInteger) rowArray[0]).longValue();
-			Long indexId = ((BigInteger)rowArray[1]).longValue();
+			Long dropId = ((Number) rowArray[0]).longValue();
+			Long indexId = ((Number)rowArray[1]).longValue();
 			
 			bucketDropsIndex.put(indexId, dropId);
 		}

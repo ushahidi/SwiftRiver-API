@@ -70,7 +70,7 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 
 		assertEquals(10, existingLink.getId());
 
-		String sql = "SELECT `hash`, `url` " + "FROM `links` WHERE `id` = ?";
+		String sql = "SELECT hash, url " + "FROM links WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				newLink.getId());
@@ -78,14 +78,14 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 		assertEquals("44b764d6f4dab845f031ba9e52f61d95", results.get("hash"));
 		assertEquals("http://example.com/new", results.get("url"));
 
-		sql = "SELECT `link_id` FROM `droplets_links` WHERE `droplet_id` = 5";
+		sql = "SELECT link_id FROM droplets_links WHERE droplet_id = 5";
 
 		List<Long> dropletLinks = this.jdbcTemplate
 				.queryForList(sql, Long.class);
 		assertEquals(3, dropletLinks.size());
 		assertTrue(dropletLinks.contains(newLink.getId()));
 		
-		sql = "SELECT `original_url` FROM `droplets` WHERE `id` = 5";
+		sql = "SELECT original_url FROM droplets WHERE id = 5";
 		assertEquals(newLink.getId(), this.jdbcTemplate.queryForLong(sql));
 	}
 	
@@ -115,7 +115,7 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 
 		assertEquals(10, existingLink.getId());
 
-		String sql = "SELECT `hash`, `url` " + "FROM `links` WHERE `id` = ?";
+		String sql = "SELECT hash, url " + "FROM links WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				newLink.getId());
@@ -123,7 +123,7 @@ public class JpaLinkDaoTest extends AbstractDaoTest {
 		assertEquals("44b764d6f4dab845f031ba9e52f61d95", results.get("hash"));
 		assertEquals("http://example.com/new", results.get("url"));
 
-		sql = "SELECT `link_id` FROM `droplets_links` WHERE `droplet_id` = 5";
+		sql = "SELECT link_id FROM droplets_links WHERE droplet_id = 5";
 
 		List<Long> dropletLinks = this.jdbcTemplate
 				.queryForList(sql, Long.class);

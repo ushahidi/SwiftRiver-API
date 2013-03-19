@@ -180,18 +180,18 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams) {
-		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `droplet_title`, ";
-		sql += "`droplet_content`, `droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
-		sql += "`identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
-		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
-		sql += "`links`.`url` AS `original_url`, `comment_count` ";
-		sql += "FROM `buckets_droplets` ";
-		sql += "INNER JOIN `droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
-		sql += "INNER JOIN `identities` ON (droplets.identity_id = `identities`.`id`) ";
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = `droplets`.`id` AND `user_scores`.`user_id` = :userId) ";
-		sql += "LEFT JOIN `links` ON (`droplets`.`original_url` = `links`.`id`) ";
-		sql += "WHERE `buckets_droplets`.`droplet_date_added` > '0000-00-00 00:00:00' ";
-		sql += "AND `buckets_droplets`.`bucket_id` = :bucketId ";
+		String sql = "SELECT buckets_droplets.id AS id, droplet_title, ";
+		sql += "droplet_content, droplets.channel, identities.id AS identity_id, identity_name, ";
+		sql += "identity_avatar, droplets.droplet_date_pub, droplet_orig_id, ";
+		sql += "user_scores.score AS user_score, links.id AS original_url_id, ";
+		sql += "links.url AS original_url, comment_count ";
+		sql += "FROM buckets_droplets ";
+		sql += "INNER JOIN droplets ON (buckets_droplets.droplet_id = droplets.id) ";
+		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
+		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
+		sql += "LEFT JOIN links ON (droplets.original_url = links.id) ";
+		sql += "WHERE buckets_droplets.droplet_date_added > '1970-01-01 00:00:00' ";
+		sql += "AND buckets_droplets.bucket_id = :bucketId ";
 		
 		// Check for channel parameter
 		if (requestParams.containsKey("channels")) {
@@ -204,18 +204,18 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		
 		// Check for since_id
 		if (requestParams.containsKey("since_id")) {
-			sql += " AND `buckets_droplets`.`id` > " + (Long) requestParams.get("since_id");
+			sql += " AND buckets_droplets.id > " + (Long) requestParams.get("since_id");
 		}
 		
 		// Check for max_id
 		if (requestParams.containsKey("max_id")) {
-			sql += " AND `buckets_droplets`.`id` <= " + (Long) requestParams.get("max_id");
+			sql += " AND buckets_droplets.id <= " + (Long) requestParams.get("max_id");
 		}
 
 		Integer dropCount = (Integer) requestParams.get("count");
 		Integer page = (Integer) requestParams.get("page");
 
-		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
+		sql += " ORDER BY buckets_droplets.droplet_date_added DESC ";
 		sql += String.format("LIMIT %d OFFSET %d", dropCount, ((page - 1) * dropCount));
 		
 

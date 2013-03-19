@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -115,49 +114,49 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	public List<Drop> getDrops(Long riverId, Long maxId, int page,
 			int dropCount, List<String> channelList, List<Long> channelIds,
 			Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount) {
-		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
-		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
-		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count`, `account_read_drops`.`droplet_id` AS `drop_read` ";
-		sql += "FROM `rivers_droplets` ";
-		sql += "INNER JOIN `droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
-		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
+		String sql = "SELECT rivers_droplets.id AS id, droplet_title, droplet_content, droplets.channel, ";
+		sql += "identities.id AS identity_id, identity_name, identity_avatar, rivers_droplets.droplet_date_pub, droplet_orig_id, ";
+		sql += "user_scores.score AS user_score, links.id as original_url_id, links.url AS original_url, comment_count, account_read_drops.droplet_id AS drop_read ";
+		sql += "FROM rivers_droplets ";
+		sql += "INNER JOIN droplets ON (rivers_droplets.droplet_id = droplets.id) ";
+		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
 
 		if (channelIds.size() > 0) {
-			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
+			sql += "INNER JOIN river_channels ON (rivers_droplets.channel_id = river_channels.id) ";
 		}
 
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
-		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
-		sql += "LEFT JOIN `account_read_drops` ON (`account_read_drops`.`droplet_id` = `rivers_droplets`.`droplet_id` AND `account_read_drops`.`account_id` = :accountId) ";
-		sql += "WHERE `rivers_droplets`.`droplet_date_pub` > '0000-00-00 00:00:00' ";
-		sql += "AND `rivers_droplets`.`river_id` = :riverId ";
-		sql += "AND `rivers_droplets`.`id` <= :maxId ";
+		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
+		sql += "LEFT JOIN links ON (links.id = droplets.original_url) ";
+		sql += "LEFT JOIN account_read_drops ON (account_read_drops.droplet_id = rivers_droplets.droplet_id AND account_read_drops.account_id = :accountId) ";
+		sql += "WHERE rivers_droplets.droplet_date_pub > '1970-01-01 00:00:00' ";
+		sql += "AND rivers_droplets.river_id = :riverId ";
+		sql += "AND rivers_droplets.id <= :maxId ";
 
 		if (channelList.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel` IN (:channels) ";
+			sql += "AND rivers_droplets.channel IN (:channels) ";
 		}
 
 		if (channelIds.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel_id` IN (:channel_ids) ";
+			sql += "AND rivers_droplets.channel_id IN (:channel_ids) ";
 		}
 
 		if (isRead != null) {
 			if (isRead) {
-				sql += "AND `account_read_drops`.`droplet_id` IS NOT NULL ";
+				sql += "AND account_read_drops.droplet_id IS NOT NULL ";
 			} else {
-				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
+				sql += "AND account_read_drops.droplet_id IS NULL ";
 			}
 		}
 
 		if (dateFrom != null) {
-			sql += "AND `rivers_droplets`.`droplet_date_pub` >= :date_from ";
+			sql += "AND rivers_droplets.droplet_date_pub >= :date_from ";
 		}
 
 		if (dateTo != null) {
-			sql += "AND `rivers_droplets`.`droplet_date_pub` <= :date_to ";
+			sql += "AND rivers_droplets.droplet_date_pub <= :date_to ";
 		}
 
-		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
+		sql += "ORDER BY rivers_droplets.droplet_date_pub DESC ";
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
@@ -199,41 +198,41 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
 			List<String> channelList, List<Long> channelIds, Boolean isRead,
 			Date dateFrom, Date dateTo, Account queryingAccount) {
-		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
-		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
-		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
-		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
-		sql += "`links`.`url` AS `original_url`, `comment_count`, `account_read_drops`.`droplet_id` AS `drop_read`  ";
-		sql += "FROM `droplets` ";
-		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
-		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
+		String sql = "SELECT rivers_droplets.id AS id, droplet_title, droplet_content, ";
+		sql += "droplets.channel, identities.id identity_id, identity_name, ";
+		sql += "identity_avatar, rivers_droplets.droplet_date_pub, droplet_orig_id, ";
+		sql += "user_scores.score AS user_score, links.id AS original_url_id, ";
+		sql += "links.url AS original_url, comment_count, account_read_drops.droplet_id AS drop_read  ";
+		sql += "FROM droplets ";
+		sql += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets.id) ";
+		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
 
 		if (channelIds.size() > 0) {
-			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
+			sql += "INNER JOIN river_channels ON (rivers_droplets.channel_id = river_channels.id) ";
 		}
 
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
-		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
-		sql += "LEFT JOIN `account_read_drops` ON (`account_read_drops`.`droplet_id` = `rivers_droplets`.`droplet_id` AND `account_read_drops`.`account_id` = :accountId) ";
-		sql += "WHERE `rivers_droplets`.`river_id` = :riverId AND `rivers_droplets`.`id` > :sinceId ";
+		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
+		sql += "LEFT JOIN links ON (links.id = droplets.original_url) ";
+		sql += "LEFT JOIN account_read_drops ON (account_read_drops.droplet_id = rivers_droplets.droplet_id AND account_read_drops.account_id = :accountId) ";
+		sql += "WHERE rivers_droplets.river_id = :riverId AND rivers_droplets.id > :sinceId ";
 
 		if (channelList.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel` IN (:channels) ";
+			sql += "AND rivers_droplets.channel IN (:channels) ";
 		}
 
 		if (channelIds.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
+			sql += "AND rivers_droplets.channel_id IN (:channels) ";
 		}
 
 		if (isRead != null) {
 			if (isRead) {
-				sql += "AND `account_read_drops`.`droplet_id` IS NOT NULL ";
+				sql += "AND account_read_drops.droplet_id IS NOT NULL ";
 			} else {
-				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
+				sql += "AND account_read_drops.droplet_id IS NULL ";
 			}
 		}
 
-		sql += "ORDER BY `rivers_droplets`.`id` ASC LIMIT " + dropCount;
+		sql += "ORDER BY rivers_droplets.id ASC LIMIT " + dropCount;
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userId", queryingAccount.getOwner().getId());
@@ -268,7 +267,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			Drop drop = new Drop();
 
 			// Set drop details
-			drop.setId(((BigInteger) result.get("id")).longValue());
+			drop.setId(((Number) result.get("id")).longValue());
 			drop.setChannel((String) result.get("channel"));
 			drop.setTitle((String) result.get("droplet_title"));
 			drop.setContent((String) result.get("droplet_content"));
@@ -280,7 +279,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 			if (result.get("original_url_id") != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger) result.get("original_url_id"))
+				originalUrl.setId(((Number) result.get("original_url_id"))
 						.longValue());
 				originalUrl.setUrl((String) result.get("original_url"));
 				drop.setOriginalUrl(originalUrl);
@@ -288,7 +287,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 			// Set identity
 			Identity identity = new Identity();
-			identity.setId(((BigInteger) result.get("identity_id")).longValue());
+			identity.setId(((Number) result.get("identity_id")).longValue());
 			identity.setName((String) result.get("identity_name"));
 			identity.setAvatar((String) result.get("identity_avatar"));
 			drop.setIdentity(identity);

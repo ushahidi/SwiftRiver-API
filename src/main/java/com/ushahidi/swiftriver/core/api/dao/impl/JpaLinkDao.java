@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -150,7 +149,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 	private void updateNewLinkIndex(Map<String, List<int[]>> newLinkIndex,
 			List<Drop> drops) {
 		// First find and update existing drops with their ids.
-		String sql = "SELECT `id`, `hash` FROM `links` WHERE `hash` IN (:hashes)";
+		String sql = "SELECT id, hash FROM links WHERE hash IN (:hashes)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("hashes", newLinkIndex.keySet());
@@ -161,7 +160,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		// Update id for the drops that were found
 		for (Map<String, Object> result : results) {
 			String hash = (String) result.get("hash");
-			Long id = ((BigInteger) result.get("id")).longValue();
+			Long id = ((Number) result.get("id")).longValue();
 
 			List<int[]> indexes = newLinkIndex.get(hash);
 			for (int[] index : indexes) {
@@ -186,7 +185,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		hashes.addAll(newLinkIndex.keySet());
 		final long startKey = sequenceDao.getIds(seq, hashes.size());
 
-		String sql = "INSERT INTO `links` (`id`, `hash`, `url`) "
+		String sql = "INSERT INTO links (id, hash, url) "
 				+ "VALUES (?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
@@ -229,7 +228,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		// List of links in a drop
 		Map<Long, Set<Long>> dropletLinksMap = new HashMap<Long, Set<Long>>();
 		// List of drops and the link that is their original url
-		List<long[]> originalUrls = new ArrayList<long[]>();
+		final List<long[]> originalUrls = new ArrayList<long[]>();
 		for (Drop drop : drops) {
 
 			if (drop.getLinks() == null)
@@ -258,7 +257,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		}
 
 		// Find droplet links that already exist in the db
-		String sql = "SELECT `droplet_id`, `link_id` FROM `droplets_links` WHERE `droplet_id` in (:ids)";
+		String sql = "SELECT droplet_id, link_id FROM droplets_links WHERE droplet_id in (:ids)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("ids", dropIds);
@@ -268,9 +267,9 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 
 		// Remove already existing droplet_links from our Set
 		for (Map<String, Object> result : results) {
-			long dropletId = ((BigInteger) result.get("droplet_id"))
+			long dropletId = ((Number) result.get("droplet_id"))
 					.longValue();
-			long linkId = ((BigInteger) result.get("link_id")).longValue();
+			long linkId = ((Number) result.get("link_id")).longValue();
 
 			Set<Long> linkSet = dropletLinksMap.get(dropletId);
 			if (linkSet != null) {
@@ -279,7 +278,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		}
 
 		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO `droplets_links` (`droplet_id`, `link_id`) VALUES (?,?)";
+		sql = "INSERT INTO droplets_links (droplet_id, link_id) VALUES (?,?)";
 
 		final List<long[]> dropletLinksList = new ArrayList<long[]>();
 		for (Long dropletId : dropletLinksMap.keySet()) {
@@ -302,23 +301,19 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 		});
 
 		if (originalUrls.size() > 0) {
-			// Create a temp table for update drop original urls
-			String dropUpdateSql = "";
-			for (long[] originalUrl : originalUrls) {
-
-				if (dropUpdateSql.length() > 0) {
-					dropUpdateSql += " UNION ALL ";
+			sql = "UPDATE droplets SET original_url = ? WHERE id = ?";
+			jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+				public void setValues(PreparedStatement ps, int i)
+						throws SQLException {
+					long[] update = originalUrls.get(i);
+					ps.setLong(1, update[1]);
+					ps.setLong(2, update[0]);
 				}
 
-				dropUpdateSql += String.format("SELECT %d id, %d link_id",
-						originalUrl[0], originalUrl[1]);
-			}
-
-			// Update max_drop_id using the temp table
-			sql = "UPDATE `droplets` " + "JOIN (" + dropUpdateSql + ") a "
-					+ "USING (`id`) "
-					+ "SET `droplets`.`original_url` = `a`.`link_id` ";
-			this.jdbcTemplate.update(sql);
+				public int getBatchSize() {
+					return originalUrls.size();
+				}
+			});
 		}
 	}
 

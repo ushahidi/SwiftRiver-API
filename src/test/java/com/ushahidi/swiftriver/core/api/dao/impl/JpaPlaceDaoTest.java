@@ -78,8 +78,8 @@ public class JpaPlaceDaoTest extends AbstractDaoTest {
 
 		assertEquals(4, existingPlace.getId());
 
-		String sql = "SELECT `hash`, `place_name`, `place_name_canonical`, `longitude`, `latitude` "
-				+ "FROM `places` WHERE `id` = ?";
+		String sql = "SELECT hash, place_name, place_name_canonical, longitude, latitude "
+				+ "FROM places WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				newPlace.getId());
@@ -87,10 +87,10 @@ public class JpaPlaceDaoTest extends AbstractDaoTest {
 		assertEquals("51d4f9db1572cc747a7cef338781ea6a", results.get("hash"));
 		assertEquals("Neverland", results.get("place_name"));
 		assertEquals("neverland", results.get("place_name_canonical"));
-		assertEquals(-35.2033f, results.get("longitude"));
-		assertEquals(31.9216f, results.get("latitude"));
+		assertEquals(-35.2033f, ((Number)results.get("longitude")).floatValue(), 0.0002);
+		assertEquals(31.9216f, ((Number)results.get("latitude")).floatValue(), 0.0002);
 
-		sql = "SELECT `place_id` FROM `droplets_places` WHERE `droplet_id` = 5";
+		sql = "SELECT place_id FROM droplets_places WHERE droplet_id = 5";
 
 		List<Long> dropletPlaces = this.jdbcTemplate.queryForList(sql,
 				Long.class);

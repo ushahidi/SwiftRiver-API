@@ -1,5 +1,3 @@
-before_script:
-  - mysql -e 'create database swiftweb_test;'
 language: java
 jdk:
   - oraclejdk7

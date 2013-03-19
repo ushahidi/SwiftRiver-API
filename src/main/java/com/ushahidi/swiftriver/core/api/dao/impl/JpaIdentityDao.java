@@ -118,7 +118,7 @@ public class JpaIdentityDao extends AbstractJpaDao<Identity> implements
 	private void updateNewIdentityIndex(
 			Map<String, List<Integer>> newIdentityIndex, List<Drop> drops) {
 		// First find and update existing drops with their ids.
-		String sql = "SELECT `id`, `hash` FROM `identities` WHERE `hash` IN (:hashes)";
+		String sql = "SELECT id, hash FROM identities WHERE hash IN (:hashes)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("hashes", newIdentityIndex.keySet());
@@ -154,9 +154,9 @@ public class JpaIdentityDao extends AbstractJpaDao<Identity> implements
 		hashes.addAll(newIdentityIndex.keySet());
 		final long startKey = sequenceDao.getIds(seq, hashes.size());
 
-		String sql = "INSERT INTO `identities` (`id`, `hash`, `channel`, "
-				+ "`identity_orig_id`, `identity_username`, "
-				+ "`identity_name`, `identity_avatar`) "
+		String sql = "INSERT INTO identities (id, hash, channel, "
+				+ "identity_orig_id, identity_username, "
+				+ "identity_name, identity_avatar) "
 				+ "VALUES (?,?,?,?,?,?,?)";
 		
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {

@@ -18,7 +18,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
-import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -347,13 +346,13 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		riverDao.create(river);
 
 		assertNotNull(river.getId());
-		String sql = "SELECT account_id, river_name, description, river_public, river_name_canonical FROM `rivers` WHERE `id` = ?";
+		String sql = "SELECT account_id, river_name, description, river_public, river_name_canonical FROM rivers WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				river.getId());
 		assertEquals("Test river", (String) results.get("river_name"));
-		assertEquals(BigInteger.valueOf(3L),
-				(BigInteger) results.get("account_id"));
+		assertEquals(3L,
+				((Number) results.get("account_id")).longValue());
 		assertEquals(TextUtil.getURLSlug("Test river"),
 				(String) results.get("river_name_canonical"));
 		assertEquals("test description", (String) results.get("description"));
@@ -370,7 +369,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		riverDao.update(river);
 		em.flush();
 	
-		String sql = "SELECT `river_name`, `river_name_canonical`, `description`, `river_public` FROM `rivers` WHERE `id` = ?";
+		String sql = "SELECT river_name, river_name_canonical, description, river_public FROM rivers WHERE id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 2);
 		assertEquals("updated river name", (String) results.get("river_name"));
 		assertEquals(TextUtil.getURLSlug("updated river name"),
@@ -402,7 +401,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		riverDao.addCollaborator(river, account, true);
 		em.flush();
 		
-		String sql = "SELECT `river_id`, `account_id`, `collaborator_active`, `read_only` FROM `river_collaborators` WHERE `river_id` = ? AND `account_id` = ?";
+		String sql = "SELECT river_id, account_id, collaborator_active, read_only FROM river_collaborators WHERE river_id = ? AND account_id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L, 5L);
 		
 		assertEquals(false, results.get("collaborator_active"));
@@ -417,7 +416,7 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		riverDao.updateCollaborator(collaborator);
 		em.flush();
 		
-		String sql = "SELECT `river_id`, `account_id`, `collaborator_active`, `read_only` FROM `river_collaborators` WHERE `id` = ?";
+		String sql = "SELECT river_id, account_id, collaborator_active, read_only FROM river_collaborators WHERE id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L);
 		
 		assertEquals(false, results.get("collaborator_active"));

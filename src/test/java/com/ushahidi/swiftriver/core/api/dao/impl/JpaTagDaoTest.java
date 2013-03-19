@@ -78,8 +78,8 @@ public class JpaTagDaoTest extends AbstractDaoTest {
 		
 		assertEquals(2, existingTag.getId());
 		
-		String sql = "SELECT `hash`, `tag`, `tag_canonical`, `tag_type` " +
-				"FROM `tags` WHERE `id` = ?";
+		String sql = "SELECT hash, tag, tag_canonical, tag_type " +
+				"FROM tags WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				newTag.getId());
@@ -89,7 +89,7 @@ public class JpaTagDaoTest extends AbstractDaoTest {
 		assertEquals("test tag", results.get("tag_canonical"));
 		assertEquals("just a test", results.get("tag_type"));
 		
-		sql = "SELECT `tag_id` FROM `droplets_tags` WHERE `droplet_id` = 5";
+		sql = "SELECT tag_id FROM droplets_tags WHERE droplet_id = 5";
 		
 		List<Long> dropletTags = this.jdbcTemplate.queryForList(sql, Long.class);
 		assertEquals(3, dropletTags.size());

@@ -18,7 +18,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
-import java.math.BigInteger;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -67,10 +66,10 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		
 		assertNotNull(bucket.getId());
 		
-		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM `buckets` WHERE `id` = ?";
+		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM buckets WHERE id = ?";
 		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, bucket.getId());
 		
-		assertEquals(BigInteger.valueOf(3L), (BigInteger)r.get("account_id"));
+		assertEquals(3L, ((Number)r.get("account_id")).longValue());
 		assertEquals("Test Bucket Number 2", (String)r.get("bucket_name"));
 		assertEquals("test-bucket-number-2", (String)r.get("bucket_name_canonical"));
 		assertEquals("The Bucket's Description", (String)r.get("bucket_description"));
@@ -88,10 +87,10 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		bucketDao.update(bucket);
 		em.flush();
 		
-		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM `buckets` WHERE `id` = ?";
+		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM buckets WHERE id = ?";
 		
 		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, bucket.getId());
-		assertEquals(BigInteger.valueOf(3L), (BigInteger)r.get("account_id"));
+		assertEquals(3L, ((Number)r.get("account_id")).longValue());
 		assertEquals("Renamed Bucket", (String)r.get("bucket_name"));
 		assertEquals("renamed-bucket", (String)r.get("bucket_name_canonical"));
 		assertEquals("Renamed Bucket's Description", (String)r.get("bucket_description"));
@@ -121,7 +120,7 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		bucketDao.addCollaborator(bucket, account, true);
 		em.flush();
 		
-		String sql = "SELECT `bucket_id`, `account_id`, `collaborator_active`, `read_only` FROM `bucket_collaborators` WHERE `bucket_id` = ? AND `account_id` = ?";
+		String sql = "SELECT bucket_id, account_id, collaborator_active, read_only FROM bucket_collaborators WHERE bucket_id = ? AND account_id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L, 5L);
 		
 		assertEquals(false, results.get("collaborator_active"));
@@ -136,7 +135,7 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		bucketDao.updateCollaborator(collaborator);
 		em.flush();
 		
-		String sql = "SELECT `bucket_id`, `account_id`, `collaborator_active`, `read_only` FROM `bucket_collaborators` WHERE `id` = ?";
+		String sql = "SELECT bucket_id, account_id, collaborator_active, read_only FROM bucket_collaborators WHERE id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L);
 		
 		assertEquals(false, results.get("collaborator_active"));

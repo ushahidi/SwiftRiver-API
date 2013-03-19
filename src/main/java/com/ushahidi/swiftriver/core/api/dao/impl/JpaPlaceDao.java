@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -180,7 +179,7 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 	private void updateNewPlaceIndex(Map<String, List<int[]>> newPlaceIndex,
 			List<Drop> drops) {
 		// First find and update existing drops with their ids.
-		String sql = "SELECT `id`, `hash` FROM `places` WHERE `hash` IN (:hashes)";
+		String sql = "SELECT id, hash FROM places WHERE hash IN (:hashes)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("hashes", newPlaceIndex.keySet());
@@ -191,7 +190,7 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 		// Update id for the drops that were found
 		for (Map<String, Object> result : results) {
 			String hash = (String) result.get("hash");
-			Long id = ((BigInteger) result.get("id")).longValue();
+			Long id = ((Number) result.get("id")).longValue();
 
 			List<int[]> indexes = newPlaceIndex.get(hash);
 			for (int[] index : indexes) {
@@ -216,8 +215,8 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 		hashes.addAll(newPlaceIndex.keySet());
 		final long startKey = sequenceDao.getIds(seq, hashes.size());
 
-		String sql = "INSERT INTO `places` (`id`, `hash`, `place_name`, "
-				+ "`place_name_canonical`, `longitude`, `latitude`) "
+		String sql = "INSERT INTO places (id, hash, place_name, "
+				+ "place_name_canonical, longitude, latitude) "
 				+ "VALUES (?,?,?,?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
@@ -283,7 +282,7 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 		}
 
 		// Find droplet places that already exist in the db
-		String sql = "SELECT `droplet_id`, `place_id` FROM `droplets_places` WHERE `droplet_id` in (:ids)";
+		String sql = "SELECT droplet_id, place_id FROM droplets_places WHERE droplet_id in (:ids)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("ids", dropIds);
@@ -293,9 +292,9 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 
 		// Remove already existing droplet_places from our Set
 		for (Map<String, Object> result : results) {
-			long dropletId = ((BigInteger) result.get("droplet_id"))
+			long dropletId = ((Number) result.get("droplet_id"))
 					.longValue();
-			long placeId = ((BigInteger) result.get("place_id")).longValue();
+			long placeId = ((Number) result.get("place_id")).longValue();
 
 			Set<Long> placeSet = dropletPlacesMap.get(dropletId);
 			if (placeSet != null) {
@@ -304,7 +303,7 @@ public class JpaPlaceDao extends AbstractJpaDao<Place> implements PlaceDao {
 		}
 
 		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO `droplets_places` (`droplet_id`, `place_id`) VALUES (?,?)";
+		sql = "INSERT INTO droplets_places (droplet_id, place_id) VALUES (?,?)";
 
 		final List<long[]> dropletPlacesList = new ArrayList<long[]>();
 		for (Long dropletId : dropletPlacesMap.keySet()) {

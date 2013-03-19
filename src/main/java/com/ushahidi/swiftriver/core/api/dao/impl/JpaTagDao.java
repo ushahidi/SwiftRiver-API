@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -171,7 +170,7 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 	private void updateNewTagIndex(Map<String, List<int[]>> newTagIndex,
 			List<Drop> drops) {
 		// First find and update existing drops with their ids.
-		String sql = "SELECT `id`, `hash` FROM `tags` WHERE `hash` IN (:hashes)";
+		String sql = "SELECT id, hash FROM tags WHERE hash IN (:hashes)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("hashes", newTagIndex.keySet());
@@ -182,7 +181,7 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		// Update id for the drops that were found
 		for (Map<String, Object> result : results) {
 			String hash = (String) result.get("hash");
-			Long id = ((BigInteger) result.get("id")).longValue();
+			Long id = ((Number) result.get("id")).longValue();
 
 			List<int[]> indexes = newTagIndex.get(hash);
 			for (int[] index : indexes) {
@@ -207,8 +206,8 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		hashes.addAll(newTagIndex.keySet());
 		final long startKey = sequenceDao.getIds(seq, hashes.size());
 
-		String sql = "INSERT INTO `tags` (`id`, `hash`, `tag`, "
-				+ "`tag_canonical`, `tag_type`) " + "VALUES (?,?,?,?,?)";
+		String sql = "INSERT INTO tags (id, hash, tag, "
+				+ "tag_canonical, tag_type) " + "VALUES (?,?,?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
@@ -272,7 +271,7 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		}
 
 		// Find droplet tags that already exist in the db
-		String sql = "SELECT `droplet_id`, `tag_id` FROM `droplets_tags` WHERE `droplet_id` in (:ids)";
+		String sql = "SELECT droplet_id, tag_id FROM droplets_tags WHERE droplet_id in (:ids)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("ids", dropIds);
@@ -282,8 +281,8 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		
 		// Remove already existing droplet_tags from our Set
 		for (Map<String, Object> result : results) {
-			long dropletId = ((BigInteger) result.get("droplet_id")).longValue();
-			long tagId = ((BigInteger) result.get("tag_id")).longValue();
+			long dropletId = ((Number) result.get("droplet_id")).longValue();
+			long tagId = ((Number) result.get("tag_id")).longValue();
 			
 			Set<Long> tagSet = dropletTagsMap.get(dropletId);
 			if (tagSet != null) {
@@ -292,7 +291,7 @@ public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 		}
 		
 		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO `droplets_tags` (`droplet_id`, `tag_id`) VALUES (?,?)";
+		sql = "INSERT INTO droplets_tags (droplet_id, tag_id) VALUES (?,?)";
 		
 		final List<long[]> dropletTagsList = new ArrayList<long[]>();
 		for (Long dropletId : dropletTagsMap.keySet()) {

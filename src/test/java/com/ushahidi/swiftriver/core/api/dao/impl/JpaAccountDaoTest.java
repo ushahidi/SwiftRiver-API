@@ -73,7 +73,7 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 		Account account = accountDao.findById(1L);
 		accountDao.decreaseRiverQuota(account, 3);
 		em.flush();
-		String sql = "SELECT river_quota_remaining FROM `accounts` WHERE `id` = 1";
+		String sql = "SELECT river_quota_remaining FROM accounts WHERE id = 1";
 		int quotaAfter = this.jdbcTemplate.queryForInt(sql);
 		
 		assertEquals(7, quotaAfter);

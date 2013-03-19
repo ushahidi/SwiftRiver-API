@@ -26,7 +26,7 @@ public class JpaSequenceDaoTest extends AbstractDaoTest {
 		assertEquals(11, sequenceDao.getIds(seq, 2));
 		em.flush();
 		
-		String sql = "SELECT `id` FROM `seq` WHERE `name` = 'droplets'";
+		String sql = "SELECT id FROM seq WHERE name = 'droplets'";
 		assertEquals(12L, this.jdbcTemplate.queryForLong(sql));
 	}
 }

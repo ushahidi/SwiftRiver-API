@@ -2,7 +2,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
-	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit" xmlns:jee="http://www.springframework.org/schema/jee"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans 
 		http://www.springframework.org/schema/beans/spring-beans.xsd 
@@ -13,7 +13,9 @@
         http://www.springframework.org/schema/jdbc 
         http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
         http://www.springframework.org/schema/rabbit
-        http://www.springframework.org/schema/rabbit/spring-rabbit-1.1.xsd">
+        http://www.springframework.org/schema/rabbit/spring-rabbit-1.1.xsd
+        http://www.springframework.org/schema/jee
+        http://www.springframework.org/schema/jee/spring-jee.xsd">
 
 	<!-- post-processors for all standard config annotations -->
 	<context:annotation-config />
@@ -89,17 +91,12 @@
 		</property>
 	</bean>
 
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
-		destroy-method="close">
-		<property name="driverClassName" value="${db.class}" />
-		<property name="url" value="${db.url}" />
-		<property name="username" value="${db.username}" />
-		<property name="password" value="${db.password}" />
-	</bean>
-
 	<!-- Data Sources -->
 	<beans profile="prod">
 		<context:property-placeholder location="file:///${ext.prop.dir}/*.properties" />
+
+		<jee:jndi-lookup id="dataSource" jndi-name="jdbc/SwiftRiverDB"
+			expected-type="javax.sql.DataSource" />
 
 		<bean id="encryptionKey" class="java.lang.String">
 			<constructor-arg value="${encrypt.key}" />
@@ -129,12 +126,11 @@
 			<constructor-arg value="2344228477#97{7&amp;6&gt;82" />
 		</bean>
 
-		<jdbc:initialize-database data-source="dataSource">
-			<jdbc:script location="classpath:config/sql/schema-destroy.sql" />
-			<jdbc:script location="classpath:config/sql/schema-create.sql" />
+		<jdbc:embedded-database id="dataSource" type="H2">
+			<jdbc:script location="classpath:config/sql/schema.sql" />
 			<jdbc:script location="classpath:config/sql/test-data.sql" />
-		</jdbc:initialize-database>
-		
+		</jdbc:embedded-database>
+
 		<bean id="amqpTemplate" class="com.ushahidi.swiftriver.core.support.MockAmqpTemplate" />
 	</beans>
 </beans>

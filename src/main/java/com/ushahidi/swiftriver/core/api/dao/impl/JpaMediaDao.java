@@ -16,7 +16,6 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -155,7 +154,7 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 	private void updateNewMediaIndex(Map<String, List<int[]>> newMediaIndex,
 			List<Drop> drops) {
 		// First find and update existing drops with their ids.
-		String sql = "SELECT `id`, `hash` FROM `media` WHERE `hash` IN (:hashes)";
+		String sql = "SELECT id, hash FROM media WHERE hash IN (:hashes)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("hashes", newMediaIndex.keySet());
@@ -166,7 +165,7 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		// Update id for the drops that were found
 		for (Map<String, Object> result : results) {
 			String hash = (String) result.get("hash");
-			Long id = ((BigInteger) result.get("id")).longValue();
+			Long id = ((Number) result.get("id")).longValue();
 
 			List<int[]> indexes = newMediaIndex.get(hash);
 			for (int[] index : indexes) {
@@ -191,8 +190,8 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		hashes.addAll(newMediaIndex.keySet());
 		final long startKey = sequenceDao.getIds(seq, hashes.size());
 
-		String sql = "INSERT INTO `media` (`id`, `hash`, `url`) "
-				+ "VALUES (?,?,?)";
+		String sql = "INSERT INTO media (id, hash, url, type) "
+				+ "VALUES (?,?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
@@ -210,6 +209,7 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 				ps.setLong(1, media.getId());
 				ps.setString(2, media.getHash());
 				ps.setString(3, media.getUrl());
+				ps.setString(4, media.getType());
 			}
 
 			public int getBatchSize() {
@@ -234,7 +234,7 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		// List of media in a drop
 		Map<Long, Set<Long>> dropletMediaMap = new HashMap<Long, Set<Long>>();
 		// List of drops and the media that is the drop image
-		List<long[]> dropImages = new ArrayList<long[]>();
+		final List<long[]> dropImages = new ArrayList<long[]>();
 		for (Drop drop : drops) {
 
 			if (drop.getMedia() == null)
@@ -263,7 +263,7 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		}
 
 		// Find droplet media that already exist in the db
-		String sql = "SELECT `droplet_id`, `media_id` FROM `droplets_media` WHERE `droplet_id` in (:ids)";
+		String sql = "SELECT droplet_id, media_id FROM droplets_media WHERE droplet_id in (:ids)";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("ids", dropIds);
@@ -273,9 +273,9 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 
 		// Remove already existing droplet_media from our Set
 		for (Map<String, Object> result : results) {
-			long dropletId = ((BigInteger) result.get("droplet_id"))
+			long dropletId = ((Number) result.get("droplet_id"))
 					.longValue();
-			long mediaId = ((BigInteger) result.get("media_id")).longValue();
+			long mediaId = ((Number) result.get("media_id")).longValue();
 
 			Set<Long> mediaSet = dropletMediaMap.get(dropletId);
 			if (mediaSet != null) {
@@ -284,7 +284,7 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		}
 
 		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO `droplets_media` (`droplet_id`, `media_id`) VALUES (?,?)";
+		sql = "INSERT INTO droplets_media (droplet_id, media_id) VALUES (?,?)";
 
 		final List<long[]> dropletMediaList = new ArrayList<long[]>();
 		for (Long dropletId : dropletMediaMap.keySet()) {
@@ -307,23 +307,19 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 		});
 		
 		if (dropImages.size() > 0) {
-			// Create a temp table for updating drop images 
-			String dropUpdateSql = "";
-			for (long[] dropImage : dropImages) {
-
-				if (dropUpdateSql.length() > 0) {
-					dropUpdateSql += " UNION ALL ";
+			sql = "UPDATE droplets SET droplet_image = ? WHERE id = ?";
+			jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+				public void setValues(PreparedStatement ps, int i)
+						throws SQLException {
+					long[] update = dropImages.get(i);
+					ps.setLong(1, update[1]);
+					ps.setLong(2, update[0]);
 				}
 
-				dropUpdateSql += String.format("SELECT %d id, %d media_id",
-						dropImage[0], dropImage[1]);
-			}
-
-			// Update max_drop_id using the temp table
-			sql = "UPDATE `droplets` " + "JOIN (" + dropUpdateSql + ") a "
-					+ "USING (`id`) "
-					+ "SET `droplets`.`droplet_image` = `a`.`media_id` ";
-			this.jdbcTemplate.update(sql);
+				public int getBatchSize() {
+					return dropImages.size();
+				}
+			});
 		}
 	}
 
