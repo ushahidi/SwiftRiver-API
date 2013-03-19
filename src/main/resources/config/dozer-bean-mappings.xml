@@ -15,7 +15,17 @@
 			<a>originalUrl.url</a>
 			<b>originalUrl</b>
 		</field>
-		
+	</mapping>
+
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.model.Drop</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.CreateDropDTO</class-b>
+
+		<field>
+			<a>originalUrl.url</a>
+			<b>originalUrl</b>
+		</field>
+
 		<field>
 			<a>image.url</a>
 			<b>image</b>
