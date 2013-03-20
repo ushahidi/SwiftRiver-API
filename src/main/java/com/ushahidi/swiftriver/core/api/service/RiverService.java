@@ -375,13 +375,18 @@ public class RiverService {
 
 		Account queryingAccount = accountDao.findByUsername(username);
 
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setChannelIds(channelIds);
+		filter.setChannelList(channelList);
+		filter.setDateFrom(dateFrom);
+		filter.setDateTo(dateTo);
+		filter.setRead(isRead);
+		
 		List<Drop> drops = null;
 		if (sinceId != null) {
-			drops = riverDao.getDropsSince(id, sinceId, dropCount, channelList,
-					channelIds, isRead, dateFrom, dateTo, queryingAccount);
+			drops = riverDao.getDropsSince(id, sinceId, dropCount, filter, queryingAccount);
 		} else {
-			drops = riverDao.getDrops(id, maxId, page, dropCount, channelList,
-					channelIds, isRead, dateFrom, dateTo, queryingAccount);
+			drops = riverDao.getDrops(id, maxId, page, dropCount, filter, queryingAccount);
 		}
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();

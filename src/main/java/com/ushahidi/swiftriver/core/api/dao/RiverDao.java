@@ -24,16 +24,15 @@ import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 
-
 public interface RiverDao extends GenericDao<River> {
-	
+
 	/**
 	 * Get a River by its name
 	 * 
 	 * @param id
 	 * @return
 	 */
-	public River findByName(String name);	
+	public River findByName(String name);
 
 	/**
 	 * Get list of drops from the given river.
@@ -44,37 +43,42 @@ public interface RiverDao extends GenericDao<River> {
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount);
-	
+	public List<Drop> getDrops(Long riverId, Long maxId, int page,
+			int dropCount, DropFilter filter, Account queryingAccount);
+
 	/**
-	 * Get list of drops from the given river with an id after the the given since_id
+	 * Get drops from the river newer than the given id.
 	 * 
-	 * @param id
-	 * @param maxId
+	 * @param riverId
+	 * @param sinceId
 	 * @param dropCount
+	 * @param filter
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDropsSince(Long id, Long sinceId, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount);
-	
+	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
+			DropFilter filter, Account queryingAccount);
+
 	/**
-	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
-	 * and the river specified by <code>riverId</code>
+	 * Gets and returns a collaborator tied to the {@link Account} in
+	 * <code>accountId</code> and the river specified by <code>riverId</code>
 	 * 
 	 * @param riverId
 	 * @param accountId
 	 * @return {@link RiverCollaborator}
 	 */
 	public RiverCollaborator findCollaborator(Long riverId, Long accountId);
-	
+
 	/**
 	 * Adds a collaborator to a river
+	 * 
 	 * @param river
 	 * @param account
 	 * @param readOnly
 	 * @return {@link RiverCollaborator}
 	 */
-	public RiverCollaborator addCollaborator(River river, Account account, boolean readOnly);
+	public RiverCollaborator addCollaborator(River river, Account account,
+			boolean readOnly);
 
 	/**
 	 * Updates a collaborator
@@ -84,7 +88,8 @@ public interface RiverDao extends GenericDao<River> {
 	public void updateCollaborator(RiverCollaborator collaborator);
 
 	/**
-	 * Deletes the drop specified by 
+	 * Deletes the drop specified by
+	 * 
 	 * @param id
 	 * @param dropId
 	 * @return
@@ -92,11 +97,102 @@ public interface RiverDao extends GenericDao<River> {
 	public boolean removeDrop(Long id, Long dropId);
 
 	/**
-	 * Gets and returns a {@link List} of all {@link River} entities
-	 * whose id is in the {@link List} specified by <code><riverIds/code>
+	 * Gets and returns a {@link List} of all {@link River} entities whose id is
+	 * in the {@link List} specified by <code><riverIds/code>
 	 * 
 	 * @param roverIds
 	 * @return
 	 */
 	public List<River> findAll(List<Long> riverIds);
+
+	/**
+	 * Helper Class for holding filter parameters when getting drops.
+	 * 
+	 */
+	public static class DropFilter {
+		List<String> channelList;
+
+		List<Long> channelIds;
+
+		Boolean read;
+
+		Date dateFrom;
+
+		Date dateTo;
+
+		/**
+		 * @return the channelList
+		 */
+		public List<String> getChannelList() {
+			return channelList;
+		}
+
+		/**
+		 * @param channelList
+		 *            the channelList to set
+		 */
+		public void setChannelList(List<String> channelList) {
+			this.channelList = channelList;
+		}
+
+		/**
+		 * @return the channelIds
+		 */
+		public List<Long> getChannelIds() {
+			return channelIds;
+		}
+
+		/**
+		 * @param channelIds
+		 *            the channelIds to set
+		 */
+		public void setChannelIds(List<Long> channelIds) {
+			this.channelIds = channelIds;
+		}
+
+		/**
+		 * @return the read
+		 */
+		public Boolean getRead() {
+			return read;
+		}
+
+		/**
+		 * @param read
+		 *            the read to set
+		 */
+		public void setRead(Boolean read) {
+			this.read = read;
+		}
+
+		/**
+		 * @return the dateFrom
+		 */
+		public Date getDateFrom() {
+			return dateFrom;
+		}
+
+		/**
+		 * @param dateFrom
+		 *            the dateFrom to set
+		 */
+		public void setDateFrom(Date dateFrom) {
+			this.dateFrom = dateFrom;
+		}
+
+		/**
+		 * @return the dateTo
+		 */
+		public Date getDateTo() {
+			return dateTo;
+		}
+
+		/**
+		 * @param dateTo
+		 *            the dateTo to set
+		 */
+		public void setDateTo(Date dateTo) {
+			this.dateTo = dateTo;
+		}
+	}
 }

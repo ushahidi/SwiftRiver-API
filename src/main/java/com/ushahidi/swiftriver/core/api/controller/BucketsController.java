@@ -17,9 +17,12 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +53,6 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
-import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 
 @Controller
@@ -59,7 +61,7 @@ public class BucketsController extends AbstractController {
 
 	@Autowired
 	private BucketService bucketService;
-	
+
 	/**
 	 * Handler for creating a new bucket.
 	 * 
@@ -68,7 +70,8 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public GetBucketDTO createBucket(@RequestBody CreateBucketDTO createDTO, Principal principal) {
+	public GetBucketDTO createBucket(@RequestBody CreateBucketDTO createDTO,
+			Principal principal) {
 		return bucketService.createBucket(createDTO, principal.getName());
 	}
 
@@ -92,9 +95,11 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
 	@ResponseBody
-	public GetBucketDTO modifyBucket(@RequestBody CreateBucketDTO modifiedBucket,
-			@PathVariable Long id, Principal principal) {
-		return bucketService.modifyBucket(id, modifiedBucket, principal.getName());
+	public GetBucketDTO modifyBucket(
+			@RequestBody CreateBucketDTO modifiedBucket, @PathVariable Long id,
+			Principal principal) {
+		return bucketService.modifyBucket(id, modifiedBucket,
+				principal.getName());
 	}
 
 	/**
@@ -185,7 +190,8 @@ public class BucketsController extends AbstractController {
 	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id,
 			@PathVariable Long collaboratorId, Principal principal) {
-		bucketService.deleteCollaborator(id, collaboratorId, principal.getName());
+		bucketService.deleteCollaborator(id, collaboratorId,
+				principal.getName());
 	}
 
 	/**
@@ -196,7 +202,8 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public void addFollower(@PathVariable long id, @PathVariable long accountId, Principal principal) {
+	public void addFollower(@PathVariable long id,
+			@PathVariable long accountId, Principal principal) {
 		bucketService.addFollower(id, accountId, principal.getName());
 	}
 
@@ -221,7 +228,8 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/followers/{accountId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteFollower(@PathVariable Long id, @PathVariable Long accountId) {
+	public void deleteFollower(@PathVariable Long id,
+			@PathVariable Long accountId) {
 		bucketService.deleteFollower(id, accountId);
 	}
 
@@ -233,8 +241,8 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.POST)
 	@ResponseBody
-	public Map<String, Object> addSubscription(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
+	public Map<String, Object> addSubscription(
+			@RequestBody Map<String, Object> body, @PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -258,8 +266,8 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/subscriptions", method = RequestMethod.PUT)
 	@ResponseBody
-	public Map<String, Object> modifySubscription(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
+	public Map<String, Object> modifySubscription(
+			@RequestBody Map<String, Object> body, @PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -270,7 +278,8 @@ public class BucketsController extends AbstractController {
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/subscriptions/{subscriptionId}", method = RequestMethod.DELETE)
-	public void deleteSubscription(@PathVariable Long id, @PathVariable Long subscriptionId) {
+	public void deleteSubscription(@PathVariable Long id,
+			@PathVariable Long subscriptionId) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
@@ -288,32 +297,63 @@ public class BucketsController extends AbstractController {
 			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "max_id", required = false) Long maxId,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
-			@RequestParam(value = "date_from", required = false) Date dateFrom,
-			@RequestParam(value = "date_to", required = false) Date dateTo,
+			@RequestParam(value = "date_from", required = false) String dateFromS,
+			@RequestParam(value = "date_to", required = false) String dateToS,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "location", required = false) String location,
 			@RequestParam(value = "photos", required = false) Boolean photos,
+			@RequestParam(value = "state", required = false) String state,
 			Principal principal) {
 
-		if (principal == null) {
-			throw new UnauthorizedExpection(); 
+		if (maxId == null) {
+			maxId = Long.MAX_VALUE;
 		}
 
-		Map<String, Object> requestParams = new HashMap<String, Object>();
-		requestParams.put("count", count);
-		requestParams.put("page", page);
-		
-		if (maxId != null && maxId > 0) requestParams.put("max_id", maxId);
-		if (sinceId != null && sinceId > 0) requestParams.put("since_id", sinceId);
-		if (dateFrom != null) requestParams.put("date_from", dateFrom);
-		if (dateTo != null) requestParams.put("dae_to", dateTo);
-		if (keywords != null) requestParams.put("keywords", keywords);
-		if (channels != null) requestParams.put("channels", channels);
-		if (location != null) requestParams.put("location", location);
-		if (photos != null && photos == true) requestParams.put("photos", photos);
+		List<ErrorField> errors = new ArrayList<ErrorField>();
 
-		return bucketService.getDrops(id, principal.getName(), requestParams);
+		List<String> channelList = new ArrayList<String>();
+		if (channels != null) {
+			channelList.addAll(Arrays.asList(channels.split(",")));
+		}
+
+		Boolean isRead = null;
+		if (state != null) {
+			if (!state.equals("read") && !state.equals("unread")) {
+				errors.add(new ErrorField("state", "invalid"));
+			} else {
+				isRead = state.equals("read");
+			}
+		}
+
+		DateFormat dateFormat = new SimpleDateFormat("dd-MMM-yy");
+		Date dateFrom = null;
+		if (dateFromS != null) {
+			try {
+				dateFrom = dateFormat.parse(dateFromS);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("date_from", "invalid"));
+			}
+		}
+
+		Date dateTo = null;
+		if (dateToS != null) {
+			try {
+				dateTo = dateFormat.parse(dateToS);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("date_to", "invalid"));
+			}
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
+		return bucketService.getDrops(id, maxId, sinceId, page, count,
+				channelList, isRead, dateFrom, dateTo, principal.getName());
 	}
 
 	/**
@@ -329,7 +369,7 @@ public class BucketsController extends AbstractController {
 			Principal principal) {
 		bucketService.deleteDrop(id, dropId, principal.getName());
 	}
-	
+
 	/**
 	 * Handler for adding a drop to a bucket
 	 * 
@@ -341,11 +381,12 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public void addDrop(@RequestBody DropSourceDTO sourceDTO, @PathVariable long id, 
-			@PathVariable long dropId, Principal principal) {
+	public void addDrop(@RequestBody DropSourceDTO sourceDTO,
+			@PathVariable long id, @PathVariable long dropId,
+			Principal principal) {
 		bucketService.addDrop(id, dropId, sourceDTO, principal.getName());
 	}
-	
+
 	/**
 	 * Handler for adding a tag to a drop that is in a bucket
 	 * 
@@ -356,13 +397,16 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/tags", method = RequestMethod.POST)
 	@ResponseBody
-	public GetTagDTO addDropTag(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateTagDTO createDTO, Principal principal) {
-		return bucketService.addDropTag(id, dropId, createDTO, principal.getName());
+	public GetTagDTO addDropTag(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreateTagDTO createDTO,
+			Principal principal) {
+		return bucketService.addDropTag(id, dropId, createDTO,
+				principal.getName());
 	}
-	
+
 	/**
-	 * Handler for deleting a tag from a drop that is in a bucket 
+	 * Handler for deleting a tag from a drop that is in a bucket
+	 * 
 	 * @param id
 	 * @param dropId
 	 * @param linkId
@@ -374,7 +418,6 @@ public class BucketsController extends AbstractController {
 		bucketService.deleteDropTag(id, dropId, tagId, principal.getName());
 	}
 
-
 	/**
 	 * Handler for adding a link to a drop that is in a bucket
 	 * 
@@ -385,9 +428,11 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/links", method = RequestMethod.POST)
 	@ResponseBody
-	public GetLinkDTO addDropLink(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateLinkDTO createDTO, Principal principal) {
-		return bucketService.addDropLink(id, dropId, createDTO, principal.getName());
+	public GetLinkDTO addDropLink(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreateLinkDTO createDTO,
+			Principal principal) {
+		return bucketService.addDropLink(id, dropId, createDTO,
+				principal.getName());
 	}
 
 	/**
@@ -399,15 +444,15 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/links/{linkId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropLink(@PathVariable Long id, @PathVariable Long dropId, 
-			@PathVariable Long linkId, Principal principal) {
+	public void deleteDropLink(@PathVariable Long id,
+			@PathVariable Long dropId, @PathVariable Long linkId,
+			Principal principal) {
 		bucketService.deleteDropLink(id, dropId, linkId, principal.getName());
 	}
 
-	
 	/**
 	 * Handler for adding a place to a drop
-	 *  
+	 * 
 	 * @param id
 	 * @param dropId
 	 * @param createDTO
@@ -415,9 +460,11 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/places", method = RequestMethod.POST)
 	@ResponseBody
-	public GetPlaceDTO addDropPlace(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreatePlaceDTO createDTO, Principal principal) {
-		return bucketService.addDropPlace(id, dropId, createDTO, principal.getName());
+	public GetPlaceDTO addDropPlace(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreatePlaceDTO createDTO,
+			Principal principal) {
+		return bucketService.addDropPlace(id, dropId, createDTO,
+				principal.getName());
 	}
 
 	/**
@@ -429,11 +476,12 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/places/{placeId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropPlace(@PathVariable Long id, @PathVariable Long dropId,
-			@PathVariable Long placeId, Principal principal) {
+	public void deleteDropPlace(@PathVariable Long id,
+			@PathVariable Long dropId, @PathVariable Long placeId,
+			Principal principal) {
 		bucketService.deleteDropPlace(id, dropId, placeId, principal.getName());
 	}
-	
+
 	/**
 	 * Handler for adding a comment to a bucket drop
 	 * 
@@ -445,12 +493,14 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.POST)
 	@ResponseBody
-	public GetCommentDTO addDropComment(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateCommentDTO createDTO, Principal principal) {
-		
-		return bucketService.addDropComment(id, dropId, createDTO, principal.getName());
+	public GetCommentDTO addDropComment(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreateCommentDTO createDTO,
+			Principal principal) {
+
+		return bucketService.addDropComment(id, dropId, createDTO,
+				principal.getName());
 	}
-	
+
 	/**
 	 * Handler for getting the comments of bucket drop
 	 * 
@@ -460,8 +510,8 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetCommentDTO> getDropComments(@PathVariable Long id, @PathVariable Long dropId,
-			Principal principal) {
+	public List<GetCommentDTO> getDropComments(@PathVariable Long id,
+			@PathVariable Long dropId, Principal principal) {
 		return bucketService.getDropComments(id, dropId, principal.getName());
 	}
 
@@ -475,11 +525,13 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/drops/{dropId}/comments/{commentId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropComment(@PathVariable Long id, @PathVariable Long dropId, 
-			@PathVariable Long commentId, Principal principal) {
-		bucketService.deleteDropComment(id, dropId, commentId, principal.getName());
+	public void deleteDropComment(@PathVariable Long id,
+			@PathVariable Long dropId, @PathVariable Long commentId,
+			Principal principal) {
+		bucketService.deleteDropComment(id, dropId, commentId,
+				principal.getName());
 	}
-	
+
 	/**
 	 * Handler for adding a comment to a bucket
 	 * 
@@ -488,13 +540,14 @@ public class BucketsController extends AbstractController {
 	 * @param principal
 	 * @return
 	 */
-	@RequestMapping(value = "{id}/comments", method=RequestMethod.POST)
+	@RequestMapping(value = "{id}/comments", method = RequestMethod.POST)
 	@ResponseBody
-	public GetCommentDTO addComment(@PathVariable Long id, @RequestBody CreateCommentDTO createDTO,
-			Principal principal) {
-		return bucketService.addBucketComment(id, createDTO, principal.getName());
+	public GetCommentDTO addComment(@PathVariable Long id,
+			@RequestBody CreateCommentDTO createDTO, Principal principal) {
+		return bucketService.addBucketComment(id, createDTO,
+				principal.getName());
 	}
-	
+
 	/**
 	 * Handler for fetching the list of bucket comments
 	 * 
@@ -502,9 +555,10 @@ public class BucketsController extends AbstractController {
 	 * @param principal
 	 * @return
 	 */
-	@RequestMapping(value = "{id}/comments", method=RequestMethod.GET)
+	@RequestMapping(value = "{id}/comments", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetCommentDTO> getComments(@PathVariable Long id, Principal principal) {
+	public List<GetCommentDTO> getComments(@PathVariable Long id,
+			Principal principal) {
 		return bucketService.getBucketComments(id, principal.getName());
 	}
 
@@ -515,11 +569,11 @@ public class BucketsController extends AbstractController {
 	 * @param commentId
 	 * @param principal
 	 */
-	@RequestMapping(value = "{id}/comments/{commentId}", method=RequestMethod.DELETE)
+	@RequestMapping(value = "{id}/comments/{commentId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteComment(@PathVariable Long id, @PathVariable Long commentId,
-			Principal principal) {
+	public void deleteComment(@PathVariable Long id,
+			@PathVariable Long commentId, Principal principal) {
 		bucketService.deleteBucketComment(id, commentId, principal.getName());
 	}
-	
+
 }

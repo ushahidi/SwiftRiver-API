@@ -72,10 +72,6 @@ public class Bucket {
 	@Column(name = "drop_count")
 	private int dropCount;
 
-	@OneToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "buckets_droplets", joinColumns = @JoinColumn(name = "bucket_id"), inverseJoinColumns = @JoinColumn(name = "droplet_id"))
-	private List<Drop> drops;
-
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "bucket")
 	private List<BucketCollaborator> collaborators;
 
@@ -164,14 +160,6 @@ public class Bucket {
 
 	public void setDropCount(int dropCount) {
 		this.dropCount = dropCount;
-	}
-
-	public List<Drop> getDrops() {
-		return drops;
-	}
-
-	public void setDrops(List<Drop> drops) {
-		this.drops = drops;
 	}
 
 	public List<BucketCollaborator> getCollaborators() {

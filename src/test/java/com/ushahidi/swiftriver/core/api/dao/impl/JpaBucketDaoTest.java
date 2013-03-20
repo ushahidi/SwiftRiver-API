@@ -18,6 +18,10 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -33,24 +37,29 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.Media;
+import com.ushahidi.swiftriver.core.model.MediaThumbnail;
+import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.Tag;
 
 public class JpaBucketDaoTest extends AbstractDaoTest {
 
 	@Autowired
 	private BucketDao bucketDao;
-	
+
 	@Autowired
 	private BucketCollaboratorDao bucketCollaboratorDao;
-	
+
 	@Autowired
 	private AccountDao accountDao;
-	
+
 	@PersistenceContext
 	protected EntityManager em;
 
 	/**
-	 * Tests that a bucket is successfully created and inserted
-	 * in the database
+	 * Tests that a bucket is successfully created and inserted in the database
 	 */
 	@Test
 	public void createBucket() {
@@ -61,21 +70,24 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		bucket.setDescription("The Bucket's Description");
 		bucket.setPublished(true);
 		bucket.setAccount(account);
-		
+
 		bucketDao.create(bucket);
-		
+
 		assertNotNull(bucket.getId());
-		
+
 		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM buckets WHERE id = ?";
-		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, bucket.getId());
-		
-		assertEquals(3L, ((Number)r.get("account_id")).longValue());
-		assertEquals("Test Bucket Number 2", (String)r.get("bucket_name"));
-		assertEquals("test-bucket-number-2", (String)r.get("bucket_name_canonical"));
-		assertEquals("The Bucket's Description", (String)r.get("bucket_description"));
-		assertTrue((Boolean)r.get("bucket_publish"));
+		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql,
+				bucket.getId());
+
+		assertEquals(3L, ((Number) r.get("account_id")).longValue());
+		assertEquals("Test Bucket Number 2", (String) r.get("bucket_name"));
+		assertEquals("test-bucket-number-2",
+				(String) r.get("bucket_name_canonical"));
+		assertEquals("The Bucket's Description",
+				(String) r.get("bucket_description"));
+		assertTrue((Boolean) r.get("bucket_publish"));
 	}
-	
+
 	@Test
 	public void updateBucket() {
 		Bucket bucket = bucketDao.findById(1L);
@@ -83,50 +95,53 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		bucket.setName("Renamed Bucket");
 		bucket.setDescription("Renamed Bucket's Description");
 		bucket.setPublished(false);
-		
+
 		bucketDao.update(bucket);
 		em.flush();
-		
+
 		String sql = "SELECT account_id, bucket_name, bucket_name_canonical, bucket_description, bucket_publish  FROM buckets WHERE id = ?";
-		
-		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql, bucket.getId());
-		assertEquals(3L, ((Number)r.get("account_id")).longValue());
-		assertEquals("Renamed Bucket", (String)r.get("bucket_name"));
-		assertEquals("renamed-bucket", (String)r.get("bucket_name_canonical"));
-		assertEquals("Renamed Bucket's Description", (String)r.get("bucket_description"));
-		assertFalse((Boolean)r.get("bucket_publish"));
+
+		Map<String, Object> r = this.jdbcTemplate.queryForMap(sql,
+				bucket.getId());
+		assertEquals(3L, ((Number) r.get("account_id")).longValue());
+		assertEquals("Renamed Bucket", (String) r.get("bucket_name"));
+		assertEquals("renamed-bucket", (String) r.get("bucket_name_canonical"));
+		assertEquals("Renamed Bucket's Description",
+				(String) r.get("bucket_description"));
+		assertFalse((Boolean) r.get("bucket_publish"));
 	}
-	
+
 	@Test
 	public void findCollaboratorByAccount() {
 		BucketCollaborator rc = bucketDao.findCollaborator(1L, 3L);
-		
-		assertEquals(1L, (long)rc.getId());
+
+		assertEquals(1L, (long) rc.getId());
 		assertEquals(3L, rc.getAccount().getId());
 	}
-	
+
 	@Test
 	public void findNonExistentCollaboratorByAccount() {
 		BucketCollaborator rc = bucketDao.findCollaborator(1L, 5L);
-		
+
 		assertNull(rc);
 	}
-	
+
 	@Test
 	public void testAddCollaborator() {
 		Bucket bucket = bucketDao.findById(1L);
 		Account account = accountDao.findByUsername("user3");
-		
+
 		bucketDao.addCollaborator(bucket, account, true);
 		em.flush();
-		
+
 		String sql = "SELECT bucket_id, account_id, collaborator_active, read_only FROM bucket_collaborators WHERE bucket_id = ? AND account_id = ?";
-		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L, 5L);
-		
+		Map<String, Object> results = this.jdbcTemplate
+				.queryForMap(sql, 1L, 5L);
+
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));
 	}
-	
+
 	@Test
 	public void testModifyCollaborator() {
 		BucketCollaborator collaborator = bucketCollaboratorDao.findById(1L);
@@ -134,12 +149,243 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		collaborator.setReadOnly(true);
 		bucketDao.updateCollaborator(collaborator);
 		em.flush();
-		
+
 		String sql = "SELECT bucket_id, account_id, collaborator_active, read_only FROM bucket_collaborators WHERE id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L);
-		
+
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));
+	}
+
+	@Test
+	public void getDrops() {
+		Account account = accountDao.findById(1L);
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
+				filter, account);
+
+		assertEquals(5, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(5, drop.getId());
+		assertEquals(false, drop.getRead());
+		assertEquals("rss", drop.getChannel());
+		assertEquals("droplet_5_title", drop.getTitle());
+		assertEquals("droplet_5_content", drop.getContent());
+		assertEquals("5", drop.getOriginalId());
+		assertEquals(30, drop.getCommentCount());
+		assertEquals(1, drop.getIdentity().getId());
+		assertEquals("identity1_name", drop.getIdentity().getName());
+		assertEquals("identity1_avatar", drop.getIdentity().getAvatar());
+		assertNotNull(drop.getOriginalUrl());
+		assertEquals(3, drop.getOriginalUrl().getId());
+		assertEquals("http://www.bbc.co.uk/nature/20273855", drop
+				.getOriginalUrl().getUrl());
+
+		assertEquals(2, drop.getTags().size());
+		Tag tag = drop.getTags().get(0);
+		assertEquals(1, tag.getId());
+		assertEquals("Jeremy Hunt", tag.getTag());
+		assertEquals("person", tag.getType());
+
+		assertEquals(2, drop.getLinks().size());
+		Link link = drop.getLinks().get(0);
+		assertEquals(2, link.getId());
+		assertEquals(
+				"http://news.bbc.co.uk/democracylive/hi/house_of_commons/newsid_9769000/9769109.stm#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa&quot;",
+				link.getUrl());
+
+		assertEquals(2, drop.getMedia().size());
+		Media media = drop.getMedia().get(0);
+		assertEquals(1, media.getId());
+		assertEquals(
+				"http://gigaom2.files.wordpress.com/2012/10/datacapspercentage.jpeg",
+				media.getUrl());
+		assertEquals("image", media.getType());
+
+		assertEquals(2, media.getThumbnails().size());
+		MediaThumbnail thumbnail = media.getThumbnails().get(0);
+		assertEquals(
+				"https://2bcbd22fbb0a02d76141-1680e9dfed1be27cdc47787ec5d4ef89.ssl.cf1.rackcdn.com/625dd7cb656d258b4effb325253e880631699d80345016e9e755b4a04341cda1.peg",
+				thumbnail.getUrl());
+		assertEquals(80, thumbnail.getSize());
+
+		assertEquals(2, drop.getPlaces().size());
+		Place place = drop.getPlaces().get(0);
+		assertEquals(1, place.getId());
+		assertEquals("Wales", place.getPlaceName());
+		assertEquals(new Float(146.11), place.getLongitude());
+		assertEquals(new Float(-33), place.getLatitude());
+
+	}
+	
+	@Test
+	public void getDropsSince() {
+		Account account = accountDao.findById(1L);
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		List<Drop> drops = bucketDao.getDropsSince(1L, 3L, 1, filter, account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(4, drop.getId());
+		assertEquals(false, drop.getRead());
+		assertEquals("twitter", drop.getChannel());
+		assertEquals("droplet_4_title", drop.getTitle());
+		assertEquals("droplet_4_content", drop.getContent());
+		assertEquals("4", drop.getOriginalId());
+		assertEquals(25, drop.getCommentCount());
+		assertEquals(2, drop.getIdentity().getId());
+		assertEquals("identity2_name", drop.getIdentity().getName());
+		assertEquals("identity2_avatar", drop.getIdentity().getAvatar());
+		assertNotNull(drop.getOriginalUrl());
+		assertEquals(3, drop.getOriginalUrl().getId());
+		assertEquals("http://www.bbc.co.uk/nature/20273855", drop
+				.getOriginalUrl().getUrl());
+
+		assertEquals(1, drop.getTags().size());
+		Tag tag = drop.getTags().get(0);
+		assertEquals(1, tag.getId());
+		assertEquals("Jeremy Hunt", tag.getTag());
+		assertEquals("person", tag.getType());
+
+		assertEquals(1, drop.getLinks().size());
+		Link link = drop.getLinks().get(0);
+		assertEquals(10, link.getId());
+		assertEquals("http://www.bbc.co.uk/sport/0/football/20319573",
+				link.getUrl());
+
+		assertEquals(1, drop.getMedia().size());
+		Media media = drop.getMedia().get(0);
+		assertEquals(1, media.getId());
+		assertEquals(
+				"http://gigaom2.files.wordpress.com/2012/10/datacapspercentage.jpeg",
+				media.getUrl());
+		assertEquals("image", media.getType());
+
+		assertEquals(2, media.getThumbnails().size());
+		MediaThumbnail thumbnail = media.getThumbnails().get(0);
+		assertEquals(
+				"https://2bcbd22fbb0a02d76141-1680e9dfed1be27cdc47787ec5d4ef89.ssl.cf1.rackcdn.com/625dd7cb656d258b4effb325253e880631699d80345016e9e755b4a04341cda1.peg",
+				thumbnail.getUrl());
+		assertEquals(80, thumbnail.getSize());
+
+		assertEquals(1, drop.getPlaces().size());
+		Place place = drop.getPlaces().get(0);
+		assertEquals(1, place.getId());
+		assertEquals("Wales", place.getPlaceName());
+		assertEquals(new Float(146.11), place.getLongitude());
+		assertEquals(new Float(-33), place.getLatitude());
+
+	}
+	
+	@Test
+	public void getDropsFromDate() throws Exception {
+		Account account = accountDao.findById(1L);
+
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setDateFrom(dateFormat.parse("01/01/2013"));
+		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(5, drop.getId());
+	}
+
+	@Test
+	public void getDropsToDate() throws Exception {
+		Account account = accountDao.findById(1L);
+
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setDateTo(dateFormat.parse("01/01/2012"));
+		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(1, drop.getId());
+	}
+
+	@Test
+	public void getReadDrops() {
+		Account account = accountDao.findById(3L);
+
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setRead(true);
+		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
+
+		assertEquals(2, drops.size());
+
+		Drop drop = drops.get(1);
+		assertEquals(2, drop.getId());
+	}
+
+	@Test
+	public void getReadDropsSince() {
+		Account account = accountDao.findById(3L);
+
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setRead(true);
+		List<Drop> drops = bucketDao.getDropsSince(1L, 3L, 1, filter, account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(5, drop.getId());
+	}
+
+	@Test
+	public void getUnreadDrops() {
+		Account account = accountDao.findById(3L);
+
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setRead(false);
+		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
+
+		assertEquals(3, drops.size());
+
+		Drop drop = drops.get(1);
+		assertEquals(3, drop.getId());
+	}
+
+	@Test
+	public void getDropsForChannelName() {
+		Account account = accountDao.findById(3L);
+
+		List<String> channels = new ArrayList<String>();
+		channels.add("rss");
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setChannels(channels);
+		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
+
+		assertEquals(3, drops.size());
+
+		Drop drop = drops.get(1);
+		assertEquals(3, drop.getId());
+	}
+
+	@Test
+	public void getDropsSinceForChannelName() {
+		Account account = accountDao.findById(3L);
+
+		List<String> channels = new ArrayList<String>();
+		channels.add("twitter");
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setChannels(channels);
+		List<Drop> drops = bucketDao.getDropsSince(1L, 3L, 1, filter, account);
+
+		assertEquals(1, drops.size());
+
+		Drop drop = drops.get(0);
+		assertEquals(4, drop.getId());
 	}
 
 }

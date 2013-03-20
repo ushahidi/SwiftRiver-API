@@ -42,7 +42,93 @@ import com.ushahidi.swiftriver.core.model.RiverDropTag;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
-public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements BucketDropDao {
+public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> implements BucketDropDao {
+
+	public JpaBucketDropDao() {
+		// Query for retrieving tag metadata
+		tagsQuery = "SELECT buckets_droplets.id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type ";
+		tagsQuery += "FROM droplets_tags  ";
+		tagsQuery += "INNER JOIN tags ON (tags.id = tag_id)  ";
+		tagsQuery += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_tags.droplet_id)";
+		tagsQuery += "WHERE buckets_droplets.id IN :drop_ids  ";
+		tagsQuery += "AND tags.id NOT IN ( ";
+		tagsQuery += "	SELECT tag_id FROM bucket_droplet_tags  ";
+		tagsQuery += "	WHERE buckets_droplets_id IN :drop_ids  ";
+		tagsQuery += "	AND deleted = 1) ";
+		tagsQuery += "UNION ALL  ";
+		tagsQuery += "SELECT buckets_droplets_id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type  ";
+		tagsQuery += "FROM bucket_droplet_tags ";
+		tagsQuery += "INNER JOIN tags ON (tags.id = tag_id)  ";
+		tagsQuery += "WHERE buckets_droplets_id IN :drop_ids  ";
+		tagsQuery += "AND deleted = 0 ";
+		
+		// Query for retrieving link metadata
+		linksQuery = "SELECT buckets_droplets.id AS droplet_id, link_id AS id, url ";
+		linksQuery += "FROM droplets_links  ";
+		linksQuery += "INNER JOIN links ON (links.id = link_id)  ";
+		linksQuery += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_links.droplet_id)";
+		linksQuery += "WHERE buckets_droplets.id IN :drop_ids  ";
+		linksQuery += "AND links.id NOT IN ( ";
+		linksQuery += "	SELECT link_id FROM bucket_droplet_links  ";
+		linksQuery += "	WHERE buckets_droplets_id IN :drop_ids  ";
+		linksQuery += "	AND deleted = 1) ";
+		linksQuery += "UNION ALL  ";
+		linksQuery += "SELECT buckets_droplets_id AS droplet_id, link_id AS id, url  ";
+		linksQuery += "FROM bucket_droplet_links  ";
+		linksQuery += "INNER JOIN links ON (links.id = link_id)  ";
+		linksQuery += "WHERE buckets_droplets_id IN :drop_ids  ";
+		linksQuery += "AND deleted = 0 ";
+		
+		// Query for retrieving the drop image
+		dropImageQuery = "SELECT buckets_droplets.id, droplet_image FROM droplets ";
+		dropImageQuery += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets.id) ";
+		dropImageQuery += "WHERE buckets_droplets.id IN :drop_ids ";
+		dropImageQuery += "AND droplets.droplet_image > 0";
+		
+		// Query for retrieving media metadata
+		mediaQuery = "SELECT buckets_droplets.id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, ";
+		mediaQuery += "media_thumbnails.url AS thumbnail_url ";
+		mediaQuery += "FROM droplets_media ";
+		mediaQuery += "INNER JOIN media ON (media.id = droplets_media.media_id) ";
+		mediaQuery += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_media.droplet_id) ";
+		mediaQuery += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
+		mediaQuery += "WHERE buckets_droplets.id IN :drop_ids ";
+		mediaQuery += "AND media.id NOT IN ( ";
+		mediaQuery += "	SELECT media_id ";
+		mediaQuery += "	FROM bucket_droplet_media ";
+		mediaQuery += "	WHERE buckets_droplets_id IN :drop_ids ";
+		mediaQuery += "	AND deleted = 1) ";
+		mediaQuery += "UNION ALL ";
+		mediaQuery += "SELECT buckets_droplets_id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, media_thumbnails.url AS thumbnail_url ";
+		mediaQuery += "FROM bucket_droplet_media ";
+		mediaQuery += "INNER JOIN media ON (media.id = bucket_droplet_media.media_id) ";
+		mediaQuery += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
+		mediaQuery += "WHERE buckets_droplets_id IN :drop_ids ";
+		mediaQuery += "AND deleted = 0; ";
+		
+		// Query for retrieving place metadata
+		placesQuery = "SELECT buckets_droplets.id AS droplet_id, place_id AS id, place_name, place_name_canonical, ";
+		placesQuery += "places.hash AS place_hash, latitude, longitude ";
+		placesQuery += "FROM droplets_places ";
+		placesQuery += "INNER JOIN places ON (places.id = place_id) ";
+		placesQuery += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets_places.droplet_id) ";
+		placesQuery += "WHERE buckets_droplets.id IN :drop_ids ";
+		placesQuery += "AND places.id NOT IN ( ";
+		placesQuery += "	SELECT place_id ";
+		placesQuery += "	FROM bucket_droplet_places ";
+		placesQuery += "	WHERE buckets_droplets_id IN :drop_ids ";
+		placesQuery += "	AND deleted = 1) ";
+		placesQuery += "UNION ALL ";
+		placesQuery += "SELECT buckets_droplets_id AS droplet_id, place_id AS id, place_name, place_name_canonical, places.hash AS place_hash, latitude, longitude ";
+		placesQuery += "FROM bucket_droplet_places ";
+		placesQuery += "INNER JOIN places ON (places.id = place_id) ";
+		placesQuery += "WHERE buckets_droplets_id IN :drop_ids ";
+		placesQuery += "AND deleted = 0 ";
+		
+		// Query for retieving the BucketDrop id for the given drops
+		contextDropQuery = "SELECT id, droplet_id FROM buckets_droplets WHERE id IN :dropIds";
+		
+	}
 
 	public BucketDrop create(BucketDrop t) {
 		t.setVeracity(1L);

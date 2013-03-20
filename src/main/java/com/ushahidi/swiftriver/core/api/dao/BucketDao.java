@@ -16,9 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.Collection;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
@@ -30,16 +29,29 @@ import com.ushahidi.swiftriver.core.model.Drop;
 public interface BucketDao extends GenericDao<Bucket> {
 
 	/**
-	 * Gets and returns a list of drops for the bucket specified in <code>bucketId</code>
-	 * using the request parameters in <code>requestParams</code>. The {@link Account}
-	 * in <code>account</code> is used to fetch account-specific metadata (tags, links, places etc)
-	 *  
-	 * @param bucketId
-	 * @param account
-	 * @param requestParams 
-	 * @return {@link LinkDTO}
+	 * Get list of drops from the given river.
+	 * 
+	 * @param id
+	 * @param maxId
+	 * @param dropCount
+	 * @param queryingAccount
+	 * @return
 	 */
-	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams);
+	public List<Drop> getDrops(Long bucketId, Long maxId, int page,
+			int dropCount, DropFilter filter, Account queryingAccount);
+
+	/**
+	 * Get drops from the river newer than the given id.
+	 * 
+	 * @param riverId
+	 * @param sinceId
+	 * @param dropCount
+	 * @param filter
+	 * @param queryingAccount
+	 * @return
+	 */
+	public List<Drop> getDropsSince(Long bucketId, Long sinceId, int dropCount,
+			DropFilter filter, Account queryingAccount);
 	
 	/**
 	 * Adds the {@link Drop} specified in <code>drop</code> to the
@@ -52,20 +64,12 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public boolean addDrop(Bucket bucket, Drop drop);
 	
 	/**
-	 * Adds a collection of drops to a buckets
-	 * 
-	 * @param bucketId
-	 * @param drops
-	 */
-	public void addDrops(Long bucketId, Collection<Drop> drops);
-	
-	/**
 	 * Adds a collaborator to the bucket with the specified id
 	 * 
 	 * @param bucket
 	 * @param account
 	 * @param readOnly
-	 * @return TODO
+	 * @return
 	 */
 	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly);
 
@@ -143,5 +147,91 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public BucketComment addComment(Bucket bucket, String commentText,
 			Account account);
+	
+	/**
+	 * Helper Class for holding filter parameters when getting drops.
+	 * 
+	 */
+	public static class DropFilter {
+		List<String> channels;
+
+		Boolean read;
+		
+		Boolean photos;
+
+		Date dateFrom;
+
+		Date dateTo;
+
+		/**
+		 * @return the channels
+		 */
+		public List<String> getChannels() {
+			return channels;
+		}
+
+		/**
+		 * @param channels the channels to set
+		 */
+		public void setChannels(List<String> channels) {
+			this.channels = channels;
+		}
+
+		/**
+		 * @return the read
+		 */
+		public Boolean getRead() {
+			return read;
+		}
+
+		/**
+		 * @param read the read to set
+		 */
+		public void setRead(Boolean read) {
+			this.read = read;
+		}
+
+		/**
+		 * @return the photos
+		 */
+		public Boolean getPhotos() {
+			return photos;
+		}
+
+		/**
+		 * @param photos the photos to set
+		 */
+		public void setPhotos(Boolean photos) {
+			this.photos = photos;
+		}
+
+		/**
+		 * @return the dateFrom
+		 */
+		public Date getDateFrom() {
+			return dateFrom;
+		}
+
+		/**
+		 * @param dateFrom the dateFrom to set
+		 */
+		public void setDateFrom(Date dateFrom) {
+			this.dateFrom = dateFrom;
+		}
+
+		/**
+		 * @return the dateTo
+		 */
+		public Date getDateTo() {
+			return dateTo;
+		}
+
+		/**
+		 * @param dateTo the dateTo to set
+		 */
+		public void setDateTo(Date dateTo) {
+			this.dateTo = dateTo;
+		}
+	}
 
 }

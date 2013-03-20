@@ -16,30 +16,29 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.util.TextUtil;
@@ -54,10 +53,17 @@ import com.ushahidi.swiftriver.core.util.TextUtil;
 public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 	final static Logger LOG = LoggerFactory.getLogger(JpaBucketDao.class);
+
+	@Autowired
+	private JpaBucketDropDao dropDao;
+	
+	private NamedParameterJdbcTemplate jdbcTemplate;
 	
 	@Autowired
-	private DropDao dropDao;
-	
+	public void setDataSource(DataSource dataSource) {
+		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -86,25 +92,20 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addDrop(com.ushahidi.swiftriver.core.model.Bucket, long)
+	 * 
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addDrop(com.ushahidi.
+	 * swiftriver.core.model.Bucket, long)
 	 */
-	public boolean addDrop(Bucket bucket, Drop drop) {		
+	public boolean addDrop(Bucket bucket, Drop drop) {
 		BucketDrop bucketDrop = new BucketDrop();
 		bucketDrop.setDrop(drop);
 		bucketDrop.setBucket(bucket);
 		bucketDrop.setDateAdded(new Date());
 		bucketDrop.setVeracity(1L);
-		
+
 		this.em.persist(bucketDrop);
 
 		return true;
-	}
-
-	/**
-	 * @see BucketDao#addDrops(Long, Collection)
-	 */
-	public void addDrops(Long bucketId, Collection<Drop> drops) {
-		findById(bucketId).getDrops().addAll(drops);
 	}
 
 	/**
@@ -139,7 +140,11 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findCollaborator(com.ushahidi.swiftriver.core.model.Bucket, com.ushahidi.swiftriver.core.model.Account)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#findCollaborator(com.ushahidi
+	 * .swiftriver.core.model.Bucket,
+	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
 	public BucketCollaborator findCollaborator(Long bucketId, Long accountId) {
 		String sql = "FROM BucketCollaborator bc "
@@ -156,7 +161,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		} catch (Exception e) {
 			// Do nothing;
 		}
-		
+
 		return collaborator;
 	}
 
@@ -176,95 +181,167 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#getDrops(java.lang.Long, com.ushahidi.swiftriver.core.model.Account, java.util.Map)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#getDrops(java.lang.Long,
+	 * java.lang.Long, int, int,
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao.DropFilter,
+	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
-	@SuppressWarnings("unchecked")
-	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams) {
+	@Override
+	public List<Drop> getDrops(Long bucketId, Long maxId, int page,
+			int dropCount, DropFilter filter, Account queryingAccount) {
+		return doGetDrops(bucketId, maxId, false, page, dropCount, filter,
+				queryingAccount);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#getDropsSince(java.lang
+	 * .Long, java.lang.Long, int,
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao.DropFilter,
+	 * com.ushahidi.swiftriver.core.model.Account)
+	 */
+	@Override
+	public List<Drop> getDropsSince(Long bucketId, Long sinceId, int dropCount,
+			DropFilter filter, Account queryingAccount) {
+		return doGetDrops(bucketId, sinceId, true, 1, dropCount, filter,
+				queryingAccount);
+	}
+
+	/**
+	 * Helper method for building and executing the query to obtain drops.
+	 * 
+	 * @param bucketId
+	 *            The bucket to obtain drops from
+	 * @param id
+	 *            The reference drop id from which to obtain drops
+	 * @param newer
+	 *            If true, obtain drops newer than the given id otherwise older.
+	 * @param dropCount
+	 *            Maximum number of drops to return
+	 * @param page
+	 *            The page of drops relative to the given id and dropCount
+	 * @param filter
+	 *            Drop filter to apply
+	 * @param queryingAccount
+	 * @return
+	 */
+	private List<Drop> doGetDrops(Long bucketId, Long id, boolean newer,
+			int page, int dropCount, DropFilter filter, Account queryingAccount) {
 		String sql = "SELECT buckets_droplets.id AS id, droplet_title, ";
 		sql += "droplet_content, droplets.channel, identities.id AS identity_id, identity_name, ";
 		sql += "identity_avatar, droplets.droplet_date_pub, droplet_orig_id, ";
 		sql += "user_scores.score AS user_score, links.id AS original_url_id, ";
-		sql += "links.url AS original_url, comment_count ";
+		sql += "links.url AS original_url, comment_count, account_read_drops.droplet_id AS drop_read ";
 		sql += "FROM buckets_droplets ";
 		sql += "INNER JOIN droplets ON (buckets_droplets.droplet_id = droplets.id) ";
 		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
 		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN links ON (droplets.original_url = links.id) ";
+		sql += "LEFT JOIN account_read_drops ON (account_read_drops.droplet_id = buckets_droplets.droplet_id AND account_read_drops.account_id = :accountId) ";
 		sql += "WHERE buckets_droplets.droplet_date_added > '1970-01-01 00:00:00' ";
 		sql += "AND buckets_droplets.bucket_id = :bucketId ";
-		
+
 		// Check for channel parameter
-		if (requestParams.containsKey("channels")) {
-			sql += "AND droplets.channel IN :channels ";
+		if (filter.getChannels() != null && filter.getChannels().size() > 0) {
+			sql += "AND droplets.channel IN (:channels) ";
+		}
+
+		if (filter.getPhotos() != null && filter.getPhotos()) {
+			sql += "AND droplets.droplet_image > 0 ";
 		}
 		
-		if (requestParams.containsKey("photos")) {
-			sql += "AND droplets.droplet_image > 0";
+		if (filter.getRead() != null) {
+			if (filter.getRead()) {
+				sql += "AND account_read_drops.droplet_id IS NOT NULL ";
+			} else {
+				sql += "AND account_read_drops.droplet_id IS NULL ";
+			}
 		}
-		
+
 		// Check for since_id
-		if (requestParams.containsKey("since_id")) {
-			sql += " AND buckets_droplets.id > " + (Long) requestParams.get("since_id");
+		if (newer) {
+			sql += " AND buckets_droplets.id > :id ";
+		} else {
+			sql += " AND buckets_droplets.id <= :id ";
 		}
 		
-		// Check for max_id
-		if (requestParams.containsKey("max_id")) {
-			sql += " AND buckets_droplets.id <= " + (Long) requestParams.get("max_id");
+		if (filter.getDateFrom() != null) {
+			sql += "AND droplets.droplet_date_pub >= :date_from ";
 		}
 
-		Integer dropCount = (Integer) requestParams.get("count");
-		Integer page = (Integer) requestParams.get("page");
+		if (filter.getDateTo() != null) {
+			sql += "AND droplets.droplet_date_pub <= :date_to ";
+		}
 
-		sql += " ORDER BY buckets_droplets.droplet_date_added DESC ";
-		sql += String.format("LIMIT %d OFFSET %d", dropCount, ((page - 1) * dropCount));
+		if (newer) {
+			sql += "ORDER BY droplets.droplet_date_pub ASC ";
+		} else {
+			sql += "ORDER BY droplets.droplet_date_pub DESC ";
+		}
+
+		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("userId", queryingAccount.getOwner().getId());
+		params.addValue("accountId", queryingAccount.getId());
+		params.addValue("bucketId", bucketId);
+		params.addValue("id", id);
 		
-
-		Query query = this.em.createNativeQuery(sql);
-		query.setParameter("bucketId", bucketId);
-		query.setParameter("userId", account.getId());
-
-		if (requestParams.containsKey("channels")) {
-			List<String> channels = (List<String>) requestParams.get("channels");
-			query.setParameter("channels", channels);
+		if (filter.getChannels() != null && filter.getChannels().size() > 0) {
+			params.addValue("channels", filter.getChannels());
 		}
 		
+		if (filter.getDateFrom() != null) {
+			params.addValue("date_from", filter.getDateFrom());
+		}
+
+		if (filter.getDateTo() != null) {
+			params.addValue("date_to", filter.getDateTo());
+		}
+		
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
+				params);
+
 		List<Drop> drops = new ArrayList<Drop>();
 
-		for (Object row: query.getResultList()) {
-			Object[] rowArray = (Object[]) row;
-
+		for (Map<String, Object> result : results) {
 			Drop drop = new Drop();
-			
+
 			// Set the drop properties
-			drop.setId(((BigInteger)rowArray[0]).longValue());
-			drop.setTitle((String) rowArray[1]);
-			drop.setContent((String) rowArray[2]);
-			drop.setChannel((String) rowArray[3]);
-			
+			drop.setId(((Number) result.get("id")).longValue());
+			drop.setTitle((String) result.get("droplet_title"));
+			drop.setContent((String) result.get("droplet_content"));
+			drop.setChannel((String) result.get("channel"));
+			drop.setDatePublished((Date) result.get("droplet_date_pub"));
+			drop.setOriginalId((String) result.get("droplet_orig_id"));
+			drop.setCommentCount(((Number) result.get("comment_count")).intValue() );
+			drop.setRead((Long) result.get("drop_read") != null);
+
 			Identity identity = new Identity();
-			identity.setId(((BigInteger) rowArray[4]).longValue());
-			identity.setName((String) rowArray[5]);
-			identity.setAvatar((String) rowArray[6]);
-
+			identity.setId(((Number) result.get("identity_id")).longValue());
+			identity.setName((String) result.get("identity_name"));
+			identity.setAvatar((String) result.get("identity_avatar"));
 			drop.setIdentity(identity);
-
-			drop.setDatePublished((Date)rowArray[7]);
-			drop.setOriginalId((String) rowArray[8]);
 			
-			if (rowArray[10] != null) {
+			// Set drop url
+			if (result.get("original_url_id") != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger) rowArray[10]).longValue());
-				originalUrl.setUrl((String) rowArray[11]);
+				originalUrl.setId(((Number) result.get("original_url_id"))
+						.longValue());
+				originalUrl.setUrl((String) result.get("original_url"));
+				drop.setOriginalUrl(originalUrl);
 			}
-
-			drop.setCommentCount((Integer) rowArray[12]);
 
 			drops.add(drop);
 		}
-		
+
 		if (!drops.isEmpty()) {
 			// Populate the metadata
-			dropDao.populateMetadata(drops, DropSource.BUCKET, account);
+			dropDao.populateMetadata(drops, queryingAccount);
 		}
 
 		return drops;
@@ -300,46 +377,55 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findAll(java.util.List)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#findAll(java.util.List)
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Bucket> findAll(List<Long> bucketIds) {
-		return (List<Bucket>) em.createQuery("FROM Bucket WHERE id IN :bucketIds")
-				.setParameter("bucketIds", bucketIds)
-				.getResultList();
+		return (List<Bucket>) em
+				.createQuery("FROM Bucket WHERE id IN :bucketIds")
+				.setParameter("bucketIds", bucketIds).getResultList();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findDrop(java.lang.Long, java.lang.Long)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#findDrop(java.lang.Long,
+	 * java.lang.Long)
 	 */
 	public BucketDrop findDrop(Long bucketId, Long dropId) {
 		String sql = "FROM BucketDrop WHERE bucket.id = :bucketId AND drop.id = :dropId";
-		
+
 		TypedQuery<BucketDrop> query = em.createQuery(sql, BucketDrop.class);
 		query.setParameter("bucketId", bucketId);
 		query.setParameter("dropId", dropId);
-		
+
 		List<BucketDrop> bucketDrops = query.getResultList();
-		
+
 		return bucketDrops.isEmpty() ? null : bucketDrops.get(0);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#addComment(com.ushahidi.swiftriver.core.model.Bucket, java.lang.String, com.ushahidi.swiftriver.core.model.Account)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#addComment(com.ushahidi
+	 * .swiftriver.core.model.Bucket, java.lang.String,
+	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
 	public BucketComment addComment(Bucket bucket, String commentText,
 			Account account) {
 		BucketComment bucketComment = new BucketComment();
-		
+
 		bucketComment.setBucket(bucket);
 		bucketComment.setAccount(account);
 		bucketComment.setCommentText(commentText);
 		bucketComment.setDateAdded(new Date());
-		
+
 		this.em.persist(bucketComment);
-		
+
 		return bucketComment;
 	}
 

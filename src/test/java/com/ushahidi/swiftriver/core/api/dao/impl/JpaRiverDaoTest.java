@@ -49,8 +49,8 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 	@Autowired
 	RiverDao riverDao;
-	
-	@Autowired 
+
+	@Autowired
 	RiverCollaboratorDao riverCollaboratorDao;
 
 	@Autowired
@@ -83,14 +83,15 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	@Test
 	public void getDrops() {
 		Account account = accountDao.findById(1L);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), null, null,
-				null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(5, drops.size());
 
 		Drop drop = drops.get(0);
 		assertEquals(5, drop.getId());
+		assertEquals(false, drop.getRead());
 		assertEquals("rss", drop.getChannel());
 		assertEquals("droplet_5_title", drop.getTitle());
 		assertEquals("droplet_5_content", drop.getContent());
@@ -113,7 +114,8 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		assertEquals(2, drop.getLinks().size());
 		Link link = drop.getLinks().get(0);
 		assertEquals(2, link.getId());
-		assertEquals("http://news.bbc.co.uk/democracylive/hi/house_of_commons/newsid_9769000/9769109.stm#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa&quot;",
+		assertEquals(
+				"http://news.bbc.co.uk/democracylive/hi/house_of_commons/newsid_9769000/9769109.stm#sa-ns_mchannel=rss&amp;ns_source=PublicRSS20-sa&quot;",
 				link.getUrl());
 
 		assertEquals(2, drop.getMedia().size());
@@ -146,8 +148,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(1L);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), channels, null, null, null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setChannelIds(channels);
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(2, drops.size());
 
@@ -158,9 +162,8 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	@Test
 	public void getDropsSince() {
 		Account account = accountDao.findById(1L);
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1,
-				new ArrayList<String>(), new ArrayList<Long>(), null, null,
-				null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, filter, account);
 
 		assertEquals(1, drops.size());
 
@@ -222,8 +225,9 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(2L);
-		List<Drop> drops = riverDao.getDropsSince(1L, 4L, 1,
-				new ArrayList<String>(), channels, null, null, null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setChannelIds(channels);
+		List<Drop> drops = riverDao.getDropsSince(1L, 4L, 1, filter, account);
 
 		assertEquals(1, drops.size());
 
@@ -236,9 +240,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		Account account = accountDao.findById(1L);
 
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), null,
-				dateFormat.parse("01/01/2013"), null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setDateFrom(dateFormat.parse("01/01/2013"));
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(1, drops.size());
 
@@ -251,9 +256,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		Account account = accountDao.findById(1L);
 
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), null, null,
-				dateFormat.parse("01/01/2012"), account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setDateTo(dateFormat.parse("01/01/2012"));
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(1, drops.size());
 
@@ -265,9 +271,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getReadDrops() {
 		Account account = accountDao.findById(3L);
 
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), true, null,
-				null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setRead(true);
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(2, drops.size());
 
@@ -279,9 +286,9 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getReadDropsSince() {
 		Account account = accountDao.findById(3L);
 
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1,
-				new ArrayList<String>(), new ArrayList<Long>(), true, null,
-				null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setRead(true);
+		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, filter, account);
 
 		assertEquals(1, drops.size());
 
@@ -293,9 +300,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	public void getUnreadDrops() {
 		Account account = accountDao.findById(3L);
 
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				new ArrayList<String>(), new ArrayList<Long>(), false, null,
-				null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setRead(false);
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(3, drops.size());
 
@@ -309,8 +317,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("rss");
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				channels, new ArrayList<Long>(), false, null, null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setChannelList(channels);
+		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
+				account);
 
 		assertEquals(2, drops.size());
 
@@ -324,8 +334,9 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("twitter");
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, channels,
-				new ArrayList<Long>(), null, null, null, account);
+		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		filter.setChannelList(channels);
+		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, filter, account);
 
 		assertEquals(1, drops.size());
 
@@ -351,24 +362,23 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				river.getId());
 		assertEquals("Test river", (String) results.get("river_name"));
-		assertEquals(3L,
-				((Number) results.get("account_id")).longValue());
+		assertEquals(3L, ((Number) results.get("account_id")).longValue());
 		assertEquals(TextUtil.getURLSlug("Test river"),
 				(String) results.get("river_name_canonical"));
 		assertEquals("test description", (String) results.get("description"));
 		assertEquals(false, results.get("river_public"));
 	}
-	
+
 	@Test
 	public void updateRiver() {
 		River river = riverDao.findById(2L);
 		river.setRiverName("updated river name");
 		river.setDescription("updated description");
 		river.setRiverPublic(true);
-	
+
 		riverDao.update(river);
 		em.flush();
-	
+
 		String sql = "SELECT river_name, river_name_canonical, description, river_public FROM rivers WHERE id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 2);
 		assertEquals("updated river name", (String) results.get("river_name"));
@@ -381,33 +391,34 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 	@Test
 	public void findCollaboratorByAccount() {
 		RiverCollaborator rc = riverDao.findCollaborator(1L, 3L);
-		
-		assertEquals(1L, (long)rc.getId());
+
+		assertEquals(1L, (long) rc.getId());
 		assertEquals(3L, rc.getAccount().getId());
 	}
-	
+
 	@Test
 	public void findNonExistentCollaboratorByAccount() {
 		RiverCollaborator rc = riverDao.findCollaborator(1L, 5L);
-		
+
 		assertNull(rc);
 	}
-	
+
 	@Test
 	public void testAddCollaborator() {
 		River river = riverDao.findById(1L);
 		Account account = accountDao.findByUsername("user3");
-		
+
 		riverDao.addCollaborator(river, account, true);
 		em.flush();
-		
+
 		String sql = "SELECT river_id, account_id, collaborator_active, read_only FROM river_collaborators WHERE river_id = ? AND account_id = ?";
-		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L, 5L);
-		
+		Map<String, Object> results = this.jdbcTemplate
+				.queryForMap(sql, 1L, 5L);
+
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));
 	}
-	
+
 	@Test
 	public void testModifyCollaborator() {
 		RiverCollaborator collaborator = riverCollaboratorDao.findById(1L);
@@ -415,10 +426,10 @@ public class JpaRiverDaoTest extends AbstractDaoTest {
 		collaborator.setReadOnly(true);
 		riverDao.updateCollaborator(collaborator);
 		em.flush();
-		
+
 		String sql = "SELECT river_id, account_id, collaborator_active, read_only FROM river_collaborators WHERE id = ?";
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql, 1L);
-		
+
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));
 	}

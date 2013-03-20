@@ -148,11 +148,11 @@ INSERT INTO identities (id, hash, channel, identity_orig_id, identity_username, 
 -- Data for table droplets
 -- -----------------------------------------------------
 INSERT INTO droplets (id, identity_id, channel, droplet_hash, droplet_orig_id, droplet_type, droplet_title, droplet_content, droplet_locale, droplet_image, droplet_date_pub, droplet_date_add, original_url, comment_count) VALUES
-(1, 1, 'rss', '1', '1', 'original', 'droplet_1_title', 'droplet_1_content', 'en', NULL, '2012-11-15 00:00:01', '2012-12-15 00:00:01', NULL, 10),
+(1, 1, 'rss', '1', '1', 'original', 'droplet_1_title', 'droplet_1_content', 'en', NULL, '2011-11-12 00:00:01', '2011-11-12 00:00:01', NULL, 10),
 (2, 2, 'twitter', '2', '2', 'original', 'droplet_2_title', 'droplet_2_content', 'en', NULL, '2012-11-15 00:00:02', '2012-12-15 00:00:02', NULL, 15),
 (3, 1, 'rss', '3', '3', 'original', 'droplet_3_title', 'droplet_3_content', 'en', NULL, '2012-11-15 00:00:03', '2012-12-15 00:00:03', NULL, 20),
 (4, 2, 'twitter', '4', '4', 'original', 'droplet_4_title', 'droplet_4_content', 'en', NULL, '2012-11-15 00:00:04', '2012-12-15 00:00:04', 3, 25),
-(5, 1, 'rss', '5', '5', 'original', 'droplet_5_title', 'droplet_5_content', 'en', NULL, '2012-11-15 00:00:05', '2012-12-15 00:00:05', 3, 30),
+(5, 1, 'rss', '5', '5', 'original', 'droplet_5_title', 'droplet_5_content', 'en', NULL, '2013-02-01 00:00:05', '2013-02-01 00:00:05', 3, 30),
 (6, 2, 'twitter', '6', '6', 'original', 'droplet_6_title', 'droplet_6_content', 'en', NULL, '2012-11-15 00:00:06', '2012-12-15 00:00:06', NULL, 35),
 (7, 1, 'rss', '7', '7', 'original', 'droplet_7_title', 'droplet_7_content', 'en', NULL, '2012-11-15 00:00:07', '2012-12-15 00:00:07', NULL, 40),
 (8, 2, 'twitter', '8', '8', 'original', 'droplet_8_title', 'droplet_8_content', 'en', NULL, '2012-11-15 00:00:08', '2012-12-15 00:00:08', NULL, 45),

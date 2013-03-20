@@ -17,12 +17,9 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -582,30 +579,28 @@ public class BucketService {
 	 * subsequent fetching of the {@link Drop} entities
 	 * 
 	 * @param id
-	 * @param username
+	 * @param authUser
 	 * @param requestParams
 	 * @return
 	 */
-	public List<GetDropDTO> getDrops(Long id, String username,
-			Map<String, Object> requestParams) {
-		Bucket bucket = getBucketById(id);
+	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
+			int page, int dropCount, List<String> channelList,
+			Boolean isRead, Date dateFrom, Date dateTo,
+			String authUser) {
 
-		// Check for channels parameter, split the string and convert the
-		// resultant array to a list
-		if (requestParams.containsKey("channels")) {
-			String channels = (String) requestParams.get("channels");
-			if (channels.trim().length() == 0) {
-				LOG.error("No value specified for the \"channels\" parameter.");
-				throw new BadRequestException();
-			}
-			List<String> channelsList = Arrays.asList(StringUtils.split(
-					channels, ','));
-			requestParams.put("channels", channelsList);
+		Account queryingAccount = accountDao.findByUsername(authUser);
+		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		filter.setChannels(channelList);
+		filter.setDateFrom(dateFrom);
+		filter.setDateTo(dateTo);
+		filter.setRead(isRead);
+		
+		List<Drop> drops = null;
+		if (sinceId != null) {
+			drops = bucketDao.getDropsSince(id, sinceId, dropCount, filter, queryingAccount);
+		} else {
+			drops = bucketDao.getDrops(id, maxId, page, dropCount, filter, queryingAccount);
 		}
-
-		Account account = accountDao.findByUsername(username);
-		List<Drop> drops = bucketDao.getDrops(bucket.getId(), account,
-				requestParams);
 
 		List<GetDropDTO> bucketDrops = new ArrayList<GetDropDTO>();
 		for (Drop drop : drops) {
