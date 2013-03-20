@@ -56,7 +56,6 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
-import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
@@ -264,10 +263,8 @@ public class BucketService {
 
 		// Is the account the creator of the bucket or a collaborator with edit
 		// privileges?
-		if (!isOwner(bucket, account)) {
-			throw new UnauthorizedExpection(String.format(
-					"% is not authorized to modify this bucket", username));
-		}
+		if (!isOwner(bucket, account))
+			throw new ForbiddenException("Permission denied.");
 
 		// Get the submitted name
 		String bucketName = modifiedBucket.getName();
@@ -478,9 +475,8 @@ public class BucketService {
 
 		// Verify that the account following the bucket is tied to the
 		// currently logged in user
-		if (!account.getOwner().getUsername().equals(username)) {
-			throw new UnauthorizedExpection();
-		}
+		if (!account.getOwner().getUsername().equals(username))
+			throw new ForbiddenException("Permission denied.");
 
 		// Is the account already following the bucket
 		if (bucket.getFollowers().contains(account)) {
@@ -669,11 +665,8 @@ public class BucketService {
 		Bucket bucket = getBucketById(bucketId);
 		Account account = accountDao.findByUsername(username);
 
-		if (!isOwner(bucket, account)) {
-			throw new UnauthorizedExpection(String.format(
-					"%s does not have permission to put drops in bucket %d",
-					username, bucketId));
-		}
+		if (!isOwner(bucket, account))
+			throw new ForbiddenException("Permission denied.");
 
 		BucketDrop bucketDrop = null;
 

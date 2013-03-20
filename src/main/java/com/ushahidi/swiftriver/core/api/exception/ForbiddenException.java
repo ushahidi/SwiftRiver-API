@@ -16,15 +16,12 @@
  */
 package com.ushahidi.swiftriver.core.api.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * Thrown when the authenticating user does not have permission to perform
  * an action.
  *
  */
-@ResponseStatus(value=HttpStatus.FORBIDDEN, reason="Access to the resource was denied.")
 public class ForbiddenException extends RuntimeException {
 
 	private static final long serialVersionUID = -4457094948389720427L;
