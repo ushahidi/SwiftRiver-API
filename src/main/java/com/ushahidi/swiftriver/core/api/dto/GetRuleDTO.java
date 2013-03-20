@@ -16,6 +16,11 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
+import java.util.List;
+
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleAction;
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
+
 public class GetRuleDTO {
 
 	private long id;
@@ -24,9 +29,9 @@ public class GetRuleDTO {
 	
 	private int type;
 	
-	private String conditions;
+	private List<RuleCondition> conditions;
 	
-	private String actions;
+	private List<RuleAction> actions;
 
 	public long getId() {
 		return id;
@@ -52,19 +57,19 @@ public class GetRuleDTO {
 		this.type = type;
 	}
 
-	public String getConditions() {
+	public List<RuleCondition> getConditions() {
 		return conditions;
 	}
 
-	public void setConditions(String conditions) {
+	public void setConditions(List<RuleCondition> conditions) {
 		this.conditions = conditions;
 	}
 
-	public String getActions() {
+	public List<RuleAction> getActions() {
 		return actions;
 	}
 
-	public void setActions(String actions) {
+	public void setActions(List<RuleAction> actions) {
 		this.actions = actions;
 	}
 	

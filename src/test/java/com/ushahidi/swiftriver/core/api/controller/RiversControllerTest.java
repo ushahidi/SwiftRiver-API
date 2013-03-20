@@ -693,7 +693,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 				"\"name\": \"Keyword Filter\", " +
 				"\"type\": \"1\", " + 
 				"\"conditions\": [{\"field\": \"title\", \"operator\": \"contains\", \"value\": \"kenya\"}], " +
-				"\"actions\": [{\"function\": \"addToBucket\", \"parameter\": \"2\"}]" +
+				"\"actions\": [{\"addToBucket\": 2}]" +
 			"}";
 
 		this.mockMvc.perform(post("/v1/rivers/1/rules")
@@ -701,7 +701,8 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.principal(getAuthentication("user1")))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Keyword Filter"));
+			.andExpect(jsonPath("$.name").value("Keyword Filter"))
+			.andExpect(jsonPath("$.actions[0].addToBucket").value(2));
 	}
 	
 	@Test

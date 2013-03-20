@@ -24,9 +24,9 @@ public class CreateRuleDTO {
 	
 	private Integer type;
 	
-	private List<String> conditions;
+	private List<RuleCondition> conditions;
 	
-	private List<String> actions;
+	private List<RuleAction> actions;
 
 	public String getName() {
 		return name;
@@ -44,20 +44,88 @@ public class CreateRuleDTO {
 		this.type = type;
 	}
 
-	public List<String> getConditions() {
+	public List<RuleCondition> getConditions() {
 		return conditions;
 	}
 
-	public void setConditions(List<String> conditions) {
+	public void setConditions(List<RuleCondition> conditions) {
 		this.conditions = conditions;
 	}
 
-	public List<String> getActions() {
+	public List<RuleAction> getActions() {
 		return actions;
 	}
 
-	public void setActions(List<String> actions) {
+	public void setActions(List<RuleAction> actions) {
 		this.actions = actions;
+	}
+	
+	public static class RuleCondition {
+		private String field;
+		
+		private String operator;
+		
+		private String value;
+
+		public String getField() {
+			return field;
+		}
+
+		public void setField(String field) {
+			this.field = field;
+		}
+
+		public String getOperator() {
+			return operator;
+		}
+
+		public void setOperator(String operator) {
+			this.operator = operator;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+		
+	}
+	
+	public static class RuleAction {
+		
+		private boolean markAsRead;
+		
+		private boolean removeFromRiver;
+		
+		private long addToBucket;
+
+		public boolean isMarkAsRead() {
+			return markAsRead;
+		}
+
+		public void setMarkAsRead(boolean markAsRead) {
+			this.markAsRead = markAsRead;
+		}
+
+		public boolean isRemoveFromRiver() {
+			return removeFromRiver;
+		}
+
+		public void setRemoveFromRiver(boolean removeFromRiver) {
+			this.removeFromRiver = removeFromRiver;
+		}
+
+		public long getAddToBucket() {
+			return addToBucket;
+		}
+
+		public void setAddToBucket(long addToBucket) {
+			this.addToBucket = addToBucket;
+		}
+		
+		
 	}
 
 }
