@@ -12,23 +12,15 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.ushahidi.swiftriver.core.api.dto;
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import com.ushahidi.swiftriver.core.api.dao.FormDao;
+import com.ushahidi.swiftriver.core.model.Form;
 
 /**
  * @author Ushahidi, Inc
  *
  */
-public class CreateFormDTO {
-
-	private String name;
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
+public class JpaFormDao extends AbstractJpaDao<Form> implements FormDao {
 
 }

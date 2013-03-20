@@ -52,6 +52,7 @@
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaSequenceDao" />
 	<bean id="bucketCommentDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
+	<bean id="formDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaFormDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
@@ -60,6 +61,7 @@
 	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService" />
 	<bean id="bucketService" class="com.ushahidi.swiftriver.core.api.service.BucketService" />
 	<bean id="dropService" class="com.ushahidi.swiftriver.core.api.service.DropService" />
+	<bean id="formService" class="com.ushahidi.swiftriver.core.api.service.FormService" />
 
 	<!-- Bean Mapper -->
 	<bean id="mapper" class="org.dozer.DozerBeanMapper">

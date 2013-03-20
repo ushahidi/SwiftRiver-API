@@ -732,3 +732,35 @@ CREATE TABLE IF NOT EXISTS roles_clients (
   role_id int NOT NULL,
   PRIMARY KEY (client_id,role_id)
 );
+
+
+-- -----------------------------------------------------
+-- Table forms
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS forms (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  account_id bigint NOT NULL,
+  name varchar(255) NOT NULL,
+  date_added timestamp,
+  date_modified timestamp,
+  UNIQUE (name)
+);
+CREATE INDEX forms_idx_account_id ON forms (account_id);
+
+
+-- -----------------------------------------------------
+-- Table form_fields
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS form_fields (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  form_id bigint NOT NULL,
+  title varchar(255) NOT NULL,
+  description varchar(255),
+  type varchar(50) NOT NULL,
+  required boolean DEFAULT false,
+  options varchar(1000),
+  date_added timestamp,
+  date_modified timestamp,
+  UNIQUE (title)
+);
+CREATE INDEX forms_idx_form_id ON form_fields (form_id);
