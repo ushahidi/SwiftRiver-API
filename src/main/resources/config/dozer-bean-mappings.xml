@@ -15,7 +15,7 @@
 			<a>originalUrl.url</a>
 			<b>originalUrl</b>
 		</field>
-		
+
 		<field>
 			<a>image.url</a>
 			<b>image</b>
@@ -23,28 +23,62 @@
 	</mapping>
 
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO
+		</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Channel</class-b>
 	</mapping>
-	
+
 	<mapping map-null="false">
 		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.River</class-b>
 	</mapping>
-	
+
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO
+		</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Account</class-b>
 	</mapping>
-	
+
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO.User</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO.User
+		</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.User</class-b>
 	</mapping>
-	
+
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO
+		</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Client</class-b>
+	</mapping>
+
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.model.FormField</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.CreateFormFieldDTO</class-b>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ListToStringConverter">
+			<a>options</a>
+			<b>options</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.model.FormField</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetFormFieldDTO</class-b>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ListToStringConverter">
+			<a>options</a>
+			<b>options</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.model.FormField</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.ModifyFormFieldDTO</class-b>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ListToStringConverter">
+			<a>options</a>
+			<b>options</b>
+		</field>
 	</mapping>
 
 </mappings> 

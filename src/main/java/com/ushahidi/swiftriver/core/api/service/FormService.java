@@ -21,13 +21,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.FormDao;
+import com.ushahidi.swiftriver.core.api.dao.FormFieldDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateFormDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateFormFieldDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetFormDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetFormFieldDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormFieldDTO;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormField;
 
 /**
  * @author Ushahidi, Inc
@@ -41,6 +46,9 @@ public class FormService {
 	private FormDao formDao;
 
 	@Autowired
+	private FormFieldDao formFieldDao;
+
+	@Autowired
 	private Mapper mapper;
 
 	@Autowired
@@ -48,6 +56,10 @@ public class FormService {
 
 	public void setFormDao(FormDao formDao) {
 		this.formDao = formDao;
+	}
+
+	public void setFormFieldDao(FormFieldDao formFieldDao) {
+		this.formFieldDao = formFieldDao;
 	}
 
 	public void setMapper(Mapper mapper) {
@@ -115,8 +127,73 @@ public class FormService {
 
 		if (form.getAccount().getId() != account.getId())
 			throw new ForbiddenException("Permission denied.");
-		
+
 		formDao.delete(form);
+	}
+
+	/**
+	 * Create a field in a Form
+	 * 
+	 * @param formId
+	 * @param fieldTo
+	 * @return
+	 */
+	public GetFormFieldDTO createField(Long formId, CreateFormFieldDTO fieldTo,
+			String authUser) {
+		Form form = getForm(formId);
+
+		Account account = accountDao.findByUsername(authUser);
+
+		if (form.getAccount().getId() != account.getId())
+			throw new ForbiddenException("Permission denied.");
+
+		FormField field = mapper.map(fieldTo, FormField.class);
+		field.setForm(form);
+		formFieldDao.create(field);
+
+		return mapper.map(field, GetFormFieldDTO.class);
+	}
+
+	/**
+	 * Modify the given form field.
+	 * 
+	 * @param formId
+	 * @param fieldId
+	 * @param modifyFieldTO
+	 * @param authUser
+	 * @return
+	 */
+	public GetFormFieldDTO modifyField(Long formId, Long fieldId,
+			ModifyFormFieldDTO modifyFieldTO, String authUser) {
+		FormField field = getFormField(formId, fieldId);
+
+		Account account = accountDao.findByUsername(authUser);
+
+		if (field.getForm().getAccount().getId() != account.getId())
+			throw new ForbiddenException("Permission denied.");
+
+		mapper.map(modifyFieldTO, field);
+		formFieldDao.update(field);
+
+		return mapper.map(field, GetFormFieldDTO.class);
+	}
+	
+	/**
+	 * Delete a form field
+	 * 
+	 * @param formId
+	 * @param fieldId
+	 * @param authUser
+	 */
+	public void deleteField(Long formId, Long fieldId, String authUser) {
+		FormField field = getFormField(formId, fieldId);
+		
+		Account account = accountDao.findByUsername(authUser);
+
+		if (field.getForm().getAccount().getId() != account.getId())
+			throw new ForbiddenException("Permission denied.");
+		
+		formFieldDao.delete(field);
 	}
 
 	/**
@@ -134,4 +211,19 @@ public class FormService {
 		return form;
 	}
 
+	private FormField getFormField(Long formId, Long fieldId) {
+		FormField field = formFieldDao.findById(fieldId);
+
+		if (field == null)
+			throw new NotFoundException(String.format(
+					"The field with id %d does not exist.", fieldId));
+
+		Form form = getForm(formId);
+		
+		if (!form.getFields().contains(field))
+			throw new NotFoundException(String.format(
+					"The field with id %d does not exist.", fieldId));
+		
+		return field;
+	}
 }

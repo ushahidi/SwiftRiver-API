@@ -348,3 +348,9 @@ INSERT INTO user_tokens (id, user_id, token, created, expires) VALUES
 -- -----------------------------------------------------
 INSERT INTO forms (id, account_id, name) VALUES
 (1, 3, 'A custom form');
+
+-- -----------------------------------------------------
+-- Data for table forms
+-- -----------------------------------------------------
+INSERT INTO form_fields (id, form_id, title, description, type, required, options) VALUES
+(1, 1, 'Test Field', 'Field Description', 'select', 0, '["Option 1"]');

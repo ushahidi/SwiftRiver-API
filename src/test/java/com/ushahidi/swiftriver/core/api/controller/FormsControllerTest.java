@@ -14,8 +14,11 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -123,18 +126,133 @@ public class FormsControllerTest extends AbstractControllerTest {
 				delete("/v1/forms/1").principal(getAuthentication("user1")))
 				.andExpect(status().isOk());
 	}
-	
+
 	@Test
 	public void deleteNonExistentForm() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/forms/9999").principal(getAuthentication("user1")))
 				.andExpect(status().isNotFound());
 	}
-	
+
 	@Test
 	public void deleteFormWithoutPermission() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/forms/1").principal(getAuthentication("user2")))
+				.andExpect(status().isForbidden());
+	}
+
+	@Test
+	public void createFormField() throws Exception {
+		String postBody = "{\"title\":\"Language\",\"description\":\"Language the audience is being addressed in\",\"type\":\"multiple\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/forms/1/fields").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").exists());
+	}
+
+	@Test
+	public void createFormFieldWithInvalidType() throws Exception {
+		String postBody = "{\"title\":\"Language\",\"description\":\"Language the audience is being addressed in\",\"type\":\"not allowed\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/forms/1/fields").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("type"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+
+	}
+
+	@Test
+	public void createFormFieldWithMissingParameters() throws Exception {
+		String postBody = "{\"description\":\"Language the audience is being addressed in\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/forms/1/fields").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("title"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"))
+				.andExpect(jsonPath("$.errors[1].field").value("type"))
+				.andExpect(jsonPath("$.errors[1].code").value("missing"));
+
+	}
+	
+	@Test
+	public void modifyFormField() throws Exception {
+		String body = "{\"title\":\"New Title\",\"description\":\"New Description\",\"type\":\"select\",\"required\":true,\"options\":[\"New Option\"]}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/forms/1/fields/1").content(body)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.title").value("New Title"))
+				.andExpect(jsonPath("$.description").value("New Description"))
+				.andExpect(jsonPath("$.type").value("select"))
+				.andExpect(jsonPath("$.required").value(true))
+				.andExpect(jsonPath("$.options").isArray());
+	}
+
+	@Test
+	public void modifyNonExistentFormField() throws Exception {
+		String body = "{\"title\":\"New Title\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/forms/1/fields/9999").content(body)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.message").exists());
+	}
+
+	@Test
+	public void modifyFormFieldWithoutPermission() throws Exception {
+		String body = "{\"title\":\"New Title\"}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/forms/1/fields/1").content(body)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user3")))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.message").exists());
+	}
+	
+	@Test
+	public void deleteFormField() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/forms/1/fields/1").principal(getAuthentication("user1")))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void deleteNonExistentFormField() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/forms/1/fields/9999").principal(getAuthentication("user1")))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	public void deleteFormFieldWithoutPermission() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/forms/1/fields/1").principal(getAuthentication("user2")))
 				.andExpect(status().isForbidden());
 	}
 }

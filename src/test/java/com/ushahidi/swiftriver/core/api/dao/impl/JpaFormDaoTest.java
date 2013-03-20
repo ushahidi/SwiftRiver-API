@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
+import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaFormDaoTest extends AbstractDaoTest {
+public class JpaFormDaoTest extends AbstractIntegrationTest {
 	
 	@Autowired
 	JpaFormDao formDao;

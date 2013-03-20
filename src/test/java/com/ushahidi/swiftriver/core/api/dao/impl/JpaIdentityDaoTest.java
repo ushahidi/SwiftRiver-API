@@ -23,11 +23,11 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
+import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaIdentityDaoTest extends AbstractDaoTest {
+public class JpaIdentityDaoTest extends AbstractIntegrationTest {
 	
 	@Autowired
 	JpaIdentityDao identityDao;

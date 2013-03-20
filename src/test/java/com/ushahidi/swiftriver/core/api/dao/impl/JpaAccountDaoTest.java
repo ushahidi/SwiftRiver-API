@@ -10,11 +10,11 @@ import javax.persistence.PersistenceContext;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaAccountDaoTest extends AbstractDaoTest {
+public class JpaAccountDaoTest extends AbstractIntegrationTest {
 
 	@Autowired
 	JpaAccountDao accountDao;

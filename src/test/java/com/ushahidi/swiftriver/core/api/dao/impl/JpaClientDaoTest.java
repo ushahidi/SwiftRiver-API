@@ -6,10 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaClientDaoTest extends AbstractDaoTest {
+public class JpaClientDaoTest extends AbstractIntegrationTest {
 	
 	@Autowired
 	JpaClientDao clientDao;

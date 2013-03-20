@@ -30,7 +30,6 @@ import javax.persistence.PersistenceContext;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
@@ -43,9 +42,10 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
-public class JpaRiverDaoTest extends AbstractDaoTest {
+public class JpaRiverDaoTest extends AbstractIntegrationTest {
 
 	@Autowired
 	RiverDao riverDao;

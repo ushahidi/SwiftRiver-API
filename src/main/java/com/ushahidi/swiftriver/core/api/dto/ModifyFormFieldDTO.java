@@ -18,17 +18,17 @@ import java.util.List;
 
 /**
  * @author Ushahidi, Inc
- * 
+ *
  */
-public class CreateFieldDTO {
-
+public class ModifyFormFieldDTO {
+	
 	private String title;
 
 	private String description;
 
 	private String type;
 
-	private boolean required;
+	private Boolean required;
 
 	private List<String> options;
 
@@ -56,11 +56,11 @@ public class CreateFieldDTO {
 		this.type = type;
 	}
 
-	public boolean isRequired() {
+	public Boolean getRequired() {
 		return required;
 	}
 
-	public void setRequired(boolean required) {
+	public void setRequired(Boolean required) {
 		this.required = required;
 	}
 
@@ -71,5 +71,4 @@ public class CreateFieldDTO {
 	public void setOptions(List<String> options) {
 		this.options = options;
 	}
-
 }

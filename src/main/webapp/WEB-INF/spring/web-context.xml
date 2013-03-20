@@ -13,20 +13,6 @@
 	<!-- Imports user-defined @Controller beans that process client requests -->
 	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.controller" />
 
-	<!-- Jackson Mapper -->
-	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" />
-	<bean
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject" ref="jacksonObjectMapper" />
-		<property name="targetMethod" value="configure" />
-		<property name="arguments">
-			<list>
-				<value type="org.codehaus.jackson.map.DeserializationConfig.Feature">FAIL_ON_UNKNOWN_PROPERTIES</value>
-				<value>false</value>
-			</list>
-		</property>
-	</bean>
-
 	<mvc:annotation-driven>
 		<mvc:message-converters>
 			<!-- Jackson converter for HTTP messages -->

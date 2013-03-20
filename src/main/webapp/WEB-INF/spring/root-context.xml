@@ -53,6 +53,8 @@
 	<bean id="bucketCommentDao"
 		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
 	<bean id="formDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaFormDao" />
+	<bean id="formFieldDao"
+		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaFormFieldDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
@@ -63,11 +65,35 @@
 	<bean id="dropService" class="com.ushahidi.swiftriver.core.api.service.DropService" />
 	<bean id="formService" class="com.ushahidi.swiftriver.core.api.service.FormService" />
 
+	<!-- Jackson Mapper -->
+	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" />
+	<bean
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject" ref="jacksonObjectMapper" />
+		<property name="targetMethod" value="configure" />
+		<property name="arguments">
+			<list>
+				<value type="org.codehaus.jackson.map.DeserializationConfig.Feature">FAIL_ON_UNKNOWN_PROPERTIES</value>
+				<value>false</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="listToStringDozerConverter"
+		class="com.ushahidi.swiftriver.core.support.dozer.ListToStringConverter">
+		<property name="objectMapper" ref="jacksonObjectMapper" />
+	</bean>
+
 	<!-- Bean Mapper -->
 	<bean id="mapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>
 				<value>config/dozer-bean-mappings.xml</value>
+			</list>
+		</property>
+		<property name="customConverters">
+			<list>
+				<ref bean="listToStringDozerConverter" />
 			</list>
 		</property>
 	</bean>

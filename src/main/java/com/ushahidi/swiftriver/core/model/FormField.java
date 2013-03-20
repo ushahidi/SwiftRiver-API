@@ -21,6 +21,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * @author Ushahidi, Inc
  *
@@ -101,5 +104,29 @@ public class FormField {
 
 	public void setForm(Form form) {
 		this.form = form;
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31).
+	            append(title).
+	            append(type).
+	            toHashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null)
+            return false;
+        if (obj == this)
+            return true;
+        if (obj.getClass() != getClass())
+            return false;
+
+        FormField other = (FormField) obj;
+        return new EqualsBuilder().
+            append(title, other.title).
+            append(type, other.type).
+            isEquals();
 	}
 }

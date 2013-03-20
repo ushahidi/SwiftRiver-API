@@ -18,15 +18,21 @@ import java.util.List;
 
 /**
  * @author Ushahidi, Inc
- * 
+ *
  */
-public class GetFormDTO {
-	
+public class GetFormFieldDTO {
+
 	private String id;
 
-	private String name;
+	private String title;
 
-	private List<GetFormFieldDTO> fields;
+	private String description;
+
+	private String type;
+
+	private boolean required;
+
+	private List<String> options;
 
 	public String getId() {
 		return id;
@@ -36,20 +42,43 @@ public class GetFormDTO {
 		this.id = id;
 	}
 
-	public String getName() {
-		return name;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
-	public List<GetFormFieldDTO> getFields() {
-		return fields;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setFields(List<GetFormFieldDTO> fields) {
-		this.fields = fields;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public boolean isRequired() {
+		return required;
+	}
+
+	public void setRequired(boolean required) {
+		this.required = required;
+	}
+
+	public List<String> getOptions() {
+		return options;
+	}
+
+	public void setOptions(List<String> options) {
+		this.options = options;
+	}
 }
