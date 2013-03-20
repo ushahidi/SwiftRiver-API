@@ -16,7 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -44,10 +44,10 @@ public class Channel {
 	private Boolean active;
 
 	@Column(name = "date_added")
-	private Timestamp dateAdded;
+	private Date dateAdded;
 	
 	@Column(name = "date_modified")
-	private Timestamp dateModified;
+	private Date dateModified;
 	
 	private String parameters;
 	
@@ -90,19 +90,19 @@ public class Channel {
 		this.active = active;
 	}
 
-	public Timestamp getDateAdded() {
+	public Date getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDateAdded(Timestamp dateAdded) {
+	public void setDateAdded(Date dateAdded) {
 		this.dateAdded = dateAdded;
 	}
 
-	public Timestamp getDateModified() {
+	public Date getDateModified() {
 		return dateModified;
 	}
 
-	public void setDateModified(Timestamp dateModified) {
+	public void setDateModified(Date dateModified) {
 		this.dateModified = dateModified;
 	}
 
