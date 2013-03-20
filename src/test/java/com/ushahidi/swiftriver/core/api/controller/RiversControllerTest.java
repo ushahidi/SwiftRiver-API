@@ -45,7 +45,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(3));
+				.andExpect(jsonPath("$.id").exists());
 	}
 
 	@Test
