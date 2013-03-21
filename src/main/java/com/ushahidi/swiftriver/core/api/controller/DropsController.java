@@ -47,41 +47,41 @@ public class DropsController extends AbstractController {
 	@ResponseBody
 	public List<GetDropDTO> createDrop(@RequestBody List<CreateDropDTO> drops) {
 
-		for (CreateDropDTO drop : drops) {
-
-			List<ErrorField> errors = new ArrayList<ErrorField>();
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		for (int i=0; i < drops.size(); i++) {
+			CreateDropDTO drop = drops.get(i);
 
 			if (drop.getTitle() == null) {
-				errors.add(new ErrorField("title", "missing"));
+				errors.add(new ErrorField("[" + i + "].title", "missing"));
 			}
 
 			if (drop.getContent() == null) {
-				errors.add(new ErrorField("content", "missing"));
+				errors.add(new ErrorField("[" + i + "].content", "missing"));
 			}
 
 			if (drop.getChannel() == null) {
-				errors.add(new ErrorField("channel", "missing"));
+				errors.add(new ErrorField("[" + i + "].channel", "missing"));
 			}
 
 			if (drop.getDatePublished() == null) {
-				errors.add(new ErrorField("date_published", "missing"));
+				errors.add(new ErrorField("[" + i + "].date_published", "missing"));
 			}
 
 			if (drop.getOriginalId() == null) {
-				errors.add(new ErrorField("original_id", "missing"));
+				errors.add(new ErrorField("[" + i + "].original_id", "missing"));
 			}
 
-			if (drop.getIdentity() != null
-					&& drop.getIdentity().getOriginId() == null) {
-				errors.add(new ErrorField("identity.origin_id", "missing"));
+			if (drop.getIdentity() == null
+					|| drop.getIdentity().getOriginId() == null) {
+				errors.add(new ErrorField("[" + i + "].identity.origin_id", "missing"));
 			}
-
-			if (!errors.isEmpty()) {
-				BadRequestException e = new BadRequestException(
-						"Invalid parameter.");
-				e.setErrors(errors);
-				throw e;
-			}
+		}
+		
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
 		}
 
 		return dropService.createDrops(drops);

@@ -37,4 +37,31 @@ public class DropsControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].id").value(11));
 	}
+	
+	@Test
+	public void createDropWithMissingFields() throws Exception {
+		String postBody = "[{}]";
+
+		this.mockMvc
+				.perform(
+						post("/v1/drops").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("admin")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("[0].title"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"))
+				.andExpect(jsonPath("$.errors[1].field").value("[0].content"))
+				.andExpect(jsonPath("$.errors[1].code").value("missing"))
+				.andExpect(jsonPath("$.errors[2].field").value("[0].channel"))
+				.andExpect(jsonPath("$.errors[2].code").value("missing"))
+				.andExpect(jsonPath("$.errors[3].field").value("[0].date_published"))
+				.andExpect(jsonPath("$.errors[3].code").value("missing"))
+				.andExpect(jsonPath("$.errors[4].field").value("[0].original_id"))
+				.andExpect(jsonPath("$.errors[4].code").value("missing"))
+				.andExpect(jsonPath("$.errors[5].field").value("[0].identity.origin_id"))
+				.andExpect(jsonPath("$.errors[5].code").value("missing"));
+	}
 }
