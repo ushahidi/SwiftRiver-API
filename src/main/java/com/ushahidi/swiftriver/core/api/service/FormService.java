@@ -89,6 +89,18 @@ public class FormService {
 	}
 
 	/**
+	 * Retrieve a Form
+	 * 
+	 * @param id
+	 * @param authUser
+	 * @return
+	 */
+	public GetFormDTO getForm(Long id, String authUser) {
+		Form form = getForm(id);
+		return mapper.map(form, GetFormDTO.class);
+	}
+
+	/**
 	 * Update an existing form
 	 * 
 	 * @param formId
@@ -197,7 +209,7 @@ public class FormService {
 	}
 
 	/**
-	 * Helper method for retrieving the specified form
+	 * Helper method for retrieving the specified form.
 	 * 
 	 * @param formId
 	 */
@@ -211,6 +223,13 @@ public class FormService {
 		return form;
 	}
 
+	/**
+	 * Helper method for retrieving a fomr field from a form.
+	 * 
+	 * @param formId
+	 * @param fieldId
+	 * @return
+	 */
 	private FormField getFormField(Long formId, Long fieldId) {
 		FormField field = formFieldDao.findById(fieldId);
 

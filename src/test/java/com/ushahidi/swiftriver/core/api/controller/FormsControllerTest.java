@@ -14,11 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.Test;
 import org.springframework.http.MediaType;
@@ -79,6 +76,27 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(
 						jsonPath("$.errors[1].field").value("fields[0].type"))
 				.andExpect(jsonPath("$.errors[1].code").value("missing"));
+	}
+
+	@Test
+	public void getForm() throws Exception {
+		this.mockMvc
+				.perform(
+						get("/v1/forms/1")
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(
+						content().contentType("application/json;charset=UTF-8"))
+				.andExpect(jsonPath("$.id").value("1"))
+				.andExpect(jsonPath("$.name").value("A custom form"))
+				.andExpect(jsonPath("$.fields[0].id").value("1"))
+				.andExpect(jsonPath("$.fields[0].title").value("Test Field"))
+				.andExpect(
+						jsonPath("$.fields[0].description").value(
+								"Field Description"))
+				.andExpect(jsonPath("$.fields[0].type").value("select"))
+				.andExpect(jsonPath("$.fields[0].required").value(false))
+				.andExpect(jsonPath("$.fields[0].options[0]").value("Option 1"));
 	}
 
 	@Test
@@ -191,7 +209,7 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.errors[1].code").value("missing"));
 
 	}
-	
+
 	@Test
 	public void modifyFormField() throws Exception {
 		String body = "{\"title\":\"New Title\",\"description\":\"New Description\",\"type\":\"select\",\"required\":true,\"options\":[\"New Option\"]}";
@@ -234,25 +252,27 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.message").exists());
 	}
-	
+
 	@Test
 	public void deleteFormField() throws Exception {
 		this.mockMvc.perform(
-				delete("/v1/forms/1/fields/1").principal(getAuthentication("user1")))
-				.andExpect(status().isOk());
+				delete("/v1/forms/1/fields/1").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
 	}
 
 	@Test
 	public void deleteNonExistentFormField() throws Exception {
 		this.mockMvc.perform(
-				delete("/v1/forms/1/fields/9999").principal(getAuthentication("user1")))
-				.andExpect(status().isNotFound());
+				delete("/v1/forms/1/fields/9999").principal(
+						getAuthentication("user1"))).andExpect(
+				status().isNotFound());
 	}
 
 	@Test
 	public void deleteFormFieldWithoutPermission() throws Exception {
 		this.mockMvc.perform(
-				delete("/v1/forms/1/fields/1").principal(getAuthentication("user2")))
-				.andExpect(status().isForbidden());
+				delete("/v1/forms/1/fields/1").principal(
+						getAuthentication("user2"))).andExpect(
+				status().isForbidden());
 	}
 }

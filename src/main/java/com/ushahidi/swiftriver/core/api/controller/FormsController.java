@@ -110,8 +110,8 @@ public class FormsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public GetFormDTO getForm(@PathVariable Long id) throws NotFoundException {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public GetFormDTO getForm(@PathVariable Long id, Principal principal) throws NotFoundException {
+		return formService.getForm(id, principal.getName());
 	}
 
 	/**
