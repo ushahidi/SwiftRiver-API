@@ -86,5 +86,15 @@
 			<b>actions</b>
 		</field>
 	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.Rule</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.RuleUpdateNotification</class-b>
+		
+		<field>
+			<a>river.id</a>
+			<b>riverId</b>
+		</field>
+	</mapping>
 
 </mappings> 

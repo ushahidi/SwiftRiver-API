@@ -24,9 +24,7 @@ public class RuleUpdateNotification {
 
 	@JsonProperty("river_id")
 	private long riverId;
-	
-	private int type;
-	
+		
 	private String conditions;
 	
 	private String actions;
@@ -48,14 +46,6 @@ public class RuleUpdateNotification {
 
 	public void setRiverId(long riverId) {
 		this.riverId = riverId;
-	}
-
-	public int getType() {
-		return type;
-	}
-
-	public void setType(int type) {
-		this.type = type;
 	}
 
 	public String getConditions() {

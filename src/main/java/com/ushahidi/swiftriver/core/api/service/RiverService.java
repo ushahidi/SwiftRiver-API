@@ -52,7 +52,6 @@ import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
-import com.ushahidi.swiftriver.core.api.dto.RuleUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
@@ -61,6 +60,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.RuleUpdateNotification;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
@@ -85,7 +85,7 @@ import com.ushahidi.swiftriver.core.util.HashUtil;
 public class RiverService {
 
 	/* Logger */
-	final Logger logger = LoggerFactory.getLogger(RiverService.class);
+	final Logger LOG = LoggerFactory.getLogger(RiverService.class);
 
 	@Autowired
 	private RiverDao riverDao;
@@ -1095,13 +1095,7 @@ public class RiverService {
 		ruleDao.create(rule);
 		
 		// Send add_rule message on the MQ
-		RuleUpdateNotification notification = new RuleUpdateNotification();
-		notification.setId(rule.getId());
-		notification.setRiverId(riverId);
-		notification.setType(rule.getType());
-		notification.setConditions(rule.getConditions());
-		notification.setActions(rule.getActions());
-
+		RuleUpdateNotification notification = mapper.map(rule, RuleUpdateNotification.class);
 		amqpTemplate.convertAndSend("web.rule.add", notification);
 
 		return mapper.map(rule, GetRuleDTO.class);
@@ -1135,12 +1129,7 @@ public class RiverService {
 		mapper.map(createRuleDTO, rule);
 		ruleDao.update(rule);
 
-		RuleUpdateNotification notification = new RuleUpdateNotification();
-		notification.setId(ruleId);
-		notification.setRiverId(riverId);
-		rule.setType(rule.getType());
-		notification.setConditions(rule.getConditions());
-		notification.setActions(rule.getActions());
+		RuleUpdateNotification notification = mapper.map(rule, RuleUpdateNotification.class);
 		
 		amqpTemplate.convertAndSend("web.rule.update", notification);
 
@@ -1168,11 +1157,9 @@ public class RiverService {
 			throw new NotFoundException(String.format("Rule %d not found", ruleId));
 		}
 
+		RuleUpdateNotification notification = mapper.map(rule, RuleUpdateNotification.class);
+
 		ruleDao.delete(rule);
-		
-		RuleUpdateNotification notification = new RuleUpdateNotification();
-		notification.setId(ruleId);
-		notification.setRiverId(riverId);
 		
 		amqpTemplate.convertAndSend("web.rule.delete", notification);
 	}
