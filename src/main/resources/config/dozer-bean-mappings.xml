@@ -61,12 +61,12 @@
 		<class-a>com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Rule</class-b>
 
-		<field custom-converter="com.ushahidi.swiftriver.core.dozer.converters.RuleConditionListToStringConverter">
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleConditionListToStringConverter">
 			<a>conditions</a>
 			<b>conditions</b>
 		</field>
 
-		<field custom-converter="com.ushahidi.swiftriver.core.dozer.converters.RuleActionListToStringConverter">
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleActionListToStringConverter">
 			<a>actions</a>
 			<b>actions</b>
 		</field>
@@ -76,12 +76,12 @@
 		<class-a>com.ushahidi.swiftriver.core.api.dto.GetRuleDTO</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Rule</class-b>
 
-		<field custom-converter="com.ushahidi.swiftriver.core.dozer.converters.RuleConditionListToStringConverter">
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleConditionListToStringConverter">
 			<a>conditions</a>
 			<b>conditions</b>
 		</field>
 
-		<field custom-converter="com.ushahidi.swiftriver.core.dozer.converters.RuleActionListToStringConverter">
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleActionListToStringConverter">
 			<a>actions</a>
 			<b>actions</b>
 		</field>

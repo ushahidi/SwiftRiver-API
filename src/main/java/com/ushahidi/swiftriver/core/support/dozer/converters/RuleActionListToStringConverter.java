@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer.converters;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,16 +23,16 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.type.TypeReference;
 
-import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleAction;
 
-public class RuleConditionListToStringConverter extends AbstractRuleItemListToStringConverter {
+public class RuleActionListToStringConverter extends AbstractRuleItemListToStringConverter {
 
 
 	@Override
 	public List convertFrom(String source, List destination) {
-		List<RuleCondition> conditionsList = null;
+		List<RuleAction> conditionsList = null;
 		try {
-			conditionsList = mapper.readValue(source, new TypeReference<List<RuleCondition>>() {});
+			conditionsList = mapper.readValue(source, new TypeReference<List<RuleAction>>() {});
 			destination = conditionsList;
 		} catch (JsonParseException jp) {
 			

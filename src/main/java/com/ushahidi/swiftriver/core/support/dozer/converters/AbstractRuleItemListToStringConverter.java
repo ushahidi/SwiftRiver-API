@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer.converters;
 
 import java.io.IOException;
 import java.util.List;

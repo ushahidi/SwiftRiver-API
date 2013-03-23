@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer.converters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,6 +25,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
+import com.ushahidi.swiftriver.core.support.dozer.converters.RuleConditionListToStringConverter;
 
 public class RuleConditionListToStringConverterTest {
 	
