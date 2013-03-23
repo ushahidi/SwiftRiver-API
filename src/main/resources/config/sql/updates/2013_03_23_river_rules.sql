@@ -1,0 +1,1 @@
+ALTER TABLE `river_rules` ADD `rule_all_conditions` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'When to execute the actions; if all or any conditions match';

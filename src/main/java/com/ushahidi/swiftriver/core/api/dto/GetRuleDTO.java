@@ -18,6 +18,8 @@ package com.ushahidi.swiftriver.core.api.dto;
 
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleAction;
 import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
 
@@ -32,6 +34,9 @@ public class GetRuleDTO {
 	private List<RuleCondition> conditions;
 	
 	private List<RuleAction> actions;
+	
+	@JsonProperty("all_conditions")
+	private boolean matchAllConditions;
 
 	public long getId() {
 		return id;
@@ -71,6 +76,14 @@ public class GetRuleDTO {
 
 	public void setActions(List<RuleAction> actions) {
 		this.actions = actions;
+	}
+
+	public boolean isMatchAllConditions() {
+		return matchAllConditions;
+	}
+
+	public void setMatchAllConditions(boolean matchAllConditions) {
+		this.matchAllConditions = matchAllConditions;
 	}
 	
 }

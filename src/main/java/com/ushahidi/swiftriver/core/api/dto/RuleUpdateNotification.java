@@ -30,6 +30,9 @@ public class RuleUpdateNotification {
 	private String conditions;
 	
 	private String actions;
+	
+	@JsonProperty("all_conditions")
+	private boolean matchAllConditions;
 
 	public long getId() {
 		return id;
@@ -70,6 +73,13 @@ public class RuleUpdateNotification {
 	public void setActions(String actions) {
 		this.actions = actions;
 	}
-	
+
+	public boolean isMatchAllConditions() {
+		return matchAllConditions;
+	}
+
+	public void setMatchAllConditions(boolean matchAllConditions) {
+		this.matchAllConditions = matchAllConditions;
+	}	
 	
 }

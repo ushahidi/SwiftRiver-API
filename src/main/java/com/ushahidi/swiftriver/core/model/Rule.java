@@ -56,6 +56,9 @@ public class Rule {
 	
 	@Column(name = "rule_active")
 	private boolean active;
+	
+	@Column(name = "rule_all_conditions")
+	private boolean matchAllConditions;
 
 	public long getId() {
 		return id;
@@ -119,6 +122,14 @@ public class Rule {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+
+	public boolean isMatchAllConditions() {
+		return matchAllConditions;
+	}
+
+	public void setMatchAllConditions(boolean matchAllConditions) {
+		this.matchAllConditions = matchAllConditions;
 	}
 	
 }

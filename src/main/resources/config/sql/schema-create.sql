@@ -888,6 +888,7 @@ CREATE TABLE IF NOT EXISTS `river_rules` (
   `rule_actions` text NOT NULL,
   `rule_date_add` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `rule_active` tinyint(1) NOT NULL DEFAULT '1',
+  `rule_all_conditions` tinyint(1) NOT NULL DEFAULT '1' COMMENT 'When to execute the actions; if all or any conditions match',
   PRIMARY KEY (`id`),
   KEY `idx_river_id` (`river_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
