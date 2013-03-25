@@ -49,292 +49,24 @@ public class GetAccountDTO {
 	
 	private Owner owner;
 	
-	private List<River> rivers;
+	private List<GetRiverDTO> rivers;
 	
 	@JsonProperty("collaborating_rivers")
-	private List<River> collaboratingRivers;
+	private List<GetRiverDTO> collaboratingRivers;
 	
 	@JsonProperty("following_rivers")
-	private List<River> followingRivers;
+	private List<GetRiverDTO> followingRivers;
 	
-	private List<Bucket> buckets;
+	private List<GetBucketDTO> buckets;
 	
 	@JsonProperty("collaborating_buckets")
-	private List<Bucket> collaboratingBuckets;
+	private List<GetBucketDTO> collaboratingBuckets;
 	
 	@JsonProperty("following_buckets")
-	private List<Bucket> followingBuckets;
+	private List<GetBucketDTO> followingBuckets;
 	
 	@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 	private String token;
-	
-	public static class River {
-		
-		private long id;
-		
-		@JsonProperty("name")
-		private String riverName;
-		
-		private String description;
-		
-		private String category;
-		
-		@JsonProperty("follower_count")
-		private int followerCount;
-		
-		@JsonProperty("public")
-		private boolean riverPublic;
-		
-		private boolean active;
-		
-		@JsonProperty("drop_count")
-		private int dropCount;
-		
-		@JsonProperty("drop_quota")
-		private int dropQuota;
-		
-		private boolean full;
-		
-		@JsonProperty("date_added")
-		private String dateAdded;
-		
-		@JsonProperty("expiry_date")
-		private String expiryDate;
-		
-		@JsonProperty("extension_count")
-		private int extensionCount;
-		
-		private Account account;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getRiverName() {
-			return riverName;
-		}
-
-		public void setRiverName(String riverName) {
-			this.riverName = riverName;
-		}
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-		public String getCategory() {
-			return category;
-		}
-
-		public void setCategory(String category) {
-			this.category = category;
-		}
-
-		public int getFollowerCount() {
-			return followerCount;
-		}
-
-		public void setFollowerCount(int followerCount) {
-			this.followerCount = followerCount;
-		}
-
-		public boolean isRiverPublic() {
-			return riverPublic;
-		}
-
-		public void setRiverPublic(boolean riverPublic) {
-			this.riverPublic = riverPublic;
-		}
-
-		public boolean isActive() {
-			return active;
-		}
-
-		public void setActive(boolean active) {
-			this.active = active;
-		}
-
-		public int getDropCount() {
-			return dropCount;
-		}
-
-		public void setDropCount(int dropCount) {
-			this.dropCount = dropCount;
-		}
-
-		public int getDropQuota() {
-			return dropQuota;
-		}
-
-		public void setDropQuota(int dropQuota) {
-			this.dropQuota = dropQuota;
-		}
-
-		public boolean isFull() {
-			return full;
-		}
-
-		public void setFull(boolean full) {
-			this.full = full;
-		}
-
-		public String getDateAdded() {
-			return dateAdded;
-		}
-
-		public void setDateAdded(String dateAdded) {
-			this.dateAdded = dateAdded;
-		}
-
-		public String getExpiryDate() {
-			return expiryDate;
-		}
-
-		public void setExpiryDate(String expiryDate) {
-			this.expiryDate = expiryDate;
-		}
-
-		public int getExtensionCount() {
-			return extensionCount;
-		}
-
-		public void setExtensionCount(int extensionCount) {
-			this.extensionCount = extensionCount;
-		}
-
-		public Account getAccount() {
-			return account;
-		}
-
-		public void setAccount(Account account) {
-			this.account = account;
-		}
-	}
-	
-	public static class Bucket {
-		
-		private long id;
-		
-		private String name;
-		
-		private String description;
-		
-		private String category;
-		
-		@JsonProperty("follower_count")
-		private int followerCount;
-		
-		private boolean collaborating;
-		
-		private boolean following;
-		
-		@JsonProperty("public")
-		private boolean published;
-		
-		@JsonProperty("drop_count")
-		private int dropCount;
-		
-		@JsonProperty("date_added")
-		private String dateAdded;
-		
-		private Account account;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-		public String getCategory() {
-			return category;
-		}
-
-		public void setCategory(String category) {
-			this.category = category;
-		}
-
-		public int getFollowerCount() {
-			return followerCount;
-		}
-
-		public void setFollowerCount(int followerCount) {
-			this.followerCount = followerCount;
-		}
-
-		public boolean isCollaborating() {
-			return collaborating;
-		}
-
-		public void setCollaborating(boolean collaborating) {
-			this.collaborating = collaborating;
-		}
-
-		public boolean isFollowing() {
-			return following;
-		}
-
-		public void setFollowing(boolean following) {
-			this.following = following;
-		}
-
-		public boolean isPublished() {
-			return published;
-		}
-
-		public void setPublished(boolean published) {
-			this.published = published;
-		}
-
-		public int getDropCount() {
-			return dropCount;
-		}
-
-		public void setDropCount(int dropCount) {
-			this.dropCount = dropCount;
-		}
-
-		public String getDateAdded() {
-			return dateAdded;
-		}
-
-		public void setDateAdded(String dateAdded) {
-			this.dateAdded = dateAdded;
-		}
-
-		public Account getAccount() {
-			return account;
-		}
-
-		public void setAccount(Account account) {
-			this.account = account;
-		}
-	}
 	
 	public static class Owner {
 		
@@ -488,35 +220,35 @@ public class GetAccountDTO {
 		this.owner = owner;
 	}
 
-	public List<River> getRivers() {
+	public List<GetRiverDTO> getRivers() {
 		return rivers;
 	}
 
-	public void setRivers(List<River> rivers) {
+	public void setRivers(List<GetRiverDTO> rivers) {
 		this.rivers = rivers;
 	}
 
-	public List<River> getCollaboratingRivers() {
+	public List<GetRiverDTO> getCollaboratingRivers() {
 		return collaboratingRivers;
 	}
 
-	public void setCollaboratingRivers(List<River> collaboratingRivers) {
+	public void setCollaboratingRivers(List<GetRiverDTO> collaboratingRivers) {
 		this.collaboratingRivers = collaboratingRivers;
 	}
 
-	public List<River> getFollowingRivers() {
+	public List<GetRiverDTO> getFollowingRivers() {
 		return followingRivers;
 	}
 
-	public void setFollowingRivers(List<River> followingRivers) {
+	public void setFollowingRivers(List<GetRiverDTO> followingRivers) {
 		this.followingRivers = followingRivers;
 	}
 
-	public List<Bucket> getBuckets() {
+	public List<GetBucketDTO> getBuckets() {
 		return buckets;
 	}
 
-	public void setBuckets(List<Bucket> buckets) {
+	public void setBuckets(List<GetBucketDTO> buckets) {
 		this.buckets = buckets;
 	}
 
@@ -528,19 +260,19 @@ public class GetAccountDTO {
 		this.accountPrivate = accountPrivate;
 	}
 
-	public List<Bucket> getCollaboratingBuckets() {
+	public List<GetBucketDTO> getCollaboratingBuckets() {
 		return collaboratingBuckets;
 	}
 
-	public void setCollaboratingBuckets(List<Bucket> collaboratingBuckets) {
+	public void setCollaboratingBuckets(List<GetBucketDTO> collaboratingBuckets) {
 		this.collaboratingBuckets = collaboratingBuckets;
 	}
 
-	public List<Bucket> getFollowingBuckets() {
+	public List<GetBucketDTO> getFollowingBuckets() {
 		return followingBuckets;
 	}
 
-	public void setFollowingBuckets(List<Bucket> followingBuckets) {
+	public void setFollowingBuckets(List<GetBucketDTO> followingBuckets) {
 		this.followingBuckets = followingBuckets;
 	}
 

@@ -33,6 +33,15 @@ public class GetBucketDTO {
 	
 	private String description;
 	
+	private String category;
+	
+	@JsonProperty("follower_count")
+	private int followerCount;
+	
+	private boolean collaborating;
+	
+	private boolean following;
+	
 	@JsonProperty("date_added")
 	private String dateAdded;
 	
@@ -42,9 +51,6 @@ public class GetBucketDTO {
 	@JsonProperty("public")
 	private boolean published;
 
-	@JsonProperty("default_layout")
-	private String defaultLayout;
-	
 	private Account account;
 	
 	public static class Account {
@@ -95,6 +101,38 @@ public class GetBucketDTO {
 		this.description = description;
 	}
 
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public int getFollowerCount() {
+		return followerCount;
+	}
+
+	public void setFollowerCount(int followerCount) {
+		this.followerCount = followerCount;
+	}
+
+	public boolean isCollaborating() {
+		return collaborating;
+	}
+
+	public void setCollaborating(boolean collaborating) {
+		this.collaborating = collaborating;
+	}
+
+	public boolean isFollowing() {
+		return following;
+	}
+
+	public void setFollowing(boolean following) {
+		this.following = following;
+	}
+
 	public String getDateAdded() {
 		return dateAdded;
 	}
@@ -117,14 +155,6 @@ public class GetBucketDTO {
 
 	public void setPublished(boolean published) {
 		this.published = published;
-	}
-
-	public String getDefaultLayout() {
-		return defaultLayout;
-	}
-
-	public void setDefaultLayout(String defaultLayout) {
-		this.defaultLayout = defaultLayout;
 	}
 
 	public Account getAccount() {
