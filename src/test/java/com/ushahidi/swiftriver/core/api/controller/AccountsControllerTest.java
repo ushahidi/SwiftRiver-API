@@ -154,7 +154,8 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.buckets[0].description").exists())
 				.andExpect(jsonPath("$.buckets[0].follower_count").exists())
 				.andExpect(jsonPath("$.buckets[0].public").exists())
-				.andExpect(jsonPath("$.buckets[0].drop_count").exists());
+				.andExpect(jsonPath("$.buckets[0].drop_count").exists())
+				.andExpect(jsonPath("$.forms").exists());
 	}
 
 	@Test

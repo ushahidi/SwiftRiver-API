@@ -16,6 +16,8 @@ package com.ushahidi.swiftriver.core.api.dto;
 
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * @author Ushahidi, Inc
  * 
@@ -25,6 +27,8 @@ public class GetFormDTO {
 	private String id;
 
 	private String name;
+	
+	private Account account;
 
 	private List<GetFormFieldDTO> fields;
 
@@ -44,6 +48,14 @@ public class GetFormDTO {
 		this.name = name;
 	}
 
+	public Account getAccount() {
+		return account;
+	}
+
+	public void setAccount(Account account) {
+		this.account = account;
+	}
+
 	public List<GetFormFieldDTO> getFields() {
 		return fields;
 	}
@@ -52,4 +64,27 @@ public class GetFormDTO {
 		this.fields = fields;
 	}
 
+	public static class Account {
+		private long id;
+		
+		@JsonProperty("account_path")
+		private String accountPath;
+
+		public long getId() {
+			return id;
+		}
+
+		public void setId(long id) {
+			this.id = id;
+		}
+
+		public String getAccountPath() {
+			return accountPath;
+		}
+
+		public void setAccountPath(String accountPath) {
+			this.accountPath = accountPath;
+		}
+		
+	}
 }

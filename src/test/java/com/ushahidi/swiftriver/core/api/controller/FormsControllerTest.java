@@ -110,6 +110,8 @@ public class FormsControllerTest extends AbstractControllerTest {
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value("1"))
 				.andExpect(jsonPath("$.name").value("A custom form"))
+				.andExpect(jsonPath("$.account.id").value(3))
+				.andExpect(jsonPath("$.account.account_path").value("user1"))
 				.andExpect(jsonPath("$.fields[0].id").value("1"))
 				.andExpect(jsonPath("$.fields[0].title").value("Test Field"))
 				.andExpect(

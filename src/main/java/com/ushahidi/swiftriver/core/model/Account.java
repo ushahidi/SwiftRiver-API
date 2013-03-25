@@ -100,6 +100,9 @@ public class Account {
 	private List<Bucket> collaboratingBuckets;
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+	private List<Form> forms;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="account")
 	private Set<Client> clients;
 	
 	@Version
@@ -219,6 +222,14 @@ public class Account {
 
 	public void setCollaboratingBuckets(List<Bucket> collaboratingBuckets) {
 		this.collaboratingBuckets = collaboratingBuckets;
+	}
+
+	public List<Form> getForms() {
+		return forms;
+	}
+
+	public void setForms(List<Form> forms) {
+		this.forms = forms;
 	}
 
 	public List<AccountFollower> getFollowers() {

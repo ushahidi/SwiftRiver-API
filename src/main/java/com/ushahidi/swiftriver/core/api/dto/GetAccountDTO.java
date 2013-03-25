@@ -65,6 +65,8 @@ public class GetAccountDTO {
 	@JsonProperty("following_buckets")
 	private List<GetBucketDTO> followingBuckets;
 	
+	private List<GetFormDTO> forms;
+	
 	@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 	private String token;
 	
@@ -274,6 +276,14 @@ public class GetAccountDTO {
 
 	public void setFollowingBuckets(List<GetBucketDTO> followingBuckets) {
 		this.followingBuckets = followingBuckets;
+	}
+
+	public List<GetFormDTO> getForms() {
+		return forms;
+	}
+
+	public void setForms(List<GetFormDTO> forms) {
+		this.forms = forms;
 	}
 
 	public String getToken() {
