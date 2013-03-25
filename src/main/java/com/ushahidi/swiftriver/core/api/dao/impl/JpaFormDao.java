@@ -16,11 +16,33 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import com.ushahidi.swiftriver.core.api.dao.FormDao;
 import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormField;
 
 /**
  * @author Ushahidi, Inc
- *
+ * 
  */
 public class JpaFormDao extends AbstractJpaDao<Form> implements FormDao {
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.impl.AbstractJpaDao#create(java.
+	 * lang.Object)
+	 */
+	@Override
+	public Form create(Form form) {
+		form = super.create(form);
+
+		if (form.getFields() != null) {
+			for (FormField field : form.getFields()) {
+				field.setForm(form);
+				em.persist(field);
+			}
+		}
+
+		return form;
+	}
 
 }

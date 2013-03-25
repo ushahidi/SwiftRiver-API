@@ -14,6 +14,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
+import java.util.List;
+
 
 /**
  * @author Ushahidi, Inc
@@ -23,12 +25,22 @@ public class CreateFormDTO {
 
 	private String name;
 	
+	private List<CreateFormFieldDTO> fields;
+	
 	public String getName() {
 		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public List<CreateFormFieldDTO> getFields() {
+		return fields;
+	}
+
+	public void setFields(List<CreateFormFieldDTO> fields) {
+		this.fields = fields;
 	}
 
 }

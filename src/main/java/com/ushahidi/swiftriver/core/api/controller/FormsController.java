@@ -52,6 +52,9 @@ public class FormsController extends AbstractController {
 
 	final Logger logger = LoggerFactory.getLogger(FormsController.class);
 
+	final static List<String> validTypes = Arrays.asList("multiple", "select",
+			"text");
+
 	@Autowired
 	private FormService formService;
 
@@ -73,23 +76,26 @@ public class FormsController extends AbstractController {
 			errors.add(new ErrorField("name", "missing"));
 		}
 
-		// // Validate form fields are provided
-		// if (formTo.getFields() != null) {
-		// List<CreateFieldDTO> fields = formTo.getFields();
-		// for (int i = 0; i < fields.size(); i++) {
-		// CreateFieldDTO field = fields.get(i);
-		//
-		// if (field.getTitle() == null) {
-		// errors.add(new ErrorField("fields[" + i + "].title",
-		// "missing"));
-		// }
-		//
-		// if (field.getType() == null) {
-		// errors.add(new ErrorField("fields[" + i + "].type",
-		// "missing"));
-		// }
-		// }
-		// }
+		// Validate form fields are provided
+		if (formTo.getFields() != null) {
+			List<CreateFormFieldDTO> fields = formTo.getFields();
+			for (int i = 0; i < fields.size(); i++) {
+				CreateFormFieldDTO field = fields.get(i);
+
+				if (field.getTitle() == null) {
+					errors.add(new ErrorField("fields[" + i + "].title",
+							"missing"));
+				}
+
+				if (field.getType() == null) {
+					errors.add(new ErrorField("fields[" + i + "].type",
+							"missing"));
+				} else if (!validTypes.contains(field.getType())) {
+					errors.add(new ErrorField("fields[" + i + "].type",
+							"invalid"));
+				}
+			}
+		}
 
 		if (!errors.isEmpty()) {
 			BadRequestException e = new BadRequestException(
@@ -110,7 +116,8 @@ public class FormsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	@ResponseBody
-	public GetFormDTO getForm(@PathVariable Long id, Principal principal) throws NotFoundException {
+	public GetFormDTO getForm(@PathVariable Long id, Principal principal)
+			throws NotFoundException {
 		return formService.getForm(id, principal.getName());
 	}
 
@@ -160,7 +167,6 @@ public class FormsController extends AbstractController {
 			errors.add(new ErrorField("title", "missing"));
 		}
 
-		List<String> validTypes = Arrays.asList("multiple", "select", "text");
 		if (fieldTo.getType() == null) {
 			errors.add(new ErrorField("type", "missing"));
 		} else if (!validTypes.contains(fieldTo.getType())) {
@@ -189,6 +195,21 @@ public class FormsController extends AbstractController {
 	public GetFormFieldDTO modifyField(Principal principal,
 			@PathVariable Long formId, @PathVariable Long fieldId,
 			@RequestBody ModifyFormFieldDTO modifyFieldTO) {
+
+		// Validation
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+		if (modifyFieldTO.getType() != null
+				&& !validTypes.contains(modifyFieldTO.getType())) {
+			errors.add(new ErrorField("type", "invalid"));
+		}
+
+		if (!errors.isEmpty()) {
+			BadRequestException e = new BadRequestException(
+					"Invalid parameter.");
+			e.setErrors(errors);
+			throw e;
+		}
+
 		return formService.modifyField(formId, fieldId, modifyFieldTO,
 				principal.getName());
 	}

@@ -17,7 +17,6 @@ package com.ushahidi.swiftriver.core.model;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -55,7 +54,7 @@ public class Form {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date dateModified;
 	
-	@OneToMany(cascade = CascadeType.ALL, mappedBy="form")
+	@OneToMany(mappedBy="form")
 	private List<FormField> fields;
 
 	public Long getId() {

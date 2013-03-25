@@ -29,7 +29,7 @@ public class FormsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void createForm() throws Exception {
-		String postBody = "{\"name\":\"Dangerous Speech Categorisation\",\"fields\":[{\"title\":\"Language\",\"description\":\"Language the audience is being addressed in\",\"type\":\"mutiple\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]},{\"title\":\"Speaker\",\"description\":\"Description of the speaker\",\"type\":\"select\",\"required\":false,\"options\":[\"Politician\",\"Journalist\",\"Blogger\",\"Community Leader\",\"Anonymous Commenter\",\"Identifiable Commenter\",\"Public Figure\"]},{\"title\":\"Target Audience\",\"description\":\"Audience most likely to react to this statement/article\",\"type\":\"text\",\"required\":true}]}";
+		String postBody = "{\"name\":\"Dangerous Speech Categorisation\",\"fields\":[{\"title\":\"Language\",\"description\":\"Language the audience is being addressed in\",\"type\":\"multiple\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]},{\"title\":\"Speaker\",\"description\":\"Description of the speaker\",\"type\":\"select\",\"required\":false,\"options\":[\"Politician\",\"Journalist\",\"Blogger\",\"Community Leader\",\"Anonymous Commenter\",\"Identifiable Commenter\",\"Public Figure\"]},{\"title\":\"Target Audience\",\"description\":\"Audience most likely to react to this statement/article\",\"type\":\"text\",\"required\":true}]}";
 
 		this.mockMvc
 				.perform(
@@ -38,6 +38,27 @@ public class FormsControllerTest extends AbstractControllerTest {
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").exists());
+	}
+
+	@Test
+	public void createFormWithInvalidFields() throws Exception {
+		String postBody = "{\"name\":\"Dangerous Speech Categorisation\",\"fields\":[{\"description\":\"Language the audience is being addressed in\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]},{\"title\":\"Speaker\",\"description\":\"Description of the speaker\",\"type\":\"bad type\",\"required\":false,\"options\":[\"Politician\",\"Journalist\",\"Blogger\",\"Community Leader\",\"Anonymous Commenter\",\"Identifiable Commenter\",\"Public Figure\"]}]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/forms").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("fields[0].title"))
+				.andExpect(jsonPath("$.errors[0].code").value("missing"))
+				.andExpect(jsonPath("$.errors[1].field").value("fields[0].type"))
+				.andExpect(jsonPath("$.errors[1].code").value("missing"))
+				.andExpect(jsonPath("$.errors[2].field").value("fields[1].type"))
+				.andExpect(jsonPath("$.errors[2].code").value("invalid"));
 	}
 
 	@Test
@@ -251,6 +272,24 @@ public class FormsControllerTest extends AbstractControllerTest {
 								.principal(getAuthentication("user3")))
 				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.message").exists());
+	}
+
+	@Test
+	public void modidyFormFieldToInvalidType() throws Exception {
+		String body = "{\"title\":\"Language\",\"description\":\"Language the audience is being addressed in\",\"type\":\"not allowed\",\"required\":false,\"options\":[\"English\",\"Swahili\",\"Luo\",\"Kalenjin\",\"Luhya\",\"Kikuyu\",\"Sheng\",\"Other\"]}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/forms/1/fields/1").content(body)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("type"))
+				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+
 	}
 
 	@Test
