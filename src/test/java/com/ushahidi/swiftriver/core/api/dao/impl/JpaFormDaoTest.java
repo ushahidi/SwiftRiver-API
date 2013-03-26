@@ -1,6 +1,6 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -8,6 +8,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.core.api.dao.FormDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
@@ -16,7 +17,7 @@ import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 public class JpaFormDaoTest extends AbstractIntegrationTest {
 
 	@Autowired
-	JpaFormDao formDao;
+	FormDao formDao;
 
 	@Test
 	public void testSave() {

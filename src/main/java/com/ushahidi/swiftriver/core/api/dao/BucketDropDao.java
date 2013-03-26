@@ -28,7 +28,7 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
 
-public interface BucketDropDao extends GenericDao<BucketDrop> {
+public interface BucketDropDao extends GenericDao<BucketDrop>, ContextDropDao {
 	
 	/**
 	 * Adds the {@link Tag} specified in <code>tag</code> to the 

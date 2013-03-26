@@ -23,25 +23,15 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
-import com.ushahidi.swiftriver.core.api.dao.BucketDao;
-import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 
 @Repository
 public class JpaAccountDao extends AbstractJpaDao<Account> implements
 		AccountDao {
-
-	@Autowired
-	private BucketDao bucketDao;
-	
-	@Autowired
-	private RiverDao riverDao;
-
 
 	@Override
 	public Account update(Account t) {

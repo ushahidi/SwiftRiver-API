@@ -1,6 +1,6 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -8,13 +8,14 @@ import javax.persistence.PersistenceContext;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Sequence;
 import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
 public class JpaSequenceDaoTest extends AbstractIntegrationTest {
 	
 	@Autowired
-	JpaSequenceDao sequenceDao;
+	SequenceDao sequenceDao;
 	
 	@PersistenceContext
 	protected EntityManager em;

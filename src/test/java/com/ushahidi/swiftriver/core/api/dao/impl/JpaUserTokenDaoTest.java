@@ -6,13 +6,14 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.model.UserToken;
 import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
 public class JpaUserTokenDaoTest extends AbstractIntegrationTest {
 
 	@Autowired
-	JpaUserTokenDao userTokenDao;
+	UserTokenDao userTokenDao;
 
 	@Test
 	public void findByToken() {

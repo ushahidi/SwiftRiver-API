@@ -33,6 +33,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
@@ -55,7 +56,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	final static Logger LOG = LoggerFactory.getLogger(JpaBucketDao.class);
 
 	@Autowired
-	private JpaBucketDropDao dropDao;
+	private BucketDropDao dropDao;
 	
 	private NamedParameterJdbcTemplate jdbcTemplate;
 	

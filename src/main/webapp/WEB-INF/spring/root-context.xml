@@ -81,6 +81,8 @@
 			</bean>
 		</property>
 	</bean>
+	
+	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
 
 	<!-- Data Sources -->
 	<beans profile="prod">

@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.MediaDao;
+import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.Sequence;
@@ -50,7 +51,7 @@ import com.ushahidi.swiftriver.core.util.MD5Util;
 public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 
 	@Autowired
-	private JpaSequenceDao sequenceDao;
+	private SequenceDao sequenceDao;
 
 	private NamedParameterJdbcTemplate namedJdbcTemplate;
 	private JdbcTemplate jdbcTemplate;

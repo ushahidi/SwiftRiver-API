@@ -98,6 +98,7 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 	 * com.ushahidi.swiftriver.core.api.dao.ContextDropDao#populateMetadata(
 	 * java.util.List, com.ushahidi.swiftriver.core.model.Account)
 	 */
+	@Override
 	public void populateMetadata(List<Drop> drops, Account queryingAccount) {
 		if (drops.size() == 0) {
 			return;

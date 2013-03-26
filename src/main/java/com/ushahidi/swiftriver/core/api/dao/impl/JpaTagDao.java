@@ -34,6 +34,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Sequence;
@@ -44,7 +45,7 @@ import com.ushahidi.swiftriver.core.util.MD5Util;
 public class JpaTagDao extends AbstractJpaDao<Tag> implements TagDao {
 
 	@Autowired
-	private JpaSequenceDao sequenceDao;
+	private SequenceDao sequenceDao;
 
 	private NamedParameterJdbcTemplate namedJdbcTemplate;
 	private JdbcTemplate jdbcTemplate;

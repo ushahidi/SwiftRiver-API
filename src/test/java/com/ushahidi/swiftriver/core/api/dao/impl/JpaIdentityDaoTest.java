@@ -14,7 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.core.api.dao.IdentityDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
@@ -30,7 +31,7 @@ import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 public class JpaIdentityDaoTest extends AbstractIntegrationTest {
 	
 	@Autowired
-	JpaIdentityDao identityDao;
+	IdentityDao identityDao;
 	
 	
 	@Test

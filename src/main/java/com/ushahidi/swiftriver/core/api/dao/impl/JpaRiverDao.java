@@ -34,6 +34,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
@@ -48,7 +49,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	final Logger logger = LoggerFactory.getLogger(JpaRiverDao.class);
 
 	@Autowired
-	private JpaRiverDropDao dropsDao;
+	private RiverDropDao dropsDao;
 
 	private NamedParameterJdbcTemplate jdbcTemplate;
 

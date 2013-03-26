@@ -27,7 +27,7 @@ import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
 import com.ushahidi.swiftriver.core.model.Tag;
 
-public interface RiverDropDao extends GenericDao<RiverDrop> {
+public interface RiverDropDao extends GenericDao<RiverDrop>, ContextDropDao {
 
 	/**
 	 * Checks whether the {@link Tag} specified in <code>tag</code>
