@@ -422,7 +422,7 @@ CREATE TABLE IF NOT EXISTS droplets (
   droplet_orig_id varchar(255) NOT NULL,
   droplet_type varchar(10) DEFAULT 'original',
   droplet_title varchar(255) DEFAULT NULL,
-  droplet_content varchar(10000),
+  droplet_content text,
   droplet_locale varchar(10),
   droplet_image bigint DEFAULT NULL,
   droplet_date_pub timestamp NOT NULL,
