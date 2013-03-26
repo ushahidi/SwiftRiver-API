@@ -16,6 +16,7 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import org.dozer.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
+import com.ushahidi.swiftriver.core.util.ErrorUtil;
 
 /**
  * @author Ushahidi, Inc
@@ -83,7 +85,12 @@ public class FormService {
 
 		Form form = mapper.map(formTo, Form.class);
 		form.setAccount(account);
-		formDao.create(form);
+		
+		try {
+			formDao.create(form);
+		} catch (DataIntegrityViolationException e) {
+			throw ErrorUtil.getBadRequestException("name", "duplicate");
+		}
 
 		return mapper.map(form, GetFormDTO.class);
 	}

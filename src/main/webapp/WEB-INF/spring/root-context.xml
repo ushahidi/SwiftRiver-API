@@ -82,6 +82,7 @@
 		</property>
 	</bean>
 	
+	<!-- Enable DataAccessException translation -->
 	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
 
 	<!-- Data Sources -->

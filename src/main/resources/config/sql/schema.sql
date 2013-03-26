@@ -760,7 +760,6 @@ CREATE TABLE IF NOT EXISTS form_fields (
   required boolean DEFAULT false,
   options varchar(1000),
   date_added timestamp,
-  date_modified timestamp,
-  UNIQUE (title)
+  date_modified timestamp
 );
 CREATE INDEX forms_idx_form_id ON form_fields (form_id);

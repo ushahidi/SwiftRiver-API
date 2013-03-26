@@ -18,6 +18,5 @@ CREATE TABLE IF NOT EXISTS form_fields (
   options varchar(1000) NOT NULL,
   date_added timestamp,
   date_modified timestamp,
-  UNIQUE (title)
 );
 CREATE INDEX forms_idx_form_id ON form_fields (form_id);

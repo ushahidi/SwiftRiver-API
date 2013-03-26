@@ -39,6 +39,23 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").exists());
 	}
+	
+	@Test
+	public void createDuplicateForm() throws Exception {
+		String postBody = "{\"name\":\"A custom form\",\"fields\":[{\"title\":\"Target Audience\",\"description\":\"Audience most likely to react to this statement/article\",\"type\":\"text\",\"required\":true}]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/forms").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.message").exists())
+				.andExpect(jsonPath("$.errors").exists())
+				.andExpect(jsonPath("$.errors").isArray())
+				.andExpect(jsonPath("$.errors[0].field").value("name"))
+				.andExpect(jsonPath("$.errors[0].code").value("duplicate"));
+	}
 
 	@Test
 	public void createFormWithInvalidFields() throws Exception {

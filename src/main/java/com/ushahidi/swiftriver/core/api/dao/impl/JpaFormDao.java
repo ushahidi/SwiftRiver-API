@@ -37,7 +37,6 @@ public class JpaFormDao extends AbstractJpaDao<Form> implements FormDao {
 	@Override
 	public Form create(Form form) {
 		form = super.create(form);
-		org.springframework.dao.support.DataAccessUtils x;
 		if (form.getFields() != null) {
 			for (FormField field : form.getFields()) {
 				field.setForm(form);
