@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
@@ -44,7 +43,6 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Repository
-@Transactional(readOnly = true)
 public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 	final Logger logger = LoggerFactory.getLogger(JpaRiverDao.class);

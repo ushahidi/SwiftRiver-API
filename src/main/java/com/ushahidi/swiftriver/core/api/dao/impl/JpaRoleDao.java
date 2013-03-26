@@ -2,9 +2,12 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import javax.persistence.NoResultException;
 
+import org.springframework.stereotype.Repository;
+
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.model.Role;
 
+@Repository
 public class JpaRoleDao extends AbstractJpaDao<Role> implements RoleDao {
 
 	@Override

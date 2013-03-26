@@ -2,9 +2,12 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import javax.persistence.NoResultException;
 
+import org.springframework.stereotype.Repository;
+
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.model.Client;
 
+@Repository
 public class JpaClientDao extends AbstractJpaDao<Client> implements ClientDao {
 
 	@Override

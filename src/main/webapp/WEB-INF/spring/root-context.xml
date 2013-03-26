@@ -17,53 +17,16 @@
         http://www.springframework.org/schema/jee
         http://www.springframework.org/schema/jee/spring-jee.xsd">
 
-	<!-- post-processors for all standard config annotations -->
-	<context:annotation-config />
+	<!-- Component scanning -->
+	<context:component-scan base-package="com.ushahidi.swiftriver.core.api.dao,com.ushahidi.swiftriver.core.api.service" />
 
 	<bean id="bcryptPasswordEncoder"
 		class="com.ushahidi.swiftriver.core.api.auth.CustomBCryptPasswordEncoder" />
-
-	<!-- Repository Beans -->
-	<bean id="accountDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao" />
-	<bean id="userDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaUserDao" />
-	<bean id="userTokenDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaUserTokenDao" />
-	<bean id="clientDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaClientDao" />
-	<bean id="roleDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRoleDao" />
-	<bean id="riverDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDao" />
-	<bean id="dropDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaDropDao" />
-	<bean id="identityDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaIdentityDao" />
-	<bean id="riverDropDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverDropDao" />
-	<bean id="bucketDropDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDropDao" />
-	<bean id="bucketDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketDao" />
-	<bean id="channel" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaChannelDao" />
-	<bean id="linkDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaLinkDao" />
-	<bean id="placeDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaPlaceDao" />
-	<bean id="tagDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaTagDao" />
-	<bean id="mediaDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaMediaDao" />
-	<bean id="riverCollaboratorDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaRiverCollaboratorDao" />
-	<bean id="bucketCollaboratorDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCollaboratorDao" />
-	<bean id="sequenceDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaSequenceDao" />
-	<bean id="bucketCommentDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaBucketCommentDao" />
-	<bean id="formDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaFormDao" />
-	<bean id="formFieldDao"
-		class="com.ushahidi.swiftriver.core.api.dao.impl.JpaFormFieldDao" />
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
 		<property name="key" ref="encryptionKey" />
 	</bean>
-	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService" />
-	<bean id="bucketService" class="com.ushahidi.swiftriver.core.api.service.BucketService" />
-	<bean id="dropService" class="com.ushahidi.swiftriver.core.api.service.DropService" />
-	<bean id="formService" class="com.ushahidi.swiftriver.core.api.service.FormService" />
 
 	<!-- Jackson Mapper -->
 	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" />

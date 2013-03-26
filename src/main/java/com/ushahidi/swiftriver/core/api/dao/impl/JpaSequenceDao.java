@@ -2,9 +2,12 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import javax.persistence.LockModeType;
 
+import org.springframework.stereotype.Repository;
+
 import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Sequence;
 
+@Repository
 public class JpaSequenceDao extends AbstractJpaDao<Sequence> implements
 		SequenceDao {
 	

@@ -2,9 +2,12 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import javax.persistence.NoResultException;
 
+import org.springframework.stereotype.Repository;
+
 import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.model.UserToken;
 
+@Repository
 public class JpaUserTokenDao extends AbstractJpaDao<UserToken> implements
 		UserTokenDao {
 

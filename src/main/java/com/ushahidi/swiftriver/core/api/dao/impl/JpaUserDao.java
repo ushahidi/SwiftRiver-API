@@ -18,9 +18,12 @@ import java.util.Date;
 
 import javax.persistence.NoResultException;
 
+import org.springframework.stereotype.Repository;
+
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.model.User;
 
+@Repository
 public class JpaUserDao extends AbstractJpaDao<User> implements UserDao {
 
 	/* (non-Javadoc)
