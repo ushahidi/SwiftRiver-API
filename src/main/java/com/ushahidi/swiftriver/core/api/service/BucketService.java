@@ -648,6 +648,8 @@ public class BucketService {
 
 		// Delete the drop
 		bucketDropDao.delete(targetBucketDrop);
+		
+		bucketDao.decreaseDropCount(bucket);
 	}
 
 	/**
@@ -695,6 +697,7 @@ public class BucketService {
 				bucketDropDao.increaseVeracity(bucketDrop);
 			} else {
 				bucketDropDao.createFromRiverDrop(riverDrop, bucket);
+				bucketDao.increaseDropCount(bucket);
 			}
 		} else if (dropSourceTO.getSource().equals("bucket")) {
 			bucketDrop = bucketDropDao.findById(dropId);
@@ -711,6 +714,9 @@ public class BucketService {
 
 			// Create a new bucket drop from an existing
 			bucketDropDao.createFromExisting(bucketDrop, bucket);
+
+			// Update the drop count
+			bucketDao.increaseDropCount(bucket);
 		}
 
 	}

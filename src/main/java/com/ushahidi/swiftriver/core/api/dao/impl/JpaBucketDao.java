@@ -343,4 +343,24 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		return bucketComment;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#decreaseDropCount(com.ushahidi.swiftriver.core.model.Bucket)
+	 */
+	public void decreaseDropCount(Bucket bucket) {
+		int dropCount = bucket.getDropCount() - 1;
+		bucket.setDropCount(dropCount);
+		this.update(bucket);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#increaseDropCount(com.ushahidi.swiftriver.core.model.Bucket)
+	 */
+	public void increaseDropCount(Bucket bucket) {
+		int dropCount = bucket.getDropCount() + 1;
+		bucket.setDropCount(dropCount);
+		this.update(bucket);
+	}
+
 }

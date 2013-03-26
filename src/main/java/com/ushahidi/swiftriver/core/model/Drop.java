@@ -114,6 +114,12 @@ public class Drop {
 	
 	@Transient
 	private Boolean read;
+	
+	@Transient
+	private List<Long> markAsRead;
+	
+	@Transient
+	private List<Long> bucketIds;
 
 	public Drop() {
 
@@ -207,12 +213,12 @@ public class Drop {
 		this.datePublished = dropletDatePub;
 	}
 
-	public Date getDropletDateAdd() {
+	public Date getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDropletDateAdd(Date dropletDateAdd) {
-		this.dateAdded = dropletDateAdd;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 
 	public Link getOriginalUrl() {
@@ -285,6 +291,22 @@ public class Drop {
 
 	public void setRead(Boolean read) {
 		this.read = read;
+	}
+
+	public List<Long> getMarkAsRead() {
+		return markAsRead;
+	}
+
+	public void setMarkAsRead(List<Long> markAsRead) {
+		this.markAsRead = markAsRead;
+	}
+
+	public List<Long> getBucketIds() {
+		return bucketIds;
+	}
+
+	public void setBucketIds(List<Long> bucketIds) {
+		this.bucketIds = bucketIds;
 	}
 
 }

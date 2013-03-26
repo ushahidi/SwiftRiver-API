@@ -144,4 +144,20 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public BucketComment addComment(Bucket bucket, String commentText,
 			Account account);
 
+	/**
+	 * Reduces the drop count of the {@link Bucket} specified in
+	 * <code>bucket</code>
+	 * 
+	 * @param bucket
+	 */
+	public void decreaseDropCount(Bucket bucket);
+
+	/**
+	 * Increases the drop count for the {@link Bucket}
+	 * specified in the <code>bucket</code> parameter
+	 * 
+	 * @param bucket
+	 */
+	public void increaseDropCount(Bucket bucket);
+
 }

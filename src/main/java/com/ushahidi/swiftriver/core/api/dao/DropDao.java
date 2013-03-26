@@ -17,49 +17,15 @@
 package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropSource;
-import com.ushahidi.swiftriver.core.model.Link;
-import com.ushahidi.swiftriver.core.model.Media;
-import com.ushahidi.swiftriver.core.model.Place;
-import com.ushahidi.swiftriver.core.model.Tag;
 
 public interface DropDao extends GenericDao<Drop> {
 	
 	public List<Drop> createDrops(List<Drop> drops);
-	
-	/**
-	 * Adds a collection of links to a drop
-	 * 
-	 * @param dropId
-	 * @param links
-	 */
-	public void addLinks(long dropId, Collection<Link> links);
-	
-	/**
-	 * Adds a collection of places to a drop
-	 * @param dropId
-	 * @param places
-	 */
-	public void addPlaces(long dropId, Collection<Place> places);
-	
-	/**
-	 * Adds a collection of media to a drop
-	 * @param dropId
-	 * @param media
-	 */
-	public void addMultipleMedia(long dropId, Collection<Media> media);
-		
-	/**
-	 * Adds a collection of tags to the drop
-	 * @param dropId
-	 * @param tags
-	 */
-	public void addTags(long dropId, Collection<Tag> tags);
 	
 	/**
 	 * Returns all drops with a hash in @param dropHashes
