@@ -1106,7 +1106,7 @@ public class RiverService {
 		
 		// Send add_rule message on the MQ
 		RuleUpdateNotification notification = mapper.map(rule, RuleUpdateNotification.class);
-		amqpTemplate.convertAndSend("web.rule.add", notification);
+		amqpTemplate.convertAndSend("web.river.rules.add", notification);
 
 		return mapper.map(rule, GetRuleDTO.class);
 	}
@@ -1141,7 +1141,7 @@ public class RiverService {
 
 		RuleUpdateNotification notification = mapper.map(rule, RuleUpdateNotification.class);
 		
-		amqpTemplate.convertAndSend("web.rule.update", notification);
+		amqpTemplate.convertAndSend("web.river.rules.update", notification);
 
 		return mapper.map(rule, GetRuleDTO.class);
 	}
@@ -1171,7 +1171,7 @@ public class RiverService {
 
 		ruleDao.delete(rule);
 		
-		amqpTemplate.convertAndSend("web.rule.delete", notification);
+		amqpTemplate.convertAndSend("web.river.rules.delete", notification);
 	}
 
 	/**
