@@ -118,12 +118,8 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void getDropsFromEmptyRiver() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user2", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-
 		this.mockMvc
-				.perform(get("/v1/rivers/2/drops").principal(authentication))
+				.perform(get("/v1/rivers/2/drops").principal(getAuthentication("user1")))
 				.andExpect(status().isOk()).andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$").value(empty()));
 	}

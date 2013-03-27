@@ -18,7 +18,9 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dozer.Mapper;
 import org.slf4j.Logger;
@@ -372,31 +374,38 @@ public class RiverService {
 	 * @throws NotFoundException
 	 */
 	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
-			int page, int dropCount, List<String> channelList,
+			Integer page, Integer dropCount, List<String> channelList,
 			List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo,
 			String username) throws NotFoundException {
-
-		if (riverDao.findById(id) == null) {
-			throw new NotFoundException(String.format(
-					"River %d does not exist", id));
-		}
-
+		
+		River river = getRiver(id);
 		Account queryingAccount = accountDao.findByUsername(username);
-
-		List<Drop> drops = null;
-		if (sinceId != null) {
-			drops = riverDao.getDropsSince(id, sinceId, dropCount, channelList,
-					channelIds, isRead, dateFrom, dateTo, queryingAccount);
-		} else {
-			drops = riverDao.getDrops(id, maxId, page, dropCount, channelList,
-					channelIds, isRead, dateFrom, dateTo, queryingAccount);
+		
+		// Check if the river is private and whether the querying user
+		// has access
+		if (!river.getRiverPublic() && !this.isOwner(river, queryingAccount)) {
+			throw new ForbiddenException("Access denied");
 		}
 
-		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
+		// Build the parameter map
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("dropCount", dropCount);
+		params.put("page", page);
+		if (maxId != null) params.put("maxId", maxId);
+		if (sinceId != null) params.put("sinceId", sinceId);
+		if (channelList != null && !channelList.isEmpty()) params.put("channelList", channelList);
+		if (channelIds != null && !channelIds.isEmpty()) params.put("channelIds",channelIds);
+		if (isRead != null) params.put("isRead", isRead);
+		if (dateFrom != null) params.put("dateFrom", dateFrom);
+		if (dateTo != null) params.put("dateTo", dateTo);
+
+		List<Drop> drops = riverDao.getDrops(id, params, queryingAccount);
 
 		if (drops == null) {
 			throw new NotFoundException("No drops found");
 		}
+
+		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
 		for (Drop drop : drops) {
 			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));

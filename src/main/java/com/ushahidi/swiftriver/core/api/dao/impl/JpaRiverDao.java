@@ -112,145 +112,98 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		return river;
 	}
 
-	public List<Drop> getDrops(Long riverId, Long maxId, int page,
-			int dropCount, List<String> channelList, List<Long> channelIds,
-			Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount) {
-		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, `droplets`.`channel`, ";
-		sql += "`identities`.`id` AS `identity_id`, `identity_name`, `identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
-		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, `links`.`url` AS `original_url`, `comment_count`, `account_read_drops`.`droplet_id` AS `drop_read` ";
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#getDrops(java.lang.Long, java.util.Map, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public List<Drop> getDrops(Long riverId, Map<String, Object> params, Account queryingAccount) {
+		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
+		sql += "`droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
+		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
+		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` as `original_url_id`, ";
+		sql += "`links`.`url` AS `original_url`, `comment_count`, ";
+		sql += "`river_droplets_read`.`rivers_droplets_id` AS `drop_read` ";
 		sql += "FROM `rivers_droplets` ";
 		sql += "INNER JOIN `droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
 
-		if (channelIds.size() > 0) {
+		if (params.containsKey("channelds")) {
 			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
 		}
 
 		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
-		sql += "LEFT JOIN `account_read_drops` ON (`account_read_drops`.`droplet_id` = `rivers_droplets`.`droplet_id` AND `account_read_drops`.`account_id` = :accountId) ";
+		sql += "LEFT JOIN `river_droplets_read` ON (`river_droplets_read`.`rivers_droplets_id` = `rivers_droplets`.`id` AND `river_droplets_read`.`account_id` = :accountId) ";
 		sql += "WHERE `rivers_droplets`.`droplet_date_pub` > '0000-00-00 00:00:00' ";
 		sql += "AND `rivers_droplets`.`river_id` = :riverId ";
-		sql += "AND `rivers_droplets`.`id` <= :maxId ";
 
-		if (channelList.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel` IN (:channels) ";
+		// Check for maxId
+		if (params.containsKey("maxId")) {
+			sql += "AND `rivers_droplets`.`id` <= :maxId ";
+		}
+		
+		// Check for sinceId
+		if (params.containsKey("sinceId")) {
+			sql += "AND `rivers_droplets`.`id` > :sinceId ";
 		}
 
-		if (channelIds.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel_id` IN (:channel_ids) ";
+		// Check for channelList
+		if (params.containsKey("channelList")) {
+			sql += "AND `rivers_droplets`.`channel` IN (:channelList) ";
 		}
 
-		if (isRead != null) {
-			if (isRead) {
-				sql += "AND `account_read_drops`.`droplet_id` IS NOT NULL ";
-			} else {
-				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
+		// Check for channelIds
+		if (params.containsKey("channelIds")) {
+			sql += "AND `rivers_droplets`.`channel_id` IN (:channelIds) ";
+		}
+
+		// Check for isRead
+		if (params.containsKey("isRead")) {
+			boolean isRead = ((Boolean) params.get("isRead")).booleanValue();
+			sql += (isRead) 
+					? "AND `river_droplets_read`.`rivers_droplets_id` IS NOT NULL " 
+					: "AND `river_droplets_read`.`rivers_droplets_id` IS NULL ";
+		}
+
+		// Check for dateFrom
+		if (params.containsKey("dateFrom")) {
+			sql += "AND `rivers_droplets`.`droplet_date_pub` >= :dateFrom ";
+		}
+		
+		// Check for dateTo
+		if (params.containsKey("dateTo")) {
+			sql += "AND `rivers_droplets`.`droplet_date_pub` <= :dateTo ";
+		}
+
+		// Drop count and page
+		Integer dropCount = (Integer) params.get("dropCount");
+		Integer page = (Integer) params.get("page");
+
+		// If sinceId parameter is specified, order by ID else use date published
+		if (params.containsKey("sinceId")) {
+			sql += "ORDER BY `rivers_droplets`.`id` ASC LIMIT " + dropCount;
+		} else {
+			sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC " +
+					"LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
+		}
+
+		MapSqlParameterSource queryParams = new MapSqlParameterSource();
+		queryParams.addValue("userId", queryingAccount.getOwner().getId());
+		queryParams.addValue("accountId", queryingAccount.getId());
+		queryParams.addValue("riverId", riverId);
+		
+		// All possible keys for the parameters map in @param params
+		String[] paramKeys = {"maxId", "channelIds", "channelList", 
+				"dateFrom",  "dateTo", "sinceId", "maxId"};
+		
+		for (String key: paramKeys) {
+			if (params.containsKey(key)) {
+				queryParams.addValue(key, params.get(key));
 			}
 		}
 
-		if (dateFrom != null) {
-			sql += "AND `rivers_droplets`.`droplet_date_pub` >= :date_from ";
-		}
-
-		if (dateTo != null) {
-			sql += "AND `rivers_droplets`.`droplet_date_pub` <= :date_to ";
-		}
-
-		sql += "ORDER BY `rivers_droplets`.`droplet_date_pub` DESC ";
-		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
-
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("userId", queryingAccount.getOwner().getId());
-		params.addValue("accountId", queryingAccount.getId());
-		params.addValue("riverId", riverId);
-		params.addValue("maxId", maxId);
-
-		if (channelList.size() > 0) {
-			params.addValue("channels", channelList);
-		}
-
-		if (channelIds.size() > 0) {
-			params.addValue("channel_ids", channelIds);
-		}
-
-		if (dateFrom != null) {
-			params.addValue("date_from", dateFrom);
-		}
-
-		if (dateTo != null) {
-			params.addValue("date_to", dateTo);
-		}
-
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
-				params);
-
-		return formatDrops(results, queryingAccount);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#getDropsSince(java.lang
-	 * .Long, java.lang.Long, int, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	@Override
-	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
-			List<String> channelList, List<Long> channelIds, Boolean isRead,
-			Date dateFrom, Date dateTo, Account queryingAccount) {
-		String sql = "SELECT `rivers_droplets`.`id` AS `id`, `droplet_title`, `droplet_content`, ";
-		sql += "`droplets`.`channel`, `identities`.`id` `identity_id`, `identity_name`, ";
-		sql += "`identity_avatar`, `rivers_droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
-		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
-		sql += "`links`.`url` AS `original_url`, `comment_count`, `account_read_drops`.`droplet_id` AS `drop_read`  ";
-		sql += "FROM `droplets` ";
-		sql += "INNER JOIN `rivers_droplets` ON (`rivers_droplets`.`droplet_id` = `droplets`.`id`) ";
-		sql += "INNER JOIN `identities` ON (`droplets`.`identity_id` = `identities`.`id`) ";
-
-		if (channelIds.size() > 0) {
-			sql += "INNER JOIN `river_channels` ON (`rivers_droplets`.`channel_id` = `river_channels`.`id`) ";
-		}
-
-		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = droplets.id AND user_scores.user_id = :userId) ";
-		sql += "LEFT JOIN `links` ON (`links`.`id` = `droplets`.`original_url`) ";
-		sql += "LEFT JOIN `account_read_drops` ON (`account_read_drops`.`droplet_id` = `rivers_droplets`.`droplet_id` AND `account_read_drops`.`account_id` = :accountId) ";
-		sql += "WHERE `rivers_droplets`.`river_id` = :riverId AND `rivers_droplets`.`id` > :sinceId ";
-
-		if (channelList.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel` IN (:channels) ";
-		}
-
-		if (channelIds.size() > 0) {
-			sql += "AND `rivers_droplets`.`channel_id` IN (:channels) ";
-		}
-
-		if (isRead != null) {
-			if (isRead) {
-				sql += "AND `account_read_drops`.`droplet_id` IS NOT NULL ";
-			} else {
-				sql += "AND `account_read_drops`.`droplet_id` IS NULL ";
-			}
-		}
-
-		sql += "ORDER BY `rivers_droplets`.`id` ASC LIMIT " + dropCount;
-
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("userId", queryingAccount.getOwner().getId());
-		params.addValue("accountId", queryingAccount.getId());
-		params.addValue("riverId", riverId);
-		params.addValue("sinceId", sinceId);
-
-		if (channelList.size() > 0) {
-			params.addValue("channels", channelList);
-		}
-
-		if (channelIds.size() > 0) {
-			params.addValue("channels", channelIds);
-		}
-
-		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
-				params);
+				queryParams);
 
 		return formatDrops(results, queryingAccount);
 	}

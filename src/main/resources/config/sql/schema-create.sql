@@ -813,15 +813,6 @@ CREATE TABLE IF NOT EXISTS `seq` (
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- ----------------------------------------
--- TABLE 'account_read_drops'
--- ----------------------------------------
-CREATE TABLE IF NOT EXISTS `account_read_drops` (
-  `account_id` bigint(20) NOT NULL,
-  `droplet_id` bigint(20) NOT NULL,
-  UNIQUE KEY `droplet_id` (`droplet_id`,`account_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 -- ------------------------------------
 -- TABLE `river_droplet_comments`
 -- ------------------------------------
@@ -892,3 +883,21 @@ CREATE TABLE IF NOT EXISTS `river_rules` (
   PRIMARY KEY (`id`),
   KEY `idx_river_id` (`river_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- -----------------------------------------------------
+-- Table `river_droplets_read`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `river_droplets_read` (
+  `account_id` bigint(20) NOT NULL,
+  `rivers_droplets_id` bigint(20) NOT NULL,
+  UNIQUE KEY `idx_account_river_droplet_id` (`account_id`,`rivers_droplets_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Maintains the list of read river drops';
+
+-- -----------------------------------------------------
+-- Table `bucket_droplets_read`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `bucket_droplets_read` (
+  `account_id` bigint(20) NOT NULL,
+  `buckets_droplets_id` bigint(20) NOT NULL,
+  UNIQUE KEY `idx_account_bucket_droplet_id` (`account_id`,`buckets_droplets_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Maintains the list of read bucket drops';

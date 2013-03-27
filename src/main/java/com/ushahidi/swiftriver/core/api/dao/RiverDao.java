@@ -16,8 +16,8 @@
  */
 package com.ushahidi.swiftriver.core.api.dao;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -36,26 +36,28 @@ public interface RiverDao extends GenericDao<River> {
 	public River findByName(String name);	
 
 	/**
-	 * Get list of drops from the given river.
+	 * Get list of drops from the river with the ID specified in <code>id</code>
+	 * using the parameters specified in <code>params</code>.
+	 * 
+	 * The list of possible keys for the <code>params</code> {@link Map} are:
+	 * <ul>
+	 * <li>dropCount</li>
+	 * <li>page</li>
+	 * <li>sinceId</li>
+	 * <li>maxId</code>
+	 * <li>channelIds</code>
+	 * <li>channelList</code>
+	 * <li>dateFrom</code>
+	 * <li>dateTo</code>
+	 * <li>isRead</code>
+	 * </ul>
 	 * 
 	 * @param id
-	 * @param maxId
-	 * @param dropCount
+	 * @param params Key/value store of parameters
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Long maxId, int page, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount);
-	
-	/**
-	 * Get list of drops from the given river with an id after the the given since_id
-	 * 
-	 * @param id
-	 * @param maxId
-	 * @param dropCount
-	 * @param queryingAccount
-	 * @return
-	 */
-	public List<Drop> getDropsSince(Long id, Long sinceId, int dropCount, List<String> channelList, List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo, Account queryingAccount);
+	public List<Drop> getDrops(Long id, Map<String, Object> params, Account queryingAccount);
 	
 	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>

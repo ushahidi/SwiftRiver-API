@@ -25,10 +25,13 @@ import java.util.Map;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
@@ -57,6 +60,13 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	
 	@Autowired
 	private DropDao dropDao;
+	
+	private NamedParameterJdbcTemplate jdbcTemplate;
+	
+	@Autowired
+	public void setDataSource(DataSource dataSource) {
+		jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	}
 	
 	/*
 	 * (non-Javadoc)
@@ -184,22 +194,23 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		sql += "`droplet_content`, `droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
 		sql += "`user_scores`.`score` AS `user_score`, `links`.`id` AS `original_url_id`, ";
-		sql += "`links`.`url` AS `original_url`, `comment_count` ";
+		sql += "`links`.`url` AS `original_url`, `comment_count`, `bucket_droplets_read`.`buckets_droplets_id` AS `drop_read` ";
 		sql += "FROM `buckets_droplets` ";
 		sql += "INNER JOIN `droplets` ON (`buckets_droplets`.`droplet_id` = `droplets`.`id`) ";
 		sql += "INNER JOIN `identities` ON (droplets.identity_id = `identities`.`id`) ";
 		sql += "LEFT JOIN `droplet_scores` AS `user_scores` ON (`user_scores`.`droplet_id` = `droplets`.`id` AND `user_scores`.`user_id` = :userId) ";
 		sql += "LEFT JOIN `links` ON (`droplets`.`original_url` = `links`.`id`) ";
+		sql += "LEFT JOIN `bucket_droplets_read` ON (`bucket_droplets_read`.`buckets_droplets_id` = `buckets_droplets`.`id` AND `bucket_droplets_read`.`account_id` = :accountId) ";
 		sql += "WHERE `buckets_droplets`.`droplet_date_added` > '0000-00-00 00:00:00' ";
 		sql += "AND `buckets_droplets`.`bucket_id` = :bucketId ";
 		
 		// Check for channel parameter
 		if (requestParams.containsKey("channels")) {
-			sql += "AND droplets.channel IN :channels ";
+			sql += "AND `droplets`.`channel` IN (:channels) ";
 		}
 		
 		if (requestParams.containsKey("photos")) {
-			sql += "AND droplets.droplet_image > 0";
+			sql += "AND `droplets`.`droplet_image` > 0";
 		}
 		
 		// Check for since_id
@@ -217,47 +228,46 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
 		sql += String.format("LIMIT %d OFFSET %d", dropCount, ((page - 1) * dropCount));
-		
 
-		Query query = this.em.createNativeQuery(sql);
-		query.setParameter("bucketId", bucketId);
-		query.setParameter("userId", account.getId());
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("bucketId", bucketId);
+		params.addValue("userId", account.getOwner().getId());
+		params.addValue("accountId", account.getId());
 
 		if (requestParams.containsKey("channels")) {
 			List<String> channels = (List<String>) requestParams.get("channels");
-			query.setParameter("channels", channels);
+			params.addValue("channels", channels);
 		}
 		
 		List<Drop> drops = new ArrayList<Drop>();
 
-		for (Object row: query.getResultList()) {
-			Object[] rowArray = (Object[]) row;
-
+		for (Map<String, Object> row: jdbcTemplate.queryForList(sql, params)) {
 			Drop drop = new Drop();
 			
 			// Set the drop properties
-			drop.setId(((BigInteger)rowArray[0]).longValue());
-			drop.setTitle((String) rowArray[1]);
-			drop.setContent((String) rowArray[2]);
-			drop.setChannel((String) rowArray[3]);
+			drop.setId(((BigInteger) row.get("id")).longValue());
+			drop.setTitle((String) row.get("droplet_title"));
+			drop.setContent((String) row.get("droplet_content"));
+			drop.setChannel((String) row.get("channel"));
 			
 			Identity identity = new Identity();
-			identity.setId(((BigInteger) rowArray[4]).longValue());
-			identity.setName((String) rowArray[5]);
-			identity.setAvatar((String) rowArray[6]);
+			identity.setId(((BigInteger) row.get("identity_id")).longValue());
+			identity.setName((String) row.get("identity_name"));
+			identity.setAvatar((String) row.get("identity_avatar"));
 
 			drop.setIdentity(identity);
 
-			drop.setDatePublished((Date)rowArray[7]);
-			drop.setOriginalId((String) rowArray[8]);
+			drop.setDatePublished((Date) row.get("droplet_date_pub"));
+			drop.setOriginalId((String) row.get("droplet_orig_id"));
 			
-			if (rowArray[10] != null) {
+			if (row.get("original_url_id") != null) {
 				Link originalUrl = new Link();
-				originalUrl.setId(((BigInteger) rowArray[10]).longValue());
-				originalUrl.setUrl((String) rowArray[11]);
+				originalUrl.setId(((BigInteger) row.get("original_url_id")).longValue());
+				originalUrl.setUrl((String) row.get("original_url"));
 			}
 
-			drop.setCommentCount((Integer) rowArray[12]);
+			drop.setCommentCount((Integer) row.get("comment_count"));
+			drop.setRead((Long) row.get("drop_read") != null);
 
 			drops.add(drop);
 		}
