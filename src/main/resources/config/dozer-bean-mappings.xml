@@ -80,5 +80,45 @@
 			<b>options</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.FormValueDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.RiverDropForm</class-b>
+
+		<field>
+			<a>id</a>
+			<b>form.id</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.FormValueDTO.FormFieldValue</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.RiverDropFormField</class-b>
+
+		<field>
+			<a>id</a>
+			<b>field.id</b>
+		</field>
+		
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
+			<a>value</a>
+			<b>value</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO.FormFieldValue</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.RiverDropFormField</class-b>
+
+		<field>
+			<a>id</a>
+			<b>field.id</b>
+		</field>
+		
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
+			<a>value</a>
+			<b>value</b>
+		</field>
+	</mapping>
 
 </mappings> 

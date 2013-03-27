@@ -36,24 +36,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
-import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
-import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
-import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -240,7 +242,8 @@ public class RiversController extends AbstractController {
 	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id,
 			@PathVariable Long collaboratorId, Principal principal) {
-		riverService.deleteCollaborator(id, collaboratorId, principal.getName());
+		riverService
+				.deleteCollaborator(id, collaboratorId, principal.getName());
 	}
 
 	/**
@@ -437,7 +440,7 @@ public class RiversController extends AbstractController {
 	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
 		riverService.deleteDrop(id, dropId);
 	}
-	
+
 	/**
 	 * Handler for adding a tag to a drop that is in a river
 	 * 
@@ -448,13 +451,16 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/tags", method = RequestMethod.POST)
 	@ResponseBody
-	public GetTagDTO addDropTag(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateTagDTO createDTO, Principal principal) {
-		return riverService.addDropTag(id, dropId, createDTO, principal.getName());
+	public GetTagDTO addDropTag(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreateTagDTO createDTO,
+			Principal principal) {
+		return riverService.addDropTag(id, dropId, createDTO,
+				principal.getName());
 	}
-	
+
 	/**
-	 * Handler for deleting a tag from a drop that is in a river 
+	 * Handler for deleting a tag from a drop that is in a river
+	 * 
 	 * @param id
 	 * @param dropId
 	 * @param linkId
@@ -466,7 +472,6 @@ public class RiversController extends AbstractController {
 		riverService.deleteDropTag(id, dropId, tagId, principal.getName());
 	}
 
-
 	/**
 	 * Handler for adding a link to a drop that is in a river
 	 * 
@@ -477,9 +482,11 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/links", method = RequestMethod.POST)
 	@ResponseBody
-	public GetLinkDTO addDropLink(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateLinkDTO createDTO, Principal principal) {
-		return riverService.addDropLink(id, dropId, createDTO, principal.getName());
+	public GetLinkDTO addDropLink(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreateLinkDTO createDTO,
+			Principal principal) {
+		return riverService.addDropLink(id, dropId, createDTO,
+				principal.getName());
 	}
 
 	/**
@@ -491,15 +498,15 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/links/{linkId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropLink(@PathVariable Long id, @PathVariable Long dropId, 
-			@PathVariable Long linkId, Principal principal) {
+	public void deleteDropLink(@PathVariable Long id,
+			@PathVariable Long dropId, @PathVariable Long linkId,
+			Principal principal) {
 		riverService.deleteDropLink(id, dropId, linkId, principal.getName());
 	}
 
-	
 	/**
 	 * Handler for adding a place to a drop
-	 *  
+	 * 
 	 * @param id
 	 * @param dropId
 	 * @param createDTO
@@ -507,9 +514,11 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/places", method = RequestMethod.POST)
 	@ResponseBody
-	public GetPlaceDTO addDropPlace(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreatePlaceDTO createDTO, Principal principal) {
-		return riverService.addDropPlace(id, dropId, createDTO, principal.getName());
+	public GetPlaceDTO addDropPlace(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreatePlaceDTO createDTO,
+			Principal principal) {
+		return riverService.addDropPlace(id, dropId, createDTO,
+				principal.getName());
 	}
 
 	/**
@@ -521,8 +530,9 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}/places/{placeId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropPlace(@PathVariable Long id, @PathVariable Long dropId,
-			@PathVariable Long placeId, Principal principal) {
+	public void deleteDropPlace(@PathVariable Long id,
+			@PathVariable Long dropId, @PathVariable Long placeId,
+			Principal principal) {
 		riverService.deleteDropPlace(id, dropId, placeId, principal.getName());
 	}
 
@@ -537,12 +547,14 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.POST)
 	@ResponseBody
-	public GetCommentDTO addDropComment(@PathVariable Long id, @PathVariable Long dropId, 
-			@RequestBody CreateCommentDTO createDTO, Principal principal) {
-		
-		return riverService.addDropComment(id, dropId, createDTO, principal.getName());
+	public GetCommentDTO addDropComment(@PathVariable Long id,
+			@PathVariable Long dropId, @RequestBody CreateCommentDTO createDTO,
+			Principal principal) {
+
+		return riverService.addDropComment(id, dropId, createDTO,
+				principal.getName());
 	}
-	
+
 	/**
 	 * Handler for getting the comments of bucket drop
 	 * 
@@ -552,8 +564,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/drops/{dropId}/comments", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetCommentDTO> getDropComments(@PathVariable Long id, @PathVariable Long dropId,
-			Principal principal) {
+	public List<GetCommentDTO> getDropComments(@PathVariable Long id,
+			@PathVariable Long dropId, Principal principal) {
 		return riverService.getDropComments(id, dropId, principal.getName());
 	}
 
@@ -567,9 +579,60 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "{id}/drops/{dropId}/comments/{commentId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDropComment(@PathVariable Long id, @PathVariable Long dropId, 
-			@PathVariable Long commentId, Principal principal) {
-		riverService.deleteDropComment(id, dropId, commentId, principal.getName());
+	public void deleteDropComment(@PathVariable Long id,
+			@PathVariable Long dropId, @PathVariable Long commentId,
+			Principal principal) {
+		riverService.deleteDropComment(id, dropId, commentId,
+				principal.getName());
+	}
+
+	/**
+	 * Handler for adding a form to a river drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{riverId}/drops/{dropId}/forms", method = RequestMethod.POST)
+	@ResponseBody
+	public FormValueDTO addDropForm(@PathVariable Long riverId,
+			@PathVariable Long dropId,
+			@RequestBody FormValueDTO createDTO, Principal principal) {
+		return riverService.addDropForm(riverId, dropId, createDTO, principal.getName());
+	}
+
+	/**
+	 * Handler for modifying form values for a river drop.
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param formId  
+	 * @return
+	 */
+	@RequestMapping(value = "/{riverId}/drops/{dropId}/forms/{formId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public FormValueDTO modifyDropForm(Principal principal,
+			@PathVariable Long riverId,
+			@PathVariable Long dropId,
+			@PathVariable Long formId,
+			@RequestBody ModifyFormValueDTO modifyFormTo) {
+		return riverService.modifyDropForm(riverId, dropId, formId, modifyFormTo, principal.getName());
 	}
 	
+	/**
+	 * Handler for deleting a form from a river drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param commentId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{riverId}/drops/{dropId}/forms/{formId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropForm(@PathVariable Long riverId,
+			@PathVariable Long dropId, @PathVariable Long formId,
+			Principal principal) {
+		riverService.deleteDropForm(riverId, dropId, formId, principal.getName());
+	}
 }

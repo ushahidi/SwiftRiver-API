@@ -6,9 +6,6 @@ import static org.junit.Assert.assertNull;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,9 +17,6 @@ public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 	@Autowired
 	AccountDao accountDao;
 	
-	@PersistenceContext
-	protected EntityManager em;
-
 	@Test
 	public void findById() {
 		Account account = accountDao.findById(5L);

@@ -347,10 +347,24 @@ INSERT INTO user_tokens (id, user_id, token, created, expires) VALUES
 -- Data for table forms
 -- -----------------------------------------------------
 INSERT INTO forms (id, account_id, name) VALUES
-(1, 3, 'A custom form');
+(1, 3, 'Dangerous Speech Categorization');
 
 -- -----------------------------------------------------
--- Data for table forms
+-- Data for table form_fields
 -- -----------------------------------------------------
 INSERT INTO form_fields (id, form_id, title, description, type, required, options) VALUES
-(1, 1, 'Test Field', 'Field Description', 'select', 0, '["Option 1"]');
+(1, 1, 'Language', 'Language the audience is being addressed in', 'multiple', 0, '["English","Swahili","Luo","Kalenjin","Luhya","Kikuyu","Sheng","Other"]'),
+(2, 1, 'Speaker', 'Description of the speaker', 'select', 0, '["Politician","Journalist","Blogger","Community Leader","Anonymous Commenter","Public Figure"]'),
+(3, 1, 'Target Audience', 'Audience most likely to react to this statement/article', 'text', 0, '[]');
+
+-- -----------------------------------------------------
+-- Data for table river_droplet_form
+-- -----------------------------------------------------
+INSERT INTO river_droplet_form (id, river_droplets_id, form_id) VALUES
+(1, 2, 1);
+
+-- -----------------------------------------------------
+-- Data for table river_droplet_form_field
+-- -----------------------------------------------------
+INSERT INTO river_droplet_form_field (id, droplet_form_id, field_id, value) VALUES
+(1, 1, 1, '["English"]');

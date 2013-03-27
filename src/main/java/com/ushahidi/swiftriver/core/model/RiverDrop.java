@@ -61,6 +61,9 @@ public class RiverDrop {
 	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
 	private List<RiverDropComment> comments;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	private List<RiverDropForm> forms;
 
 	public long getId() {
 		return id;
@@ -124,6 +127,14 @@ public class RiverDrop {
 
 	public void setComments(List<RiverDropComment> comments) {
 		this.comments = comments;
+	}
+
+	public List<RiverDropForm> getForms() {
+		return forms;
+	}
+
+	public void setForms(List<RiverDropForm> forms) {
+		this.forms = forms;
 	}
 
 	

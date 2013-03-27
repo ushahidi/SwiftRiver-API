@@ -36,6 +36,7 @@ import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropFormDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
@@ -46,6 +47,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
@@ -56,6 +58,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
@@ -72,11 +75,12 @@ import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
+import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
-@Transactional(readOnly = true)
 @Service
+@Transactional(readOnly = true)
 public class RiverService {
 
 	/* Logger */
@@ -99,6 +103,9 @@ public class RiverService {
 
 	@Autowired
 	private RiverDropDao riverDropDao;
+	
+	@Autowired
+	private RiverDropFormDao riverDropFormDao;
 
 	@Autowired
 	private TagDao tagDao;
@@ -155,6 +162,10 @@ public class RiverService {
 
 	public void setRiverDropDao(RiverDropDao riverDropDao) {
 		this.riverDropDao = riverDropDao;
+	}
+
+	public void setRiverDropFormDao(RiverDropFormDao riverDropFormDao) {
+		this.riverDropFormDao = riverDropFormDao;
 	}
 
 	public void setTagDao(TagDao tagDao) {
@@ -939,12 +950,14 @@ public class RiverService {
 	 */
 	private RiverDrop getRiverDrop(Long dropId, River river) {
 		RiverDrop riverDrop = riverDropDao.findById(dropId);
+		
 		if (riverDrop == null
-				|| (riverDrop != null && !riverDrop.getRiver().equals(river))) {
+				|| !riverDrop.getRiver().equals(river)) {
 			throw new NotFoundException(
 					String.format("Drop %d does not exist in river %d", dropId,
 							river.getId()));
 		}
+		
 		return riverDrop;
 	}
 
@@ -1053,4 +1066,89 @@ public class RiverService {
 		}
 	}
 
+	/**
+	 * Add custom form fields to a drop
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public FormValueDTO addDropForm(Long riverId, Long dropId,
+			FormValueDTO createDTO, String authUser) {
+		
+		River river = getRiver(riverId);
+
+		if (!isOwner(river, authUser))
+			throw new ForbiddenException("Permission denied");
+		
+		RiverDrop drop = getRiverDrop(dropId, river);
+		
+		RiverDropForm dropForm = mapper.map(createDTO, RiverDropForm.class);
+		dropForm.setRiverDrop(drop);
+		riverDropFormDao.create(dropForm);
+		
+		return mapper.map(dropForm, FormValueDTO.class);
+	}
+
+	/**
+	 * Modify custom form fields in a drop.
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param formId
+	 * @param modifyFormTo
+	 * @param name
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public FormValueDTO modifyDropForm(Long riverId, Long dropId, Long formId,
+			ModifyFormValueDTO modifyFormTo, String authUser) {
+		
+		River river = getRiver(riverId);
+
+		if (!isOwner(river, authUser))
+			throw new ForbiddenException("Permission denied");
+		
+		RiverDrop drop = getRiverDrop(dropId, river);
+		
+		RiverDropForm dropForm = riverDropDao.findForm(drop, formId);
+
+		if (dropForm == null)
+			throw new NotFoundException("The specified form was not found");
+		
+		mapper.map(modifyFormTo, dropForm);
+		riverDropFormDao.update(dropForm);
+		
+		return mapper.map(dropForm, FormValueDTO.class);
+	}
+
+	/**
+	 * Remove custom fields from a drop
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param formId
+	 * @param name
+	 */
+	@Transactional(readOnly = false)
+	public void deleteDropForm(Long riverId, Long dropId, Long formId,
+			String authUser) {
+		River river = getRiver(riverId);
+
+		if (!isOwner(river, authUser))
+			throw new ForbiddenException("Permission denied");
+		
+		RiverDrop drop = getRiverDrop(dropId, river);
+		
+		RiverDropForm dropForm = riverDropDao.findForm(drop, formId);
+
+		if (dropForm == null)
+			throw new NotFoundException("The specified form was not found");
+		
+		riverDropFormDao.delete(dropForm);
+	}
+	
 }

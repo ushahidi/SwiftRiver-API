@@ -39,10 +39,10 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").exists());
 	}
-	
+
 	@Test
 	public void createDuplicateForm() throws Exception {
-		String postBody = "{\"name\":\"A custom form\",\"fields\":[{\"title\":\"Target Audience\",\"description\":\"Audience most likely to react to this statement/article\",\"type\":\"text\",\"required\":true}]}";
+		String postBody = "{\"name\":\"Dangerous Speech Categorization\",\"fields\":[{\"title\":\"Target Audience\",\"description\":\"Audience most likely to react to this statement/article\",\"type\":\"text\",\"required\":true}]}";
 
 		this.mockMvc
 				.perform(
@@ -70,11 +70,14 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.message").exists())
 				.andExpect(jsonPath("$.errors").exists())
 				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("fields[0].title"))
+				.andExpect(
+						jsonPath("$.errors[0].field").value("fields[0].title"))
 				.andExpect(jsonPath("$.errors[0].code").value("missing"))
-				.andExpect(jsonPath("$.errors[1].field").value("fields[0].type"))
+				.andExpect(
+						jsonPath("$.errors[1].field").value("fields[0].type"))
 				.andExpect(jsonPath("$.errors[1].code").value("missing"))
-				.andExpect(jsonPath("$.errors[2].field").value("fields[1].type"))
+				.andExpect(
+						jsonPath("$.errors[2].field").value("fields[1].type"))
 				.andExpect(jsonPath("$.errors[2].code").value("invalid"));
 	}
 
@@ -126,17 +129,19 @@ public class FormsControllerTest extends AbstractControllerTest {
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$.id").value("1"))
-				.andExpect(jsonPath("$.name").value("A custom form"))
+				.andExpect(
+						jsonPath("$.name").value(
+								"Dangerous Speech Categorization"))
 				.andExpect(jsonPath("$.account.id").value(3))
 				.andExpect(jsonPath("$.account.account_path").value("user1"))
 				.andExpect(jsonPath("$.fields[0].id").value("1"))
-				.andExpect(jsonPath("$.fields[0].title").value("Test Field"))
+				.andExpect(jsonPath("$.fields[0].title").value("Language"))
 				.andExpect(
 						jsonPath("$.fields[0].description").value(
-								"Field Description"))
-				.andExpect(jsonPath("$.fields[0].type").value("select"))
+								"Language the audience is being addressed in"))
+				.andExpect(jsonPath("$.fields[0].type").value("multiple"))
 				.andExpect(jsonPath("$.fields[0].required").value(false))
-				.andExpect(jsonPath("$.fields[0].options[0]").value("Option 1"));
+				.andExpect(jsonPath("$.fields[0].options[0]").value("English"));
 	}
 
 	@Test

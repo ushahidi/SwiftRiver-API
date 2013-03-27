@@ -29,16 +29,18 @@ import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
+import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.RiverDropLink;
 import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
-public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implements RiverDropDao {
+public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop>
+		implements RiverDropDao {
 
 	public JpaRiverDropDao() {
-		
+
 		// Query for retrieving tag metadata
 		tagsQuery = "SELECT rivers_droplets.id AS droplet_id, tag_id AS id, tag, tag_canonical, tag_type ";
 		tagsQuery += "FROM droplets_tags  ";
@@ -55,7 +57,7 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		tagsQuery += "INNER JOIN tags ON (tags.id = tag_id)  ";
 		tagsQuery += "WHERE rivers_droplets_id IN :drop_ids  ";
 		tagsQuery += "AND deleted = 0 ";
-		
+
 		// Query for retrieving link metadata
 		linksQuery = "SELECT rivers_droplets.id AS droplet_id, link_id AS id, url ";
 		linksQuery += "FROM droplets_links  ";
@@ -72,13 +74,13 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		linksQuery += "INNER JOIN links ON (links.id = link_id)  ";
 		linksQuery += "WHERE rivers_droplets_id IN :drop_ids  ";
 		linksQuery += "AND deleted = 0 ";
-		
+
 		// Query for retrieving the drop image
 		dropImageQuery = "SELECT rivers_droplets.id, droplet_image FROM droplets ";
 		dropImageQuery += "INNER JOIN rivers_droplets ON (rivers_droplets.droplet_id = droplets.id) ";
 		dropImageQuery += "WHERE rivers_droplets.id IN :drop_ids ";
 		dropImageQuery += "AND droplets.droplet_image > 0";
-		
+
 		// Query for retrieving media metadata
 		mediaQuery = "SELECT rivers_droplets.id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, ";
 		mediaQuery += "media_thumbnails.url AS thumbnail_url ";
@@ -99,7 +101,7 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		mediaQuery += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
 		mediaQuery += "WHERE rivers_droplets_id IN :drop_ids ";
 		mediaQuery += "AND deleted = 0; ";
-		
+
 		// Query for retriving place metadata
 		placesQuery = "SELECT rivers_droplets.id AS droplet_id, place_id AS id, place_name, place_name_canonical, ";
 		placesQuery += "places.hash AS place_hash, latitude, longitude ";
@@ -118,29 +120,36 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		placesQuery += "INNER JOIN places ON (places.id = place_id) ";
 		placesQuery += "WHERE rivers_droplets_id IN :drop_ids ";
 		placesQuery += "AND deleted = 0 ";
-		
+
 		// Query for retrieving the RiverDrop id
 		contextDropQuery = "SELECT id, droplet_id FROM rivers_droplets WHERE id IN :dropIds";
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findTag(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Tag)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findTag(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public RiverDropTag findTag(RiverDrop riverDrop, Tag tag) {
 		String sql = "FROM RiverDropTag WHERE riverDrop = :riverDrop AND tag = :tag";
-	
-		TypedQuery<RiverDropTag> query = em.createQuery(sql, RiverDropTag.class);
+
+		TypedQuery<RiverDropTag> query = em
+				.createQuery(sql, RiverDropTag.class);
 		query.setParameter("riverDrop", riverDrop);
 		query.setParameter("tag", tag);
-	
+
 		List<RiverDropTag> dropTags = query.getResultList();
 		return dropTags.isEmpty() ? null : dropTags.get(0);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addTag(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Tag)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addTag(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public void addTag(RiverDrop riverDrop, Tag tag) {
 		RiverDropTag riverDropTag = new RiverDropTag();
@@ -148,14 +157,17 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		riverDropTag.setRiverDrop(riverDrop);
 		riverDropTag.setTag(tag);
 		riverDropTag.setDeleted(false);
-		
+
 		this.em.persist(riverDropTag);
-		
+
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteTag(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Tag)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteTag(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public boolean deleteTag(RiverDrop riverDrop, Tag tag) {
 		RiverDropTag riverDropTag = findTag(riverDrop, tag);
@@ -170,7 +182,7 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 			riverDropTag.setRiverDrop(riverDrop);
 			riverDropTag.setTag(tag);
 			riverDropTag.setDeleted(true);
-			
+
 			this.em.persist(riverDropTag);
 		}
 
@@ -179,22 +191,31 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findPlace(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Place)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findPlace(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public RiverDropPlace findPlace(RiverDrop riverDrop, Place place) {
 		String sql = "FROM RiverDropPlace WHERE riverDrop = :riverDrop AND place = :place";
-	
-		TypedQuery<RiverDropPlace> query = em.createQuery(sql, RiverDropPlace.class);
+
+		TypedQuery<RiverDropPlace> query = em.createQuery(sql,
+				RiverDropPlace.class);
 		query.setParameter("riverDrop", riverDrop);
 		query.setParameter("place", place);
-	
+
 		List<RiverDropPlace> dropPlaces = query.getResultList();
 		return dropPlaces.isEmpty() ? null : dropPlaces.get(0);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addPlace(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Place)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addPlace(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public void addPlace(RiverDrop riverDrop, Place place) {
 		RiverDropPlace riverDropPlace = new RiverDropPlace();
@@ -202,13 +223,17 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		riverDropPlace.setRiverDrop(riverDrop);
 		riverDropPlace.setPlace(place);
 		riverDropPlace.setDeleted(false);
-		
+
 		this.em.persist(riverDropPlace);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deletePlace(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Place)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deletePlace(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public boolean deletePlace(RiverDrop riverDrop, Place place) {
 		RiverDropPlace riverDropPlace = findPlace(riverDrop, place);
@@ -223,7 +248,7 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 			riverDropPlace.setRiverDrop(riverDrop);
 			riverDropPlace.setPlace(place);
 			riverDropPlace.setDeleted(true);
-			
+
 			this.em.persist(riverDropPlace);
 		}
 
@@ -232,22 +257,31 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findLink(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Link)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findLink(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public RiverDropLink findLink(RiverDrop riverDrop, Link link) {
 		String sql = "FROM RiverDropLink WHERE riverDrop = :riverDrop AND link = :link";
-	
-		TypedQuery<RiverDropLink> query = em.createQuery(sql, RiverDropLink.class);
+
+		TypedQuery<RiverDropLink> query = em.createQuery(sql,
+				RiverDropLink.class);
 		query.setParameter("riverDrop", riverDrop);
 		query.setParameter("link", link);
-	
+
 		List<RiverDropLink> dropLinks = query.getResultList();
 		return dropLinks.isEmpty() ? null : dropLinks.get(0);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addLink(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Link)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addLink(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public void addLink(RiverDrop riverDrop, Link link) {
 		RiverDropLink riverDropLink = new RiverDropLink();
@@ -255,13 +289,17 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		riverDropLink.setRiverDrop(riverDrop);
 		riverDropLink.setLink(link);
 		riverDropLink.setDeleted(false);
-		
+
 		this.em.persist(riverDropLink);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteLink(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Link)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteLink(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public boolean deleteLink(RiverDrop riverDrop, Link link) {
 		RiverDropLink riverDropLink = findLink(riverDrop, link);
@@ -276,7 +314,7 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 			riverDropLink.setRiverDrop(riverDrop);
 			riverDropLink.setLink(link);
 			riverDropLink.setDeleted(true);
-			
+
 			this.em.persist(riverDropLink);
 		}
 
@@ -285,7 +323,11 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addComment(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#addComment(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Account, java.lang.String)
 	 */
 	public RiverDropComment addComment(RiverDrop riverDrop, Account account,
 			String commentText) {
@@ -295,19 +337,34 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop> implem
 		dropComment.setAccount(account);
 		dropComment.setCommentText(commentText);
 		dropComment.setDateAdded(new Date());
-		
+
 		this.em.persist(dropComment);
 		return dropComment;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteComment(java.lang.Long)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#deleteComment(java.
+	 * lang.Long)
 	 */
 	public boolean deleteComment(Long commentId) {
 		String sql = "DELETE FROM RiverDropComment WHERE id = ?1";
-		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;		
+		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findForm(com.ushahidi.swiftriver.core.model.RiverDrop, java.lang.Long)
+	 */
+	@Override
+	public RiverDropForm findForm(RiverDrop drop, Long formId) {
+		for (RiverDropForm f : drop.getForms()) {
+			if (f.getId().equals(formId)) {
+				return f;
+			}
+		}
+		return null;
+	}
 
 }

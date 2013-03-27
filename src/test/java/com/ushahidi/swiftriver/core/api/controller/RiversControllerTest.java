@@ -30,12 +30,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
 
 public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
-	@Transactional
 	public void createRiver() throws Exception {
 		String postBody = "{\"name\":\"Viva Riva\",\"description\":\"Like the movie\",\"public\":true}";
 
@@ -49,7 +47,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	@Transactional
 	public void createRiverWithoutQuota() throws Exception {
 		String postBody = "{\"name\":\"Viva Riva\",\"description\":\"Like the movie\",\"public\":true}";
 
@@ -61,7 +58,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	@Transactional
 	public void createRiverWithoutDuplicateName() throws Exception {
 		String postBody = "{\"name\":\"Public River 1\",\"description\":\"Like the movie\",\"public\":true}";
 
@@ -265,7 +261,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Transactional
 	public void deleteRiver() throws Exception {
 		this.mockMvc.perform(delete("/v1/rivers/1")).andExpect(status().isOk());
 	}
@@ -488,14 +483,12 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 * @throws Exception
 	 */
 	@Test
-	@Transactional
 	public void deleteFollower() throws Exception {
 		this.mockMvc.perform(delete("/v1/rivers/1/followers/4")).andExpect(
 				status().isOk());
 	}
 
 	@Test
-	@Transactional
 	public void createChannel() throws Exception {
 		String postBody = "{\"channel\":\"rss\",\"parameters\":\"Like the movie\"}";
 
@@ -509,7 +502,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	@Transactional
 	public void deleteChannel() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/rivers/1/channels/3").contentType(
@@ -518,7 +510,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	@Transactional
 	public void modifyChannel() throws Exception {
 		String putBody = "{\"channel\":\"rss\",\"active\":true,\"parameters\":\"Rike the movie\"}";
 
@@ -535,7 +526,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	@Transactional
 	public void modifyRiver() throws Exception {
 		String putBody = "{\"name\":\"doof twaf\",\"description\":\"asi asi\",\"public\":true}";
 
@@ -552,7 +542,6 @@ public class RiversControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	@Transactional
 	public void modifyRiverPartially() throws Exception {
 		String putBody = "{\"public\":false}";
 
@@ -595,88 +584,241 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$.message").exists())
 				.andExpect(jsonPath("$.errors").isArray());
 	}
-	
+
 	@Test
 	public void addDropTag() throws Exception {
 		String tag = "{\"tag\": \"Samuel L. Jackson\", \"tag_type\":\"person\"}";
-		this.mockMvc.perform(post("/v1/rivers/1/drops/1/tags")
-				.content(tag)
-				.contentType(MediaType.APPLICATION_JSON)
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.tag").value("Samuel L. Jackson"));
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/drops/1/tags").content(tag)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.tag").value("Samuel L. Jackson"));
 	}
-	
+
 	@Test
 	public void deleteDropTag() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/tags/2")
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk());
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/1/tags/2").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
 	}
 
 	@Test
 	public void addDropLink() throws Exception {
 		String link = "{\"url\": \"http://www.mashada.com\"}";
-		this.mockMvc.perform(post("/v1/rivers/1/drops/1/links")
-				.content(link)
-				.contentType(MediaType.APPLICATION_JSON)
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.url").value("http://www.mashada.com"));
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/drops/1/links").content(link)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.url").value("http://www.mashada.com"));
 	}
 
 	@Test
 	public void deleteDropLink() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/links/2")
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk());
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/1/links/2").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
 	}
-	
+
 	@Test
 	public void addDropPlace() throws Exception {
 		String place = "{\"name\": \"Mombasa\", \"latitude\":-4.05466, \"longitude\": 39.6636 }";
 
-		this.mockMvc.perform(post("/v1/rivers/1/drops/1/places")
-				.content(place)
-				.contentType(MediaType.APPLICATION_JSON)
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Mombasa"))
-			.andExpect(jsonPath("$.latitude").value(-4.05466));
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/drops/1/places").content(place)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.name").value("Mombasa"))
+				.andExpect(jsonPath("$.latitude").value(-4.05466));
 	}
-	
+
 	@Test
 	public void deleteDropPlace() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/places/2")
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk());
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/1/places/2").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
 	}
 
 	@Test
 	public void addDropComment() throws Exception {
 		String comment = "{\"comment_text\": \"River 1 Drop 1 Comment\"}";
 
-		this.mockMvc.perform(post("/v1/rivers/1/drops/1/comments")
-				.principal(getAuthentication("user1"))
-				.content(comment)
-				.contentType(MediaType.APPLICATION_JSON))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.comment_text").value("River 1 Drop 1 Comment"));
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/drops/1/comments")
+								.principal(getAuthentication("user1"))
+								.content(comment)
+								.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk())
+				.andExpect(
+						jsonPath("$.comment_text").value(
+								"River 1 Drop 1 Comment"));
 	}
 
 	@Test
 	public void deleteDropComment() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1/drops/1/comments/3")
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk());
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/1/comments/3").principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
+	}
+
+	@Test
+	public void getDropComments() throws Exception {
+		this.mockMvc
+				.perform(
+						get("/v1/rivers/1/drops/1/comments").principal(
+								getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.[*]").isArray());
+	}
+
+	@Test
+	public void createDropForm() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/rivers/1/drops/1/forms").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value("1234"))
+				.andExpect(jsonPath("$.values[0].id").value("13"));
+	}
+
+	@Test
+	public void createDropFormWithoutPermission() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc.perform(
+				post("/v1/rivers/1/drops/1/forms").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void createDropFormInNonExistentRiver() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc.perform(
+				post("/v1/rivers/9999/drops/1/forms").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void createDropFormInNonExistentDrop() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc.perform(
+				post("/v1/rivers/1/drops/9999/forms").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyDropForm() throws Exception {
+		String body = "{\"values\":[{\"id\":1,\"value\":[\"French\"]}]}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/rivers/1/drops/2/forms/1").content(body)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.values[0].value").value("French"));
+	}
+
+	@Test
+	public void modifyDropFormWithoutPermission() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1/drops/2/forms/1").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void modifyDropFormInNonExistentRiver() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/9999/drops/2/forms/1").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyDropFormInNonExistentDrop() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1/drops/9999/forms/1").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyDropFormInNonExistentForm() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/rivers/1/drops/2/forms/9999").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void deleteDropForm() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/2/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
+	}
+
+	@Test
+	public void deleteDropFormWithoutPermsion() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/2/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user3"))).andExpect(
+				status().isForbidden());
 	}
 	
 	@Test
-	public void getDropComments() throws Exception {
-		this.mockMvc.perform(get("/v1/rivers/1/drops/1/comments")
-				.principal(getAuthentication("user1")))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.[*]").isArray());
+	public void deleteDropFormFromNonExistentRiver() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/9999/drops/2/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isNotFound());
 	}
-
+	
+	@Test
+	public void deleteDropFormForNonExistentDrop() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/9999/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void deleteDropFormForNonExistentForm() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/rivers/1/drops/2/forms/9999").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isNotFound());
+	}
 }

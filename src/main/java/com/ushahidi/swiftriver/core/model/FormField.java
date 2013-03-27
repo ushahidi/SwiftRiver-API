@@ -117,16 +117,23 @@ public class FormField {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null)
-            return false;
-        if (obj == this)
-            return true;
-        if (obj.getClass() != getClass())
-            return false;
+	        return false;
+	    if (obj == this)
+	        return true;
+	    if (obj.getClass() != getClass())
+	        return false;
+	
+	    FormField other = (FormField) obj;
+	    return new EqualsBuilder().
+	        append(title, other.title).
+	        append(type, other.type).
+	        isEquals();
+	}
 
-        FormField other = (FormField) obj;
-        return new EqualsBuilder().
-            append(title, other.title).
-            append(type, other.type).
-            isEquals();
+	@Override
+	public String toString() {
+		return "FormField [id=" + id + ", form=" + form + ", title=" + title
+				+ ", description=" + description + ", type=" + type
+				+ ", required=" + required + ", options=" + options + "]";
 	}
 }

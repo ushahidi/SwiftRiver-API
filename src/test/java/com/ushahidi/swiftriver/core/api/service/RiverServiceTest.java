@@ -20,9 +20,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,10 +36,12 @@ import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropFormDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
@@ -49,6 +51,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -59,7 +62,10 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
+import com.ushahidi.swiftriver.core.model.RiverDropForm;
+import com.ushahidi.swiftriver.core.model.RiverDropFormField;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.support.MapperFactory;
 
 public class RiverServiceTest {
 
@@ -73,11 +79,13 @@ public class RiverServiceTest {
 
 	private Mapper mockMapper;
 
-	private Mapper mapper;
+	private final static Mapper mapper = MapperFactory.getMapper();
 
 	private RiverService riverService;
 
 	private RiverDropDao mockRiverDropDao;
+
+	private RiverDropFormDao mockRiverDropFormDao;
 
 	private TagDao mockTagDao;
 
@@ -94,11 +102,11 @@ public class RiverServiceTest {
 		mockChannelDao = mock(ChannelDao.class);
 		mockRiverCollaboratorDao = mock(RiverCollaboratorDao.class);
 		mockRiverDropDao = mock(RiverDropDao.class);
+		mockRiverDropFormDao = mock(RiverDropFormDao.class);
 		mockTagDao = mock(TagDao.class);
 		mockLinkDao = mock(LinkDao.class);
 		mockPlaceDao = mock(PlaceDao.class);
 		mockMapper = mock(Mapper.class);
-		mapper = new DozerBeanMapper();
 		mockAmqpTemplate = mock(AmqpTemplate.class);
 
 		riverService = new RiverService();
@@ -107,6 +115,7 @@ public class RiverServiceTest {
 		riverService.setChannelDao(mockChannelDao);
 		riverService.setRiverCollaboratorDao(mockRiverCollaboratorDao);
 		riverService.setRiverDropDao(mockRiverDropDao);
+		riverService.setRiverDropFormDao(mockRiverDropFormDao);
 		riverService.setTagDao(mockTagDao);
 		riverService.setLinkDao(mockLinkDao);
 		riverService.setPlaceDao(mockPlaceDao);
@@ -293,7 +302,8 @@ public class RiverServiceTest {
 		assertEquals("the channel", notification.getChannel());
 		assertEquals("the parameters", notification.getParameters());
 		assertEquals(1L, notification.getRiverId());
-		assertEquals("web.channel.the channel.delete", routingKeyArgument.getValue());
+		assertEquals("web.channel.the channel.delete",
+				routingKeyArgument.getValue());
 
 		verify(mockChannelDao).delete(channel);
 	}
@@ -630,5 +640,116 @@ public class RiverServiceTest {
 		assertEquals(2, filtered.size());
 		assertTrue(filtered.contains(ownedPrivateRiver));
 		assertTrue(filtered.contains(publicRiver));
+	}
+
+	@Test
+	public void addDropForm() {
+		Account account = new Account();
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(account);
+		RiverDrop drop = new RiverDrop();
+		drop.setRiver(river);
+
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockRiverDao.findById(anyLong())).thenReturn(river);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
+
+		FormValueDTO dto = new FormValueDTO();
+		dto.setId("1");
+		dto.setValues(new ArrayList<FormValueDTO.FormFieldValue>());
+		FormValueDTO.FormFieldValue value = new FormValueDTO.FormFieldValue();
+		value.setId("2");
+		value.setValue(Arrays.asList("Value 1", "Value 2"));
+		dto.getValues().add(value);
+
+		riverService.setMapper(mapper);
+
+		riverService.addDropForm(1L, 1L, dto, "user");
+
+		ArgumentCaptor<RiverDropForm> argument = ArgumentCaptor
+				.forClass(RiverDropForm.class);
+		verify(mockRiverDropFormDao).create(argument.capture());
+
+		RiverDropForm dropForm = argument.getValue();
+		assertNotNull(dropForm.getForm());
+		assertEquals(1L, ((Number) dropForm.getForm().getId()).longValue());
+		RiverDropFormField fieldValue = dropForm.getValues().get(0);
+		assertEquals(2L, ((Number) fieldValue.getField().getId().longValue()));
+		assertEquals("[\"Value 1\",\"Value 2\"]", fieldValue.getValue());
+	}
+	
+	@Test
+	public void modifyDropForm() {
+		Account account = new Account();
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(account);
+		RiverDrop drop = new RiverDrop();
+		drop.setRiver(river);
+		drop.setForms(new ArrayList<RiverDropForm>());
+		RiverDropForm form = new RiverDropForm();
+		form.setId(1L);
+		drop.getForms().add(form);
+
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockRiverDao.findById(anyLong())).thenReturn(river);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
+		when(mockRiverDropDao.findForm((RiverDrop)anyObject(), anyLong())).thenReturn(form);
+
+		ModifyFormValueDTO dto = new ModifyFormValueDTO();
+		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());
+		ModifyFormValueDTO.FormFieldValue value = new ModifyFormValueDTO.FormFieldValue();
+		value.setId("2");
+		value.setValue(Arrays.asList("Value 3", "Value 4"));
+		dto.getValues().add(value);
+
+		riverService.setMapper(mapper);
+
+		riverService.modifyDropForm(1L, 1L, 1L, dto, "user");
+
+		ArgumentCaptor<RiverDropForm> argument = ArgumentCaptor
+				.forClass(RiverDropForm.class);
+		verify(mockRiverDropFormDao).update(argument.capture());
+
+		RiverDropForm dropForm = argument.getValue();
+		RiverDropFormField fieldValue = dropForm.getValues().get(0);
+		assertEquals("[\"Value 3\",\"Value 4\"]", fieldValue.getValue());
+	}
+	
+	@Test
+	public void deleteDropForm() {
+		Account account = new Account();
+		River river = new River();
+		river.setId(1L);
+		river.setAccount(account);
+		RiverDrop drop = new RiverDrop();
+		drop.setRiver(river);
+		drop.setForms(new ArrayList<RiverDropForm>());
+		RiverDropForm form = new RiverDropForm();
+		form.setId(1L);
+		drop.getForms().add(form);
+
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockRiverDao.findById(anyLong())).thenReturn(river);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
+		when(mockRiverDropDao.findForm((RiverDrop)anyObject(), anyLong())).thenReturn(form);
+
+		ModifyFormValueDTO dto = new ModifyFormValueDTO();
+		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());
+		ModifyFormValueDTO.FormFieldValue value = new ModifyFormValueDTO.FormFieldValue();
+		value.setId("2");
+		value.setValue(Arrays.asList("Value 3", "Value 4"));
+		dto.getValues().add(value);
+
+		riverService.setMapper(mapper);
+
+		riverService.deleteDropForm(1L, 1L, 1L, "user");
+
+		ArgumentCaptor<RiverDropForm> argument = ArgumentCaptor
+				.forClass(RiverDropForm.class);
+		verify(mockRiverDropFormDao).delete(argument.capture());
+
+		assertEquals(form, argument.getValue());
 	}
 }

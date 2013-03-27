@@ -16,16 +16,15 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +53,6 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	AccountDao accountDao;
-
-	@PersistenceContext
-	protected EntityManager em;
 
 	@Test
 	public void findById() {

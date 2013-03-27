@@ -1,5 +1,8 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
@@ -11,4 +14,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 public abstract class AbstractJpaDaoTest extends
 		AbstractTransactionalJUnit4SpringContextTests {
 
+	@PersistenceContext
+	protected EntityManager em;
 }

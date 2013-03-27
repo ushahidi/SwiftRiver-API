@@ -2,9 +2,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.assertEquals;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -16,9 +13,6 @@ public class JpaSequenceDaoTest extends AbstractJpaDaoTest {
 	@Autowired
 	SequenceDao sequenceDao;
 	
-	@PersistenceContext
-	protected EntityManager em;
-
 	@Test
 	public void getIds() {
 		Sequence seq = sequenceDao.findById("droplets");

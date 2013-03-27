@@ -22,6 +22,7 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
+import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.RiverDropLink;
 import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
@@ -136,5 +137,14 @@ public interface RiverDropDao extends GenericDao<RiverDrop>, ContextDropDao {
 	 * @return
 	 */
 	public boolean deleteComment(Long commentId);
-
+	
+	/**
+	 * Return the form with the specified id in the drop
+	 * 
+	 * @param drop
+	 * @param formId
+	 * @return
+	 */
+	public RiverDropForm findForm(RiverDrop drop, Long formId);
+	
 }

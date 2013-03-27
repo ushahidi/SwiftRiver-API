@@ -1,11 +1,9 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -22,9 +20,6 @@ public class JpaChannelDaoTest extends AbstractJpaDaoTest {
 	
 	final Logger logger = LoggerFactory.getLogger(JpaChannelDaoTest.class);
 	
-	@PersistenceContext
-	protected EntityManager em;
-
 	@Autowired
 	RiverDao riverDao;
 
