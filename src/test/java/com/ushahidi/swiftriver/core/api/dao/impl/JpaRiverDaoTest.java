@@ -42,10 +42,9 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
-public class JpaRiverDaoTest extends AbstractIntegrationTest {
+public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	RiverDao riverDao;

@@ -18,9 +18,8 @@ import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaDropDaoTest extends AbstractIntegrationTest {
+public class JpaDropDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	DropDao dropDao;

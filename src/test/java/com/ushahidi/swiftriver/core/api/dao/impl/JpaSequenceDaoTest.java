@@ -10,9 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Sequence;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaSequenceDaoTest extends AbstractIntegrationTest {
+public class JpaSequenceDaoTest extends AbstractJpaDaoTest {
 	
 	@Autowired
 	SequenceDao sequenceDao;

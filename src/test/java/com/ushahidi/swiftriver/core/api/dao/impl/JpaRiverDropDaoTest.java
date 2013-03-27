@@ -30,9 +30,8 @@ import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaRiverDropDaoTest extends AbstractIntegrationTest {
+public class JpaRiverDropDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private RiverDropDao riverDropDao;

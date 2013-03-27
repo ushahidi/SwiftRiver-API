@@ -28,14 +28,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
 /**
  * {@link TagDao} unit tests 
  * @author ekala
  *
  */
-public class JpaTagDaoTest extends AbstractIntegrationTest {
+public class JpaTagDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private TagDao tagDao;

@@ -29,9 +29,8 @@ import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaBucketDropDaoTest extends AbstractIntegrationTest {
+public class JpaBucketDropDaoTest extends AbstractJpaDaoTest {
 	
 	@Autowired
 	private BucketDropDao bucketDropDao;

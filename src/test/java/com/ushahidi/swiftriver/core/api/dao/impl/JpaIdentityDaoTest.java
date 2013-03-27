@@ -26,9 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.IdentityDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaIdentityDaoTest extends AbstractIntegrationTest {
+public class JpaIdentityDaoTest extends AbstractJpaDaoTest {
 	
 	@Autowired
 	IdentityDao identityDao;

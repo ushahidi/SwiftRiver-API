@@ -12,9 +12,8 @@ import com.ushahidi.swiftriver.core.api.dao.FormDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaFormDaoTest extends AbstractIntegrationTest {
+public class JpaFormDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	FormDao formDao;

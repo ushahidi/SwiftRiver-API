@@ -12,9 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.MediaDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Media;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaMediaDaoTest extends AbstractIntegrationTest {
+public class JpaMediaDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private MediaDao mediaDao;

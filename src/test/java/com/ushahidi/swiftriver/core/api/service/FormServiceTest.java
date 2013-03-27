@@ -26,7 +26,6 @@ import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.FormDao;
@@ -38,12 +37,11 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyFormFieldDTO;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
+import com.ushahidi.swiftriver.core.support.MapperFactory;
 
-public class FormServiceTest extends AbstractIntegrationTest {
+public class FormServiceTest  {
 
-	@Autowired
-	private Mapper mapper;
+	private static final Mapper mapper = MapperFactory.getMapper();
 
 	private AccountDao mockAccountDao;
 

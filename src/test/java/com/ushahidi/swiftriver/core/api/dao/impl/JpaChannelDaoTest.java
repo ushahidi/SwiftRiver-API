@@ -17,9 +17,8 @@ import com.ushahidi.swiftriver.core.api.dao.ChannelDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.River;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaChannelDaoTest extends AbstractIntegrationTest {
+public class JpaChannelDaoTest extends AbstractJpaDaoTest {
 	
 	final Logger logger = LoggerFactory.getLogger(JpaChannelDaoTest.class);
 	

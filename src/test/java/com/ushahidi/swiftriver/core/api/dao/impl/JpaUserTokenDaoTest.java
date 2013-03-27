@@ -8,9 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.model.UserToken;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaUserTokenDaoTest extends AbstractIntegrationTest {
+public class JpaUserTokenDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	UserTokenDao userTokenDao;

@@ -8,9 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.model.Role;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaRoleDaoTest extends AbstractIntegrationTest {
+public class JpaRoleDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	RoleDao roleDao;

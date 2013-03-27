@@ -29,9 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaLinkDaoTest extends AbstractIntegrationTest {
+public class JpaLinkDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private LinkDao linkDao;

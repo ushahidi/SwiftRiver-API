@@ -1,4 +1,4 @@
-package com.ushahidi.swiftriver.core.support;
+package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -8,7 +8,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @WebAppConfiguration
 @ContextConfiguration(locations={"file:src/main/webapp/WEB-INF/spring/root-context.xml", "file:src/main/webapp/WEB-INF/spring/web-context.xml"})
 @ActiveProfiles(profiles = { "test" })
-public abstract class AbstractIntegrationTest extends
+public abstract class AbstractJpaDaoTest extends
 		AbstractTransactionalJUnit4SpringContextTests {
 
 }

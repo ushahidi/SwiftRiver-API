@@ -14,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaAccountDaoTest extends AbstractIntegrationTest {
+public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	AccountDao accountDao;

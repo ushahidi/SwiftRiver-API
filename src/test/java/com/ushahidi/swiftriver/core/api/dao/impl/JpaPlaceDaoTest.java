@@ -29,9 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Place;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaPlaceDaoTest extends AbstractIntegrationTest {
+public class JpaPlaceDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private PlaceDao placeDao;

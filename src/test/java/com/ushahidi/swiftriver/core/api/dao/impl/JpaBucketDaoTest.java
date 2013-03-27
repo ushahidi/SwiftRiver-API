@@ -42,9 +42,8 @@ import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.AbstractIntegrationTest;
 
-public class JpaBucketDaoTest extends AbstractIntegrationTest {
+public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private BucketDao bucketDao;
