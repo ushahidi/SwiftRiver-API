@@ -317,7 +317,7 @@ public class BucketsController extends AbstractController {
 	}
 
 	/**
-	 * Handler for deleting a drop from a bucket
+	 * Handler for deleting a {@link BucketDrop} from a bucket
 	 * 
 	 * @param id
 	 * @param dropId
@@ -325,9 +325,23 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId,
+	public void deleteBucketDrop(@PathVariable Long id, @PathVariable Long dropId,
 			Principal principal) {
-		bucketService.deleteDrop(id, dropId, principal.getName());
+		bucketService.deleteBucketDrop(id, dropId, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a {@link RiverDrop} from a bucket
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param principal
+	 */
+	@RequestMapping(value = "/{id}/river/drops/{dropId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteRiverDrop(@PathVariable Long id, @PathVariable Long dropId,
+			Principal principal) {
+		bucketService.deleteRiverDrop(id, dropId, principal.getName());
 	}
 	
 	/**

@@ -617,7 +617,7 @@ public class BucketService {
 	}
 
 	/**
-	 * Deletes the {@link Drop} specified in <code>dropId</code> from the
+	 * Deletes the {@link BucketDrop} specified in <code>dropId</code> from the
 	 * {@link Bucket} specified in <code>bucketId</code>
 	 * 
 	 * If the drop does not exist in the specified bucket, a
@@ -627,28 +627,52 @@ public class BucketService {
 	 * @param dropId
 	 * @param authUser
 	 */
-	@Transactional
-	public void deleteDrop(Long bucketId, Long dropId, String authUser) {
+	@Transactional(readOnly = false)
+	public void deleteBucketDrop(Long bucketId, Long dropId, String authUser) {
 		Bucket bucket = getBucketById(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
-		if (bucketDrop == null) {
-			throw new NotFoundException("The requested drop does not exist");
-		}
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
-		// Use the main drop id to find the bucket drop
-		BucketDrop targetBucketDrop = bucketDao.findDrop(bucketId, bucketDrop
-				.getDrop().getId());
-		if (targetBucketDrop == null) {
-			throw new NotFoundException("The requested drop does not exist");
-		}
+		// Delete the drop and decrease bucket drop count
+		bucketDropDao.delete(bucketDrop);
+		bucketDao.decreaseDropCount(bucket);
+	}
 
-		// Delete the drop
-		bucketDropDao.delete(targetBucketDrop);
+	/**
+	 * Deletes the {@link RiverDrop} with the specified <code>dropId</code>
+	 * from the {@link Bucket} with the ID specified in <code>bucketId</code>
+	 * 
+	 * The original {@link Drop} ID of the {@link RiverDrop} is used to check
+	 * for membership in the bucket. If no entry is found a {@link NotFoundException}
+	 * is thrown
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param authUser
+	 */
+	@Transactional(readOnly = false)
+	public void deleteRiverDrop(Long bucketId, Long dropId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		if (!isOwner(bucket, authUser)) {
+			throw new ForbiddenException("Permission denied");
+		}
 		
+		RiverDrop riverDrop = riverDropDao.findById(dropId);
+		if (riverDrop == null) {
+			throw new NotFoundException(String.format("Drop %d does not exist", dropId));
+		}
+		
+		// Check if the bucket drop exists
+		BucketDrop bucketDrop = bucketDao.findDrop(bucketId, riverDrop.getDrop().getId());
+		if (bucketDrop == null) {
+			throw new NotFoundException(String.format("Drop %d does not exist", dropId));
+		}
+		
+		// Delete drop and decrease drop count for the bucket
+		bucketDropDao.delete(bucketDrop);
 		bucketDao.decreaseDropCount(bucket);
 	}
 

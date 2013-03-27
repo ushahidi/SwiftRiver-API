@@ -218,6 +218,13 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(status().isNotFound());
 	}
 	
+	@Test
+	public void deleteRiverDrop() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/river/drops/5")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
 	/**
 	 * Test for {@link BucketsController#addDrop(long, long, java.security.Principal)}
 	 * @throws Exception
