@@ -376,7 +376,7 @@ public class RiverService {
 	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
 			Integer page, Integer dropCount, List<String> channelList,
 			List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo,
-			String username) throws NotFoundException {
+			Boolean photos, String username) throws NotFoundException {
 		
 		River river = getRiver(id);
 		Account queryingAccount = accountDao.findByUsername(username);
@@ -398,6 +398,7 @@ public class RiverService {
 		if (isRead != null) params.put("isRead", isRead);
 		if (dateFrom != null) params.put("dateFrom", dateFrom);
 		if (dateTo != null) params.put("dateTo", dateTo);
+		if (photos != null && photos.equals(Boolean.TRUE)) params.put("photos", photos);
 
 		List<Drop> drops = riverDao.getDrops(id, params, queryingAccount);
 

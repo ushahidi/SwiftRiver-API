@@ -50,6 +50,7 @@ public interface RiverDao extends GenericDao<River> {
 	 * <li>dateFrom</code>
 	 * <li>dateTo</code>
 	 * <li>isRead</code>
+	 * <li>photos</li>
 	 * </ul>
 	 * 
 	 * @param id

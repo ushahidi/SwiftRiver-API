@@ -353,7 +353,8 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "channel_ids", required = false) String cIds,
 			@RequestParam(value = "locations", required = false) String location,
-			@RequestParam(value = "state", required = false) String state)
+			@RequestParam(value = "state", required = false) String state,
+			@RequestParam(value = "photos", required = false) Boolean photos)
 			throws NotFoundException {
 
 		if (maxId == null) {
@@ -412,9 +413,9 @@ public class RiversController extends AbstractController {
 			e.setErrors(errors);
 			throw e;
 		}
-
+		
 		return riverService.getDrops(id, maxId, sinceId, page, count,
-				channelList, channelIds, isRead, dateFrom, dateTo,
+				channelList, channelIds, isRead, dateFrom, dateTo, photos,
 				principal.getName());
 	}
 

@@ -174,6 +174,11 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		if (params.containsKey("dateTo")) {
 			sql += "AND `rivers_droplets`.`droplet_date_pub` <= :dateTo ";
 		}
+		
+		// Check for photos
+		if (params.containsKey("photos")) {
+			sql += "AND `droplets`.`droplet_image` > 0 ";
+		}
 
 		// Drop count and page
 		Integer dropCount = (Integer) params.get("dropCount");
