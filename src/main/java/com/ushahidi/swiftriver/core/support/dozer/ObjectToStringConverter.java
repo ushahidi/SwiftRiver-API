@@ -15,7 +15,6 @@
 package com.ushahidi.swiftriver.core.support.dozer;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
@@ -25,31 +24,30 @@ import org.dozer.DozerConverter;
 
 /**
  * @author Ushahidi, Inc
- * 
+ *
  */
-@SuppressWarnings("rawtypes")
-public class ListToStringConverter extends DozerConverter<List, String> {
-
+public class ObjectToStringConverter extends DozerConverter<Object, String> {
+	
 	ObjectMapper objectMapper;
 
 	public void setObjectMapper(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
 	}
-
-	public ListToStringConverter() {
-		super(List.class, String.class);
+	
+	public ObjectToStringConverter() {
+		super(Object.class, String.class);
 	}
 
-	public ListToStringConverter(Class<List> prototypeA,
+	public ObjectToStringConverter(Class<Object> prototypeA,
 			Class<String> prototypeB) {
 		super(prototypeA, prototypeB);
 	}
 
 	@Override
-	public List convertFrom(String source, List dest) {
+	public Object convertFrom(String source, Object dest) {
 		try {
 			if (source != null) {
-				dest = objectMapper.readValue(source, List.class);
+				dest = objectMapper.readValue(source, Object.class);
 			}
 		} catch (JsonParseException e) {
 			throw new IllegalStateException(e);
@@ -62,7 +60,7 @@ public class ListToStringConverter extends DozerConverter<List, String> {
 	}
 
 	@Override
-	public String convertTo(List source, String dest) {
+	public String convertTo(Object source, String dest) {
 		try {
 			if (source != null) {
 				dest = objectMapper.writeValueAsString(source);
