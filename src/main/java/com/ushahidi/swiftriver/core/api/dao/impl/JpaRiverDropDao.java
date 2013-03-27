@@ -19,6 +19,7 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
@@ -223,5 +224,20 @@ public class JpaRiverDropDao extends AbstractJpaDao<RiverDrop> implements RiverD
 		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;		
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#isRead(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public boolean isRead(RiverDrop riverDrop, Account account) {
+		String sql = "SELECT * FROM `river_droplets_read` " +
+				"WHERE `rivers_droplets_id` = :riverDropId " +
+				"AND account_id = :accountId";
+		
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("riverDropId", riverDrop.getId());
+		query.setParameter("accountId", account.getId());
+
+		return query.getResultList().size() == 1;
+	}
 
 }

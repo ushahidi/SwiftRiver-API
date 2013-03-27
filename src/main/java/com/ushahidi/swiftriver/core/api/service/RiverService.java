@@ -1172,5 +1172,31 @@ public class RiverService {
 		
 		amqpTemplate.convertAndSend("web.rule.delete", notification);
 	}
+
+	/**
+	 * Adds the {@link RiverDrop} with the ID specified in <code>dropId</code>
+	 * to the list of read drops for the river with the ID 
+	 * specified in <code>riverId</code>.
+	 * 
+	 * @param riverId
+	 * @param dropId
+	 * @param authUser
+	 */
+	@Transactional(readOnly = false)
+	public void markDropAsRead(Long riverId, Long dropId, String authUser) {
+		River river = getRiver(riverId);
+		Account account = accountDao.findByUsername(authUser);
+		if (!river.getRiverPublic() && !this.isOwner(river, account)) {
+			throw new ForbiddenException("Access denied");
+		}
+
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		if (riverDropDao.isRead(riverDrop, account)) {
+			throw new BadRequestException(String.format("%s has already read drop %d", 
+					authUser, dropId));
+		}
+		account.getReadRiverDrops().add(riverDrop);
+		accountDao.update(account);
+	}
 	
 }

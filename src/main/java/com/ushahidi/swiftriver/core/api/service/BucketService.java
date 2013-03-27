@@ -755,9 +755,8 @@ public class BucketService {
 	 * Verifies whether the {@link Account} in <code>account</code> is an owner
 	 * of the {@link Bucket} specified in <code>bucket</code>
 	 * 
-	 * An owner is an {@link Account} that is a creator of the {@Bucket
-	 * 
-	 * } or a {@link BucketCollaborator} with edit privileges i.e. the
+	 * An owner is an {@link Account} that is a creator of the {@link Bucket} 
+	 * or a {@link BucketCollaborator} with edit privileges i.e. the
 	 * <code>readOnly</code> property is false
 	 * 
 	 * @param bucket
@@ -1256,6 +1255,34 @@ public class BucketService {
 		}
 
 		bucketCommentDao.delete(bucketComment);
+	}
+
+	/**
+	 * Adds the {@link BucketDrop} with the ID specified in <code>dropId</code>
+	 * to the list of read drops for the {@link Account} associated with the
+	 * username specified in <code>authUser</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param authUser
+	 */
+	@Transactional(readOnly = false)
+	public void markDropAsRead(Long bucketId, Long dropId, String authUser) {
+		Bucket bucket = getBucketById(bucketId);
+		Account account = accountDao.findByUsername(authUser);
+
+		if (!bucket.isPublished() && !this.isOwner(bucket, account)) {
+			throw new ForbiddenException("Access denied");
+		}
+		
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		if (bucketDropDao.isRead(bucketDrop, account)) {
+			throw new BadRequestException(String.format("User %s has already read drop %d", 
+					authUser, dropId));
+		}
+		
+		account.getReadBucketDrops().add(bucketDrop);
+		accountDao.update(account);
 	}
 
 }

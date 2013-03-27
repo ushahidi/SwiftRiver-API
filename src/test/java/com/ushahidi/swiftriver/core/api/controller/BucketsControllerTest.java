@@ -577,4 +577,11 @@ public class BucketsControllerTest extends AbstractControllerTest {
 				.principal(getAuthentication("user1")))
 			.andExpect(status().isOk());
 	}
+	
+	@Test
+	public void markDropAsRead() throws Exception {
+		this.mockMvc.perform(put("/v1/buckets/1/drops/read/1")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
 }

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
@@ -358,6 +359,22 @@ public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements Buck
 	public boolean deleteComment(Long commentId) {
 		String sql = "DELETE FROM BucketDropComment WHERE id = ?1";
 		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#isRead(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public boolean isRead(BucketDrop bucketDrop, Account account) {
+		String sql = "SELECT * FROM `bucket_droplets_read` " +
+				"WHERE `buckets_droplets_id` = :bucketDropId " +
+				"AND account_id = :accountId";
+		
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("bucketDropId", bucketDrop.getId());
+		query.setParameter("accountId", account.getId());
+
+		return query.getResultList().size() == 1;
 	}
 
 }

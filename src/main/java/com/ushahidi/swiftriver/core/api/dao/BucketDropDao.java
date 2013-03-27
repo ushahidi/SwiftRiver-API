@@ -168,4 +168,15 @@ public interface BucketDropDao extends GenericDao<BucketDrop> {
 	 */
 	public boolean deleteComment(Long commentId);
 
+	/**
+	 * Checks whether the {@link BucketDrop} specified in <code>bucketDrop</code>
+	 * has been added to the list of read drops for the {@link Account}
+	 * specified in <code>account</code>
+	 * 
+	 * @param bucketDrop
+	 * @param account
+	 * @return
+	 */
+	public boolean isRead(BucketDrop bucketDrop, Account account);
+
 }

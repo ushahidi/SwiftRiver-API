@@ -1,6 +1,8 @@
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 
@@ -11,8 +13,9 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AbstractDaoTest;
-import com.ushahidi.swiftriver.core.api.dao.impl.JpaAccountDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
 
 public class JpaAccountDaoTest extends AbstractDaoTest {
 
@@ -21,6 +24,9 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 	
 	@PersistenceContext
 	protected EntityManager em;
+	
+	@Autowired
+	private RiverDropDao riverDropDao;
 
 	@Test
 	public void findById() {
@@ -104,5 +110,16 @@ public class JpaAccountDaoTest extends AbstractDaoTest {
 		assertNotNull(accounts);
 		assertEquals(1, accounts.size());
 		assertEquals(1, accounts.get(0).getId());
+	}
+	
+	@Test
+	public void addReadRiverDrop() {
+		Account account = accountDao.findByUsername("user1");		
+		RiverDrop riverDrop = riverDropDao.findById(4L);
+		
+		account.getReadRiverDrops().add(riverDrop);
+		accountDao.update(account);
+		
+		assertEquals(3, accountDao.findByUsername("user1").getReadRiverDrops().size());
 	}
 }

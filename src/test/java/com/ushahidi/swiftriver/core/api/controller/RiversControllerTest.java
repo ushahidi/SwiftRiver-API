@@ -718,5 +718,12 @@ public class RiversControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.name").value("Modified Rule"));
 	}
+	
+	@Test
+	public void markDropAsRead() throws Exception {
+		this.mockMvc.perform(put("/v1/rivers/1/drops/read/4")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
 
 }

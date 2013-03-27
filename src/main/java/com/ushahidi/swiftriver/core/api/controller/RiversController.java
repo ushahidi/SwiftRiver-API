@@ -443,6 +443,20 @@ public class RiversController extends AbstractController {
 	}
 	
 	/**
+	 * Handler for marking a drop as read.
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/read/{dropId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public void markDropAsRead(@PathVariable Long id, @PathVariable Long dropId, Principal principal) {
+		riverService.markDropAsRead(id, dropId, principal.getName());
+	}
+	
+	/**
 	 * Handler for adding a tag to a drop that is in a river
 	 * 
 	 * @param id

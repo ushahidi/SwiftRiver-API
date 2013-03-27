@@ -331,6 +331,19 @@ public class BucketsController extends AbstractController {
 	}
 	
 	/**
+	 * Handler for marking bucket drops as read
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/drops/read/{dropId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public void markDropAsRead(@PathVariable Long id, @PathVariable Long dropId, Principal principal) {
+		bucketService.markDropAsRead(id, dropId, principal.getName());
+	}
+	
+	/**
 	 * Handler for adding a drop to a bucket
 	 * 
 	 * @param id
