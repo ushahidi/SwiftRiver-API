@@ -17,8 +17,11 @@
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +55,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.UnauthorizedExpection;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 
 @Controller
 @RequestMapping("/v1/buckets")
@@ -288,8 +292,8 @@ public class BucketsController extends AbstractController {
 			@RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
 			@RequestParam(value = "max_id", required = false) Long maxId,
 			@RequestParam(value = "since_id", required = false) Long sinceId,
-			@RequestParam(value = "date_from", required = false) Date dateFrom,
-			@RequestParam(value = "date_to", required = false) Date dateTo,
+			@RequestParam(value = "date_from", required = false) String dateFrom,
+			@RequestParam(value = "date_to", required = false) String dateTo,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "location", required = false) String location,
@@ -300,18 +304,50 @@ public class BucketsController extends AbstractController {
 			throw new UnauthorizedExpection(); 
 		}
 
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+
 		Map<String, Object> requestParams = new HashMap<String, Object>();
 		requestParams.put("count", count);
 		requestParams.put("page", page);
 		
 		if (maxId != null && maxId > 0) requestParams.put("maxId", maxId);
 		if (sinceId != null && sinceId > 0) requestParams.put("sinceId", sinceId);
-		if (dateFrom != null) requestParams.put("dateFrom", dateFrom);
-		if (dateTo != null) requestParams.put("dateTo", dateTo);
+
+		// Dates
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		if (dateFrom != null) {
+			try {
+				requestParams.put("dateFrom", dateFormat.parse(dateFrom));
+			} catch (ParseException e) {
+				errors.add(new ErrorField("date_from", "invalid"));
+			}
+		}
+
+		if (dateTo != null) {
+			try {
+				requestParams.put("dateTo", dateFormat.parse(dateTo));
+			} catch (ParseException e) {
+				errors.add(new ErrorField("date_to", "invalid"));
+			}
+		}
+
+		// Keywords
 		if (keywords != null) requestParams.put("keywords", keywords);
-		if (channels != null) requestParams.put("channels", channels);
+
+		// Channels
+		if (channels != null && channels.trim().length() > 0) {
+			List<String> channelsList = Arrays.asList(channels.split(","));
+			requestParams.put("channels", channelsList);
+		}
+
 		if (location != null) requestParams.put("location", location);
 		if (photos != null && photos == true) requestParams.put("photos", photos);
+		
+		if (!errors.isEmpty()) {
+			BadRequestException exception = new BadRequestException("Invalid parameters");
+			exception.setErrors(errors);
+			throw exception;
+		}
 
 		return bucketService.getDrops(id, principal.getName(), requestParams);
 	}

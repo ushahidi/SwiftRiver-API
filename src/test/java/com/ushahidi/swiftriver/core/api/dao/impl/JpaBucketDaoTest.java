@@ -16,9 +16,18 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -34,6 +43,7 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.Drop;
 
 public class JpaBucketDaoTest extends AbstractDaoTest {
 
@@ -141,6 +151,76 @@ public class JpaBucketDaoTest extends AbstractDaoTest {
 		
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));
+	}
+	
+	@Test
+	public void getDropsSinceId() {
+		Account account = accountDao.findByUsername("user1");
+		Map<String, Object> requestParams = new HashMap<String, Object>();
+		requestParams.put("page", 1);
+		requestParams.put("count", 10);
+		requestParams.put("sinceId", 4L);
+		
+		List<Drop> drops = bucketDao.getDrops(1L, account, requestParams);
+		assertEquals(1, drops.size());
+		assertEquals(5L, drops.get(0).getId());
+	}
+	
+	@Test
+	public void getDropsByChannel() {
+		Account account = accountDao.findByUsername("user1");
+
+		List<String> channels = new ArrayList<String>();
+		channels.add("rss");
+
+		Map<String, Object> requestParams = new HashMap<String, Object>();
+		requestParams.put("page", 1);
+		requestParams.put("count", 10);
+		requestParams.put("channels", channels);
+		
+		List<Drop> drops = bucketDao.getDrops(1L, account, requestParams);
+		assertEquals(3, drops.size());
+	}
+	
+	@Test
+	public void getDropsWithMaxId() {
+		Account account = accountDao.findByUsername("user1");
+		Map<String, Object> requestParams = new HashMap<String, Object>();
+		requestParams.put("page", 1);
+		requestParams.put("count", 10);
+		requestParams.put("maxId", 3L);
+		
+		List<Drop> drops = bucketDao.getDrops(1L, account, requestParams);
+		assertEquals(3, drops.size());
+	}
+	
+	@Test
+	public void getDropsFromDate() throws Exception {
+		Account account = accountDao.findByUsername("user1");
+		Map<String, Object> requestParams = new HashMap<String, Object>();
+		requestParams.put("page", 1);
+		requestParams.put("count", 10);
+		
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		requestParams.put("dateFrom", dateFormat.parse("15-09-2012"));		
+		
+		List<Drop> drops = bucketDao.getDrops(1L, account, requestParams);
+		assertEquals(3, drops.size());		
+	}
+	
+	@Test
+	public void getDropsToDate() throws Exception {
+		Account account = accountDao.findByUsername("user1");
+		Map<String, Object> requestParams = new HashMap<String, Object>();
+		requestParams.put("page", 1);
+		requestParams.put("count", 10);
+		
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyy");
+		requestParams.put("dateTo", dateFormat.parse("12-09-2012"));
+		
+		List<Drop> drops = bucketDao.getDrops(1L, account, requestParams);
+		assertEquals(2, drops.size());		
+		
 	}
 
 }

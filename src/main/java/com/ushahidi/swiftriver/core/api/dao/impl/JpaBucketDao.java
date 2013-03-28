@@ -212,15 +212,25 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			sql += "AND `droplets`.`droplet_image` > 0";
 		}
 		
-		// Check for since_id
-		if (requestParams.containsKey("since_id")) {
+		// Check for sinceId
+		if (requestParams.containsKey("sinceId")) {
 			sql += " AND `buckets_droplets`.`id` > :sinceId";
 		}
 		
-		// Check for max_id
-		if (requestParams.containsKey("max_id")) {
+		// Check for maxId
+		if (requestParams.containsKey("maxId")) {
 			sql += " AND `buckets_droplets`.`id` <= :maxId";
 		}
+
+		// dateFrom and dateTo
+		if (requestParams.containsKey("dateFrom")) {
+			sql += " AND `buckets_droplets`.`droplet_date_added` >= :dateFrom";
+		}
+		
+		if (requestParams.containsKey("dateTo")) {
+			sql += " AND `buckets_droplets`.`droplet_date_added` <= :dateTo";
+		}
+		
 
 		Integer dropCount = (Integer) requestParams.get("count");
 		Integer page = (Integer) requestParams.get("page");
@@ -233,7 +243,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		params.addValue("userId", account.getOwner().getId());
 		params.addValue("accountId", account.getId());
 		
-		String[] paramKeys = {"channels", "maxId", "sinceId"};
+		String[] paramKeys = {"channels", "maxId", "sinceId", "dateFrom", "dateTo"};
 		for (String key: paramKeys) {
 			if (requestParams.containsKey(key)) {
 				params.addValue(key, requestParams.get(key));

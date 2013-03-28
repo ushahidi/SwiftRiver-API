@@ -192,6 +192,34 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$.[0].id").doesNotExist());
 	}
 	
+	@Test
+	public void getDropsFromDate() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("date_from", "12-09-2012")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(3)));		
+	}
+	
+	@Test
+	public void getDropsToDate() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("date_to", "12-09-2012")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(2)));		
+	}
+	
+	@Test
+	public void getDropsFromDateToDate() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("date_from", "12-09-2012")
+				.param("date_to", "09-10-2012")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(1)));		
+	}
+
 	/**
 	 * Test for {@link BucketsController#deleteDrop(Long, Long)} where the
 	 * drop exists in the target bucket

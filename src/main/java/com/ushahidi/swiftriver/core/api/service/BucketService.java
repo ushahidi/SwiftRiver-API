@@ -17,12 +17,10 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -589,19 +587,6 @@ public class BucketService {
 	public List<GetDropDTO> getDrops(Long id, String username,
 			Map<String, Object> requestParams) {
 		Bucket bucket = getBucketById(id);
-
-		// Check for channels parameter, split the string and convert the
-		// resultant array to a list
-		if (requestParams.containsKey("channels")) {
-			String channels = (String) requestParams.get("channels");
-			if (channels.trim().length() == 0) {
-				LOG.error("No value specified for the \"channels\" parameter.");
-				throw new BadRequestException();
-			}
-			List<String> channelsList = Arrays.asList(StringUtils.split(
-					channels, ','));
-			requestParams.put("channels", channelsList);
-		}
 
 		Account account = accountDao.findByUsername(username);
 		List<Drop> drops = bucketDao.getDrops(bucket.getId(), account,
