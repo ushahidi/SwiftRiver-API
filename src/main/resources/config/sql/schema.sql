@@ -769,9 +769,9 @@ CREATE INDEX forms_idx_form_id ON form_fields (form_id);
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS river_droplet_form (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  river_droplets_id bigint NOT NULL,
+  drop_id bigint NOT NULL,
   form_id bigint NOT NULL,
-  UNIQUE (river_droplets_id, form_id)
+  UNIQUE (drop_id, form_id)
 );
 
 -- -----------------------------------------------------
@@ -790,9 +790,9 @@ CREATE TABLE IF NOT EXISTS river_droplet_form_field (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS bucket_droplet_form (
   id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  bucket_droplets_id bigint NOT NULL,
+  drop_id bigint NOT NULL,
   form_id bigint NOT NULL,
-  UNIQUE (bucket_droplets_id, form_id)
+  UNIQUE (drop_id, form_id)
 );
 
 -- -----------------------------------------------------

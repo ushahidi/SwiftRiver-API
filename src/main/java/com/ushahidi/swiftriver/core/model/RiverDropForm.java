@@ -14,16 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -32,52 +23,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="river_droplet_form")
-public class RiverDropForm {
+public class RiverDropForm extends DropForm<RiverDrop, RiverDropFormField> {
 	
-	@Id
-	@GeneratedValue
-	private Long id;
-	
-	@ManyToOne
-	@JoinColumn(name="river_droplets_id")
-	private RiverDrop riverDrop;
-
-	@ManyToOne
-	private Form form;
-	
-	@OneToMany(cascade=CascadeType.REMOVE, fetch=FetchType.EAGER, mappedBy="dropForm")
-	private List<RiverDropFormField> values;
-	
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public RiverDrop getRiverDrop() {
-		return riverDrop;
-	}
-
-	public void setRiverDrop(RiverDrop riverDrop) {
-		this.riverDrop = riverDrop;
-	}
-
-	public Form getForm() {
-		return form;
-	}
-
-	public void setForm(Form form) {
-		this.form = form;
-	}
-
-	public List<RiverDropFormField> getValues() {
-		return values;
-	}
-
-	public void setValues(List<RiverDropFormField> values) {
-		this.values = values;
-	}
-
 }

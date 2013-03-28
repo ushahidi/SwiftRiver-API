@@ -1089,7 +1089,7 @@ public class RiverService {
 		RiverDrop drop = getRiverDrop(dropId, river);
 		
 		RiverDropForm dropForm = mapper.map(createDTO, RiverDropForm.class);
-		dropForm.setRiverDrop(drop);
+		dropForm.setDrop(drop);
 		
 		try {
 			riverDropFormDao.create(dropForm);

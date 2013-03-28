@@ -14,16 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.model;
 
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -32,52 +23,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="bucket_droplet_form")
-public class BucketDropForm {
+public class BucketDropForm extends DropForm<BucketDrop, BucketDropFormField> {
 	
-	@Id
-	@GeneratedValue
-	private Long id;
-	
-	@ManyToOne
-	@JoinColumn(name="bucket_droplets_id")
-	private BucketDrop bucketDrop;
-
-	@ManyToOne
-	private Form form;
-	
-	@OneToMany(cascade=CascadeType.REMOVE, fetch=FetchType.EAGER, mappedBy="dropForm")
-	private List<BucketDropFormField> values;
-	
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public BucketDrop getBucketDrop() {
-		return bucketDrop;
-	}
-
-	public void setBucketDrop(BucketDrop bucketDrop) {
-		this.bucketDrop = bucketDrop;
-	}
-
-	public Form getForm() {
-		return form;
-	}
-
-	public void setForm(Form form) {
-		this.form = form;
-	}
-
-	public List<BucketDropFormField> getValues() {
-		return values;
-	}
-
-	public void setValues(List<BucketDropFormField> values) {
-		this.values = values;
-	}
-
 }

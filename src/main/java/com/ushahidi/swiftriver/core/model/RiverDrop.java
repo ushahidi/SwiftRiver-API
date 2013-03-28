@@ -62,7 +62,7 @@ public class RiverDrop {
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
 	private List<RiverDropComment> comments;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="drop")
 	private List<RiverDropForm> forms;
 
 	public long getId() {

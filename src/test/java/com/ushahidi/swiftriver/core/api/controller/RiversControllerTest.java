@@ -679,7 +679,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void createDropForm() throws Exception {
-		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+		String postBody = "{\"id\":\"1\",\"values\":[{\"id\":\"1\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"2\",\"value\":\"Politician\"},{\"id\":\"3\",\"value\":\"Kenyans\"}]}";
 
 		this.mockMvc
 				.perform(
@@ -687,8 +687,8 @@ public class RiversControllerTest extends AbstractControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value("1234"))
-				.andExpect(jsonPath("$.values[0].id").value("13"));
+				.andExpect(jsonPath("$.id").value("1"))
+				.andExpect(jsonPath("$.values[0].id").value("1"));
 	}
 
 	@Test

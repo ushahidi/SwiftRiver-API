@@ -65,7 +65,7 @@ public class BucketDrop {
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
 	private List<BucketDropComment> comments;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="bucketDrop")
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="drop")
 	private List<BucketDropForm> forms;
 	
 	public long getId() {

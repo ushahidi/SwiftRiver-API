@@ -114,6 +114,9 @@ public class Drop {
 	
 	@Transient
 	private Boolean read;
+	
+	@Transient
+	private List<DropForm> forms;
 
 	public Drop() {
 
@@ -285,6 +288,14 @@ public class Drop {
 
 	public void setRead(Boolean read) {
 		this.read = read;
+	}
+
+	public List<DropForm> getForms() {
+		return forms;
+	}
+
+	public void setForms(List<DropForm> forms) {
+		this.forms = forms;
 	}
 
 }

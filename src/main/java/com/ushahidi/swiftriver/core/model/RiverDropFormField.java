@@ -15,10 +15,6 @@
 package com.ushahidi.swiftriver.core.model;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
@@ -27,56 +23,6 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name="river_droplet_form_field")
-public class RiverDropFormField {
-	
-	@Id
-	@GeneratedValue
-	private Long id;
-	
-	@ManyToOne
-	@JoinColumn(name="droplet_form_id")
-	private RiverDropForm dropForm;
+public class RiverDropFormField extends DropFormField<RiverDropForm> {
 
-	@ManyToOne
-	private FormField field;
-
-	String value;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public RiverDropForm getDropForm() {
-		return dropForm;
-	}
-
-	public void setDropForm(RiverDropForm dropForm) {
-		this.dropForm = dropForm;
-	}
-
-	public FormField getField() {
-		return field;
-	}
-
-	public void setField(FormField field) {
-		this.field = field;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	@Override
-	public String toString() {
-		return "RiverDropFormField [id=" + id + ", dropForm=" + dropForm
-				+ ", field=" + field + ", value=" + value + "]";
-	}
 }

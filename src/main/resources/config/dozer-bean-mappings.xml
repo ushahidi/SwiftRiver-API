@@ -89,35 +89,22 @@
 			<a>id</a>
 			<b>form.id</b>
 		</field>
-	</mapping>
-	
-	<mapping>
-		<class-a>com.ushahidi.swiftriver.core.api.dto.FormValueDTO.FormFieldValue</class-a>
-		<class-b>com.ushahidi.swiftriver.core.model.RiverDropFormField</class-b>
-
-		<field>
-			<a>id</a>
-			<b>field.id</b>
-		</field>
 		
-		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
-			<a>value</a>
-			<b>value</b>
+		<field>
+			<a>values</a>
+			<b>values</b>
+			<b-hint>com.ushahidi.swiftriver.core.model.RiverDropFormField</b-hint>
 		</field>
 	</mapping>
 	
 	<mapping>
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO.FormFieldValue</class-a>
-		<class-b>com.ushahidi.swiftriver.core.model.RiverDropFormField</class-b>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.RiverDropForm</class-b>
 
 		<field>
-			<a>id</a>
-			<b>field.id</b>
-		</field>
-		
-		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
-			<a>value</a>
-			<b>value</b>
+			<a>values</a>
+			<b>values</b>
+			<b-hint>com.ushahidi.swiftriver.core.model.RiverDropFormField</b-hint>
 		</field>
 	</mapping>
 	
@@ -129,6 +116,53 @@
 			<a>id</a>
 			<b>form.id</b>
 		</field>
+		
+		<field>
+			<a>values</a>
+			<b>values</b>
+			<b-hint>com.ushahidi.swiftriver.core.model.BucketDropFormField</b-hint>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.BucketDropForm</class-b>
+
+		<field>
+			<a>values</a>
+			<b>values</b>
+			<b-hint>com.ushahidi.swiftriver.core.model.BucketDropFormField</b-hint>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.FormValueDTO.FormFieldValue</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.RiverDropFormField</class-b>
+
+		<field>
+			<a>id</a>
+			<b>field.id</b>
+		</field>
+		
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
+			<a>value</a>
+			<b>value</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO.FormFieldValue</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.RiverDropFormField</class-b>
+
+		<field>
+			<a>id</a>
+			<b>field.id</b>
+		</field>
+		
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
+			<a>value</a>
+			<b>value</b>
+		</field>
 	</mapping>
 	
 	<mapping>
@@ -160,5 +194,4 @@
 			<b>value</b>
 		</field>
 	</mapping>
-
 </mappings> 

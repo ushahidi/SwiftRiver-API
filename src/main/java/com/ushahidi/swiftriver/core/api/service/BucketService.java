@@ -1276,7 +1276,7 @@ public class BucketService {
 		BucketDrop drop = getBucketDrop(dropId, bucket);
 		
 		BucketDropForm dropForm = mapper.map(createDTO, BucketDropForm.class);
-		dropForm.setBucketDrop(drop);
+		dropForm.setDrop(drop);
 		bucketDropFormDao.create(dropForm);
 		
 		return mapper.map(dropForm, FormValueDTO.class);

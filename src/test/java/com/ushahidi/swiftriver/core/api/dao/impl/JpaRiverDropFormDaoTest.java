@@ -56,7 +56,7 @@ public class JpaRiverDropFormDaoTest extends AbstractJpaDaoTest {
 		RiverDrop drop = riverDropDao.findById(1L);
 		RiverDropForm dropForm = new RiverDropForm();
 		dropForm.setForm(form);
-		dropForm.setRiverDrop(drop);
+		dropForm.setDrop(drop);
 		dropForm.setValues(new ArrayList<RiverDropFormField>());
 		RiverDropFormField fieldValue = new RiverDropFormField();
 		FormField field = formFieldDao.findById(2L);
@@ -67,12 +67,12 @@ public class JpaRiverDropFormDaoTest extends AbstractJpaDaoTest {
 
 		dropFormDao.create(dropForm);
 
-		String sql = "SELECT river_droplets_id, form_id FROM river_droplet_form WHERE id = ?";
+		String sql = "SELECT drop_id, form_id FROM river_droplet_form WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				dropForm.getId());
 		assertEquals(1L,
-				((Number) results.get("river_droplets_id")).longValue());
+				((Number) results.get("drop_id")).longValue());
 		assertEquals(1L, ((Number) results.get("form_id")).longValue());
 
 		sql = "SELECT droplet_form_id, field_id, value FROM river_droplet_form_field WHERE id = ?";

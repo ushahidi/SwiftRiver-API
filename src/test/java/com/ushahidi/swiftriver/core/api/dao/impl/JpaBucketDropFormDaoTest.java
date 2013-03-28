@@ -56,7 +56,7 @@ public class JpaBucketDropFormDaoTest extends AbstractJpaDaoTest {
 		BucketDrop drop = bucketDropDao.findById(1L);
 		BucketDropForm dropForm = new BucketDropForm();
 		dropForm.setForm(form);
-		dropForm.setBucketDrop(drop);
+		dropForm.setDrop(drop);
 		dropForm.setValues(new ArrayList<BucketDropFormField>());
 		BucketDropFormField fieldValue = new BucketDropFormField();
 		FormField field = formFieldDao.findById(2L);
@@ -67,12 +67,12 @@ public class JpaBucketDropFormDaoTest extends AbstractJpaDaoTest {
 
 		dropFormDao.create(dropForm);
 
-		String sql = "SELECT bucket_droplets_id, form_id FROM bucket_droplet_form WHERE id = ?";
+		String sql = "SELECT drop_id, form_id FROM bucket_droplet_form WHERE id = ?";
 
 		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
 				dropForm.getId());
 		assertEquals(1L,
-				((Number) results.get("bucket_droplets_id")).longValue());
+				((Number) results.get("drop_id")).longValue());
 		assertEquals(1L, ((Number) results.get("form_id")).longValue());
 
 		sql = "SELECT droplet_form_id, field_id, value FROM bucket_droplet_form_field WHERE id = ?";
