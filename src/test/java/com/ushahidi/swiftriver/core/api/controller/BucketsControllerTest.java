@@ -577,4 +577,149 @@ public class BucketsControllerTest extends AbstractControllerTest {
 				.principal(getAuthentication("user1")))
 			.andExpect(status().isOk());
 	}
+	
+	@Test
+	public void createDropForm() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc
+				.perform(
+						post("/v1/buckets/1/drops/1/forms").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value("1234"))
+				.andExpect(jsonPath("$.values[0].id").value("13"));
+	}
+
+	@Test
+	public void createDropFormWithoutPermission() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc.perform(
+				post("/v1/buckets/1/drops/1/forms").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void createDropFormInNonExistentBucket() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc.perform(
+				post("/v1/buckets/9999/drops/1/forms").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void createDropFormInNonExistentDrop() throws Exception {
+		String postBody = "{\"id\":\"1234\",\"values\":[{\"id\":\"13\",\"value\":[\"English\",\"Swahili\"]},{\"id\":\"14\",\"value\":\"Politician\"},{\"id\":\"15\",\"value\":\"Kenyans\"}]}";
+
+		this.mockMvc.perform(
+				post("/v1/buckets/1/drops/9999/forms").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyDropForm() throws Exception {
+		String body = "{\"values\":[{\"id\":1,\"value\":[\"French\"]}]}";
+
+		this.mockMvc
+				.perform(
+						put("/v1/buckets/1/drops/2/forms/1").content(body)
+								.contentType(MediaType.APPLICATION_JSON)
+								.principal(getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.values[0].value").value("French"));
+	}
+
+	@Test
+	public void modifyDropFormWithoutPermission() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1/drops/2/forms/1").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+
+	@Test
+	public void modifyDropFormInNonExistentBucket() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/9999/drops/2/forms/1").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user3"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyDropFormInNonExistentDrop() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1/drops/9999/forms/1").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void modifyDropFormInNonExistentForm() throws Exception {
+		String body = "{\"values\":[{\"id\":13,\"value\":[\"French\"]}]}";
+
+		this.mockMvc.perform(
+				put("/v1/buckets/1/drops/2/forms/9999").content(body)
+						.contentType(MediaType.APPLICATION_JSON)
+						.principal(getAuthentication("user1"))).andExpect(
+				status().isNotFound());
+	}
+
+	@Test
+	public void deleteDropForm() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/drops/2/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isOk());
+	}
+
+	@Test
+	public void deleteDropFormWithoutPermsion() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/drops/2/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user3"))).andExpect(
+				status().isForbidden());
+	}
+	
+	@Test
+	public void deleteDropFormFromNonExistentBucket() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/9999/drops/2/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void deleteDropFormForNonExistentDrop() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/drops/9999/forms/1").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void deleteDropFormForNonExistentForm() throws Exception {
+		this.mockMvc.perform(
+				delete("/v1/buckets/1/drops/2/forms/9999").contentType(
+						MediaType.APPLICATION_JSON).principal(
+						getAuthentication("user1"))).andExpect(status().isNotFound());
+	}
 }

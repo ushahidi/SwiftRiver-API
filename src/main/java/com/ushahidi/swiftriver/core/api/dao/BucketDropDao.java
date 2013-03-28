@@ -20,6 +20,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.BucketDropComment;
+import com.ushahidi.swiftriver.core.model.BucketDropForm;
 import com.ushahidi.swiftriver.core.model.BucketDropLink;
 import com.ushahidi.swiftriver.core.model.BucketDropPlace;
 import com.ushahidi.swiftriver.core.model.BucketDropTag;
@@ -167,5 +168,14 @@ public interface BucketDropDao extends GenericDao<BucketDrop>, ContextDropDao {
 	 * @return
 	 */
 	public boolean deleteComment(Long commentId);
+	
+	/**
+	 * Return the form with the specified id in the drop
+	 * 
+	 * @param drop
+	 * @param formId
+	 * @return
+	 */
+	public BucketDropForm findForm(BucketDrop drop, Long formId);
 
 }

@@ -368,3 +368,15 @@ INSERT INTO river_droplet_form (id, river_droplets_id, form_id) VALUES
 -- -----------------------------------------------------
 INSERT INTO river_droplet_form_field (id, droplet_form_id, field_id, value) VALUES
 (1, 1, 1, '["English"]');
+
+-- -----------------------------------------------------
+-- Data for table bucket_droplet_form
+-- -----------------------------------------------------
+INSERT INTO bucket_droplet_form (id, bucket_droplets_id, form_id) VALUES
+(1, 2, 1);
+
+-- -----------------------------------------------------
+-- Data for table bucket_droplet_form_field
+-- -----------------------------------------------------
+INSERT INTO bucket_droplet_form_field (id, droplet_form_id, field_id, value) VALUES
+(1, 1, 1, '["English"]');

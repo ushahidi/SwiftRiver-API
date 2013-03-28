@@ -29,6 +29,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.BucketDropComment;
+import com.ushahidi.swiftriver.core.model.BucketDropForm;
 import com.ushahidi.swiftriver.core.model.BucketDropLink;
 import com.ushahidi.swiftriver.core.model.BucketDropPlace;
 import com.ushahidi.swiftriver.core.model.BucketDropTag;
@@ -42,7 +43,8 @@ import com.ushahidi.swiftriver.core.model.RiverDropTag;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
-public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> implements BucketDropDao {
+public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop>
+		implements BucketDropDao {
 
 	public JpaBucketDropDao() {
 		// Query for retrieving tag metadata
@@ -61,7 +63,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		tagsQuery += "INNER JOIN tags ON (tags.id = tag_id)  ";
 		tagsQuery += "WHERE buckets_droplets_id IN :drop_ids  ";
 		tagsQuery += "AND deleted = 0 ";
-		
+
 		// Query for retrieving link metadata
 		linksQuery = "SELECT buckets_droplets.id AS droplet_id, link_id AS id, url ";
 		linksQuery += "FROM droplets_links  ";
@@ -78,13 +80,13 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		linksQuery += "INNER JOIN links ON (links.id = link_id)  ";
 		linksQuery += "WHERE buckets_droplets_id IN :drop_ids  ";
 		linksQuery += "AND deleted = 0 ";
-		
+
 		// Query for retrieving the drop image
 		dropImageQuery = "SELECT buckets_droplets.id, droplet_image FROM droplets ";
 		dropImageQuery += "INNER JOIN buckets_droplets ON (buckets_droplets.droplet_id = droplets.id) ";
 		dropImageQuery += "WHERE buckets_droplets.id IN :drop_ids ";
 		dropImageQuery += "AND droplets.droplet_image > 0";
-		
+
 		// Query for retrieving media metadata
 		mediaQuery = "SELECT buckets_droplets.id AS droplet_id, media.id AS id, media.url AS url, type, media_thumbnails.size AS thumbnail_size, ";
 		mediaQuery += "media_thumbnails.url AS thumbnail_url ";
@@ -105,7 +107,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		mediaQuery += "LEFT JOIN media_thumbnails ON (media_thumbnails.media_id = media.id) ";
 		mediaQuery += "WHERE buckets_droplets_id IN :drop_ids ";
 		mediaQuery += "AND deleted = 0; ";
-		
+
 		// Query for retrieving place metadata
 		placesQuery = "SELECT buckets_droplets.id AS droplet_id, place_id AS id, place_name, place_name_canonical, ";
 		placesQuery += "places.hash AS place_hash, latitude, longitude ";
@@ -124,10 +126,10 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		placesQuery += "INNER JOIN places ON (places.id = place_id) ";
 		placesQuery += "WHERE buckets_droplets_id IN :drop_ids ";
 		placesQuery += "AND deleted = 0 ";
-		
+
 		// Query for retieving the BucketDrop id for the given drops
 		contextDropQuery = "SELECT id, droplet_id FROM buckets_droplets WHERE id IN :dropIds";
-		
+
 	}
 
 	public BucketDrop create(BucketDrop t) {
@@ -138,7 +140,11 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addTag(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Tag)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addTag(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public void addTag(BucketDrop bucketDrop, Tag tag) {
 		BucketDropTag bucketDropTag = new BucketDropTag();
@@ -146,18 +152,23 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		bucketDropTag.setBucketDrop(bucketDrop);
 		bucketDropTag.setTag(tag);
 		bucketDropTag.setDeleted(false);
-		
+
 		this.em.persist(bucketDropTag);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findTag(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Tag)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findTag(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public BucketDropTag findTag(BucketDrop bucketDrop, Tag tag) {
 		String sql = "FROM BucketDropTag WHERE bucketDrop = :bucketDrop AND tag = :tag";
 
-		TypedQuery<BucketDropTag> query = em.createQuery(sql, BucketDropTag.class);
+		TypedQuery<BucketDropTag> query = em.createQuery(sql,
+				BucketDropTag.class);
 		query.setParameter("bucketDrop", bucketDrop);
 		query.setParameter("tag", tag);
 
@@ -167,7 +178,11 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteTag(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Tag)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteTag(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Tag)
 	 */
 	public boolean deleteTag(BucketDrop bucketDrop, Tag tag) {
 		BucketDropTag bucketDropTag = findTag(bucketDrop, tag);
@@ -182,7 +197,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 			bucketDropTag.setBucketDrop(bucketDrop);
 			bucketDropTag.setTag(tag);
 			bucketDropTag.setDeleted(true);
-			
+
 			this.em.persist(bucketDropTag);
 		}
 
@@ -191,25 +206,34 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addLink(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Link)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addLink(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public void addLink(BucketDrop bucketDrop, Link link) {
 		BucketDropLink bucketDropLink = new BucketDropLink();
 		bucketDropLink.setBucketDrop(bucketDrop);
 		bucketDropLink.setLink(link);
 		bucketDropLink.setDeleted(false);
-		
+
 		this.em.persist(bucketDropLink);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findLink(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Link)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findLink(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public BucketDropLink findLink(BucketDrop bucketDrop, Link link) {
 		String sql = "FROM BucketDropLink WHERE bucketDrop = :bucketDrop AND link = :link";
 
-		TypedQuery<BucketDropLink> query = em.createQuery(sql, BucketDropLink.class);
+		TypedQuery<BucketDropLink> query = em.createQuery(sql,
+				BucketDropLink.class);
 		query.setParameter("bucketDrop", bucketDrop);
 		query.setParameter("link", link);
 
@@ -219,7 +243,11 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteLink(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Link)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteLink(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Link)
 	 */
 	public boolean deleteLink(BucketDrop bucketDrop, Link link) {
 		BucketDropLink bucketDropLink = findLink(bucketDrop, link);
@@ -234,7 +262,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 			bucketDropLink.setBucketDrop(bucketDrop);
 			bucketDropLink.setLink(link);
 			bucketDropLink.setDeleted(true);
-			
+
 			this.em.persist(bucketDropLink);
 		}
 
@@ -243,12 +271,17 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findPlace(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Place)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findPlace(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public BucketDropPlace findPlace(BucketDrop bucketDrop, Place place) {
 		String sql = "FROM BucketDropPlace WHERE bucketDrop = :bucketDrop AND place = :place";
 
-		TypedQuery<BucketDropPlace> query = em.createQuery(sql, BucketDropPlace.class);
+		TypedQuery<BucketDropPlace> query = em.createQuery(sql,
+				BucketDropPlace.class);
 		query.setParameter("bucketDrop", bucketDrop);
 		query.setParameter("place", place);
 
@@ -258,7 +291,11 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addPlace(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Place)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addPlace(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public void addPlace(BucketDrop bucketDrop, Place place) {
 		BucketDropPlace bucketDropPlace = new BucketDropPlace();
@@ -266,13 +303,17 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		bucketDropPlace.setBucketDrop(bucketDrop);
 		bucketDropPlace.setPlace(place);
 		bucketDropPlace.setDeleted(false);
-		
+
 		this.em.persist(bucketDropPlace);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deletePlace(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Place)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deletePlace(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Place)
 	 */
 	public boolean deletePlace(BucketDrop bucketDrop, Place place) {
 		BucketDropPlace bucketDropPlace = findPlace(bucketDrop, place);
@@ -287,7 +328,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 			bucketDropPlace.setBucketDrop(bucketDrop);
 			bucketDropPlace.setPlace(place);
 			bucketDropPlace.setDeleted(true);
-			
+
 			this.em.persist(bucketDropPlace);
 		}
 
@@ -296,7 +337,10 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#increaseVeracity(com.ushahidi.swiftriver.core.model.BucketDrop)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#increaseVeracity(com
+	 * .ushahidi.swiftriver.core.model.BucketDrop)
 	 */
 	public void increaseVeracity(BucketDrop bucketDrop) {
 		long veracity = bucketDrop.getVeracity();
@@ -308,7 +352,11 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#createFromRiverDrop(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Bucket)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#createFromRiverDrop
+	 * (com.ushahidi.swiftriver.core.model.RiverDrop,
+	 * com.ushahidi.swiftriver.core.model.Bucket)
 	 */
 	public void createFromRiverDrop(RiverDrop riverDrop, Bucket bucket) {
 		BucketDrop bucketDrop = new BucketDrop();
@@ -318,7 +366,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Links
 		List<BucketDropLink> links = new ArrayList<BucketDropLink>();
-		for (RiverDropLink dropLink: riverDrop.getLinks()) {
+		for (RiverDropLink dropLink : riverDrop.getLinks()) {
 			BucketDropLink bucketDropLink = new BucketDropLink();
 			bucketDropLink.setBucketDrop(bucketDrop);
 			bucketDropLink.setLink(dropLink.getLink());
@@ -328,7 +376,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Places
 		List<BucketDropPlace> places = new ArrayList<BucketDropPlace>();
-		for (RiverDropPlace riverDropPlace: riverDrop.getPlaces()) {
+		for (RiverDropPlace riverDropPlace : riverDrop.getPlaces()) {
 			BucketDropPlace bucketDropPlace = new BucketDropPlace();
 			bucketDropPlace.setBucketDrop(bucketDrop);
 			bucketDropPlace.setPlace(riverDropPlace.getPlace());
@@ -338,7 +386,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Tags
 		List<BucketDropTag> tags = new ArrayList<BucketDropTag>();
-		for (RiverDropTag riverDropTag: riverDrop.getTags()) {
+		for (RiverDropTag riverDropTag : riverDrop.getTags()) {
 			BucketDropTag bucketDropTag = new BucketDropTag();
 			bucketDropTag.setBucketDrop(bucketDrop);
 			bucketDropTag.setTag(riverDropTag.getTag());
@@ -348,24 +396,28 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Comments
 		List<BucketDropComment> comments = new ArrayList<BucketDropComment>();
-		for (RiverDropComment comment: riverDrop.getComments()) {
+		for (RiverDropComment comment : riverDrop.getComments()) {
 			BucketDropComment dropComment = new BucketDropComment();
 			dropComment.setBucketDrop(bucketDrop);
 			dropComment.setAccount(comment.getAccount());
 			dropComment.setCommentText(comment.getCommentText());
 			dropComment.setDateAdded(comment.getDateAdded());
-			
+
 			comments.add(dropComment);
 		}
 		bucketDrop.setComments(comments);
-		
+
 		this.create(bucketDrop);
-		
+
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#createFromExisting(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Bucket)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#createFromExisting
+	 * (com.ushahidi.swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Bucket)
 	 */
 	public void createFromExisting(BucketDrop sourceBucketDrop, Bucket bucket) {
 		BucketDrop bucketDrop = new BucketDrop();
@@ -375,7 +427,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Links
 		List<BucketDropLink> links = new ArrayList<BucketDropLink>();
-		for (BucketDropLink link: sourceBucketDrop.getLinks()) {
+		for (BucketDropLink link : sourceBucketDrop.getLinks()) {
 			BucketDropLink bucketDropLink = new BucketDropLink();
 			bucketDropLink.setBucketDrop(bucketDrop);
 			bucketDropLink.setLink(link.getLink());
@@ -385,7 +437,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Places
 		List<BucketDropPlace> places = new ArrayList<BucketDropPlace>();
-		for (BucketDropPlace place: sourceBucketDrop.getPlaces()) {
+		for (BucketDropPlace place : sourceBucketDrop.getPlaces()) {
 			BucketDropPlace bucketDropPlace = new BucketDropPlace();
 			bucketDropPlace.setBucketDrop(bucketDrop);
 			bucketDropPlace.setPlace(place.getPlace());
@@ -395,34 +447,38 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 
 		// Tags
 		List<BucketDropTag> tags = new ArrayList<BucketDropTag>();
-		for (BucketDropTag tag: sourceBucketDrop.getTags()) {
+		for (BucketDropTag tag : sourceBucketDrop.getTags()) {
 			BucketDropTag bucketDropTag = new BucketDropTag();
 			bucketDropTag.setBucketDrop(bucketDrop);
 			bucketDropTag.setTag(tag.getTag());
 			tags.add(bucketDropTag);
 		}
 		bucketDrop.setTags(tags);
-		
+
 		// Comments
 		List<BucketDropComment> comments = new ArrayList<BucketDropComment>();
-		for (BucketDropComment comment: sourceBucketDrop.getComments()) {
+		for (BucketDropComment comment : sourceBucketDrop.getComments()) {
 			BucketDropComment dropComment = new BucketDropComment();
 			dropComment.setBucketDrop(bucketDrop);
 			dropComment.setAccount(comment.getAccount());
 			dropComment.setCommentText(comment.getCommentText());
 			dropComment.setDateAdded(comment.getDateAdded());
-			
+
 			comments.add(dropComment);
 		}
 		bucketDrop.setComments(comments);
-		
+
 		this.create(bucketDrop);
 
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addComment(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Account, java.lang.String)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#addComment(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop,
+	 * com.ushahidi.swiftriver.core.model.Account, java.lang.String)
 	 */
 	public BucketDropComment addComment(BucketDrop bucketDrop, Account account,
 			String commentText) {
@@ -432,18 +488,34 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop> impl
 		dropComment.setAccount(account);
 		dropComment.setCommentText(commentText);
 		dropComment.setDateAdded(new Date());
-		
+
 		this.em.persist(dropComment);
 		return dropComment;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteComment(com.ushahidi.swiftriver.core.model.BucketDrop, java.lang.Long)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#deleteComment(com.
+	 * ushahidi.swiftriver.core.model.BucketDrop, java.lang.Long)
 	 */
 	public boolean deleteComment(Long commentId) {
 		String sql = "DELETE FROM BucketDropComment WHERE id = ?1";
-		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;		
+		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findForm(com.ushahidi.swiftriver.core.model.BucketDrop, java.lang.Long)
+	 */
+	@Override
+	public BucketDropForm findForm(BucketDrop drop, Long formId) {
+		for (BucketDropForm f : drop.getForms()) {
+			if (f.getId().equals(formId)) {
+				return f;
+			}
+		}
+		return null;
 	}
 
 }

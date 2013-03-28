@@ -43,6 +43,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
@@ -51,6 +52,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
@@ -574,6 +576,58 @@ public class BucketsController extends AbstractController {
 	public void deleteComment(@PathVariable Long id,
 			@PathVariable Long commentId, Principal principal) {
 		bucketService.deleteBucketComment(id, commentId, principal.getName());
+	}
+
+	/**
+	 * Handler for adding a form to a bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param createDTO
+	 * @return
+	 */
+	@RequestMapping(value = "/{bucketId}/drops/{dropId}/forms", method = RequestMethod.POST)
+	@ResponseBody
+	public FormValueDTO addDropForm(@PathVariable Long bucketId,
+			@PathVariable Long dropId, @RequestBody FormValueDTO createDTO,
+			Principal principal) {
+		return bucketService.addDropForm(bucketId, dropId, createDTO,
+				principal.getName());
+	}
+
+	/**
+	 * Handler for modifying form values for a bucket drop.
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param formId
+	 * @return
+	 */
+	@RequestMapping(value = "/{bucketId}/drops/{dropId}/forms/{formId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public FormValueDTO modifyDropForm(Principal principal,
+			@PathVariable Long bucketId, @PathVariable Long dropId,
+			@PathVariable Long formId,
+			@RequestBody ModifyFormValueDTO modifyFormTo) {
+		return bucketService.modifyDropForm(bucketId, dropId, formId,
+				modifyFormTo, principal.getName());
+	}
+
+	/**
+	 * Handler for deleting a form from a bucket drop
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param commentId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{bucketId}/drops/{dropId}/forms/{formId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteDropForm(@PathVariable Long bucketId,
+			@PathVariable Long dropId, @PathVariable Long formId,
+			Principal principal) {
+		bucketService.deleteDropForm(bucketId, dropId, formId,
+				principal.getName());
 	}
 
 }

@@ -33,6 +33,7 @@ import com.ushahidi.swiftriver.core.api.dao.BucketCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketCommentDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketDropFormDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
@@ -45,6 +46,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
@@ -53,6 +55,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -62,6 +65,7 @@ import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.BucketDropComment;
+import com.ushahidi.swiftriver.core.model.BucketDropForm;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
@@ -105,6 +109,9 @@ public class BucketService {
 
 	@Autowired
 	private RiverDropDao riverDropDao;
+	
+	@Autowired
+	private BucketDropFormDao bucketDropFormDao;
 
 	@Autowired
 	private BucketCommentDao bucketCommentDao;
@@ -147,6 +154,14 @@ public class BucketService {
 
 	public void setBucketDropDao(BucketDropDao bucketDropDao) {
 		this.bucketDropDao = bucketDropDao;
+	}
+
+	public BucketDropFormDao getBucketDropFormDao() {
+		return bucketDropFormDao;
+	}
+
+	public void setBucketDropFormDao(BucketDropFormDao bucketDropFormDao) {
+		this.bucketDropFormDao = bucketDropFormDao;
 	}
 
 	public void setTagDao(TagDao tagDao) {
@@ -223,7 +238,7 @@ public class BucketService {
 	 * @return
 	 */
 	public GetBucketDTO getBucket(Long id, String username) {
-		Bucket bucket = getBucketById(id);
+		Bucket bucket = getBucket(id);
 
 		if (bucket == null)
 			throw new NotFoundException("Bucket not found");
@@ -311,7 +326,7 @@ public class BucketService {
 	 */
 	@Transactional(readOnly = false)
 	public void deleteBucket(Long id, String username) {
-		Bucket bucket = getBucketById(id);
+		Bucket bucket = getBucket(id);
 		Account queryingAccount = accountDao.findByUsername(username);
 		if (!bucket.getAccount().equals(queryingAccount)) {
 			throw new ForbiddenException();
@@ -356,7 +371,7 @@ public class BucketService {
 			throws NotFoundException, BadRequestException {
 
 		// Check if the bucket exists
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		// Check if the authenticating user has permission to add a collaborator
 		Account authAccount = accountDao.findByUsername(authUser);
@@ -466,7 +481,7 @@ public class BucketService {
 	 */
 	@Transactional
 	public void addFollower(long id, long accountId, String username) {
-		Bucket bucket = getBucketById(id);
+		Bucket bucket = getBucket(id);
 
 		Account account = accountDao.findById(accountId);
 		if (account == null) {
@@ -500,7 +515,7 @@ public class BucketService {
 	 */
 	@Transactional
 	public List<FollowerDTO> getFollowers(Long id, Long accountId) {
-		Bucket bucket = getBucketById(id);
+		Bucket bucket = getBucket(id);
 
 		List<FollowerDTO> followers = new ArrayList<FollowerDTO>();
 
@@ -548,7 +563,7 @@ public class BucketService {
 	 */
 	@Transactional
 	public void deleteFollower(Long id, Long accountId) {
-		Bucket bucket = getBucketById(id);
+		Bucket bucket = getBucket(id);
 
 		Account account = accountDao.findById(accountId);
 		if (account == null) {
@@ -620,7 +635,7 @@ public class BucketService {
 	 */
 	@Transactional
 	public void deleteDrop(Long bucketId, Long dropId, String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -662,7 +677,7 @@ public class BucketService {
 					"Invalid drop source %s", dropSourceTO.getSource()));
 		}
 
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 		Account account = accountDao.findByUsername(username);
 
 		if (!isOwner(bucket, account))
@@ -710,7 +725,7 @@ public class BucketService {
 	 * @param id
 	 * @return
 	 */
-	private Bucket getBucketById(Long id) {
+	private Bucket getBucket(Long id) {
 		Bucket bucket = bucketDao.findById(id);
 		if (bucket == null) {
 			throw new NotFoundException(String.format(
@@ -789,7 +804,7 @@ public class BucketService {
 	@Transactional
 	public GetTagDTO addDropTag(Long bucketId, Long dropId,
 			CreateTagDTO createDTO, String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -835,7 +850,7 @@ public class BucketService {
 	@Transactional
 	public void deleteDropTag(Long bucketId, Long dropId, Long tagId,
 			String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -872,7 +887,7 @@ public class BucketService {
 	@Transactional
 	public GetLinkDTO addDropLink(Long bucketId, Long dropId,
 			CreateLinkDTO createDTO, String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -916,7 +931,7 @@ public class BucketService {
 	@Transactional
 	public void deleteDropLink(Long bucketId, Long dropId, Long linkId,
 			String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -952,7 +967,7 @@ public class BucketService {
 	@Transactional
 	public GetPlaceDTO addDropPlace(Long bucketId, Long dropId,
 			CreatePlaceDTO createDTO, String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -1006,7 +1021,7 @@ public class BucketService {
 	@Transactional
 	public void deleteDropPlace(Long bucketId, Long dropId, Long placeId,
 			String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
@@ -1089,7 +1104,7 @@ public class BucketService {
 			throw new BadRequestException("The no comment text specified");
 		}
 
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
@@ -1114,7 +1129,7 @@ public class BucketService {
 	@Transactional
 	public List<GetCommentDTO> getDropComments(Long bucketId, Long dropId,
 			String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
@@ -1143,7 +1158,7 @@ public class BucketService {
 	@Transactional
 	public void deleteDropComment(Long bucketId, Long dropId, Long commentId,
 			String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
@@ -1177,7 +1192,7 @@ public class BucketService {
 			throw new BadRequestException(
 					"The comment text has not been specified");
 		}
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
@@ -1199,7 +1214,7 @@ public class BucketService {
 	 */
 	@Transactional
 	public List<GetCommentDTO> getBucketComments(Long bucketId, String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
@@ -1225,7 +1240,7 @@ public class BucketService {
 	@Transactional
 	public void deleteBucketComment(Long bucketId, Long commentId,
 			String authUser) {
-		Bucket bucket = getBucketById(bucketId);
+		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
@@ -1240,4 +1255,88 @@ public class BucketService {
 		bucketCommentDao.delete(bucketComment);
 	}
 
+	/**
+	 * Add custom form fields to a drop
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param createDTO
+	 * @param authUser
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public FormValueDTO addDropForm(Long bucketId, Long dropId,
+			FormValueDTO createDTO, String authUser) {
+		
+		Bucket bucket = getBucket(bucketId);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+		
+		BucketDrop drop = getBucketDrop(dropId, bucket);
+		
+		BucketDropForm dropForm = mapper.map(createDTO, BucketDropForm.class);
+		dropForm.setBucketDrop(drop);
+		bucketDropFormDao.create(dropForm);
+		
+		return mapper.map(dropForm, FormValueDTO.class);
+	}
+
+	/**
+	 * Modify custom form fields in a drop.
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param formId
+	 * @param modifyFormTo
+	 * @param name
+	 * @return
+	 */
+	@Transactional(readOnly = false)
+	public FormValueDTO modifyDropForm(Long bucketId, Long dropId, Long formId,
+			ModifyFormValueDTO modifyFormTo, String authUser) {
+		
+		Bucket bucket = getBucket(bucketId);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+		
+		BucketDrop drop = getBucketDrop(dropId, bucket);
+		
+		BucketDropForm dropForm = bucketDropDao.findForm(drop, formId);
+
+		if (dropForm == null)
+			throw new NotFoundException("The specified form was not found");
+		
+		mapper.map(modifyFormTo, dropForm);
+		bucketDropFormDao.update(dropForm);
+		
+		return mapper.map(dropForm, FormValueDTO.class);
+	}
+
+	/**
+	 * Remove custom fields from a drop
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param formId
+	 * @param name
+	 */
+	@Transactional(readOnly = false)
+	public void deleteDropForm(Long bucketId, Long dropId, Long formId,
+			String authUser) {
+		Bucket bucket = getBucket(bucketId);
+
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+		
+		BucketDrop drop = getBucketDrop(dropId, bucket);
+		
+		BucketDropForm dropForm = bucketDropDao.findForm(drop, formId);
+
+		if (dropForm == null)
+			throw new NotFoundException("The specified form was not found");
+		
+		bucketDropFormDao.delete(dropForm);
+	}
 }

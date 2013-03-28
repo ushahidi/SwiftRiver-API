@@ -17,23 +17,23 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
+import com.ushahidi.swiftriver.core.api.dao.BucketDropFormDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
@@ -43,18 +43,23 @@ import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
+import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropForm;
+import com.ushahidi.swiftriver.core.model.BucketDropFormField;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.support.MapperFactory;
 
 public class BucketServiceTest {
 	
@@ -66,7 +71,11 @@ private BucketDao mockBucketDao;
 	
 	private BucketDropDao mockBucketDropDao;
 	
+	private BucketDropFormDao mockBucketDropFormDao;
+	
 	private Mapper mockMapper;
+	
+	private final static Mapper mapper = MapperFactory.getMapper(); 
 	
 	private BucketService bucketService;
 	
@@ -84,6 +93,7 @@ private BucketDao mockBucketDao;
 		mockAccountDao = mock(AccountDao.class);
 		mockBucketCollaboratorDao = mock(BucketCollaboratorDao.class);
 		mockBucketDropDao = mock(BucketDropDao.class);
+		mockBucketDropFormDao = mock(BucketDropFormDao.class);
 		mockTagDao = mock(TagDao.class);
 		mockPlaceDao = mock(PlaceDao.class);
 		mockLinkDao = mock(LinkDao.class);
@@ -95,6 +105,7 @@ private BucketDao mockBucketDao;
 		bucketService.setAccountDao(mockAccountDao);
 		bucketService.setBucketCollaboratorDao(mockBucketCollaboratorDao);
 		bucketService.setBucketDropDao(mockBucketDropDao);
+		bucketService.setBucketDropFormDao(mockBucketDropFormDao);
 		bucketService.setTagDao(mockTagDao);
 		bucketService.setPlaceDao(mockPlaceDao);
 		bucketService.setLinkDao(mockLinkDao);
@@ -420,5 +431,116 @@ private BucketDao mockBucketDao;
 		assertEquals(2, filtered.size());
 		assertTrue(filtered.contains(ownedPrivateBucket));
 		assertTrue(filtered.contains(publicBucket));
+	}
+	
+	@Test
+	public void addDropForm() {
+		Account account = new Account();
+		Bucket bucket = new Bucket();
+		bucket.setId(1L);
+		bucket.setAccount(account);
+		BucketDrop drop = new BucketDrop();
+		drop.setBucket(bucket);
+
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockBucketDao.findById(anyLong())).thenReturn(bucket);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(drop);
+
+		FormValueDTO dto = new FormValueDTO();
+		dto.setId("1");
+		dto.setValues(new ArrayList<FormValueDTO.FormFieldValue>());
+		FormValueDTO.FormFieldValue value = new FormValueDTO.FormFieldValue();
+		value.setId("2");
+		value.setValue(Arrays.asList("Value 1", "Value 2"));
+		dto.getValues().add(value);
+
+		bucketService.setMapper(mapper);
+
+		bucketService.addDropForm(1L, 1L, dto, "user");
+
+		ArgumentCaptor<BucketDropForm> argument = ArgumentCaptor
+				.forClass(BucketDropForm.class);
+		verify(mockBucketDropFormDao).create(argument.capture());
+
+		BucketDropForm dropForm = argument.getValue();
+		assertNotNull(dropForm.getForm());
+		assertEquals(1L, ((Number) dropForm.getForm().getId()).longValue());
+		BucketDropFormField fieldValue = dropForm.getValues().get(0);
+		assertEquals(2L, ((Number) fieldValue.getField().getId().longValue()));
+		assertEquals("[\"Value 1\",\"Value 2\"]", fieldValue.getValue());
+	}
+	
+	@Test
+	public void modifyDropForm() {
+		Account account = new Account();
+		Bucket bucket = new Bucket();
+		bucket.setId(1L);
+		bucket.setAccount(account);
+		BucketDrop drop = new BucketDrop();
+		drop.setBucket(bucket);
+		drop.setForms(new ArrayList<BucketDropForm>());
+		BucketDropForm form = new BucketDropForm();
+		form.setId(1L);
+		drop.getForms().add(form);
+
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockBucketDao.findById(anyLong())).thenReturn(bucket);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(drop);
+		when(mockBucketDropDao.findForm((BucketDrop)anyObject(), anyLong())).thenReturn(form);
+
+		ModifyFormValueDTO dto = new ModifyFormValueDTO();
+		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());
+		ModifyFormValueDTO.FormFieldValue value = new ModifyFormValueDTO.FormFieldValue();
+		value.setId("2");
+		value.setValue(Arrays.asList("Value 3", "Value 4"));
+		dto.getValues().add(value);
+
+		bucketService.setMapper(mapper);
+
+		bucketService.modifyDropForm(1L, 1L, 1L, dto, "user");
+
+		ArgumentCaptor<BucketDropForm> argument = ArgumentCaptor
+				.forClass(BucketDropForm.class);
+		verify(mockBucketDropFormDao).update(argument.capture());
+
+		BucketDropForm dropForm = argument.getValue();
+		BucketDropFormField fieldValue = dropForm.getValues().get(0);
+		assertEquals("[\"Value 3\",\"Value 4\"]", fieldValue.getValue());
+	}
+	
+	@Test
+	public void deleteDropForm() {
+		Account account = new Account();
+		Bucket bucket = new Bucket();
+		bucket.setId(1L);
+		bucket.setAccount(account);
+		BucketDrop drop = new BucketDrop();
+		drop.setBucket(bucket);
+		drop.setForms(new ArrayList<BucketDropForm>());
+		BucketDropForm form = new BucketDropForm();
+		form.setId(1L);
+		drop.getForms().add(form);
+
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockBucketDao.findById(anyLong())).thenReturn(bucket);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(drop);
+		when(mockBucketDropDao.findForm((BucketDrop)anyObject(), anyLong())).thenReturn(form);
+
+		ModifyFormValueDTO dto = new ModifyFormValueDTO();
+		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());
+		ModifyFormValueDTO.FormFieldValue value = new ModifyFormValueDTO.FormFieldValue();
+		value.setId("2");
+		value.setValue(Arrays.asList("Value 3", "Value 4"));
+		dto.getValues().add(value);
+
+		bucketService.setMapper(mapper);
+
+		bucketService.deleteDropForm(1L, 1L, 1L, "user");
+
+		ArgumentCaptor<BucketDropForm> argument = ArgumentCaptor
+				.forClass(BucketDropForm.class);
+		verify(mockBucketDropFormDao).delete(argument.capture());
+
+		assertEquals(form, argument.getValue());
 	}
 }

@@ -18,6 +18,8 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,6 +28,7 @@ import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.BucketDropForm;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
@@ -92,5 +95,16 @@ public class JpaBucketDropDaoTest extends AbstractJpaDaoTest {
 		
 		bucketDropDao.addLink(bucketDrop, link);
 		assertNotNull(bucketDropDao.findLink(bucketDrop, link));
+	}
+	
+	@Test
+	public void findForm() {
+		BucketDrop drop = new BucketDrop();
+		drop.setForms(new ArrayList<BucketDropForm>());
+		BucketDropForm form = new BucketDropForm();
+		form.setId(1L);
+		drop.getForms().add(form);
+		
+		assertNotNull(bucketDropDao.findForm(drop, 1L));
 	}
 }
