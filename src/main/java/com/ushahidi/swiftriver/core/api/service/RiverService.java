@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +78,7 @@ import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.util.ErrorUtil;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
 @Service
@@ -1088,7 +1090,12 @@ public class RiverService {
 		
 		RiverDropForm dropForm = mapper.map(createDTO, RiverDropForm.class);
 		dropForm.setRiverDrop(drop);
-		riverDropFormDao.create(dropForm);
+		
+		try {
+			riverDropFormDao.create(dropForm);
+		} catch (DataIntegrityViolationException e) {
+			throw ErrorUtil.getBadRequestException("id", "duplicate");
+		}
 		
 		return mapper.map(dropForm, FormValueDTO.class);
 	}
