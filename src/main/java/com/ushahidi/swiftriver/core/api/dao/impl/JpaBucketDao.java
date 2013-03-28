@@ -188,7 +188,6 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#getDrops(java.lang.Long, com.ushahidi.swiftriver.core.model.Account, java.util.Map)
 	 */
-	@SuppressWarnings("unchecked")
 	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams) {
 		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `droplet_title`, ";
 		sql += "`droplet_content`, `droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
@@ -215,12 +214,12 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		
 		// Check for since_id
 		if (requestParams.containsKey("since_id")) {
-			sql += " AND `buckets_droplets`.`id` > " + (Long) requestParams.get("since_id");
+			sql += " AND `buckets_droplets`.`id` > :sinceId";
 		}
 		
 		// Check for max_id
 		if (requestParams.containsKey("max_id")) {
-			sql += " AND `buckets_droplets`.`id` <= " + (Long) requestParams.get("max_id");
+			sql += " AND `buckets_droplets`.`id` <= :maxId";
 		}
 
 		Integer dropCount = (Integer) requestParams.get("count");
@@ -233,12 +232,14 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		params.addValue("bucketId", bucketId);
 		params.addValue("userId", account.getOwner().getId());
 		params.addValue("accountId", account.getId());
-
-		if (requestParams.containsKey("channels")) {
-			List<String> channels = (List<String>) requestParams.get("channels");
-			params.addValue("channels", channels);
-		}
 		
+		String[] paramKeys = {"channels", "maxId", "sinceId"};
+		for (String key: paramKeys) {
+			if (requestParams.containsKey(key)) {
+				params.addValue(key, requestParams.get(key));
+			}
+		}
+
 		List<Drop> drops = new ArrayList<Drop>();
 
 		for (Map<String, Object> row: jdbcTemplate.queryForList(sql, params)) {

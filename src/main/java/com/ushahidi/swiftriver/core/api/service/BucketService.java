@@ -642,41 +642,6 @@ public class BucketService {
 	}
 
 	/**
-	 * Deletes the {@link RiverDrop} with the specified <code>dropId</code>
-	 * from the {@link Bucket} with the ID specified in <code>bucketId</code>
-	 * 
-	 * The original {@link Drop} ID of the {@link RiverDrop} is used to check
-	 * for membership in the bucket. If no entry is found a {@link NotFoundException}
-	 * is thrown
-	 * 
-	 * @param bucketId
-	 * @param dropId
-	 * @param authUser
-	 */
-	@Transactional(readOnly = false)
-	public void deleteRiverDrop(Long bucketId, Long dropId, String authUser) {
-		Bucket bucket = getBucketById(bucketId);
-		if (!isOwner(bucket, authUser)) {
-			throw new ForbiddenException("Permission denied");
-		}
-		
-		RiverDrop riverDrop = riverDropDao.findById(dropId);
-		if (riverDrop == null) {
-			throw new NotFoundException(String.format("Drop %d does not exist", dropId));
-		}
-		
-		// Check if the bucket drop exists
-		BucketDrop bucketDrop = bucketDao.findDrop(bucketId, riverDrop.getDrop().getId());
-		if (bucketDrop == null) {
-			throw new NotFoundException(String.format("Drop %d does not exist", dropId));
-		}
-		
-		// Delete drop and decrease drop count for the bucket
-		bucketDropDao.delete(bucketDrop);
-		bucketDao.decreaseDropCount(bucket);
-	}
-
-	/**
 	 * Adds the {@link Drop} specified in <code>dropId</code> to the
 	 * {@link Bucket} in <code>bucketId</code>. The {@link Account} associated
 	 * with <code>username</code> is used to verify whether the user submitting

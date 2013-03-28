@@ -50,7 +50,8 @@ public class GetDropDTO {
 	
 	private GetMediaDTO image;
 	
-	private List<Bucket> buckets;
+	@JsonProperty("buckets")
+	private List<GetBucketDropDTO> bucketDrops;
 	
 	private List<GetTagDTO> tags;
 	
@@ -106,11 +107,16 @@ public class GetDropDTO {
 		
 	}
 	
-	public static class Bucket {
+	public static class GetBucketDropDTO {
 		
+		@JsonProperty("bucket_drop_id")
 		private long id;
 		
-		private String name;
+		@JsonProperty("id")
+		private long bucketId;
+		
+		@JsonProperty("name")
+		private String bucketName;
 
 		public long getId() {
 			return id;
@@ -120,13 +126,22 @@ public class GetDropDTO {
 			this.id = id;
 		}
 
-		public String getName() {
-			return name;
+		public long getBucketId() {
+			return bucketId;
 		}
 
-		public void setName(String name) {
-			this.name = name;
+		public void setBucketId(long bucketId) {
+			this.bucketId = bucketId;
 		}
+
+		public String getBucketName() {
+			return bucketName;
+		}
+
+		public void setBucketName(String bucketName) {
+			this.bucketName = bucketName;
+		}
+		
 	}
 	
 	public static class GetTagDTO {
@@ -394,12 +409,12 @@ public class GetDropDTO {
 		this.image = image;
 	}
 
-	public List<Bucket> getBuckets() {
-		return buckets;
+	public List<GetBucketDropDTO> getBucketDrops() {
+		return bucketDrops;
 	}
 
-	public void setBuckets(List<Bucket> buckets) {
-		this.buckets = buckets;
+	public void setBucketDrops(List<GetBucketDropDTO> bucketDrops) {
+		this.bucketDrops = bucketDrops;
 	}
 
 	public List<GetTagDTO> getTags() {

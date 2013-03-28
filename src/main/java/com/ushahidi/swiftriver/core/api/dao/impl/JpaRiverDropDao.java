@@ -37,6 +37,15 @@ import com.ushahidi.swiftriver.core.model.Tag;
 
 @Repository
 public class JpaRiverDropDao extends AbstractJpaDao<RiverDrop> implements RiverDropDao {
+	
+	@Override
+	public void delete(RiverDrop t) {
+		String sql = String.format(
+				"DELETE FROM `river_droplets_read` WHERE `rivers_droplets_id` = %d",
+				t.getId());
+		em.createNativeQuery(sql).executeUpdate();
+		super.delete(t);
+	}
 
 	/*
 	 * (non-Javadoc)

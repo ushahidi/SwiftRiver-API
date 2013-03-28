@@ -50,6 +50,7 @@ import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.DropSource;
 import com.ushahidi.swiftriver.core.model.Link;
@@ -1038,15 +1039,15 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		Map<Long, Long> bucketDropsIndex = getBucketDropsIndex(dropsIndex.keySet(), dropSource);
 
 		// Query to fetch the buckets
-		String sql = "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
-		sql += "`buckets`.`bucket_name` ";
+		String sql = "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets_droplets`.`id` AS `bucket_drop_id`, ";
+		sql += "`buckets`.`id` AS `bucket_id`, `buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
 		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
 		sql += "AND `buckets`.`bucket_publish` = 1 ";
 		sql += "UNION ALL ";
-		sql += "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets`.`id` AS `bucket_id`, ";
-		sql += "`buckets`.`bucket_name` ";
+		sql += "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets_droplets`.`id` AS `bucket_drop_iid`, ";
+		sql += "`buckets`.`id` AS `bucket_id`, `buckets`.`bucket_name` ";
 		sql += "FROM `buckets` ";
 		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
 		sql += "LEFT JOIN `accounts` ON (`buckets`.`account_id` = `accounts`.`id` AND `buckets`.`account_id` = :accountId) ";
@@ -1060,13 +1061,13 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		List<Map<String, Object>> results = this.namedJdbcTemplate.queryForList(sql, params);
 	
 		// Group the buckets per drop 
-		Map<Long, List<Bucket>> dropBucketsMap = new HashMap<Long, List<Bucket>>();
+		Map<Long, List<BucketDrop>> dropBucketsMap = new HashMap<Long, List<BucketDrop>>();
 		for (Map<String, Object> row: results) {
 			
 			Long dropId = ((BigInteger)row.get("id")).longValue();
-			List<Bucket> dropBuckets = dropBucketsMap.get(dropId);
+			List<BucketDrop> dropBuckets = dropBucketsMap.get(dropId);
 			if (dropBuckets == null) {
-				dropBuckets = new ArrayList<Bucket>();
+				dropBuckets = new ArrayList<BucketDrop>();
 			}
 
 			// Create the bucket
@@ -1074,18 +1075,23 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			bucket.setId(((BigInteger) row.get("bucket_id")).longValue());
 			bucket.setName((String)row.get("bucket_name"));
 
+			// Create the bucket drop
+			BucketDrop bucketDrop = new BucketDrop();
+			bucketDrop.setId(((BigInteger)row.get("bucket_drop_id")).longValue());
+			bucketDrop.setBucket(bucket);
+
 			// Add to the list of buckets for the current drop
-			dropBuckets.add(bucket);			
+			dropBuckets.add(bucketDrop);			
 			dropBucketsMap.put(dropId, dropBuckets);				
 		}
 		
 		// Populate the buckets for the submitted drops
-		for (Map.Entry<Long, List<Bucket>> entry: dropBucketsMap.entrySet()) {
+		for (Map.Entry<Long, List<BucketDrop>> entry: dropBucketsMap.entrySet()) {
 			Long dropId = bucketDropsIndex.get(entry.getKey());
 
 			// Retrieve the drop
 			Drop drop = drops.get(dropsIndex.get(dropId));
-			drop.setBuckets(entry.getValue());
+			drop.setBucketDrops(entry.getValue());
 		}
 	}
 	

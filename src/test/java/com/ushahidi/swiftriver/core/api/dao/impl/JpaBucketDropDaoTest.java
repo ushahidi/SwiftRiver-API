@@ -16,7 +16,11 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +48,9 @@ public class JpaBucketDropDaoTest extends AbstractDaoTest {
 
 	@Autowired
 	private LinkDao linkDao;
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	/**
 	 * Test for {@link BucketDropDao#addPlace(BucketDrop, Place)}
@@ -93,5 +100,16 @@ public class JpaBucketDropDaoTest extends AbstractDaoTest {
 		
 		bucketDropDao.addLink(bucketDrop, link);
 		assertNotNull(bucketDropDao.findLink(bucketDrop, link));
+	}
+
+	@Test
+	public void delete() {
+		BucketDrop bucketDrop = bucketDropDao.findById(4L);
+		bucketDropDao.delete(bucketDrop);
+		
+		String sql = "SELECT * FROM `bucket_droplets_read` WHERE `buckets_droplets_id` = 4";
+		int foundRows = entityManager.createNativeQuery(sql).getResultList().size();
+		assertEquals(0, foundRows);
+		
 	}
 }

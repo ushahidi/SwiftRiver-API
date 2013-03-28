@@ -106,8 +106,9 @@ public class Drop {
 	@JoinTable(name = "droplets_media", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
 	private List<Media> media;
 	
+	// List of bucket drops associated with this drop
 	@Transient
-	private List<Bucket> buckets;
+	private List<BucketDrop> bucketDrops;
 	
 	@Transient
 	private List<Long> riverIds;
@@ -269,12 +270,12 @@ public class Drop {
 		this.media = media;
 	}
 
-	public List<Bucket> getBuckets() {
-		return buckets;
+	public List<BucketDrop> getBucketDrops() {
+		return bucketDrops;
 	}
 
-	public void setBuckets(List<Bucket> buckets) {
-		this.buckets = buckets;
+	public void setBucketDrops(List<BucketDrop> bucketDrops) {
+		this.bucketDrops = bucketDrops;
 	}
 
 	public List<Long> getRiverIds() {

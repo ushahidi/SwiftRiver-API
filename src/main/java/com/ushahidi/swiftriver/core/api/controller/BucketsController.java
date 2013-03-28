@@ -304,10 +304,10 @@ public class BucketsController extends AbstractController {
 		requestParams.put("count", count);
 		requestParams.put("page", page);
 		
-		if (maxId != null && maxId > 0) requestParams.put("max_id", maxId);
-		if (sinceId != null && sinceId > 0) requestParams.put("since_id", sinceId);
-		if (dateFrom != null) requestParams.put("date_from", dateFrom);
-		if (dateTo != null) requestParams.put("dae_to", dateTo);
+		if (maxId != null && maxId > 0) requestParams.put("maxId", maxId);
+		if (sinceId != null && sinceId > 0) requestParams.put("sinceId", sinceId);
+		if (dateFrom != null) requestParams.put("dateFrom", dateFrom);
+		if (dateTo != null) requestParams.put("dateTo", dateTo);
 		if (keywords != null) requestParams.put("keywords", keywords);
 		if (channels != null) requestParams.put("channels", channels);
 		if (location != null) requestParams.put("location", location);
@@ -330,20 +330,6 @@ public class BucketsController extends AbstractController {
 		bucketService.deleteBucketDrop(id, dropId, principal.getName());
 	}
 
-	/**
-	 * Handler for deleting a {@link RiverDrop} from a bucket
-	 * 
-	 * @param id
-	 * @param dropId
-	 * @param principal
-	 */
-	@RequestMapping(value = "/{id}/river/drops/{dropId}", method = RequestMethod.DELETE)
-	@ResponseBody
-	public void deleteRiverDrop(@PathVariable Long id, @PathVariable Long dropId,
-			Principal principal) {
-		bucketService.deleteRiverDrop(id, dropId, principal.getName());
-	}
-	
 	/**
 	 * Handler for marking bucket drops as read
 	 * 

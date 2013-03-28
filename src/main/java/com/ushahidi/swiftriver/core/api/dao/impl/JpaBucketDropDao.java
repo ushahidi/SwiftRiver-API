@@ -45,11 +45,23 @@ import com.ushahidi.swiftriver.core.model.Tag;
 @Repository
 public class JpaBucketDropDao extends AbstractJpaDao<BucketDrop> implements BucketDropDao {
 
+	@Override
 	public BucketDrop create(BucketDrop t) {
 		t.setVeracity(1L);
 		t.setDateAdded(new Date());
 		return super.create(t);
 	}
+	
+
+	@Override
+	public void delete(BucketDrop t) {
+		String sql = String.format(
+				"DELETE FROM `bucket_droplets_read` WHERE `buckets_droplets_id` = %d",
+				t.getId());
+		em.createNativeQuery(sql).executeUpdate();
+		super.delete(t);
+	}
+
 
 	/*
 	 * (non-Javadoc)
