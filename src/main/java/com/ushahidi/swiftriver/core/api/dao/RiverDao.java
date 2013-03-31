@@ -54,11 +54,11 @@ public interface RiverDao extends GenericDao<River> {
 	 * </ul>
 	 * 
 	 * @param id
-	 * @param params Key/value store of parameters
+	 * @param filterParams Key/value store of parameters
 	 * @param queryingAccount
 	 * @return
 	 */
-	public List<Drop> getDrops(Long id, Map<String, Object> params, Account queryingAccount);
+	public List<Drop> getDrops(Long id, Map<String, Object> filterParams, Account queryingAccount);
 	
 	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in <code>accountId</code>
