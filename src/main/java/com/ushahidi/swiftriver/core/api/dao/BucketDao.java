@@ -36,10 +36,10 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 *  
 	 * @param bucketId
 	 * @param account
-	 * @param requestParams 
+	 * @param filterParams 
 	 * @return {@link LinkDTO}
 	 */
-	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams);
+	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> filterParams);
 	
 	/**
 	 * Adds the {@link Drop} specified in <code>drop</code> to the

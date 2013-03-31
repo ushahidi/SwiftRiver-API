@@ -188,7 +188,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#getDrops(java.lang.Long, com.ushahidi.swiftriver.core.model.Account, java.util.Map)
 	 */
-	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> requestParams) {
+	public List<Drop> getDrops(Long bucketId, Account account, Map<String, Object> filterParams) {
 		String sql = "SELECT `buckets_droplets`.`id` AS `id`, `droplet_title`, ";
 		sql += "`droplet_content`, `droplets`.`channel`, `identities`.`id` AS `identity_id`, `identity_name`, ";
 		sql += "`identity_avatar`, `droplets`.`droplet_date_pub`, `droplet_orig_id`, ";
@@ -204,40 +204,46 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		sql += "AND `buckets_droplets`.`bucket_id` = :bucketId ";
 		
 		// Check for channel parameter
-		if (requestParams.containsKey("channels")) {
+		if (filterParams.containsKey("channels")) {
 			sql += "AND `droplets`.`channel` IN (:channels) ";
 		}
 		
-		if (requestParams.containsKey("photos")) {
+		if (filterParams.containsKey("photos")) {
 			sql += "AND `droplets`.`droplet_image` > 0";
 		}
 		
 		// Check for sinceId
-		if (requestParams.containsKey("sinceId")) {
+		if (filterParams.containsKey("sinceId")) {
 			sql += " AND `buckets_droplets`.`id` > :sinceId";
 		}
 		
 		// Check for maxId
-		if (requestParams.containsKey("maxId")) {
+		if (filterParams.containsKey("maxId")) {
 			sql += " AND `buckets_droplets`.`id` <= :maxId";
 		}
 
 		// dateFrom and dateTo
-		if (requestParams.containsKey("dateFrom")) {
+		if (filterParams.containsKey("dateFrom")) {
 			sql += " AND `buckets_droplets`.`droplet_date_added` >= :dateFrom";
 		}
 		
-		if (requestParams.containsKey("dateTo")) {
+		if (filterParams.containsKey("dateTo")) {
 			sql += " AND `buckets_droplets`.`droplet_date_added` <= :dateTo";
 		}
-		
 
-		Integer dropCount = (Integer) requestParams.get("count");
-		Integer page = (Integer) requestParams.get("page");
+		Integer dropCount = (Integer) filterParams.get("count");
+		Integer page = (Integer) filterParams.get("page");
 
 		sql += " ORDER BY `buckets_droplets`.`droplet_date_added` DESC ";
 		sql += String.format("LIMIT %d OFFSET %d", dropCount, ((page - 1) * dropCount));
 
+		// Check for isRead
+		if (filterParams.containsKey("isRead")) {
+			sql = "SELECT * FROM ("  + sql + ") AS T WHERE T.`drop_read` ";
+			boolean isRead = ((Boolean) filterParams.get("isRead")).booleanValue();
+			sql += isRead ? "IS NOT NULL" : "IS NULL";
+		}
+		
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("bucketId", bucketId);
 		params.addValue("userId", account.getOwner().getId());
@@ -245,8 +251,8 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		
 		String[] paramKeys = {"channels", "maxId", "sinceId", "dateFrom", "dateTo"};
 		for (String key: paramKeys) {
-			if (requestParams.containsKey(key)) {
-				params.addValue(key, requestParams.get(key));
+			if (filterParams.containsKey(key)) {
+				params.addValue(key, filterParams.get(key));
 			}
 		}
 

@@ -298,6 +298,7 @@ public class BucketsController extends AbstractController {
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "location", required = false) String location,
 			@RequestParam(value = "photos", required = false) Boolean photos,
+			@RequestParam(value = "state", required = false) String state,
 			Principal principal) {
 
 		if (principal == null) {
@@ -342,6 +343,15 @@ public class BucketsController extends AbstractController {
 
 		if (location != null) requestParams.put("location", location);
 		if (photos != null && photos == true) requestParams.put("photos", photos);
+		
+		// Check for drop state
+		if (state != null) {
+			if (state.equalsIgnoreCase("read") || state.equalsIgnoreCase("unread")) {
+				requestParams.put("isRead", state.equalsIgnoreCase("read"));
+			} else {
+				errors.add(new ErrorField("state", "invalid"));
+			}
+		}
 		
 		if (!errors.isEmpty()) {
 			BadRequestException exception = new BadRequestException("Invalid parameters");
