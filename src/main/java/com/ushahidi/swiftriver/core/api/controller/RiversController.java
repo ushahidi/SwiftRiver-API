@@ -122,8 +122,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteRiver(@PathVariable Long id) {
-		riverService.deleteRiver(id);
+	public void deleteRiver(@PathVariable Long id, Principal principal) {
+		riverService.deleteRiver(id, principal.getName());
 	}
 
 	/**
@@ -381,10 +381,10 @@ public class RiversController extends AbstractController {
 
 		Boolean isRead = null;
 		if (state != null) {
-			if (!state.equals("read") && !state.equals("unread")) {
-				errors.add(new ErrorField("state", "invalid"));
+			if (state.equalsIgnoreCase("read") || state.equalsIgnoreCase("unread")) {
+				isRead = state.equalsIgnoreCase("read");
 			} else {
-				isRead = state.equals("read");
+				errors.add(new ErrorField("state", "invalid"));
 			}
 		}
 

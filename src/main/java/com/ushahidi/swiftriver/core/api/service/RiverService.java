@@ -415,13 +415,24 @@ public class RiverService {
 	}
 
 	/**
-	 * Deletes a river
+	 * Deletes the {@link River} entity with the ID specified in
+	 * <code>riverId</code>. The {@link Account} associated with
+	 * the username in <code>authUser</code> must be the creator
+	 * of the {@link River} otherwise a {@link ForbiddenException}
+	 * will be thrown
 	 * 
-	 * @param id
+	 * @param riverId
+	 * @param authUser
 	 */
 	@Transactional(readOnly = false)
-	public boolean deleteRiver(Long id) {
-		River river = getRiver(id);
+	public boolean deleteRiver(Long riverId, String authUser) {
+		River river = getRiver(riverId);
+		Account account = accountDao.findByUsername(authUser);
+		
+		// Only the creator can delete the river
+		if (!river.getAccount().equals(account)) {
+			throw new ForbiddenException("Access denied");
+		}
 
 		// Delete the river
 		riverDao.delete(river);

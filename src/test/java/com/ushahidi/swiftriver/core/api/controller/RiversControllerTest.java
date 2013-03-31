@@ -216,43 +216,26 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void getReadDrops() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		this.mockMvc
-				.perform(
-						get("/v1/rivers/1/drops?state=read").principal(
-								authentication)).andExpect(status().isOk())
-
-				.andExpect(jsonPath("$[1].id").value(2));
+		this.mockMvc.perform(get("/v1/rivers/1/drops?state=read")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(2)));
 	}
 
 	@Test
 	public void getUnreadDrops() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		this.mockMvc
-				.perform(
-						get("/v1/rivers/1/drops?state=unread").principal(
-								authentication)).andExpect(status().isOk())
-
-				.andExpect(jsonPath("$[1].id").value(3));
+		this.mockMvc.perform(get("/v1/rivers/1/drops?state=unread")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(3)));
 	}
 
 	@Test
 	public void getDropsWithinRange() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		this.mockMvc
-				.perform(
-						get(
-								"/v1/rivers/1/drops?date_from=01-JAN-12&date_to=01-JAN-13")
-								.principal(authentication))
-				.andExpect(status().isOk())
-
-				.andExpect(jsonPath("$[0].id").value(4));
+		this.mockMvc.perform(get("/v1/rivers/1/drops?date_from=01-JAN-12&date_to=01-JAN-13")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0].id").value(4));
 	}
 
 	/**
@@ -263,7 +246,9 @@ public class RiversControllerTest extends AbstractControllerTest {
 	@Test
 	@Transactional
 	public void deleteRiver() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1")).andExpect(status().isOk());
+		this.mockMvc.perform(delete("/v1/rivers/1")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
 	}
 
 	/**
@@ -274,9 +259,10 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteNonExistentRiver() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/500"))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.message").exists());
+		this.mockMvc.perform(delete("/v1/rivers/500")
+				.principal(getAuthentication("default")))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").exists());
 	}
 
 	/**
