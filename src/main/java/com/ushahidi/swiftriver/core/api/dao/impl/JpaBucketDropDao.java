@@ -18,10 +18,14 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
@@ -30,9 +34,14 @@ import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.BucketDropComment;
 import com.ushahidi.swiftriver.core.model.BucketDropForm;
+import com.ushahidi.swiftriver.core.model.BucketDropFormField;
 import com.ushahidi.swiftriver.core.model.BucketDropLink;
 import com.ushahidi.swiftriver.core.model.BucketDropPlace;
 import com.ushahidi.swiftriver.core.model.BucketDropTag;
+import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropForm;
+import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormField;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
@@ -505,17 +514,95 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop>
 		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findForm(com.ushahidi.swiftriver.core.model.BucketDrop, java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.BucketDropDao#findForm(com.ushahidi
+	 * .swiftriver.core.model.BucketDrop, java.lang.Long)
 	 */
 	@Override
-	public BucketDropForm findForm(BucketDrop drop, Long formId) {
-		for (BucketDropForm f : drop.getForms()) {
-			if (f.getId().equals(formId)) {
-				return f;
+	public BucketDropForm findForm(Long dropId, Long formId) {
+		String query = "SELECT bdf ";
+		query += "FROM BucketDropForm bdf ";
+		query += "JOIN bdf.drop d ";
+		query += "JOIN bdf.form f ";
+		query += "WHERE d.id = :dropId ";
+		query += "AND f.id = :formId";
+
+		BucketDropForm dropForm = null;
+		try {
+			dropForm = (BucketDropForm) em.createQuery(query)
+					.setParameter("dropId", dropId)
+					.setParameter("formId", formId).getSingleResult();
+		} catch (NoResultException e) {
+			// Do nothing
+		}
+		return dropForm;
+	}
+
+	/**
+	 * Populate custom field for the given drops.
+	 * 
+	 * @param drops
+	 */
+	@SuppressWarnings("rawtypes")
+	public void populateForms(List<Drop> drops) {
+
+		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+		int i = 0;
+		for (Drop drop : drops) {
+			dropIndex.put(drop.getId(), i);
+			i++;
+		}
+
+		String sql = "SELECT form.id, form.drop_id, form_id, field.field_id, field.value ";
+		sql += "FROM bucket_droplet_form form, bucket_droplet_form_field field ";
+		sql += "WHERE form.id = field.droplet_form_id ";
+		sql += "AND drop_id IN (:drop_ids)  ";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("drop_ids", dropIndex.keySet());
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
+		// Add form values to their respective drops.
+		Map<Long, BucketDropForm> dropForms = new HashMap<Long, BucketDropForm>();
+		for (Map<String, Object> result : results) {
+
+			Long dropId = ((Number) result.get("drop_id")).longValue();
+			Drop drop = drops.get(dropIndex.get(dropId));
+			if (drop.getForms() == null) {
+				drop.setForms(new ArrayList<DropForm>());
+			}
+
+			Long dropFormId = ((Number) result.get("id")).longValue();
+			BucketDropForm dropForm = dropForms.get(dropFormId);
+
+			if (dropForm == null) {
+				dropForm = new BucketDropForm();
+				dropForm.setId(dropFormId);
+				Form form = new Form();
+				form.setId(((Number) result.get("form_id")).longValue());
+				dropForm.setForm(form);
+				dropForm.setValues(new ArrayList<BucketDropFormField>());
+
+				dropForms.put(dropFormId, dropForm);
+			}
+
+			BucketDropFormField value = new BucketDropFormField();
+			FormField field = new FormField();
+			field.setId(((Number) result.get("field_id")).longValue());
+			value.setField(field);
+			value.setValue((String) result.get("value"));
+
+			List<BucketDropFormField> values = dropForm.getValues();
+			values.add(value);
+
+			if (!drop.getForms().contains(dropForm)) {
+				drop.getForms().add(dropForm);
 			}
 		}
-		return null;
 	}
 
 }

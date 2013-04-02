@@ -347,7 +347,8 @@ INSERT INTO user_tokens (id, user_id, token, created, expires) VALUES
 -- Data for table forms
 -- -----------------------------------------------------
 INSERT INTO forms (id, account_id, name) VALUES
-(1, 3, 'Dangerous Speech Categorization');
+(1, 3, 'Dangerous Speech Categorization'),
+(2, 3, 'A Test Form');
 
 -- -----------------------------------------------------
 -- Data for table form_fields
@@ -355,28 +356,40 @@ INSERT INTO forms (id, account_id, name) VALUES
 INSERT INTO form_fields (id, form_id, title, description, type, required, options) VALUES
 (1, 1, 'Language', 'Language the audience is being addressed in', 'multiple', 0, '["English","Swahili","Luo","Kalenjin","Luhya","Kikuyu","Sheng","Other"]'),
 (2, 1, 'Speaker', 'Description of the speaker', 'select', 0, '["Politician","Journalist","Blogger","Community Leader","Anonymous Commenter","Public Figure"]'),
-(3, 1, 'Target Audience', 'Audience most likely to react to this statement/article', 'text', 0, '[]');
+(3, 1, 'Target Audience', 'Audience most likely to react to this statement/article', 'text', 0, '[]'),
+(4, 2, 'Field 1', 'Field 1', 'text', 0, '[]'),
+(5, 2, 'Field 2', 'Field 2', 'text', 0, '[]');
 
 -- -----------------------------------------------------
 -- Data for table river_droplet_form
 -- -----------------------------------------------------
 INSERT INTO river_droplet_form (id, drop_id, form_id) VALUES
-(1, 2, 1);
+(1, 2, 1),
+(2, 2, 2);
 
 -- -----------------------------------------------------
 -- Data for table river_droplet_form_field
 -- -----------------------------------------------------
 INSERT INTO river_droplet_form_field (id, droplet_form_id, field_id, value) VALUES
-(1, 1, 1, '["English"]');
+(1, 1, 1, '["English"]'),
+(2, 1, 2, '"Journalist"'),
+(3, 1, 3, '"Kenyans"'),
+(4, 2, 4, '"Field 1 Value"'),
+(5, 2, 5, '"Field 2 Value"');
 
 -- -----------------------------------------------------
 -- Data for table bucket_droplet_form
 -- -----------------------------------------------------
 INSERT INTO bucket_droplet_form (id, drop_id, form_id) VALUES
-(1, 2, 1);
+(1, 2, 1),
+(2, 2, 2);
 
 -- -----------------------------------------------------
 -- Data for table bucket_droplet_form_field
 -- -----------------------------------------------------
 INSERT INTO bucket_droplet_form_field (id, droplet_form_id, field_id, value) VALUES
-(1, 1, 1, '["English"]');
+(1, 1, 1, '["English"]'),
+(2, 1, 2, '"Journalist"'),
+(3, 1, 3, '"Kenyans"'),
+(4, 2, 4, '"Field 1 Value"'),
+(5, 2, 5, '"Field 2 Value"');

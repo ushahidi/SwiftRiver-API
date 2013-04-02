@@ -486,7 +486,7 @@ private BucketDao mockBucketDao;
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 		when(mockBucketDao.findById(anyLong())).thenReturn(bucket);
 		when(mockBucketDropDao.findById(anyLong())).thenReturn(drop);
-		when(mockBucketDropDao.findForm((BucketDrop)anyObject(), anyLong())).thenReturn(form);
+		when(mockBucketDropDao.findForm(anyLong(), anyLong())).thenReturn(form);
 
 		ModifyFormValueDTO dto = new ModifyFormValueDTO();
 		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());
@@ -524,7 +524,7 @@ private BucketDao mockBucketDao;
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 		when(mockBucketDao.findById(anyLong())).thenReturn(bucket);
 		when(mockBucketDropDao.findById(anyLong())).thenReturn(drop);
-		when(mockBucketDropDao.findForm((BucketDrop)anyObject(), anyLong())).thenReturn(form);
+		when(mockBucketDropDao.findForm(anyLong(), anyLong())).thenReturn(form);
 
 		ModifyFormValueDTO dto = new ModifyFormValueDTO();
 		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());

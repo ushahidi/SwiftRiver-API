@@ -14,9 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -149,7 +147,11 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].tags").isArray())
 				.andExpect(jsonPath("$[0].links").isArray())
 				.andExpect(jsonPath("$[0].media").isArray())
-				.andExpect(jsonPath("$[0].places").isArray());
+				.andExpect(jsonPath("$[0].places").isArray())
+				.andExpect(jsonPath("$[3].forms").exists())
+				.andExpect(jsonPath("$[3].forms.id").value(hasItems("1", "2")))
+				.andExpect(jsonPath("$[3].forms.values[2].id").value("3"))
+				.andExpect(jsonPath("$[3].forms.values[2].value").value("Kenyans"));
 	}
 
 	@Test

@@ -144,7 +144,11 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$.[0].places").isArray())
 			.andExpect(jsonPath("$.[0].media").isArray())
 			.andExpect(jsonPath("$.[0].links").isArray())
-			.andExpect(jsonPath("$.[0].buckets[0].name").exists());
+			.andExpect(jsonPath("$.[0].buckets[0].name").exists())
+			.andExpect(jsonPath("$[3].forms").exists())
+			.andExpect(jsonPath("$[3].forms.id").value(hasItems("1","2")))
+			.andExpect(jsonPath("$[3].forms.values[2].id").value("3"))
+			.andExpect(jsonPath("$[3].forms.values[2].value").value("Kenyans"));;
 	}
 	
 	/**

@@ -37,6 +37,8 @@ import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketDropForm;
+import com.ushahidi.swiftriver.core.model.BucketDropFormField;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
@@ -213,7 +215,21 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 		assertEquals("Wales", place.getPlaceName());
 		assertEquals(new Float(146.11), place.getLongitude());
 		assertEquals(new Float(-33), place.getLatitude());
-
+		
+		drop = drops.get(3);
+		assertEquals(2, drop.getId());
+		assertEquals(2, drop.getForms().size());
+		
+		BucketDropForm form = (BucketDropForm) drop.getForms().get(0);
+		assertEquals(1, (long)form.getId());
+		List<BucketDropFormField> values = form.getValues();
+		assertEquals(3, values.size());
+		assertEquals(1, (long)values.get(0).getField().getId());
+		assertEquals("[\"English\"]", values.get(0).getValue());
+		assertEquals(2, (long)values.get(1).getField().getId());
+		assertEquals("\"Journalist\"", values.get(1).getValue());
+		assertEquals(3, (long)values.get(2).getField().getId());
+		assertEquals("\"Kenyans\"", values.get(2).getValue());
 	}
 	
 	@Test

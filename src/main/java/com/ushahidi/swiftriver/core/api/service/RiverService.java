@@ -1119,9 +1119,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 		
-		RiverDrop drop = getRiverDrop(dropId, river);
-		
-		RiverDropForm dropForm = riverDropDao.findForm(drop, formId);
+		RiverDropForm dropForm = riverDropDao.findForm(dropId, formId);
 
 		if (dropForm == null)
 			throw new NotFoundException("The specified form was not found");
@@ -1148,9 +1146,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 		
-		RiverDrop drop = getRiverDrop(dropId, river);
-		
-		RiverDropForm dropForm = riverDropDao.findForm(drop, formId);
+		RiverDropForm dropForm = riverDropDao.findForm(dropId, formId);
 
 		if (dropForm == null)
 			throw new NotFoundException("The specified form was not found");

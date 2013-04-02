@@ -40,6 +40,8 @@ import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverDropForm;
+import com.ushahidi.swiftriver.core.model.RiverDropFormField;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
@@ -135,6 +137,20 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		assertEquals(new Float(146.11), place.getLongitude());
 		assertEquals(new Float(-33), place.getLatitude());
 
+		drop = drops.get(3);
+		assertEquals(2, drop.getId());
+		assertEquals(2, drop.getForms().size());
+		
+		RiverDropForm form = (RiverDropForm) drop.getForms().get(0);
+		assertEquals(1, (long)form.getId());
+		List<RiverDropFormField> values = form.getValues();
+		assertEquals(3, values.size());
+		assertEquals(1, (long)values.get(0).getField().getId());
+		assertEquals("[\"English\"]", values.get(0).getValue());
+		assertEquals(2, (long)values.get(1).getField().getId());
+		assertEquals("\"Journalist\"", values.get(1).getValue());
+		assertEquals(3, (long)values.get(2).getField().getId());
+		assertEquals("\"Kenyans\"", values.get(2).getValue());
 	}
 
 	@Test

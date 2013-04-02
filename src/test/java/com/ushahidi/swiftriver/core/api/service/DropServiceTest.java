@@ -49,6 +49,7 @@ public class DropServiceTest {
 		dropService.setDropDao(mockDropDao);
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void createDrops() {
 		List<CreateDropDTO> dropDTOs = new ArrayList<CreateDropDTO>();

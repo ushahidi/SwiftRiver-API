@@ -62,6 +62,8 @@ public class GetDropDTO {
 	
 	private Boolean read;
 	
+	private List<FormValueDTO> forms;
+	
 	public static class Identity {
 		
 		private long id;
@@ -440,5 +442,13 @@ public class GetDropDTO {
 
 	public void setRead(Boolean read) {
 		this.read = read;
+	}
+
+	public List<FormValueDTO> getForms() {
+		return forms;
+	}
+
+	public void setForms(List<FormValueDTO> forms) {
+		this.forms = forms;
 	}
 }

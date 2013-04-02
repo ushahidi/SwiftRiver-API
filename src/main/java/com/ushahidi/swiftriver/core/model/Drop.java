@@ -115,6 +115,7 @@ public class Drop {
 	@Transient
 	private Boolean read;
 	
+	@SuppressWarnings("rawtypes")
 	@Transient
 	private List<DropForm> forms;
 
@@ -290,10 +291,12 @@ public class Drop {
 		this.read = read;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public List<DropForm> getForms() {
 		return forms;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setForms(List<DropForm> forms) {
 		this.forms = forms;
 	}

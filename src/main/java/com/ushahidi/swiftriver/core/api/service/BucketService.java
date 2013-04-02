@@ -1301,9 +1301,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 		
-		BucketDrop drop = getBucketDrop(dropId, bucket);
-		
-		BucketDropForm dropForm = bucketDropDao.findForm(drop, formId);
+		BucketDropForm dropForm = bucketDropDao.findForm(dropId, formId);
 
 		if (dropForm == null)
 			throw new NotFoundException("The specified form was not found");
@@ -1330,9 +1328,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 		
-		BucketDrop drop = getBucketDrop(dropId, bucket);
-		
-		BucketDropForm dropForm = bucketDropDao.findForm(drop, formId);
+		BucketDropForm dropForm = bucketDropDao.findForm(dropId, formId);
 
 		if (dropForm == null)
 			throw new NotFoundException("The specified form was not found");

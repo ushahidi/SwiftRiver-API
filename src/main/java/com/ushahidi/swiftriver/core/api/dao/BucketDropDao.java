@@ -172,10 +172,10 @@ public interface BucketDropDao extends GenericDao<BucketDrop>, ContextDropDao {
 	/**
 	 * Return the form with the specified id in the drop
 	 * 
-	 * @param drop
+	 * @param dropId
 	 * @param formId
 	 * @return
 	 */
-	public BucketDropForm findForm(BucketDrop drop, Long formId);
+	public BucketDropForm findForm(Long dropId, Long formId);
 
 }

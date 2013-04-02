@@ -16,20 +16,30 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.DropForm;
+import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormField;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
+import com.ushahidi.swiftriver.core.model.RiverDropFormField;
 import com.ushahidi.swiftriver.core.model.RiverDropLink;
 import com.ushahidi.swiftriver.core.model.RiverDropPlace;
 import com.ushahidi.swiftriver.core.model.RiverDropTag;
@@ -354,17 +364,95 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop>
 		return em.createQuery(sql).setParameter(1, commentId).executeUpdate() == 1;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findForm(com.ushahidi.swiftriver.core.model.RiverDrop, java.lang.Long)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.RiverDropDao#findForm(com.ushahidi
+	 * .swiftriver.core.model.RiverDrop, java.lang.Long)
 	 */
 	@Override
-	public RiverDropForm findForm(RiverDrop drop, Long formId) {
-		for (RiverDropForm f : drop.getForms()) {
-			if (f.getId().equals(formId)) {
-				return f;
+	public RiverDropForm findForm(Long dropId, Long formId) {
+		String query = "SELECT df ";
+		query += "FROM RiverDropForm df ";
+		query += "JOIN df.drop d ";
+		query += "JOIN df.form f ";
+		query += "WHERE d.id = :dropId ";
+		query += "AND f.id = :formId";
+
+		RiverDropForm dropForm = null;
+		try {
+			dropForm = (RiverDropForm) em.createQuery(query)
+					.setParameter("dropId", dropId)
+					.setParameter("formId", formId).getSingleResult();
+		} catch (NoResultException e) {
+			// Do nothing
+		}
+		return dropForm;
+	}
+
+	/**
+	 * Populate custom field for the given drops.
+	 * 
+	 * @param drops
+	 */
+	@SuppressWarnings("rawtypes")
+	public void populateForms(List<Drop> drops) {
+
+		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+		int i = 0;
+		for (Drop drop : drops) {
+			dropIndex.put(drop.getId(), i);
+			i++;
+		}
+
+		String sql = "SELECT form.id, form.drop_id, form_id, field.field_id, field.value ";
+		sql += "FROM river_droplet_form form, river_droplet_form_field field ";
+		sql += "WHERE form.id = field.droplet_form_id ";
+		sql += "AND drop_id IN (:drop_ids)  ";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("drop_ids", dropIndex.keySet());
+		List<Map<String, Object>> results = this.namedJdbcTemplate
+				.queryForList(sql, params);
+
+		// Add form values to their respective drops.
+		Map<Long, RiverDropForm> dropForms = new HashMap<Long, RiverDropForm>();
+		for (Map<String, Object> result : results) {
+
+			Long dropId = ((Number) result.get("drop_id")).longValue();
+			Drop drop = drops.get(dropIndex.get(dropId));
+			if (drop.getForms() == null) {
+				drop.setForms(new ArrayList<DropForm>());
+			}
+
+			Long dropFormId = ((Number) result.get("id")).longValue();
+			RiverDropForm dropForm = dropForms.get(dropFormId);
+
+			if (dropForm == null) {
+				dropForm = new RiverDropForm();
+				dropForm.setId(dropFormId);
+				Form form = new Form();
+				form.setId(((Number) result.get("form_id")).longValue());
+				dropForm.setForm(form);
+				dropForm.setValues(new ArrayList<RiverDropFormField>());
+
+				dropForms.put(dropFormId, dropForm);
+			}
+
+			RiverDropFormField value = new RiverDropFormField();
+			FormField field = new FormField();
+			field.setId(((Number) result.get("field_id")).longValue());
+			value.setField(field);
+			value.setValue((String) result.get("value"));
+
+			List<RiverDropFormField> values = dropForm.getValues();
+			values.add(value);
+
+			if (!drop.getForms().contains(dropForm)) {
+				drop.getForms().add(dropForm);
 			}
 		}
-		return null;
 	}
 
 }

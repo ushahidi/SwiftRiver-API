@@ -18,7 +18,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,6 @@ import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
-import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.Tag;
 
 public class JpaRiverDropDaoTest extends AbstractJpaDaoTest {
@@ -114,12 +112,6 @@ public class JpaRiverDropDaoTest extends AbstractJpaDaoTest {
 	
 	@Test
 	public void findForm() {
-		RiverDrop drop = new RiverDrop();
-		drop.setForms(new ArrayList<RiverDropForm>());
-		RiverDropForm form = new RiverDropForm();
-		form.setId(1L);
-		drop.getForms().add(form);
-		
-		assertNotNull(riverDropDao.findForm(drop, 1L));
+		assertNotNull(riverDropDao.findForm(2L, 1L));
 	}
 }

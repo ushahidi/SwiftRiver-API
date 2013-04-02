@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -695,7 +696,7 @@ public class RiverServiceTest {
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 		when(mockRiverDao.findById(anyLong())).thenReturn(river);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
-		when(mockRiverDropDao.findForm((RiverDrop)anyObject(), anyLong())).thenReturn(form);
+		when(mockRiverDropDao.findForm(anyLong(), anyLong())).thenReturn(form);
 
 		ModifyFormValueDTO dto = new ModifyFormValueDTO();
 		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());
@@ -733,7 +734,7 @@ public class RiverServiceTest {
 		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
 		when(mockRiverDao.findById(anyLong())).thenReturn(river);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
-		when(mockRiverDropDao.findForm((RiverDrop)anyObject(), anyLong())).thenReturn(form);
+		when(mockRiverDropDao.findForm(anyLong(), anyLong())).thenReturn(form);
 
 		ModifyFormValueDTO dto = new ModifyFormValueDTO();
 		dto.setValues(new ArrayList<ModifyFormValueDTO.FormFieldValue>());

@@ -145,6 +145,6 @@ public interface RiverDropDao extends GenericDao<RiverDrop>, ContextDropDao {
 	 * @param formId
 	 * @return
 	 */
-	public RiverDropForm findForm(RiverDrop drop, Long formId);
+	public RiverDropForm findForm(Long dropId, Long formId);
 	
 }

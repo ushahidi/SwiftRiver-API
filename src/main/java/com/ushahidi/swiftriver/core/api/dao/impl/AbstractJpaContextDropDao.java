@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Query;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,7 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 	 * Query to be used for retrieving media metadata for drops in a River/Bucket
 	 */
 	protected String mediaQuery = null;
-
+	
 	/**
 	 * Query to be used for retrieving place metadata for drops in a River/Bucket
 	 */
@@ -76,7 +76,7 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 	@PersistenceContext
 	protected EntityManager em;
 
-	private NamedParameterJdbcTemplate namedJdbcTemplate;
+	protected NamedParameterJdbcTemplate namedJdbcTemplate;
 
 	public EntityManager getEm() {
 		return em;
@@ -109,6 +109,7 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 		populateMedia(drops);
 		populatePlaces(drops);
 		populateBuckets(drops, queryingAccount);
+		populateForms(drops);
 	}
 
 	/**
@@ -423,5 +424,12 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 
 		return bucketDropsIndex;
 	}
+	
+	/**
+	 * Populate custom field for the given drops.
+	 * 
+	 * @param drops
+	 */
+	abstract public void populateForms(List<Drop> drops);
 	
 }
