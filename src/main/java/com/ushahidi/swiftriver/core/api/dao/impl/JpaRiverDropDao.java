@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -133,6 +134,15 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop>
 
 		// Query for retrieving the RiverDrop id
 		contextDropQuery = "SELECT id, droplet_id FROM rivers_droplets WHERE id IN :dropIds";
+	}
+	
+	@Override
+	public void delete(RiverDrop t) {
+		String sql = String.format(
+				"DELETE FROM `river_droplets_read` WHERE `rivers_droplets_id` = %d",
+				t.getId());
+		em.createNativeQuery(sql).executeUpdate();
+		super.delete(t);
 	}
 
 	/*
@@ -453,6 +463,21 @@ public class JpaRiverDropDao extends AbstractJpaContextDropDao<RiverDrop>
 				drop.getForms().add(dropForm);
 			}
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDropDao#isRead(com.ushahidi.swiftriver.core.model.RiverDrop, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public boolean isRead(RiverDrop riverDrop, Account account) {
+		String sql = "SELECT * FROM `river_droplets_read` " +
+				"WHERE `rivers_droplets_id` = :riverDropId " +
+				"AND account_id = :accountId";
+		
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("riverDropId", riverDrop.getId());
+		query.setParameter("accountId", account.getId());
+
+		return query.getResultList().size() == 1;
 	}
 
 }

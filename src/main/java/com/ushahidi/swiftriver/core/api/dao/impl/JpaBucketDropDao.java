@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -141,11 +142,23 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop>
 
 	}
 
+	@Override
 	public BucketDrop create(BucketDrop t) {
 		t.setVeracity(1L);
 		t.setDateAdded(new Date());
 		return super.create(t);
 	}
+	
+
+	@Override
+	public void delete(BucketDrop t) {
+		String sql = String.format(
+				"DELETE FROM `bucket_droplets_read` WHERE `buckets_droplets_id` = %d",
+				t.getId());
+		em.createNativeQuery(sql).executeUpdate();
+		super.delete(t);
+	}
+
 
 	/*
 	 * (non-Javadoc)
@@ -603,6 +616,22 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop>
 				drop.getForms().add(dropForm);
 			}
 		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDropDao#isRead(com.ushahidi.swiftriver.core.model.BucketDrop, com.ushahidi.swiftriver.core.model.Account)
+	 */
+	public boolean isRead(BucketDrop bucketDrop, Account account) {
+		String sql = "SELECT * FROM `bucket_droplets_read` " +
+				"WHERE `buckets_droplets_id` = :bucketDropId " +
+				"AND account_id = :accountId";
+		
+		Query query = em.createNativeQuery(sql);
+		query.setParameter("bucketDropId", bucketDrop.getId());
+		query.setParameter("accountId", account.getId());
+
+		return query.getResultList().size() == 1;
 	}
 
 }

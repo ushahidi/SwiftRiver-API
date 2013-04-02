@@ -753,4 +753,27 @@ public class RiverServiceTest {
 
 		assertEquals(form, argument.getValue());
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void markDropAsRead() {
+		River mockRiver = mock(River.class);
+		Account mockAccount = mock(Account.class);
+		RiverDrop mockRiverDrop = mock(RiverDrop.class);
+		List<RiverDrop> mockReadRiverDrops = (List<RiverDrop>) mock(List.class); 
+
+		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAccount);
+		when(mockRiver.getRiverPublic()).thenReturn(true);
+		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
+		when(mockRiverDropDao.isRead(mockRiverDrop, mockAccount)).thenReturn(false);
+		when(mockAccount.getReadRiverDrops()).thenReturn(mockReadRiverDrops);
+		
+		riverService.markDropAsRead(1L, 4L, "user1");
+	
+		verify(mockRiverDropDao).isRead(mockRiverDrop, mockAccount);
+		verify(mockReadRiverDrops).add(mockRiverDrop);
+		verify(mockAccountDao).update(mockAccount);
+	}
 }

@@ -112,12 +112,8 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void getDropsFromEmptyRiver() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user2", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-
 		this.mockMvc
-				.perform(get("/v1/rivers/2/drops").principal(authentication))
+				.perform(get("/v1/rivers/2/drops").principal(getAuthentication("user1")))
 				.andExpect(status().isOk()).andExpect(jsonPath("$").isArray())
 				.andExpect(jsonPath("$").value(empty()));
 	}
@@ -218,43 +214,26 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void getReadDrops() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		this.mockMvc
-				.perform(
-						get("/v1/rivers/1/drops?state=read").principal(
-								authentication)).andExpect(status().isOk())
-
-				.andExpect(jsonPath("$[1].id").value(2));
+		this.mockMvc.perform(get("/v1/rivers/1/drops?state=read")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(2)));
 	}
 
 	@Test
 	public void getUnreadDrops() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		this.mockMvc
-				.perform(
-						get("/v1/rivers/1/drops?state=unread").principal(
-								authentication)).andExpect(status().isOk())
-
-				.andExpect(jsonPath("$[1].id").value(3));
+		this.mockMvc.perform(get("/v1/rivers/1/drops?state=unread")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(3)));
 	}
 
 	@Test
 	public void getDropsWithinRange() throws Exception {
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
-				"user1", "password");
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		this.mockMvc
-				.perform(
-						get(
-								"/v1/rivers/1/drops?date_from=01-JAN-12&date_to=01-JAN-13")
-								.principal(authentication))
-				.andExpect(status().isOk())
-
-				.andExpect(jsonPath("$[0].id").value(4));
+		this.mockMvc.perform(get("/v1/rivers/1/drops?date_from=01-JAN-12&date_to=01-JAN-13")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0].id").value(4));
 	}
 
 	/**
@@ -264,7 +243,9 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteRiver() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/1")).andExpect(status().isOk());
+		this.mockMvc.perform(delete("/v1/rivers/1")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
 	}
 
 	/**
@@ -275,9 +256,10 @@ public class RiversControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void deleteNonExistentRiver() throws Exception {
-		this.mockMvc.perform(delete("/v1/rivers/500"))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.message").exists());
+		this.mockMvc.perform(delete("/v1/rivers/500")
+				.principal(getAuthentication("default")))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.message").exists());
 	}
 
 	/**
@@ -770,6 +752,57 @@ public class RiversControllerTest extends AbstractControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.principal(getAuthentication("user1"))).andExpect(
 				status().isNotFound());
+	}
+	
+	@Test
+	public void getRules() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/rules")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").isArray());
+	}
+	
+	@Test
+	public void addRule() throws Exception {
+		String postBody = "{" +
+				"\"name\": \"Keyword Filter\", " +
+				"\"type\": \"1\", " + 
+				"\"conditions\": [{\"field\": \"title\", \"operator\": \"contains\", \"value\": \"kenya\"}], " +
+				"\"actions\": [{\"addToBucket\": 2}]" +
+			"}";
+
+		this.mockMvc.perform(post("/v1/rivers/1/rules")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Keyword Filter"))
+			.andExpect(jsonPath("$.actions[0].addToBucket").value(2));
+	}
+	
+	@Test
+	public void deleteRule() throws Exception {
+		this.mockMvc.perform(delete("/v1/rivers/1/rules/2")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void modifyRule() throws Exception {
+		String postBody = "{\"name\": \"Modified Rule\"}";
+		this.mockMvc.perform(put("/v1/rivers/1/rules/1")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Modified Rule"));
+	}
+	
+	@Test
+	public void markDropAsRead() throws Exception {
+		this.mockMvc.perform(put("/v1/rivers/1/drops/read/4")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
 	}
 
 	@Test

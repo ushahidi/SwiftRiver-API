@@ -623,7 +623,7 @@ public class BucketService {
 	}
 
 	/**
-	 * Deletes the {@link Drop} specified in <code>dropId</code> from the
+	 * Deletes the {@link BucketDrop} specified in <code>dropId</code> from the
 	 * {@link Bucket} specified in <code>bucketId</code>
 	 * 
 	 * If the drop does not exist in the specified bucket, a
@@ -633,27 +633,43 @@ public class BucketService {
 	 * @param dropId
 	 * @param authUser
 	 */
-	@Transactional
+	@Transactional(readOnly = false)
 	public void deleteDrop(Long bucketId, Long dropId, String authUser) {
 		Bucket bucket = getBucket(bucketId);
 
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
-		if (bucketDrop == null) {
-			throw new NotFoundException("The requested drop does not exist");
-		}
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
-		// Use the main drop id to find the bucket drop
-		BucketDrop targetBucketDrop = bucketDao.findDrop(bucketId, bucketDrop
-				.getDrop().getId());
-		if (targetBucketDrop == null) {
-			throw new NotFoundException("The requested drop does not exist");
-		}
+		// Delete the drop and decrease bucket drop count
+		bucketDropDao.delete(bucketDrop);
+		bucketDao.decreaseDropCount(bucket);
+	}
+	
+	/**
+	 * Deletes the {@link BucketDrop} specified in <code>dropId</code> from the
+	 * {@link Bucket} specified in <code>bucketId</code>
+	 * 
+	 * If the drop does not exist in the specified bucket, a
+	 * {@link NotFoundException} exception is thrown
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param authUser
+	 */
+	@Transactional(readOnly = false)
+	public void deleteBucketDrop(Long bucketId, Long dropId, String authUser) {
+		Bucket bucket = getBucket(bucketId);
 
-		// Delete the drop
-		bucketDropDao.delete(targetBucketDrop);
+		if (!isOwner(bucket, authUser))
+			throw new ForbiddenException("Permission denied");
+
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+
+		// Delete the drop and decrease bucket drop count
+		bucketDropDao.delete(bucketDrop);
+		bucketDao.decreaseDropCount(bucket);
 	}
 
 	/**
@@ -698,6 +714,7 @@ public class BucketService {
 				bucketDropDao.increaseVeracity(bucketDrop);
 			} else {
 				bucketDropDao.createFromRiverDrop(riverDrop, bucket);
+				bucketDao.increaseDropCount(bucket);
 			}
 		} else if (dropSourceTO.getSource().equals("bucket")) {
 			bucketDrop = bucketDropDao.findById(dropId);
@@ -714,6 +731,9 @@ public class BucketService {
 
 			// Create a new bucket drop from an existing
 			bucketDropDao.createFromExisting(bucketDrop, bucket);
+
+			// Update the drop count
+			bucketDao.increaseDropCount(bucket);
 		}
 
 	}
@@ -752,9 +772,8 @@ public class BucketService {
 	 * Verifies whether the {@link Account} in <code>account</code> is an owner
 	 * of the {@link Bucket} specified in <code>bucket</code>
 	 * 
-	 * An owner is an {@link Account} that is a creator of the {@Bucket
-	 * 
-	 * } or a {@link BucketCollaborator} with edit privileges i.e. the
+	 * An owner is an {@link Account} that is a creator of the {@link Bucket} 
+	 * or a {@link BucketCollaborator} with edit privileges i.e. the
 	 * <code>readOnly</code> property is false
 	 * 
 	 * @param bucket
@@ -1335,4 +1354,33 @@ public class BucketService {
 		
 		bucketDropFormDao.delete(dropForm);
 	}
+	
+	/**
+	 * Adds the {@link BucketDrop} with the ID specified in <code>dropId</code>
+	 * to the list of read drops for the {@link Account} associated with the
+	 * username specified in <code>authUser</code>
+	 * 
+	 * @param bucketId
+	 * @param dropId
+	 * @param authUser
+	 */
+	@Transactional(readOnly = false)
+	public void markDropAsRead(Long bucketId, Long dropId, String authUser) {
+		Bucket bucket = getBucket(bucketId);
+		Account account = accountDao.findByUsername(authUser);
+
+		if (!bucket.isPublished() && !this.isOwner(bucket, account)) {
+			throw new ForbiddenException("Access denied");
+		}
+		
+		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		if (bucketDropDao.isRead(bucketDrop, account)) {
+			throw new BadRequestException(String.format("User %s has already read drop %d", 
+					authUser, dropId));
+		}
+		
+		account.getReadBucketDrops().add(bucketDrop);
+		accountDao.update(account);
+	}
+
 }

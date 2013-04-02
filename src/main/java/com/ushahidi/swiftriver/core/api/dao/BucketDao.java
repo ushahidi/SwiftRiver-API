@@ -52,17 +52,17 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public List<Drop> getDropsSince(Long bucketId, Long sinceId, int dropCount,
 			DropFilter filter, Account queryingAccount);
-	
+
 	/**
 	 * Adds the {@link Drop} specified in <code>drop</code> to the
 	 * {@link Bucket} in <code>bucket</code>
 	 * 
 	 * @param bucket
 	 * @param drop
-	 * @return 
+	 * @return
 	 */
 	public boolean addDrop(Bucket bucket, Drop drop);
-	
+
 	/**
 	 * Adds a collaborator to the bucket with the specified id
 	 * 
@@ -71,7 +71,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 * @param readOnly
 	 * @return
 	 */
-	public BucketCollaborator addCollaborator(Bucket bucket, Account account, boolean readOnly);
+	public BucketCollaborator addCollaborator(Bucket bucket, Account account,
+			boolean readOnly);
 
 	/**
 	 * Retrieves the {@link BucketCollaborator} record associated with the
@@ -85,7 +86,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public BucketCollaborator findCollaborator(Long bucketId, Long accountId);
 
 	/**
-	 * Modifies a bucket collaborator record 
+	 * Modifies a bucket collaborator record
+	 * 
 	 * @param collaborator
 	 */
 	public void updateCollaborator(BucketCollaborator collaborator);
@@ -98,8 +100,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public void deleteCollaborator(BucketCollaborator collaborator);
 
 	/**
-	 * Deletes the {@link Drop} with the id in <code>dropId</code> from the list of 
-	 * drops for the {@link Bucket} with the id specified in <code>id</code>
+	 * Deletes the {@link Drop} with the id in <code>dropId</code> from the list
+	 * of drops for the {@link Bucket} with the id specified in <code>id</code>
 	 * 
 	 * @param id
 	 * @param dropId
@@ -108,8 +110,9 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public boolean deleteDrop(Long id, Long dropId);
 
 	/**
-	 * Gets and returns the bucket with the name specified in <code>bucketName</code> 
-	 * and is owned by the {@link Account} in <code>account</account>
+	 * Gets and returns the bucket with the name specified in
+	 * <code>bucketName</code> and is owned by the {@link Account} in
+	 * <code>account</account>
 	 * 
 	 * @param account
 	 * @param bucketName
@@ -118,8 +121,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public Bucket findBucketByName(Account account, String bucketName);
 
 	/**
-	 * Gets and returns a {@link List} of all {@link Bucket} entities
-	 * whose id is in the {@link List} specified by <code><bucketIds/code>
+	 * Gets and returns a {@link List} of all {@link Bucket} entities whose id
+	 * is in the {@link List} specified by <code><bucketIds/code>
 	 * 
 	 * @param bucketIds
 	 * @return
@@ -127,8 +130,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public List<Bucket> findAll(List<Long> bucketIds);
 
 	/**
-	 * Gets and returns the {@link BucketDrop} record with
-	 * the specified <code>bucketId</code> and <code>dropId</code>
+	 * Gets and returns the {@link BucketDrop} record with the specified
+	 * <code>bucketId</code> and <code>dropId</code>
 	 * 
 	 * @param bucketId
 	 * @param dropId
@@ -137,8 +140,9 @@ public interface BucketDao extends GenericDao<Bucket> {
 	public BucketDrop findDrop(Long bucketId, Long dropId);
 
 	/**
-	 * Adds a new comment by the {@link Account} specified in <code>account</code>
-	 * to the {@link Bucket} specified in <code>bucket</code>
+	 * Adds a new comment by the {@link Account} specified in
+	 * <code>account</code> to the {@link Bucket} specified in
+	 * <code>bucket</code>
 	 * 
 	 * @param bucket
 	 * @param commentText
@@ -147,7 +151,7 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public BucketComment addComment(Bucket bucket, String commentText,
 			Account account);
-	
+
 	/**
 	 * Helper Class for holding filter parameters when getting drops.
 	 * 
@@ -156,7 +160,7 @@ public interface BucketDao extends GenericDao<Bucket> {
 		List<String> channels;
 
 		Boolean read;
-		
+
 		Boolean photos;
 
 		Date dateFrom;
@@ -171,7 +175,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 		}
 
 		/**
-		 * @param channels the channels to set
+		 * @param channels
+		 *            the channels to set
 		 */
 		public void setChannels(List<String> channels) {
 			this.channels = channels;
@@ -185,7 +190,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 		}
 
 		/**
-		 * @param read the read to set
+		 * @param read
+		 *            the read to set
 		 */
 		public void setRead(Boolean read) {
 			this.read = read;
@@ -199,7 +205,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 		}
 
 		/**
-		 * @param photos the photos to set
+		 * @param photos
+		 *            the photos to set
 		 */
 		public void setPhotos(Boolean photos) {
 			this.photos = photos;
@@ -213,7 +220,8 @@ public interface BucketDao extends GenericDao<Bucket> {
 		}
 
 		/**
-		 * @param dateFrom the dateFrom to set
+		 * @param dateFrom
+		 *            the dateFrom to set
 		 */
 		public void setDateFrom(Date dateFrom) {
 			this.dateFrom = dateFrom;
@@ -227,11 +235,28 @@ public interface BucketDao extends GenericDao<Bucket> {
 		}
 
 		/**
-		 * @param dateTo the dateTo to set
+		 * @param dateTo
+		 *            the dateTo to set
 		 */
 		public void setDateTo(Date dateTo) {
 			this.dateTo = dateTo;
 		}
 	}
+
+	/**
+	 * Reduces the drop count of the {@link Bucket} specified in
+	 * <code>bucket</code>
+	 * 
+	 * @param bucket
+	 */
+	public void decreaseDropCount(Bucket bucket);
+
+	/**
+	 * Increases the drop count for the {@link Bucket} specified in the
+	 * <code>bucket</code> parameter
+	 * 
+	 * @param bucket
+	 */
+	public void increaseDropCount(Bucket bucket);
 
 }

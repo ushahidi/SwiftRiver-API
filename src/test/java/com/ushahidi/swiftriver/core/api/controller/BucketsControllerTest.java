@@ -196,6 +196,34 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$.[0].id").doesNotExist());
 	}
 	
+	@Test
+	public void getDropsFromDate() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("date_from", "12-SEP-2012")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(4)));		
+	}
+	
+	@Test
+	public void getDropsToDate() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("date_to", "12-SEP-2012")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(1)));		
+	}
+	
+	@Test
+	public void getDropsFromDateToDate() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/1/drops")
+				.param("date_from", "16-DEC-2012")
+				.param("date_to", "02-FEB-2013")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(1)));		
+	}
+
 	/**
 	 * Test for {@link BucketsController#deleteDrop(Long, Long)} where the
 	 * drop exists in the target bucket
@@ -725,5 +753,11 @@ public class BucketsControllerTest extends AbstractControllerTest {
 				delete("/v1/buckets/1/drops/2/forms/9999").contentType(
 						MediaType.APPLICATION_JSON).principal(
 						getAuthentication("user1"))).andExpect(status().isNotFound());
+	}
+	
+	public void markDropAsRead() throws Exception {
+		this.mockMvc.perform(put("/v1/buckets/1/drops/read/1")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk());
 	}
 }

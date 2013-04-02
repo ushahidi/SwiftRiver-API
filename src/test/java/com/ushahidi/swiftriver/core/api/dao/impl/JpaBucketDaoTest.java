@@ -350,7 +350,7 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 		assertEquals(1, drops.size());
 
 		Drop drop = drops.get(0);
-		assertEquals(5, drop.getId());
+		assertEquals(4, drop.getId());
 	}
 
 	@Test

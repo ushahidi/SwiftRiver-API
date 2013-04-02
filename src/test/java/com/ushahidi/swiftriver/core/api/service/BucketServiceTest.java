@@ -543,4 +543,28 @@ private BucketDao mockBucketDao;
 
 		assertEquals(form, argument.getValue());
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void markDropAsRead() {
+		Bucket mockBucket = mock(Bucket.class);
+		Account mockAccount = mock(Account.class);
+		BucketDrop mockBucketDrop = mock(BucketDrop.class);
+		List<BucketDrop> mockReadBucketDrops = (List<BucketDrop>) mock(List.class); 
+
+		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
+		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAccount);
+		when(mockBucket.isPublished()).thenReturn(true);
+		when(mockBucketDropDao.findById(anyLong())).thenReturn(mockBucketDrop);
+		when(mockBucketDrop.getBucket()).thenReturn(mockBucket);
+		when(mockBucketDropDao.isRead(mockBucketDrop, mockAccount)).thenReturn(false);
+		when(mockAccount.getReadBucketDrops()).thenReturn(mockReadBucketDrops);
+		
+		bucketService.markDropAsRead(1L, 5L, "user1");
+	
+		verify(mockBucketDropDao).isRead(mockBucketDrop, mockAccount);
+		verify(mockReadBucketDrops).add(mockBucketDrop);
+		verify(mockAccountDao).update(mockAccount);
+	}
+
 }

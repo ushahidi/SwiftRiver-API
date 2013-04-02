@@ -29,6 +29,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,8 +108,15 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			batchInsert(newDropIndex, drops, seq);
 		}
 
-		// Populate metadata
+		// Add drops to their respective rivers
 		insertRiverDrops(drops);
+		
+		// Add drops to their respective buckets
+		insertBucketDrops(drops);
+		
+		// TODO Mark as read
+
+		// Populate metadata
 		tagDao.getTags(drops);
 		linkDao.getLinks(drops);
 		placeDao.getPlaces(drops);
@@ -299,6 +307,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		if (dropRiverList.size() == 0)
 			return;
 
+		// Insert the remaining items in the set into the db
+		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, `droplet_date_pub`, `channel`) VALUES (?,?,?,?,?)";
+
 		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
 		// A map to hold the new max_drop_id and drop_count per river
 		final Map<Long, long[]> riverDropsMap = new HashMap<Long, long[]>();
@@ -347,5 +358,106 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
                 return riverUpdate.size();
             }
         } );
+	}
+	
+	/**
+	 * Populates the buckets_droplets table
+	 * 
+	 * @param drops
+	 */
+	private void insertBucketDrops(final List<Drop> drops) {
+		// Stores the drop id against the destination bucket ids
+		Map<Long, Set<Long>> dropBucketsMap = new HashMap<Long, Set<Long>>();
+
+		// Stores the drop id against its index in the drops list
+		final Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
+		int i = 0;
+		for (Drop drop: drops) {
+			if (drop.getBucketIds() == null)
+				continue;
+
+			Set<Long> bucketSet = new HashSet<Long>();
+			bucketSet.addAll(drop.getBucketIds());
+			dropBucketsMap.put(drop.getId(), bucketSet);
+			dropsIndex.put(drop.getId(), i);
+			i++;
+		}
+
+		if (dropsIndex.isEmpty())
+			return;
+
+		// Exclude existing drops
+		String existsSQL = "SELECT `bucket_id`, `droplet_id` " +
+				"FROM `buckets_droplets` WHERE `droplet_id` IN (:ids)";
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("ids", dropsIndex.keySet());
+
+		for (Map<String, Object> row: namedJdbcTemplate.queryForList(existsSQL, params)) {
+			Long dropId = ((Number) row.get("droplet_id")).longValue();
+			Long bucketId = ((Number) row.get("bucket_id")).longValue();
+
+			if (dropBucketsMap.containsKey(dropId)) {
+				Set<Long> bucketIdSet = dropBucketsMap.get(dropId);
+				bucketIdSet.remove(bucketId);
+			}
+		}
+
+		// Stores each bucket id
+		// List of arrays comprised of the drop id and bucket id
+		final List<Long[]> bucketDropList = new ArrayList<Long[]>();
+		for (Map.Entry<Long, Set<Long>> entry: dropBucketsMap.entrySet()) {
+			for (Long bucketId: entry.getValue()) {
+				Long[] bucketDrop = {bucketId, entry.getKey()};
+				bucketDropList.add(bucketDrop);
+			}
+		}
+
+		if (bucketDropList.isEmpty())
+			return;
+
+		// Store for the no. of drops inserted for each bucket
+		final Map<Long, Integer> bucketDropCount = new HashMap<Long, Integer>();
+
+		// Query for populating TABLE buckets_droplets
+		String insertSQL = "INSERT INTO `buckets_droplets` (`bucket_id`, `droplet_id`, `droplet_date_added`) " +
+				"VALUES (?, ?, ?)";
+
+		jdbcTemplate.batchUpdate(insertSQL, new BatchPreparedStatementSetter() {
+			public void setValues(PreparedStatement statement, int index) throws SQLException {
+				Long[] bucketDrop = bucketDropList.get(index);
+				Long bucketId = bucketDrop[0];
+				Drop drop = drops.get(dropsIndex.get(bucketDrop[1]));
+
+				statement.setLong(1, bucketId);
+				statement.setLong(2, bucketDrop[1]);
+				statement.setTimestamp(2, 
+						new java.sql.Timestamp(drop.getDateAdded().getTime()));
+
+				Integer count = bucketDropCount.get(bucketId);
+				count = (count == null) ? 0 : count + 1;
+				bucketDropCount.put(bucketId, count);
+			}
+
+			@Override
+			public int getBatchSize() {
+				return bucketDropList.size();
+			}
+		});
+
+		// Update the drop count for the populated buckets
+		List<String> tempTableQuery = new ArrayList<String>();
+		for (Map.Entry<Long, Integer> entry: bucketDropCount.entrySet()) {
+			String sql = String.format("SELECT %d AS `id`, %d AS `drop_count`", 
+					entry.getKey(), entry.getValue());
+			tempTableQuery.add(sql);
+		}
+
+		String joinQuery = StringUtils.join(tempTableQuery, " UNION ALL ");
+		String updateSQL = "UPDATE `buckets` JOIN(" + joinQuery + ") AS t " +
+				"USING (`id`) " +
+				"SET `buckets`.`drop_count` = `buckets`.`drop_count` + `t`.`drop_count` ";
+
+		this.jdbcTemplate.update(updateSQL);
 	}
 }

@@ -10,13 +10,18 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
 
 public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	AccountDao accountDao;
 	
+	@Autowired
+	private RiverDropDao riverDropDao;
+
 	@Test
 	public void findById() {
 		Account account = accountDao.findById(5L);
@@ -99,5 +104,16 @@ public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 		assertNotNull(accounts);
 		assertEquals(1, accounts.size());
 		assertEquals(1, accounts.get(0).getId());
+	}
+	
+	@Test
+	public void addReadRiverDrop() {
+		Account account = accountDao.findByUsername("user1");		
+		RiverDrop riverDrop = riverDropDao.findById(4L);
+		
+		account.getReadRiverDrops().add(riverDrop);
+		accountDao.update(account);
+		
+		assertEquals(3, accountDao.findByUsername("user1").getReadRiverDrops().size());
 	}
 }

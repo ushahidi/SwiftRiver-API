@@ -35,7 +35,8 @@ public interface RiverDao extends GenericDao<River> {
 	public River findByName(String name);
 
 	/**
-	 * Get list of drops from the given river.
+	 * Get list of drops from the river with the ID specified in <code>id</code>
+	 * using the parameters specified in <code>params</code>.
 	 * 
 	 * @param id
 	 * @param maxId
@@ -58,6 +59,7 @@ public interface RiverDao extends GenericDao<River> {
 	 */
 	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
 			DropFilter filter, Account queryingAccount);
+
 
 	/**
 	 * Gets and returns a collaborator tied to the {@link Account} in
@@ -119,6 +121,8 @@ public interface RiverDao extends GenericDao<River> {
 		Date dateFrom;
 
 		Date dateTo;
+		
+		Boolean photos;
 
 		/**
 		 * @return the channelList
@@ -193,6 +197,14 @@ public interface RiverDao extends GenericDao<River> {
 		 */
 		public void setDateTo(Date dateTo) {
 			this.dateTo = dateTo;
+		}
+
+		public Boolean getPhotos() {
+			return photos;
+		}
+
+		public void setPhotos(Boolean photos) {
+			this.photos = photos;
 		}
 	}
 }

@@ -306,13 +306,6 @@ INSERT INTO bucket_droplet_comments (buckets_droplets_id, account_id, comment_te
 (2, 5, 'Account 5 comment 3', '2012-04-19 08:20:44');
 
 -- -----------------------------------------------------
--- Data for table account_read_drops
--- -----------------------------------------------------
-INSERT INTO account_read_drops (account_id, droplet_id) VALUES
-(3, 2),
-(3, 5);
-
--- -----------------------------------------------------
 -- Data for table bucket_comments
 -- -----------------------------------------------------
 INSERT INTO bucket_comments (id, bucket_id, account_id, comment_text, comment_date_add) VALUES
@@ -393,3 +386,26 @@ INSERT INTO bucket_droplet_form_field (id, droplet_form_id, field_id, value) VAL
 (3, 1, 3, '"Kenyans"'),
 (4, 2, 4, '"Field 1 Value"'),
 (5, 2, 5, '"Field 2 Value"');
+
+-- -----------------------------------------------------
+-- Data for table river_rules
+-- -----------------------------------------------------
+INSERT INTO river_rules (id, river_id, rule_name, rule_type, rule_conditions, rule_actions, rule_date_add) VALUES
+(1, 1, 'Rule 1', 1, '[{"field": "title", "operator":"contains", "value": "Kenya"}]', '[{"addToBucket": 2}]', '2013-03-15 08:56:00'),
+(2, 1, 'Rule 2', 1, '[{"field": "content", "operator": "contains", "value": "Beiber"}]', '[{"removeFromRiver": "true"}]', '2013-03-16 08:57:00'),
+(3, 2, 'Rule 3', 1, '[{"field": "source", "operator": "contains", "value": "Ushahidi"}]', '[{"markAsRead": "true"}]', '2013-03-17 08:58:00');
+
+-- -----------------------------------------------------
+-- Data for table river_droplets_read
+-- -----------------------------------------------------
+INSERT INTO river_droplets_read(rivers_droplets_id, account_id) VALUES
+(2, 3),
+(5, 3);
+
+-- -----------------------------------------------------
+-- Data for table bucket_droplets_read
+-- -----------------------------------------------------
+INSERT INTO bucket_droplets_read(buckets_droplets_id, account_id) VALUES
+(4, 3),
+(2, 3),
+(3, 4);

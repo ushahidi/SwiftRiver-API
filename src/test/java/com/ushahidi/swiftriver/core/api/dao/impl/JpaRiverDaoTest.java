@@ -16,9 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -179,7 +177,7 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		assertEquals(1, drops.size());
 
 		Drop drop = drops.get(0);
-		assertEquals(4, drop.getId());
+		assertTrue(drop.getId() > 3);
 		assertEquals(false, drop.getRead());
 		assertEquals("twitter", drop.getChannel());
 		assertEquals("droplet_4_title", drop.getTitle());
@@ -352,7 +350,7 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		assertEquals(1, drops.size());
 
 		Drop drop = drops.get(0);
-		assertEquals(4, drop.getId());
+		assertTrue(drop.getId() > 3);
 	}
 
 	@Test

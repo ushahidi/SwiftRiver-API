@@ -59,12 +59,12 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	private BucketDropDao dropDao;
 	
 	private NamedParameterJdbcTemplate jdbcTemplate;
-	
+
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
-		this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+		jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -236,13 +236,13 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		sql += "droplet_content, droplets.channel, identities.id AS identity_id, identity_name, ";
 		sql += "identity_avatar, droplets.droplet_date_pub, droplet_orig_id, ";
 		sql += "user_scores.score AS user_score, links.id AS original_url_id, ";
-		sql += "links.url AS original_url, comment_count, account_read_drops.droplet_id AS drop_read ";
+		sql += "links.url AS original_url, comment_count, bucket_droplets_read.buckets_droplets_id AS drop_read ";
 		sql += "FROM buckets_droplets ";
 		sql += "INNER JOIN droplets ON (buckets_droplets.droplet_id = droplets.id) ";
 		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
 		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN links ON (droplets.original_url = links.id) ";
-		sql += "LEFT JOIN account_read_drops ON (account_read_drops.droplet_id = buckets_droplets.droplet_id AND account_read_drops.account_id = :accountId) ";
+		sql += "LEFT JOIN bucket_droplets_read ON (bucket_droplets_read.buckets_droplets_id = buckets_droplets.id AND bucket_droplets_read.account_id = :accountId) ";
 		sql += "WHERE buckets_droplets.droplet_date_added > '1970-01-01 00:00:00' ";
 		sql += "AND buckets_droplets.bucket_id = :bucketId ";
 
@@ -257,9 +257,9 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		
 		if (filter.getRead() != null) {
 			if (filter.getRead()) {
-				sql += "AND account_read_drops.droplet_id IS NOT NULL ";
+				sql += "AND bucket_droplets_read.buckets_droplets_id IS NOT NULL ";
 			} else {
-				sql += "AND account_read_drops.droplet_id IS NULL ";
+				sql += "AND bucket_droplets_read.buckets_droplets_id IS NULL ";
 			}
 		}
 
@@ -428,6 +428,26 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		this.em.persist(bucketComment);
 
 		return bucketComment;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#decreaseDropCount(com.ushahidi.swiftriver.core.model.Bucket)
+	 */
+	public void decreaseDropCount(Bucket bucket) {
+		int dropCount = bucket.getDropCount() - 1;
+		bucket.setDropCount(dropCount);
+		this.update(bucket);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#increaseDropCount(com.ushahidi.swiftriver.core.model.Bucket)
+	 */
+	public void increaseDropCount(Bucket bucket) {
+		int dropCount = bucket.getDropCount() + 1;
+		bucket.setDropCount(dropCount);
+		this.update(bucket);
 	}
 
 }

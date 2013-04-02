@@ -56,6 +56,7 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 
 @Controller
 @RequestMapping("/v1/buckets")
@@ -359,7 +360,7 @@ public class BucketsController extends AbstractController {
 	}
 
 	/**
-	 * Handler for deleting a drop from a bucket
+	 * Handler for deleting a {@link BucketDrop} from a bucket
 	 * 
 	 * @param id
 	 * @param dropId
@@ -367,9 +368,22 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId,
+	public void deleteBucketDrop(@PathVariable Long id, @PathVariable Long dropId,
 			Principal principal) {
-		bucketService.deleteDrop(id, dropId, principal.getName());
+		bucketService.deleteBucketDrop(id, dropId, principal.getName());
+	}
+
+	/**
+	 * Handler for marking bucket drops as read
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/drops/read/{dropId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public void markDropAsRead(@PathVariable Long id, @PathVariable Long dropId, Principal principal) {
+		bucketService.markDropAsRead(id, dropId, principal.getName());
 	}
 
 	/**

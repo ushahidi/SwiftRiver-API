@@ -107,6 +107,14 @@ public class Account {
 	
 	@Version
 	private long version;
+
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="river_droplets_read", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="rivers_droplets_id"))
+	private List<RiverDrop> readRiverDrops;
+
+	@OneToMany(cascade=CascadeType.ALL)
+	@JoinTable(name="bucket_droplets_read", joinColumns = @JoinColumn(name="account_id"), inverseJoinColumns = @JoinColumn(name="buckets_droplets_id"))
+	private List<BucketDrop> readBucketDrops;
 	
 	public Account() {
 
@@ -262,6 +270,22 @@ public class Account {
 
 	protected void setVersion(long version) {
 		this.version = version;
+	}
+
+	public List<RiverDrop> getReadRiverDrops() {
+		return readRiverDrops;
+	}
+
+	public void setReadRiverDrops(List<RiverDrop> readRiverDrops) {
+		this.readRiverDrops = readRiverDrops;
+	}
+
+	public List<BucketDrop> getReadBucketDrops() {
+		return readBucketDrops;
+	}
+
+	public void setReadBucketDrops(List<BucketDrop> readBucketDrops) {
+		this.readBucketDrops = readBucketDrops;
 	}
 
 	@Override

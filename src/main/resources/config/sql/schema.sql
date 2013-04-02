@@ -805,3 +805,38 @@ CREATE TABLE IF NOT EXISTS bucket_droplet_form_field (
   value varchar(1000),
   UNIQUE (droplet_form_id, field_id)
 );
+
+-- -----------------------------------------------------
+-- Table river_rules
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS river_rules (
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  river_id bigint NOT NULL,
+  rule_name varchar(255) NOT NULL,
+  rule_type boolean NOT NULL,
+  rule_conditions text NOT NULL,
+  rule_actions text NOT NULL,
+  rule_date_add timestamp NOT NULL,
+  rule_active boolean NOT NULL DEFAULT true,
+  rule_all_conditions boolean NOT NULL DEFAULT true
+);
+CREATE INDEX river_rules_idx_river_id ON river_rules (river_id);
+
+-- -----------------------------------------------------
+-- Table river_droplets_read
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS river_droplets_read (
+  account_id bigint NOT NULL,
+  rivers_droplets_id bigint NOT NULL,
+  UNIQUE (account_id,rivers_droplets_id)
+);
+
+-- -----------------------------------------------------
+-- Table bucket_droplets_read
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS bucket_droplets_read (
+  account_id bigint NOT NULL,
+  buckets_droplets_id bigint NOT NULL,
+  UNIQUE (account_id,buckets_droplets_id)
+);
+

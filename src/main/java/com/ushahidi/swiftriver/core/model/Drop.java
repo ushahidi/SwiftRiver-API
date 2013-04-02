@@ -106,8 +106,9 @@ public class Drop {
 	@JoinTable(name = "droplets_media", joinColumns = @JoinColumn(name = "droplet_id"), inverseJoinColumns = @JoinColumn(name = "media_id"))
 	private List<Media> media;
 	
+	// List of bucket drops associated with this drop
 	@Transient
-	private List<Bucket> buckets;
+	private List<BucketDrop> bucketDrops;
 	
 	@Transient
 	private List<Long> riverIds;
@@ -118,6 +119,12 @@ public class Drop {
 	@SuppressWarnings("rawtypes")
 	@Transient
 	private List<DropForm> forms;
+
+	@Transient
+	private List<Long> markAsRead;
+	
+	@Transient
+	private List<Long> bucketIds;
 
 	public Drop() {
 
@@ -211,12 +218,12 @@ public class Drop {
 		this.datePublished = dropletDatePub;
 	}
 
-	public Date getDropletDateAdd() {
+	public Date getDateAdded() {
 		return dateAdded;
 	}
 
-	public void setDropletDateAdd(Date dropletDateAdd) {
-		this.dateAdded = dropletDateAdd;
+	public void setDateAdded(Date dateAdded) {
+		this.dateAdded = dateAdded;
 	}
 
 	public Link getOriginalUrl() {
@@ -267,12 +274,12 @@ public class Drop {
 		this.media = media;
 	}
 
-	public List<Bucket> getBuckets() {
-		return buckets;
+	public List<BucketDrop> getBucketDrops() {
+		return bucketDrops;
 	}
 
-	public void setBuckets(List<Bucket> buckets) {
-		this.buckets = buckets;
+	public void setBucketDrops(List<BucketDrop> bucketDrops) {
+		this.bucketDrops = bucketDrops;
 	}
 
 	public List<Long> getRiverIds() {
@@ -299,6 +306,22 @@ public class Drop {
 	@SuppressWarnings("rawtypes")
 	public void setForms(List<DropForm> forms) {
 		this.forms = forms;
+	}
+
+	public List<Long> getMarkAsRead() {
+		return markAsRead;
+	}
+
+	public void setMarkAsRead(List<Long> markAsRead) {
+		this.markAsRead = markAsRead;
+	}
+
+	public List<Long> getBucketIds() {
+		return bucketIds;
+	}
+
+	public void setBucketIds(List<Long> bucketIds) {
+		this.bucketIds = bucketIds;
 	}
 
 }

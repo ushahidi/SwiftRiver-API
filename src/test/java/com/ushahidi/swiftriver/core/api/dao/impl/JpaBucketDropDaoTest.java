@@ -16,6 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 
@@ -98,5 +99,15 @@ public class JpaBucketDropDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void findForm() {
 		assertNotNull(bucketDropDao.findForm(2L, 1L));
+	}
+
+	@Test
+	public void delete() {
+		BucketDrop bucketDrop = bucketDropDao.findById(4L);
+		bucketDropDao.delete(bucketDrop);
+		
+		String sql = "SELECT * FROM `bucket_droplets_read` WHERE `buckets_droplets_id` = 4";
+		int foundRows = em.createNativeQuery(sql).getResultList().size();
+		assertEquals(0, foundRows);
 	}
 }

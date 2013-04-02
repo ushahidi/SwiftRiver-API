@@ -194,4 +194,59 @@
 			<b>value</b>
 		</field>
 	</mapping>
+
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.Rule</class-b>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleConditionListToStringConverter">
+			<a>conditions</a>
+			<b>conditions</b>
+		</field>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleActionListToStringConverter">
+			<a>actions</a>
+			<b>actions</b>
+		</field>
+	</mapping>
+
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.api.dto.GetRuleDTO</class-a>
+		<class-b>com.ushahidi.swiftriver.core.model.Rule</class-b>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleConditionListToStringConverter">
+			<a>conditions</a>
+			<b>conditions</b>
+		</field>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.converters.RuleActionListToStringConverter">
+			<a>actions</a>
+			<b>actions</b>
+		</field>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.Rule</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.RuleUpdateNotification</class-b>
+		
+		<field>
+			<a>river.id</a>
+			<b>riverId</b>
+		</field>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.BucketDrop</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetBucketDropDTO</class-b>
+		
+		<field>
+			<a>bucket.id</a>
+			<b>bucketId</b>
+		</field>
+
+		<field>
+			<a>bucket.name</a>
+			<b>bucketName</b>
+		</field>
+	</mapping>
 </mappings> 

@@ -105,6 +105,9 @@ public class River {
 	@OneToMany(cascade = CascadeType.ALL, mappedBy="river")
 	private List<Channel> channels;
 	
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "river")
+	private List<Rule> rules;
+	
 	public River() {
 		
 	}
@@ -275,6 +278,14 @@ public class River {
 
 	public void setChannels(List<Channel> channels) {
 		this.channels = channels;
+	}
+
+	public List<Rule> getRules() {
+		return rules;
+	}
+
+	public void setRules(List<Rule> rules) {
+		this.rules = rules;
 	}
 
 	@Override

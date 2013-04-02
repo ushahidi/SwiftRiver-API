@@ -147,4 +147,14 @@ public interface RiverDropDao extends GenericDao<RiverDrop>, ContextDropDao {
 	 */
 	public RiverDropForm findForm(Long dropId, Long formId);
 	
+	/**
+	 * Checks whether the {@link RiverDrop} specified in <code>riverDrop</code>
+	 * has been added to the list of read drops for the {@link Account}
+	 * specified in <code>account</code>
+	 * 
+	 * @param riverDrop
+	 * @param account
+	 * @return
+	 */
+	public boolean isRead(RiverDrop riverDrop, Account account);
 }

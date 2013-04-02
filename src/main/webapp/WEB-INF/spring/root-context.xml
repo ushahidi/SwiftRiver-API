@@ -42,7 +42,7 @@
 		</property>
 	</bean>
 
-	<bean id="listToStringDozerConverter"
+	<bean id="objectToStringDozerConverter"
 		class="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
 		<property name="objectMapper" ref="jacksonObjectMapper" />
 	</bean>
@@ -56,7 +56,7 @@
 		</property>
 		<property name="customConverters">
 			<list>
-				<ref bean="listToStringDozerConverter" />
+				<ref bean="objectToStringDozerConverter" />
 			</list>
 		</property>
 	</bean>

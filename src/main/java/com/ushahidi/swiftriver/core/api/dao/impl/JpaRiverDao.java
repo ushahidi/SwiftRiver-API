@@ -159,7 +159,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			int page, int dropCount, DropFilter filter, Account queryingAccount) {
 		String sql = "SELECT rivers_droplets.id AS id, droplet_title, droplet_content, droplets.channel, ";
 		sql += "identities.id AS identity_id, identity_name, identity_avatar, rivers_droplets.droplet_date_pub, droplet_orig_id, ";
-		sql += "user_scores.score AS user_score, links.id as original_url_id, links.url AS original_url, comment_count, account_read_drops.droplet_id AS drop_read ";
+		sql += "user_scores.score AS user_score, links.id as original_url_id, links.url AS original_url, comment_count, river_droplets_read.rivers_droplets_id AS drop_read ";
 		sql += "FROM rivers_droplets ";
 		sql += "INNER JOIN droplets ON (rivers_droplets.droplet_id = droplets.id) ";
 		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
@@ -170,7 +170,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
 		sql += "LEFT JOIN links ON (links.id = droplets.original_url) ";
-		sql += "LEFT JOIN account_read_drops ON (account_read_drops.droplet_id = rivers_droplets.droplet_id AND account_read_drops.account_id = :accountId) ";
+		sql += "LEFT JOIN river_droplets_read ON (river_droplets_read.rivers_droplets_id = rivers_droplets.id AND river_droplets_read.account_id = :accountId) ";
 		sql += "WHERE rivers_droplets.droplet_date_pub > '1970-01-01 00:00:00' ";
 		sql += "AND rivers_droplets.river_id = :riverId ";
 
@@ -190,10 +190,14 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 		if (filter.getRead() != null) {
 			if (filter.getRead()) {
-				sql += "AND account_read_drops.droplet_id IS NOT NULL ";
+				sql += "AND river_droplets_read.rivers_droplets_id IS NOT NULL ";
 			} else {
-				sql += "AND account_read_drops.droplet_id IS NULL ";
+				sql += "AND river_droplets_read.rivers_droplets_id IS NULL ";
 			}
+		}
+		
+		if (filter.getPhotos() != null && filter.getPhotos()) {
+			sql += "AND `droplets`.`droplet_image` > 0 ";
 		}
 
 		if (filter.getDateFrom() != null) {
@@ -211,6 +215,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		}
 		
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
+
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userId", queryingAccount.getOwner().getId());
@@ -232,6 +237,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 		if (filter.getDateTo() != null) {
 			params.addValue("date_to", filter.getDateTo());
+
 		}
 
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,

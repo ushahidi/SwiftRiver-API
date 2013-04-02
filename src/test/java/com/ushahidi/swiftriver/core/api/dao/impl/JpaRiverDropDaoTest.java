@@ -19,6 +19,9 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import static org.junit.Assert.*;
 
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,6 +47,9 @@ public class JpaRiverDropDaoTest extends AbstractJpaDaoTest {
 	
 	@Autowired
 	private TagDao tagDao;
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 	
 	@Test
 	public void addTag() {
@@ -113,5 +119,14 @@ public class JpaRiverDropDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void findForm() {
 		assertNotNull(riverDropDao.findForm(2L, 1L));
+	}
+	
+	public void delete() {
+		RiverDrop riverDrop = riverDropDao.findById(2L);
+		riverDropDao.delete(riverDrop);
+		
+		String sql = "SELECT * FROM `river_droplets_read` WHERE `rivers_droplets_id` = 2";
+		int foundRows = entityManager.createNativeQuery(sql).getResultList().size();
+		assertEquals(0, foundRows);
 	}
 }

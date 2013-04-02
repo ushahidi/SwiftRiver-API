@@ -1,16 +1,18 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
@@ -42,6 +44,7 @@ import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
@@ -52,6 +55,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
@@ -120,8 +124,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteRiver(@PathVariable Long id) {
-		riverService.deleteRiver(id);
+	public void deleteRiver(@PathVariable Long id, Principal principal) {
+		riverService.deleteRiver(id, principal.getName());
 	}
 
 	/**
@@ -352,7 +356,8 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "channel_ids", required = false) String cIds,
 			@RequestParam(value = "locations", required = false) String location,
-			@RequestParam(value = "state", required = false) String state)
+			@RequestParam(value = "state", required = false) String state,
+			@RequestParam(value = "photos", required = false) Boolean photos)
 			throws NotFoundException {
 
 		if (maxId == null) {
@@ -379,10 +384,10 @@ public class RiversController extends AbstractController {
 
 		Boolean isRead = null;
 		if (state != null) {
-			if (!state.equals("read") && !state.equals("unread")) {
-				errors.add(new ErrorField("state", "invalid"));
+			if (state.equalsIgnoreCase("read") || state.equalsIgnoreCase("unread")) {
+				isRead = state.equalsIgnoreCase("read");
 			} else {
-				isRead = state.equals("read");
+				errors.add(new ErrorField("state", "invalid"));
 			}
 		}
 
@@ -411,9 +416,9 @@ public class RiversController extends AbstractController {
 			e.setErrors(errors);
 			throw e;
 		}
-
+		
 		return riverService.getDrops(id, maxId, sinceId, page, count,
-				channelList, channelIds, isRead, dateFrom, dateTo,
+				channelList, channelIds, isRead, dateFrom, dateTo, photos,
 				principal.getName());
 	}
 
@@ -441,6 +446,20 @@ public class RiversController extends AbstractController {
 		riverService.deleteDrop(id, dropId);
 	}
 
+	/**
+	 * Handler for marking a drop as read.
+	 * 
+	 * @param id
+	 * @param dropId
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "/{id}/drops/read/{dropId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public void markDropAsRead(@PathVariable Long id, @PathVariable Long dropId, Principal principal) {
+		riverService.markDropAsRead(id, dropId, principal.getName());
+	}
+	
 	/**
 	 * Handler for adding a tag to a drop that is in a river
 	 * 
@@ -635,4 +654,62 @@ public class RiversController extends AbstractController {
 			Principal principal) {
 		riverService.deleteDropForm(riverId, dropId, formId, principal.getName());
 	}
+	
+	/**
+	 * Handler for fetching the rules for the river
+	 * 
+	 * @param id
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/rules", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetRuleDTO> getRules(@PathVariable  Long id, Principal principal) {
+		return riverService.getRules(id, principal.getName());
+	}
+	
+	/**
+	 * Handler for creating a new rule
+	 * 
+	 * @param id
+	 * @param createRuleDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/rules", method = RequestMethod.POST)
+	@ResponseBody
+	public GetRuleDTO addRule(@PathVariable Long id, @RequestBody CreateRuleDTO createRuleDTO,
+			Principal principal) {
+		return riverService.addRule(id, createRuleDTO, principal.getName());
+	}
+
+	/**
+	 * Handler for modifying a rule
+	 * 
+	 * @param id
+	 * @param ruleId
+	 * @param createRuleDTO
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "{id}/rules/{ruleId}", method = RequestMethod.PUT)
+	@ResponseBody
+	public GetRuleDTO modifyRule(@PathVariable Long id, @PathVariable Long ruleId,
+			@RequestBody CreateRuleDTO createRuleDTO, Principal principal) {
+		return riverService.modifyRule(id, ruleId, createRuleDTO, principal.getName());
+	}
+	
+	/**
+	 * Handler for deleting a rule
+	 * 
+	 * @param id
+	 * @param ruleId
+	 * @param principal
+	 */
+	@RequestMapping(value = "{id}/rules/{ruleId}", method = RequestMethod.DELETE)
+	@ResponseBody
+	public void deleteRule(@PathVariable Long id, @PathVariable Long ruleId, Principal principal) {
+		riverService.deleteRule(id, ruleId, principal.getName());
+	}
+	
 }

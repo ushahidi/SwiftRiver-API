@@ -33,6 +33,7 @@ import com.ushahidi.swiftriver.core.api.dao.ContextDropDao;
 import com.ushahidi.swiftriver.core.api.dao.GenericDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Media;
@@ -352,59 +353,62 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 			i++;
 		}
 
-		Map<Long, Long> bucketDropsIndex = getBucketDropsIndex(dropsIndex
-				.keySet());
+		Map<Long, Long> bucketDropsIndex = getBucketDropsIndex(dropsIndex.keySet());
 
 		// Query to fetch the buckets
-		String sql = "SELECT buckets_droplets.droplet_id AS id, buckets.id AS bucket_id, ";
-		sql += "buckets.bucket_name ";
-		sql += "FROM buckets ";
-		sql += "INNER JOIN buckets_droplets ON (buckets.id = buckets_droplets.bucket_id) ";
-		sql += "WHERE buckets_droplets.droplet_id IN (:dropletIds) ";
-		sql += "AND buckets.bucket_publish = 1 ";
+		String sql = "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets_droplets`.`id` AS `bucket_drop_id`, ";
+		sql += "`buckets`.`id` AS `bucket_id`, `buckets`.`bucket_name` ";
+		sql += "FROM `buckets` ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
+		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
+		sql += "AND `buckets`.`bucket_publish` = 1 ";
 		sql += "UNION ALL ";
-		sql += "SELECT buckets_droplets.droplet_id AS id, buckets.id AS bucket_id, ";
-		sql += "buckets.bucket_name ";
-		sql += "FROM buckets ";
-		sql += "INNER JOIN buckets_droplets ON (buckets.id = buckets_droplets.bucket_id) ";
-		sql += "LEFT JOIN accounts ON (buckets.account_id = accounts.id AND buckets.account_id = :accountId) ";
-		sql += "LEFT JOIN bucket_collaborators ON (bucket_collaborators.bucket_id = buckets.id AND bucket_collaborators.account_id = :accountId) ";
-		sql += "WHERE buckets_droplets.droplet_id IN (:dropletIds) ";
-		sql += "AND buckets.bucket_publish = 0 ";
+		sql += "SELECT `buckets_droplets`.`droplet_id` AS `id`, `buckets_droplets`.`id` AS `bucket_drop_iid`, ";
+		sql += "`buckets`.`id` AS `bucket_id`, `buckets`.`bucket_name` ";
+		sql += "FROM `buckets` ";
+		sql += "INNER JOIN `buckets_droplets` ON (`buckets`.`id` = `buckets_droplets`.`bucket_id`) ";
+		sql += "LEFT JOIN `accounts` ON (`buckets`.`account_id` = `accounts`.`id` AND `buckets`.`account_id` = :accountId) ";
+		sql += "LEFT JOIN `bucket_collaborators` ON (`bucket_collaborators`.`bucket_id` = `buckets`.`id` AND `bucket_collaborators`.`account_id` = :accountId) ";
+		sql += "WHERE `buckets_droplets`.`droplet_id` IN (:dropletIds) ";
+		sql += "AND `buckets`.`bucket_publish` = 0 ";
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("dropletIds", bucketDropsIndex.keySet());
-		params.addValue("accountId", (Long) queryingAccount.getId());
-		List<Map<String, Object>> results = this.namedJdbcTemplate
-				.queryForList(sql, params);
-
-		// Group the buckets per drop
-		Map<Long, List<Bucket>> dropBucketsMap = new HashMap<Long, List<Bucket>>();
-		for (Map<String, Object> row : results) {
-
-			Long dropId = ((Number) row.get("id")).longValue();
-			List<Bucket> dropBuckets = dropBucketsMap.get(dropId);
+		params.addValue("accountId", (Long)queryingAccount.getId());
+		List<Map<String, Object>> results = this.namedJdbcTemplate.queryForList(sql, params);
+	
+		// Group the buckets per drop 
+		Map<Long, List<BucketDrop>> dropBucketsMap = new HashMap<Long, List<BucketDrop>>();
+		for (Map<String, Object> row: results) {
+			
+			Long dropId = ((Number)row.get("id")).longValue();
+			List<BucketDrop> dropBuckets = dropBucketsMap.get(dropId);
 			if (dropBuckets == null) {
-				dropBuckets = new ArrayList<Bucket>();
+				dropBuckets = new ArrayList<BucketDrop>();
 			}
 
 			// Create the bucket
 			Bucket bucket = new Bucket();
 			bucket.setId(((Number) row.get("bucket_id")).longValue());
-			bucket.setName((String) row.get("bucket_name"));
+			bucket.setName((String)row.get("bucket_name"));
+
+			// Create the bucket drop
+			BucketDrop bucketDrop = new BucketDrop();
+			bucketDrop.setId(((Number)row.get("bucket_drop_id")).longValue());
+			bucketDrop.setBucket(bucket);
 
 			// Add to the list of buckets for the current drop
-			dropBuckets.add(bucket);
-			dropBucketsMap.put(dropId, dropBuckets);
+			dropBuckets.add(bucketDrop);			
+			dropBucketsMap.put(dropId, dropBuckets);				
 		}
-
+		
 		// Populate the buckets for the submitted drops
-		for (Map.Entry<Long, List<Bucket>> entry : dropBucketsMap.entrySet()) {
+		for (Map.Entry<Long, List<BucketDrop>> entry: dropBucketsMap.entrySet()) {
 			Long dropId = bucketDropsIndex.get(entry.getKey());
 
 			// Retrieve the drop
 			Drop drop = drops.get(dropsIndex.get(dropId));
-			drop.setBuckets(entry.getValue());
+			drop.setBucketDrops(entry.getValue());
 		}
 	}
 
