@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.support.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,16 +24,25 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleAction;
-import com.ushahidi.swiftriver.core.support.dozer.converters.RuleActionListToStringConverter;
+import com.ushahidi.swiftriver.core.support.dozer.RuleActionListToStringConverter;
 
 public class RuleActionListToStringConverterTest {
+	
+	RuleActionListToStringConverter converter;
+	
+	@Before
+	public void setup() {
+		converter = new RuleActionListToStringConverter();
+		converter.setObjectMapper(new ObjectMapper());
+	}
 
 	@Test
 	public void testConvertFrom() {
-		RuleActionListToStringConverter converter = new RuleActionListToStringConverter();
 		String source = "[{\"addToBucket\": 200, \"markAsRead\": false, \"removeFromRiver\": \"true\"}]";
 		List<RuleAction> output = converter.convertFrom(source);
 		assertNotNull(output);
@@ -46,7 +55,6 @@ public class RuleActionListToStringConverterTest {
 	
 	@Test
 	public void testConvertTo() {
-		RuleActionListToStringConverter converter = new RuleActionListToStringConverter();
 		RuleAction ruleAction = new RuleAction();
 		ruleAction.setRemoveFromRiver(true);
 		

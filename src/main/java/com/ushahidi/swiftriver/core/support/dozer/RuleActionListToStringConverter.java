@@ -14,31 +14,26 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.support.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.dozer.DozerConverter;
+import org.codehaus.jackson.type.TypeReference;
 
-public abstract class AbstractRuleItemListToStringConverter extends
-		DozerConverter<List, String> {
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleAction;
 
-	protected ObjectMapper mapper = new ObjectMapper();
+public class RuleActionListToStringConverter extends AbstractRuleItemListToStringConverter {
 
-	public AbstractRuleItemListToStringConverter() {
-		super(List.class, String.class);
-	}
-	
+
 	@Override
-	public String convertTo(List source, String destination) {
-		String json = null;
+	public List convertFrom(String source, List destination) {
+		List<RuleAction> conditionsList = null;
 		try {
-			json = mapper.writeValueAsString(source);
-			destination = json;
+			conditionsList = objectMapper.readValue(source, new TypeReference<List<RuleAction>>() {});
+			destination = conditionsList;
 		} catch (JsonParseException jp) {
 			
 		} catch (JsonMappingException jm) {
@@ -46,8 +41,8 @@ public abstract class AbstractRuleItemListToStringConverter extends
 		} catch (IOException io) {
 			
 		}
-		return json;
+		
+		return conditionsList;
 	}
-	
 
 }

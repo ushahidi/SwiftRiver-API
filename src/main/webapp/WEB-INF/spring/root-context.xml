@@ -46,6 +46,16 @@
 		class="com.ushahidi.swiftriver.core.support.dozer.ObjectToStringConverter">
 		<property name="objectMapper" ref="jacksonObjectMapper" />
 	</bean>
+	
+	<bean id="ruleActionToStringDozerConverter"
+		class="com.ushahidi.swiftriver.core.support.dozer.RuleActionListToStringConverter">
+		<property name="objectMapper" ref="jacksonObjectMapper" />
+	</bean>
+	
+	<bean id="ruleConditionToStringDozerConverter"
+		class="com.ushahidi.swiftriver.core.support.dozer.RuleConditionListToStringConverter">
+		<property name="objectMapper" ref="jacksonObjectMapper" />
+	</bean>
 
 	<!-- Bean Mapper -->
 	<bean id="mapper" class="org.dozer.DozerBeanMapper">
@@ -57,6 +67,8 @@
 		<property name="customConverters">
 			<list>
 				<ref bean="objectToStringDozerConverter" />
+				<ref bean="ruleActionToStringDozerConverter" />
+				<ref bean="ruleConditionToStringDozerConverter" />
 			</list>
 		</property>
 	</bean>

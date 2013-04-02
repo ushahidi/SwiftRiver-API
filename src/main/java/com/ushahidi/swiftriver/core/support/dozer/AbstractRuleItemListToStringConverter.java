@@ -14,26 +14,35 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.support.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.type.TypeReference;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.dozer.DozerConverter;
 
-import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
+public abstract class AbstractRuleItemListToStringConverter extends
+		DozerConverter<List, String> {
 
-public class RuleConditionListToStringConverter extends AbstractRuleItemListToStringConverter {
+	protected ObjectMapper objectMapper;
 
+	public void setObjectMapper(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
 
+	public AbstractRuleItemListToStringConverter() {
+		super(List.class, String.class);
+	}
+	
 	@Override
-	public List convertFrom(String source, List destination) {
-		List<RuleCondition> conditionsList = null;
+	public String convertTo(List source, String destination) {
+		String json = null;
 		try {
-			conditionsList = mapper.readValue(source, new TypeReference<List<RuleCondition>>() {});
-			destination = conditionsList;
+			json = objectMapper.writeValueAsString(source);
+			destination = json;
 		} catch (JsonParseException jp) {
 			
 		} catch (JsonMappingException jm) {
@@ -41,8 +50,8 @@ public class RuleConditionListToStringConverter extends AbstractRuleItemListToSt
 		} catch (IOException io) {
 			
 		}
-		
-		return conditionsList;
+		return json;
 	}
+	
 
 }

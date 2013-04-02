@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.support.dozer.converters;
+package com.ushahidi.swiftriver.core.support.dozer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,17 +22,25 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
-import com.ushahidi.swiftriver.core.support.dozer.converters.RuleConditionListToStringConverter;
+import com.ushahidi.swiftriver.core.support.dozer.RuleConditionListToStringConverter;
 
 public class RuleConditionListToStringConverterTest {
 	
+	RuleConditionListToStringConverter converter;
+	
+	@Before
+	public void setup() {
+		converter = new RuleConditionListToStringConverter();
+		converter.setObjectMapper(new ObjectMapper());
+	}
+	
 	@Test
 	public void testConvertFrom() {
-		RuleConditionListToStringConverter converter = new RuleConditionListToStringConverter();
-
 		String source = "[{\"field\":\"content\",\"operator\":\"contains\",\"value\":\"IEBC\"}]";
 		List<RuleCondition> destination = converter.convertFrom(source);
 		assertNotNull(destination);
@@ -53,8 +61,6 @@ public class RuleConditionListToStringConverterTest {
 		List<RuleCondition> source = new ArrayList<RuleCondition>();
 		source.add(ruleCondition);
 		
-		RuleConditionListToStringConverter converter = new RuleConditionListToStringConverter();
-
 		String expected = "[{\"field\":\"content\",\"operator\":\"contains\",\"value\":\"Tana River\"}]";
 		String destination = converter.convertTo(source);
 		assertEquals(expected, destination);
