@@ -409,3 +409,16 @@ INSERT INTO bucket_droplets_read(buckets_droplets_id, account_id) VALUES
 (4, 3),
 (2, 3),
 (3, 4);
+
+-- -----------------------------------------------------
+-- Data for table account_actions
+-- -----------------------------------------------------
+INSERT INTO account_actions(id, account_id, action, action_on, action_on_id, action_to_id, action_date_add, confirmed) VALUES
+(1, 3, 'create', 'river', 1, NULL, '2013-01-02 00:00:01', NULL),
+(2, 3, 'create', 'bucket', 1, NULL, '2013-01-02 00:00:02', NULL),
+(3, 3, 'create', 'form', 1, NULL, '2013-01-02 00:00:03', NULL),
+(4, 3, 'follow', 'account', 4, NULL, '2013-01-02 00:00:04', NULL),
+(5, 4, 'follow', 'river', 1, NULL, '2013-01-02 00:00:05', NULL),
+(6, 4, 'follow', 'bucket', 1, NULL, '2013-01-02 00:00:06', NULL),
+(7, 3, 'invite', 'river', 2, 5, '2013-01-02 00:00:07', 1),
+(8, 3, 'invite', 'bucket', 2, 5, '2013-01-02 00:00:08', 0);

@@ -34,6 +34,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
@@ -145,8 +146,8 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params = "q")
 	@ResponseBody
-	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query, Principal principal)
-			throws NotFoundException {
+	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query,
+			Principal principal) throws NotFoundException {
 		return accountService.searchAccounts(query, principal.getName());
 	}
 
@@ -177,7 +178,8 @@ public class AccountsController extends AbstractController {
 	@ResponseBody
 	public GetAccountDTO modifyAccount(@RequestBody ModifyAccountDTO body,
 			@PathVariable Long accountId, Principal principal) {
-		return accountService.modifyAccount(accountId, body, principal.getName());
+		return accountService.modifyAccount(accountId, body,
+				principal.getName());
 	}
 
 	@RequestMapping(value = "/{id}/verify", method = RequestMethod.POST)
@@ -225,10 +227,15 @@ public class AccountsController extends AbstractController {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/activities", method = RequestMethod.GET)
+	@RequestMapping(value = "/{accountId}/activities", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getActivities(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public List<GetActivityDTO> getActivities(
+			@PathVariable Long accountId,
+			Principal principal,
+			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
+			@RequestParam(value = "last_id", required = false) Long lastId,
+			@RequestParam(value = "newer", required = false) Boolean newer) {
+		return accountService.getActivities(accountId, count, lastId, newer, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.POST)

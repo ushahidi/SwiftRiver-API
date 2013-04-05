@@ -495,11 +495,11 @@ CREATE INDEX droplets_tags_idx_tag_id ON droplets_tags (tag_id);
 
 
 -- -----------------------------------------------------
--- Table user_actions
+-- Table account_actions
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS user_actions (
+CREATE TABLE IF NOT EXISTS account_actions (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  user_id bigint NOT NULL,
+  account_id bigint NOT NULL,
   action varchar(255) NOT NULL,
   action_on varchar(100) DEFAULT NULL,
   action_on_id bigint NOT NULL,
@@ -507,10 +507,10 @@ CREATE TABLE IF NOT EXISTS user_actions (
   action_date_add TIMESTAMP,
   confirmed boolean default false
 );
-CREATE INDEX user_actions_idx_user_id ON user_actions (user_id);
-CREATE INDEX user_actions_idx_action_to_id ON user_actions (action_to_id);
-CREATE INDEX user_actions_idx_action_on_id ON user_actions (action_on_id);
-CREATE INDEX user_actions_idx_action_on ON user_actions (action_on);
+CREATE INDEX account_actions_idx_account_id ON account_actions (account_id);
+CREATE INDEX account_actions_idx_action_to_id ON account_actions (action_to_id);
+CREATE INDEX account_actions_idx_action_on_id ON account_actions (action_on_id);
+CREATE INDEX account_actions_idx_action_on ON account_actions (action_on);
 
 
 -- ----------------------------------------

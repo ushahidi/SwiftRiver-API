@@ -249,4 +249,15 @@
 			<b>bucketName</b>
 		</field>
 	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.River</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO.Target</class-b>
+		
+		<field>
+			<a>riverName</a>
+			<b>name</b>
+		</field>
+
+	</mapping>
 </mappings> 

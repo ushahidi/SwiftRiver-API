@@ -45,6 +45,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
@@ -52,14 +53,17 @@ import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
+import com.ushahidi.swiftriver.core.model.Activity;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Client;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverActivity;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
@@ -80,6 +84,8 @@ public class AccountServiceTest {
 	private ClientDao mockClientDao;
 
 	private RoleDao mockRoleDao;
+	
+	private ActivityDao mockActivityDao;
 
 	private Mapper mockMapper;
 
@@ -108,6 +114,7 @@ public class AccountServiceTest {
 		mockUserTokenDao = mock(UserTokenDao.class);
 		mockClientDao = mock(ClientDao.class);
 		mockRoleDao = mock(RoleDao.class);
+		mockActivityDao = mock(ActivityDao.class);
 		mockMapper = mock(Mapper.class);
 		mapper = new DozerBeanMapper();
 		passwordEncoder = new BCryptPasswordEncoder();
@@ -125,6 +132,7 @@ public class AccountServiceTest {
 		accountService.setUserTokenDao(mockUserTokenDao);
 		accountService.setClientDao(mockClientDao);
 		accountService.setRoleDao(mockRoleDao);
+		accountService.setActivityDao(mockActivityDao);
 		accountService.setPasswordEncoder(passwordEncoder);
 		accountService.setKey("2344228477#97{7&6>82");
 	}
@@ -408,5 +416,21 @@ public class AccountServiceTest {
 		accountService.deleteApp(1L, 1L, "admin");
 
 		verify(mockClientDao).delete(client);
+	}
+	
+	@Test
+	public void getActivities() {
+		accountService.setMapper(mapper);
+		
+		RiverActivity activity = new RiverActivity();
+		activity.setId(1L);
+		List<Activity> activities = new ArrayList<Activity>();
+		activities.add(activity);
+		
+		when(mockActivityDao.find(1L, 2, 3L, true)).thenReturn(activities);
+		
+		List<GetActivityDTO> ret = accountService.getActivities(1L, 2, 3L, true, "user");
+		assertEquals(1, ret.size());
+		assertEquals("1", ret.get(0).getId());
 	}
 }

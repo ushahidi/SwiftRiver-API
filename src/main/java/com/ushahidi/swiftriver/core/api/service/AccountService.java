@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
@@ -41,6 +42,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
@@ -50,6 +52,7 @@ import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
+import com.ushahidi.swiftriver.core.model.Activity;
 import com.ushahidi.swiftriver.core.model.Client;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
@@ -74,6 +77,9 @@ public class AccountService {
 
 	@Autowired
 	private AccountDao accountDao;
+	
+	@Autowired
+	private ActivityDao activityDao;
 
 	@Autowired
 	private UserTokenDao userTokenDao;
@@ -114,6 +120,10 @@ public class AccountService {
 
 	public void setAccountDao(AccountDao accountDao) {
 		this.accountDao = accountDao;
+	}
+
+	public void setActivityDao(ActivityDao activityDao) {
+		this.activityDao = activityDao;
 	}
 
 	public UserDao getUserDao() {
@@ -773,6 +783,27 @@ public class AccountService {
 			throw new NotFoundException(String.format(
 					"Account %d does not follow account %d", accountId, id));
 		}
+	}
+
+	/**
+	 * Get actions for the given account
+	 * 
+	 * @param accountId
+	 * @param newer 
+	 * @param lastId 
+	 * @param count 
+	 * @param name
+	 * @return
+	 */
+	public List<GetActivityDTO> getActivities(Long accountId, Integer count, Long lastId, Boolean newer, String authUser) {
+		
+		List<GetActivityDTO> activities = new ArrayList<GetActivityDTO>();
+		
+		for (Activity activity : activityDao.find(accountId, count, lastId, newer)) {
+			activities.add(mapper.map(activity, GetActivityDTO.class));
+		}
+		
+		return activities;
 	}
 
 }
