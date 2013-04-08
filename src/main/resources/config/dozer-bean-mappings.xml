@@ -302,7 +302,7 @@
 		<field>
 		    <a>actionOnObj</a>
 		    <b>actionOnObj</b>
-			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO</b-hint>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetRiverCollaboratorDTO</b-hint>
 		</field>
 	</mapping>
 	
@@ -313,7 +313,7 @@
 		<field>
 		    <a>actionOnObj</a>
 		    <b>actionOnObj</b>
-			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO</b-hint>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetBucketCollaboratorDTO</b-hint>
 		</field>
 	</mapping>
 </mappings> 

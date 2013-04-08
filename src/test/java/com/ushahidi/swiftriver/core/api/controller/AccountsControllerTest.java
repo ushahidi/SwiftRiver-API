@@ -754,7 +754,11 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].action").value("invite"))
 				.andExpect(jsonPath("$[0].action_on").value("bucket_collaborator"))
 				.andExpect(jsonPath("$[0].action_on_obj.id").value(2))
-				.andExpect(jsonPath("$[0].action_on_obj.account.owner.name").value("User 2"));
+				.andExpect(jsonPath("$[0].action_on_obj.account.owner.name").value("User 2"))
+				.andExpect(jsonPath("$[0].action_on_obj.bucket.id").value(1))
+				
+				// Check river property set for the river_collaborator activity
+				.andExpect(jsonPath("$[1].action_on_obj.river.id").value(1));
 	}
 	
 	@Test
