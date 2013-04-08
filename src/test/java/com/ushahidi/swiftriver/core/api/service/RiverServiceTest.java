@@ -223,16 +223,23 @@ public class RiverServiceTest {
 	}
 
 	@Test
-	public void isOwnerForCollaboratingAccount() {
-		River river = new River();
+	public void isOwnerForEditorCollaboratingAccount() {
+		RiverCollaborator collaborator = new RiverCollaborator();
+		collaborator.setReadOnly(false);
+		when(mockRiverDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
 
-		Account account = new Account();
-		List<River> collaboratingRivers = new ArrayList<River>();
-		collaboratingRivers.add(river);
-		account.setCollaboratingRivers(collaboratingRivers);
-
-		assertTrue(riverService.isOwner(river, account));
+		assertTrue(riverService.isOwner(new River(), new Account()));
 	}
+	
+	@Test
+	public void isOwnerForViewerCollaboratingAccount() {
+		RiverCollaborator collaborator = new RiverCollaborator();
+		collaborator.setReadOnly(true);
+		when(mockRiverDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
+
+		assertFalse(riverService.isOwner(new River(), new Account()));
+	}
+
 
 	@Test
 	public void isOwnerForNoneOwnerAccount() {
@@ -435,8 +442,9 @@ public class RiverServiceTest {
 		riverService.addCollaborator(1L, createCollaborator, "admin");
 
 		verify(mockRiverDao).addCollaborator(mockRiver, mockAccount, true);
-		
-		verify(mockAccountService).logActivity(eq(mockAuthAccount), eq(ActivityType.INVITE), any(RiverCollaborator.class));
+
+		verify(mockAccountService).logActivity(eq(mockAuthAccount),
+				eq(ActivityType.INVITE), any(RiverCollaborator.class));
 	}
 
 	@Test
@@ -801,9 +809,10 @@ public class RiverServiceTest {
 
 		ArgumentCaptor<River> argument = ArgumentCaptor.forClass(River.class);
 		verify(mockRiverDao).update(argument.capture());
-		
+
 		assertTrue(argument.getValue().getFollowers().contains(account));
-		
-		verify(mockAccountService).logActivity(account, ActivityType.FOLLOW, river);
+
+		verify(mockAccountService).logActivity(account, ActivityType.FOLLOW,
+				river);
 	}
 }

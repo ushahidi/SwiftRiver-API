@@ -637,5 +637,47 @@ public class BucketServiceTest {
 		
 		verify(mockAccountService).logActivity(account, ActivityType.FOLLOW, bucket);
 	}
+	
+	@Test
+	public void isOwnerForOwnerAccount() {
+		Account account = new Account();
+		account.setAccountPath("owner_account");
+
+		Bucket bucket = new Bucket();
+		bucket.setAccount(account);
+
+		assertTrue(bucketService.isOwner(bucket, account));
+	}
+
+	@Test
+	public void isOwnerForEditorCollaboratingAccount() {
+		BucketCollaborator collaborator = new BucketCollaborator();
+		collaborator.setReadOnly(false);
+		when(mockBucketDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
+
+		assertTrue(bucketService.isOwner(new Bucket(), new Account()));
+	}
+	
+	@Test
+	public void isOwnerForViewerCollaboratingAccount() {
+		BucketCollaborator collaborator = new BucketCollaborator();
+		collaborator.setReadOnly(true);
+		when(mockBucketDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
+
+		assertFalse(bucketService.isOwner(new Bucket(), new Account()));
+	}
+
+
+	@Test
+	public void isOwnerForNoneOwnerAccount() {
+		Bucket bucket = new Bucket();
+		bucket.setAccount(new Account());
+
+		Account account = new Account();
+		List<Bucket> collaboratingBuckets = new ArrayList<Bucket>();
+		account.setCollaboratingBuckets(collaboratingBuckets);
+
+		assertFalse(bucketService.isOwner(bucket, account));
+	}
 
 }

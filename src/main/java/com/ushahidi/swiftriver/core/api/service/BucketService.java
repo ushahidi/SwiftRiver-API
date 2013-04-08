@@ -794,30 +794,12 @@ public class BucketService {
 	 * @return
 	 */
 	public boolean isOwner(Bucket bucket, Account account) {
+		BucketCollaborator collaborator = bucketDao.findCollaborator(bucket.getId(), account.getId());
+		
 		return bucket.getAccount() == account
-				|| isCollaborator(bucket, account, false);
-
+				|| (collaborator != null && !collaborator.isReadOnly());
 	}
 
-	/**
-	 * Verifies whether the {@link Account} in <code>account</code> is
-	 * collaborating on the {@link Bucket} in <code>bucket</code>
-	 * 
-	 * @param bucket
-	 * @param account
-	 * @param readOnly
-	 * @return
-	 */
-	private boolean isCollaborator(Bucket bucket, Account account,
-			boolean readOnly) {
-		BucketCollaborator collaborator = bucketDao.findCollaborator(
-				bucket.getId(), account.getId());
-		if (collaborator == null) {
-			return false;
-		}
-
-		return (readOnly && collaborator.isReadOnly());
-	}
 
 	/**
 	 * Adds a {@link Tag} to the {@link BucketDrop} with the specified
