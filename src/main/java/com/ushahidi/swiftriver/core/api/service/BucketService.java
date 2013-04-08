@@ -793,7 +793,7 @@ public class BucketService {
 	 * @param account
 	 * @return
 	 */
-	private boolean isOwner(Bucket bucket, Account account) {
+	public boolean isOwner(Bucket bucket, Account account) {
 		return bucket.getAccount() == account
 				|| isCollaborator(bucket, account, false);
 

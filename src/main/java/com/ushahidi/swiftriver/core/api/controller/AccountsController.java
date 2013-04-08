@@ -229,13 +229,20 @@ public class AccountsController extends AbstractController {
 
 	@RequestMapping(value = "/{accountId}/activities", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetActivityDTO> getActivities(
+	public List<GetActivityDTO> getAccountActivities(
 			@PathVariable Long accountId,
+			Principal principal) {
+		return accountService.getAccountActivities(accountId, principal.getName());
+	}
+	
+	@RequestMapping(value = "/activities", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetActivityDTO> getFollowedAccountActivities(
 			Principal principal,
 			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
 			@RequestParam(value = "last_id", required = false) Long lastId,
 			@RequestParam(value = "newer", required = false) Boolean newer) {
-		return accountService.getActivities(accountId, count, lastId, newer, principal.getName());
+		return accountService.getFollowActivities(count, lastId, newer, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.POST)

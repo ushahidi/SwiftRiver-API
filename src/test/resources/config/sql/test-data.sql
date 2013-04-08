@@ -418,7 +418,7 @@ INSERT INTO account_actions(id, account_id, action, action_on, action_on_id, act
 (2, 3, 'create', 'bucket', 1, NULL, '2013-01-02 00:00:02', NULL),
 (3, 3, 'create', 'form', 1, NULL, '2013-01-02 00:00:03', NULL),
 (4, 3, 'follow', 'account', 4, NULL, '2013-01-02 00:00:04', NULL),
-(5, 4, 'follow', 'river', 1, NULL, '2013-01-02 00:00:05', NULL),
-(6, 4, 'follow', 'bucket', 1, NULL, '2013-01-02 00:00:06', NULL),
+(5, 5, 'follow', 'river', 1, NULL, '2013-01-02 00:00:05', NULL),
+(6, 5, 'follow', 'bucket', 1, NULL, '2013-01-02 00:00:06', NULL),
 (7, 3, 'invite', 'river_collaborator', 2, 5, '2013-01-02 00:00:07', 1),
 (8, 3, 'invite', 'bucket_collaborator', 2, 5, '2013-01-02 00:00:08', 0);

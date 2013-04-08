@@ -466,10 +466,10 @@ public class AccountServiceTest {
 		((FormActivity) activity).setActionOnObj(form);
 		activities.add(activity);
 
-		when(mockActivityDao.find(1L, 2, 3L, true)).thenReturn(activities);
+		when(mockActivityDao.find(1L, 2, 3L, true, false)).thenReturn(activities);
 
 		List<GetActivityDTO> ret = accountService.getActivities(1L, 2, 3L,
-				true, "user");
+				true, false, account);
 		assertEquals(3, ret.size());
 		assertEquals("1", ret.get(0).getId());
 		assertEquals("3", ret.get(1).getId());
@@ -498,10 +498,10 @@ public class AccountServiceTest {
 		((RiverActivity) activity).setActionOnObj(river);
 		activities.add(activity);
 
-		when(mockActivityDao.find(1L, 2, 1L, true)).thenReturn(activities);
-		when(mockActivityDao.find(1L, 2, 2L, true)).thenReturn(null);
+		when(mockActivityDao.find(1L, 2, 1L, true, false)).thenReturn(activities);
+		when(mockActivityDao.find(1L, 2, 2L, true, false)).thenReturn(null);
 
-		accountService.getActivities(1L, 2, 1L, true, "user");
+		accountService.getActivities(1L, 2, 1L, true, false, account);
 
 	}
 

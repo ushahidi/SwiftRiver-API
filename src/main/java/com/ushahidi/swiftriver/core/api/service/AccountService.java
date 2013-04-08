@@ -807,65 +807,6 @@ public class AccountService {
 	}
 
 	/**
-	 * Get actions for the given account
-	 * 
-	 * @param accountId
-	 * @param newer
-	 * @param lastId
-	 * @param count
-	 * @param name
-	 * @return
-	 */
-	public List<GetActivityDTO> getActivities(Long accountId, Integer count,
-			Long lastId, Boolean newer, String authUser) {
-
-		List<Activity> activities = activityDao.find(accountId, count, lastId,
-				newer);
-
-		if (activities == null)
-			throw new NotFoundException("No activities found.");
-
-		List<GetActivityDTO> activityDtos = new ArrayList<GetActivityDTO>();
-		for (Activity activity : activities) {
-
-			// Update last id
-			if (lastId != null) {
-				if (newer != null && newer) {
-					lastId = Math.max(lastId, activity.getId());
-				} else {
-					lastId = Math.min(lastId, activity.getId());
-				}
-			} else {
-				lastId = activity.getId();
-			}
-
-			// Filter out activities on objects the authenticated user has
-			// no access to
-			if (activity instanceof RiverActivity) {
-				River river = ((RiverActivity) activity).getActionOnObj();
-
-				if (!river.getRiverPublic()
-						&& !riverService.isOwner(river, authUser))
-					continue;
-			} else if (activity instanceof BucketActivity) {
-				Bucket bucket = ((BucketActivity) activity).getActionOnObj();
-
-				if (!bucket.isPublished()
-						&& !bucketService.isOwner(bucket, authUser))
-					continue;
-			}
-
-			activityDtos.add(mapper.map(activity, GetActivityDTO.class));
-		}
-
-		// If all activities removed due to permisions, repeat
-		if (activityDtos.size() == 0)
-			return getActivities(accountId, count, lastId, newer, authUser);
-
-		return activityDtos;
-	}
-
-	/**
 	 * Create an activity for the given account action.
 	 * 
 	 * @param account
@@ -920,5 +861,89 @@ public class AccountService {
 		
 		activityDao.create(activity);
 	}
+
+	/**
+	 * Get an activity stream
+	 * 
+	 * When the followers parameter is true, get activities for 
+	 * the accounts <code>accountId</code> is following otherwise 
+	 * get <code>accountId</code>'s own activities.
+	 * 
+	 * @param accountId
+	 * @param count
+	 * @param lastId
+	 * @param newer
+	 * @param followers
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetActivityDTO> getActivities(Long accountId, Integer count,
+			Long lastId, Boolean newer, boolean followers, Account authAccount) {
+	
+		List<Activity> activities = activityDao.find(accountId, count, lastId,
+				newer, followers);
+	
+		if (activities == null)
+			throw new NotFoundException("No activities found.");
+	
+		List<GetActivityDTO> activityDtos = new ArrayList<GetActivityDTO>();
+		for (Activity activity : activities) {
+	
+			// Update last id
+			if (lastId != null) {
+				if (newer != null && newer) {
+					lastId = Math.max(lastId, activity.getId());
+				} else {
+					lastId = Math.min(lastId, activity.getId());
+				}
+			} else {
+				lastId = activity.getId();
+			}
+	
+			// Filter out activities on objects the authenticated user has
+			// no access to
+			if (activity instanceof RiverActivity) {
+				River river = ((RiverActivity) activity).getActionOnObj();
+	
+				if (!river.getRiverPublic()
+						&& !riverService.isOwner(river, authAccount))
+					continue;
+			} else if (activity instanceof BucketActivity) {
+				Bucket bucket = ((BucketActivity) activity).getActionOnObj();
+	
+				if (!bucket.isPublished()
+						&& !bucketService.isOwner(bucket, authAccount))
+					continue;
+			}
+	
+			activityDtos.add(mapper.map(activity, GetActivityDTO.class));
+		}
+	
+		// If all activities removed due to permisions, repeat
+		if (activityDtos.size() == 0)
+			return getActivities(accountId, count, lastId, newer, followers, authAccount);
+	
+		return activityDtos;
+	}
+
+	/**
+	 * @param accountId
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetActivityDTO> getAccountActivities(Long accountId, String authUser) {
+		
+		Account account = accountDao.findByUsername(authUser);
+		return getActivities(accountId, 50, Long.MAX_VALUE, false, false, account);
+	}
+
+	public List<GetActivityDTO> getFollowActivities(Integer count, Long lastId,
+			Boolean newer, String authUser) {
+		
+		Account account = accountDao.findByUsername(authUser);
+		return getActivities(account.getId(), count, lastId, newer, true, account);
+	}
+	
+	
 
 }

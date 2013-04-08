@@ -16,7 +16,6 @@ import com.ushahidi.swiftriver.core.api.dao.RiverDao;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountActivity;
 import com.ushahidi.swiftriver.core.model.Activity;
-import com.ushahidi.swiftriver.core.model.BucketActivity;
 import com.ushahidi.swiftriver.core.model.BucketCollaboratorActivity;
 import com.ushahidi.swiftriver.core.model.FormActivity;
 import com.ushahidi.swiftriver.core.model.River;
@@ -60,9 +59,9 @@ public class JpaActivityDaoTest extends AbstractJpaDaoTest {
 	}
 
 	@Test
-	public void find() {
+	public void findForSpecificAccount() {
 		List<Activity> activities = activityDao.find(3L, 100, Long.MAX_VALUE,
-				false);
+				false, false);
 
 		assertEquals(6, activities.size());
 
@@ -93,11 +92,28 @@ public class JpaActivityDaoTest extends AbstractJpaDaoTest {
 	}
 
 	@Test
-	public void findNewerThanId() {
-		List<Activity> activities = activityDao.find(3L, 100, 7L, true);
+	public void findForSpecificAccountNewerThanId() {
+		List<Activity> activities = activityDao.find(3L, 100, 7L, true, false);
 
 		assertEquals(1, activities.size());
 		assertEquals(8L, activities.get(0).getId());
+	}
+	
+	@Test
+	public void findForFollowingAccounts() {
+		List<Activity> activities = activityDao.find(3L, 100, Long.MAX_VALUE, false, true);
+		
+		assertEquals(2, activities.size());
+		assertEquals(6L, activities.get(0).getId());
+		assertEquals(5L, activities.get(1).getId());
+	}
+	
+	@Test
+	public void findForFollowingAccountsNewerThanId() {
+		List<Activity> activities = activityDao.find(3L, 100, 5L, true, true);
+		
+		assertEquals(1, activities.size());
+		assertEquals(6L, activities.get(0).getId());
 	}
 
 }

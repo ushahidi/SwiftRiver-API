@@ -16,10 +16,17 @@ public class JpaActivityDao extends AbstractJpaDao<Activity> implements
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Activity> find(long accountId, Integer count, Long lastId,
-			Boolean newer) {
+			Boolean newer, boolean followers) {
 		String sql = "SELECT ac ";
-		sql += "FROM Activity ac JOIN ac.account a ";
-		sql += "WHERE a.id = :accountId ";
+		
+		if (followers) {
+			sql += "FROM Activity ac JOIN ac.account a JOIN a.followers f JOIN f.follower a2 ";
+			sql += "WHERE a2.id = :accountId ";
+		} else {
+			sql += "FROM Activity ac JOIN ac.account a ";
+			sql += "WHERE a.id = :accountId ";
+		}
+		
 
 		if (newer != null && newer) {
 			if (lastId != null) {
@@ -38,7 +45,8 @@ public class JpaActivityDao extends AbstractJpaDao<Activity> implements
 		if (lastId != null) {
 			query.setParameter("lastId", lastId).setMaxResults(count);
 		}
-
+		
+		
 		List<Activity> activities = (List<Activity>) query.getResultList();
 		
 		if (activities.size() == 0)

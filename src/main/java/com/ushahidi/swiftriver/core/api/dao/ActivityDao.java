@@ -32,5 +32,5 @@ public interface ActivityDao extends GenericDao<Activity> {
 	 * @param lastId
 	 * @param newer
 	 */
-	public List<Activity> find(long accountId, Integer count, Long lastId, Boolean newer);
+	public List<Activity> find(long accountId, Integer count, Long lastId, Boolean newer, boolean followers);
 }

@@ -765,8 +765,19 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	public void getActivitiesFromAccountWithoutActivities() throws Exception {
 		this.mockMvc
 				.perform(
-						get("/v1/accounts/5/activities").principal(
+						get("/v1/accounts/4/activities").principal(
 								getAuthentication("user3")))
 				.andExpect(status().isNotFound());
+	}
+	
+	@Test
+	public void getActivitiesOfFollowedAccounts() throws Exception {
+		this.mockMvc
+				.perform(
+						get("/v1/accounts/activities").principal(
+								getAuthentication("user1")))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$").isArray())
+				.andExpect(jsonPath("$[0].id").value("6"));
 	}
 }
