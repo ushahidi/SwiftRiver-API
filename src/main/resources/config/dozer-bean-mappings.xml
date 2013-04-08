@@ -251,24 +251,47 @@
 	</mapping>
 	
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.model.River</class-a>
-		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO.Target</class-b>
+		<class-a>com.ushahidi.swiftriver.core.model.RiverActivity</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
 		
 		<field>
-			<a>riverName</a>
-			<b>name</b>
+		    <a>actionOnObj</a>
+		    <b>actionOnObj</b>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetRiverDTO</b-hint>
 		</field>
 
 	</mapping>
 	
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.model.Account</class-a>
-		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO.Target</class-b>
+		<class-a>com.ushahidi.swiftriver.core.model.BucketActivity</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
 		
 		<field>
-			<a>owner.name</a>
-			<b>name</b>
+		    <a>actionOnObj</a>
+		    <b>actionOnObj</b>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetBucketDTO</b-hint>
 		</field>
-
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.AccountActivity</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
+		
+		<field>
+		    <a>actionOnObj</a>
+		    <b>actionOnObj</b>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetAccountDTO</b-hint>
+		</field>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.FormActivity</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
+		
+		<field>
+		    <a>actionOnObj</a>
+		    <b>actionOnObj</b>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetFormDTO</b-hint>
+		</field>
 	</mapping>
 </mappings> 

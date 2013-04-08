@@ -35,7 +35,7 @@ public class GetActivityDTO {
 	private String actionOn;
 	
 	@JsonProperty("action_on_obj")
-	private Target actionOnObj;
+	private Object actionOnObj;
 	
 	private GetAccountDTO actionTo;
 
@@ -79,11 +79,11 @@ public class GetActivityDTO {
 		this.actionOn = actionOn;
 	}
 
-	public Target getActionOnObj() {
+	public Object getActionOnObj() {
 		return actionOnObj;
 	}
 
-	public void setActionOnObj(Target actionOnObj) {
+	public void setActionOnObj(Object actionOnObj) {
 		this.actionOnObj = actionOnObj;
 	}
 
@@ -150,29 +150,5 @@ public class GetActivityDTO {
 				this.name = name;
 			}
 		}
-	}
-	
-	public static class Target {
-		
-		private long id;
-		
-		private String name;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-		
 	}
 }

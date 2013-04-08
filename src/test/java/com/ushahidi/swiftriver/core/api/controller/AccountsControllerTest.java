@@ -754,7 +754,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].action").value("follow"))
 				.andExpect(jsonPath("$[0].action_on").value("account"))
 				.andExpect(jsonPath("$[0].action_on_obj.id").value(4))
-				.andExpect(jsonPath("$[0].action_on_obj.name").value("User 2"))
+				.andExpect(jsonPath("$[0].action_on_obj.owner.name").value("User 2"))
 				
 				// Check river name mapped correctly
 				.andExpect(jsonPath("$[3].action_on_obj.name").value("Public River 1"));
