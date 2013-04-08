@@ -508,6 +508,8 @@ public class RiverService {
 
 		RiverCollaborator collaborator = riverDao.addCollaborator(river,
 				account, createCollaboratorTO.isReadOnly());
+		
+		accountService.logActivity(authAccount, ActivityType.INVITE, collaborator);
 
 		return mapper.map(collaborator, GetCollaboratorDTO.class);
 	}

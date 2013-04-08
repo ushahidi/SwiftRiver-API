@@ -401,6 +401,8 @@ public class BucketService {
 
 		BucketCollaborator collaborator = bucketDao.addCollaborator(bucket,
 				account, createCollaboratorTO.isReadOnly());
+		
+		accountService.logActivity(authAccount, ActivityType.INVITE, collaborator);
 
 		return mapper.map(collaborator, GetCollaboratorDTO.class);
 	}

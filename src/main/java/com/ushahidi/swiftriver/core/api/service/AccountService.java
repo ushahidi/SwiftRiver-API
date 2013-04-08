@@ -57,11 +57,15 @@ import com.ushahidi.swiftriver.core.model.Activity;
 import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketActivity;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketCollaboratorActivity;
 import com.ushahidi.swiftriver.core.model.Client;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormActivity;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverActivity;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverCollaboratorActivity;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
@@ -884,7 +888,13 @@ public class AccountService {
 			((FormActivity) activity).setActionOnObj((Form) actionOn);
 		} else if (actionOn instanceof Account) {
 			activity = new AccountActivity();
-			((AccountActivity) activity).setActionOnObj(account);
+			((AccountActivity) activity).setActionOnObj((Account)actionOn);
+		} else if (actionOn instanceof RiverCollaborator) {
+			activity = new RiverCollaboratorActivity();
+			((RiverCollaboratorActivity) activity).setActionOnObj((RiverCollaborator)actionOn);
+		} else if (actionOn instanceof BucketCollaborator) {
+			activity = new BucketCollaboratorActivity();
+			((BucketCollaboratorActivity) activity).setActionOnObj((BucketCollaborator)actionOn);
 		}
 		
 		if (activity == null)

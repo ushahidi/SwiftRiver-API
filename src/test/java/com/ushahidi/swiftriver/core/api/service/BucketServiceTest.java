@@ -179,6 +179,8 @@ public class BucketServiceTest {
 		bucketService.addCollaborator(1L, createCollaborator, "admin");
 
 		verify(mockBucketDao).addCollaborator(mockBucket, mockAccount, true);
+		
+		verify(mockAccountService).logActivity(eq(mockAuthAccount), eq(ActivityType.INVITE), any(BucketCollaborator.class));
 	}
 
 	@Test

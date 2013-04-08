@@ -294,4 +294,26 @@
 			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetFormDTO</b-hint>
 		</field>
 	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.RiverCollaboratorActivity</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
+		
+		<field>
+		    <a>actionOnObj</a>
+		    <b>actionOnObj</b>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO</b-hint>
+		</field>
+	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.BucketCollaboratorActivity</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
+		
+		<field>
+		    <a>actionOnObj</a>
+		    <b>actionOnObj</b>
+			<b-hint>com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO</b-hint>
+		</field>
+	</mapping>
 </mappings> 

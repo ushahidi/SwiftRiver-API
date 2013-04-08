@@ -748,16 +748,13 @@ public class AccountsControllerTest extends AbstractControllerTest {
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$").isArray())
-				.andExpect(jsonPath("$[0].id").value("4"))
+				.andExpect(jsonPath("$[0].id").value("8"))
 				.andExpect(jsonPath("$[0].date_added").exists())
 				.andExpect(jsonPath("$[0].account.id").value(3))
-				.andExpect(jsonPath("$[0].action").value("follow"))
-				.andExpect(jsonPath("$[0].action_on").value("account"))
-				.andExpect(jsonPath("$[0].action_on_obj.id").value(4))
-				.andExpect(jsonPath("$[0].action_on_obj.owner.name").value("User 2"))
-				
-				// Check river name mapped correctly
-				.andExpect(jsonPath("$[3].action_on_obj.name").value("Public River 1"));
+				.andExpect(jsonPath("$[0].action").value("invite"))
+				.andExpect(jsonPath("$[0].action_on").value("bucket_collaborator"))
+				.andExpect(jsonPath("$[0].action_on_obj.id").value(2))
+				.andExpect(jsonPath("$[0].action_on_obj.account.owner.name").value("User 2"));
 	}
 	
 	@Test

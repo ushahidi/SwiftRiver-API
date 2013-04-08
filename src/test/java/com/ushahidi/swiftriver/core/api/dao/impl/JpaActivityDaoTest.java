@@ -17,9 +17,11 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountActivity;
 import com.ushahidi.swiftriver.core.model.Activity;
 import com.ushahidi.swiftriver.core.model.BucketActivity;
+import com.ushahidi.swiftriver.core.model.BucketCollaboratorActivity;
 import com.ushahidi.swiftriver.core.model.FormActivity;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverActivity;
+import com.ushahidi.swiftriver.core.model.RiverCollaboratorActivity;
 
 public class JpaActivityDaoTest extends AbstractJpaDaoTest {
 
@@ -66,16 +68,15 @@ public class JpaActivityDaoTest extends AbstractJpaDaoTest {
 
 		// There is a bucket activity
 		Activity activity = activities.get(0);
-		assertTrue(activity instanceof BucketActivity);
+		assertTrue(activity instanceof BucketCollaboratorActivity);
 		assertEquals(8L, activity.getId());
-		assertEquals(2L, ((BucketActivity) activity).getActionOnObj().getId());
+		assertEquals(2L, ((BucketCollaboratorActivity) activity).getActionOnObj().getId());
 
-		// River activity
+		// There is a bucket activity
 		activity = activities.get(1);
-		assertTrue(activity instanceof RiverActivity);
+		assertTrue(activity instanceof RiverCollaboratorActivity);
 		assertEquals(7L, activity.getId());
-		assertEquals(2L, (long) ((RiverActivity) activity).getActionOnObj()
-				.getId());
+		assertEquals(2L, (long)((RiverCollaboratorActivity) activity).getActionOnObj().getId());
 
 		// Account activity
 		activity = activities.get(2);

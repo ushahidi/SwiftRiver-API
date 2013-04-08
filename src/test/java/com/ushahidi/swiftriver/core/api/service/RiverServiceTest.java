@@ -17,7 +17,7 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -435,6 +435,8 @@ public class RiverServiceTest {
 		riverService.addCollaborator(1L, createCollaborator, "admin");
 
 		verify(mockRiverDao).addCollaborator(mockRiver, mockAccount, true);
+		
+		verify(mockAccountService).logActivity(eq(mockAuthAccount), eq(ActivityType.INVITE), any(RiverCollaborator.class));
 	}
 
 	@Test
