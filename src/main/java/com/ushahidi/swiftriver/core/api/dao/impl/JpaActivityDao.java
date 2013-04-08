@@ -39,7 +39,12 @@ public class JpaActivityDao extends AbstractJpaDao<Activity> implements
 			query.setParameter("lastId", lastId).setMaxResults(count);
 		}
 
-		return (List<Activity>) query.getResultList();
+		List<Activity> activities = (List<Activity>) query.getResultList();
+		
+		if (activities.size() == 0)
+			return null;
+		
+		return activities;
 
 	}
 

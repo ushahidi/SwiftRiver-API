@@ -61,7 +61,10 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Activity;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketActivity;
 import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormActivity;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverActivity;
 import com.ushahidi.swiftriver.core.model.Role;
@@ -84,7 +87,7 @@ public class AccountServiceTest {
 	private ClientDao mockClientDao;
 
 	private RoleDao mockRoleDao;
-	
+
 	private ActivityDao mockActivityDao;
 
 	private Mapper mockMapper;
@@ -197,7 +200,7 @@ public class AccountServiceTest {
 				account, account);
 
 		assertEquals(getAccountDTO, actualGetAccountDTO);
-		
+
 		ArgumentCaptor<Account> argument = ArgumentCaptor
 				.forClass(Account.class);
 		verify(mockMapper).map(argument.capture(), any(Class.class));
@@ -417,20 +420,67 @@ public class AccountServiceTest {
 
 		verify(mockClientDao).delete(client);
 	}
-	
+
 	@Test
 	public void getActivities() {
 		accountService.setMapper(mapper);
-		
-		RiverActivity activity = new RiverActivity();
-		activity.setId(1L);
+
 		List<Activity> activities = new ArrayList<Activity>();
+
+		// The authenticated account
+		Account account = new Account();
+
+		// Add a river activity the authenticated user owns
+		Activity activity = new RiverActivity();
+		activity.setId(1L);
+		River river = new River();
+		river.setAccount(account);
+		river.setRiverPublic(true);
+		((RiverActivity) activity).setActionOnObj(river);
 		activities.add(activity);
-		
+
+		// Add a river activity the authenticated user *does not* own
+		activity = new RiverActivity();
+		activity.setId(2L);
+		river = new River();
+		river.setAccount(account);
+		river.setRiverPublic(false);
+		((RiverActivity) activity).setActionOnObj(river);
+		activities.add(activity);
+
+		// Add a bucket activity the authenticated user owns
+		activity = new BucketActivity();
+		activity.setId(3L);
+		Bucket bucket = new Bucket();
+		bucket.setAccount(account);
+		bucket.setPublished(true);
+		((BucketActivity) activity).setActionOnObj(bucket);
+		activities.add(activity);
+
+		// Add a bucket activity the authenticated user *does not* own
+		activity = new BucketActivity();
+		activity.setId(4L);
+		bucket = new Bucket();
+		bucket.setAccount(account);
+		bucket.setPublished(false);
+		((BucketActivity) activity).setActionOnObj(bucket);
+		activities.add(activity);
+
+		// Add a form activity the authenticated user owns
+		activity = new FormActivity();
+		activity.setId(5L);
+		Form form = new Form();
+		form.setAccount(account);
+		((FormActivity) activity).setActionOnObj(form);
+		activities.add(activity);
+
 		when(mockActivityDao.find(1L, 2, 3L, true)).thenReturn(activities);
-		
-		List<GetActivityDTO> ret = accountService.getActivities(1L, 2, 3L, true, "user");
-		assertEquals(1, ret.size());
+
+		List<GetActivityDTO> ret = accountService.getActivities(1L, 2, 3L,
+				true, "user");
+		assertEquals(3, ret.size());
 		assertEquals("1", ret.get(0).getId());
+		assertEquals("3", ret.get(1).getId());
+		assertEquals("5", ret.get(2).getId());
 	}
 }

@@ -53,7 +53,11 @@ import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Activity;
+import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketActivity;
 import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverActivity;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
@@ -797,13 +801,33 @@ public class AccountService {
 	 */
 	public List<GetActivityDTO> getActivities(Long accountId, Integer count, Long lastId, Boolean newer, String authUser) {
 		
-		List<GetActivityDTO> activities = new ArrayList<GetActivityDTO>();
+		List<Activity> activities = activityDao.find(accountId, count, lastId, newer);
 		
-		for (Activity activity : activityDao.find(accountId, count, lastId, newer)) {
-			activities.add(mapper.map(activity, GetActivityDTO.class));
+		if (activities == null) 
+			throw new NotFoundException("No activities found.");
+		
+		
+		List<GetActivityDTO> activityDtos = new ArrayList<GetActivityDTO>();		
+		for (Activity activity : activities) {
+			
+			// Filter out activities on objects the authenticated user has 
+			// no access to
+			if (activity instanceof RiverActivity) {
+				River river = ((RiverActivity)activity).getActionOnObj();
+				
+				if (!river.getRiverPublic() && !riverService.isOwner(river, authUser))
+					continue;
+			} else if (activity instanceof BucketActivity) {
+				Bucket bucket = ((BucketActivity)activity).getActionOnObj();
+				
+				if (!bucket.isPublished() && !bucketService.isOwner(bucket, authUser))
+					continue;
+			}
+			
+			activityDtos.add(mapper.map(activity, GetActivityDTO.class));
 		}
-		
-		return activities;
+		logger.debug(Long.toString(activityDtos.size()));
+		return activityDtos;
 	}
 
 }

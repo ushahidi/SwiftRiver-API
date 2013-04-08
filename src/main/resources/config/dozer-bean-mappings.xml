@@ -260,4 +260,15 @@
 		</field>
 
 	</mapping>
+	
+	<mapping map-null="false">
+		<class-a>com.ushahidi.swiftriver.core.model.Account</class-a>
+		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO.Target</class-b>
+		
+		<field>
+			<a>owner.name</a>
+			<b>name</b>
+		</field>
+
+	</mapping>
 </mappings> 
