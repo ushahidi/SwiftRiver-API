@@ -70,6 +70,7 @@ import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Channel;
@@ -98,6 +99,9 @@ public class RiverService {
 
 	@Autowired
 	private AccountDao accountDao;
+	
+	@Autowired
+	private AccountService accountService;
 
 	@Autowired
 	private ChannelDao channelDao;
@@ -135,6 +139,10 @@ public class RiverService {
 
 	public void setRiverDao(RiverDao riverDao) {
 		this.riverDao = riverDao;
+	}
+
+	public void setAccountService(AccountService accountService) {
+		this.accountService = accountService;
 	}
 
 	public AccountDao getAccountDao() {
@@ -225,6 +233,8 @@ public class RiverService {
 		riverDao.create(river);
 
 		accountDao.decreaseRiverQuota(account, 1);
+		
+		accountService.logActivity(account, ActivityType.CREATE, river);
 
 		return mapper.map(river, GetRiverDTO.class);
 	}
@@ -591,7 +601,8 @@ public class RiverService {
 
 		river.getFollowers().add(account);
 		riverDao.update(river);
-
+		
+		accountService.logActivity(account, ActivityType.FOLLOW, river);
 	}
 
 	/**

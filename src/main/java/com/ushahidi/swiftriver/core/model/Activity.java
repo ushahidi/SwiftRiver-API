@@ -86,10 +86,6 @@ public abstract class Activity {
 		return actionOn;
 	}
 
-	public void setActionOn(String actionOn) {
-		this.actionOn = actionOn;
-	}
-
 	public Account getActionTo() {
 		return actionTo;
 	}

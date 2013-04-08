@@ -35,6 +35,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateFormFieldDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormFieldDTO;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
 import com.ushahidi.swiftriver.core.support.MapperFactory;
@@ -51,6 +52,8 @@ public class FormServiceTest  {
 
 	private FormService formService;
 	
+	private AccountService mockAccountService;
+	
 	private Form form;
 	
 	private FormField field;
@@ -62,6 +65,7 @@ public class FormServiceTest  {
 		mockAccountDao = mock(AccountDao.class);
 		mockFormDao = mock(FormDao.class);
 		mockFormFieldDao = mock(FormFieldDao.class);
+		mockAccountService = mock(AccountService.class);
 		
 		account = new Account();
 		account.setId(1L);
@@ -81,6 +85,7 @@ public class FormServiceTest  {
 		formService.setMapper(mapper);
 		formService.setFormDao(mockFormDao);
 		formService.setFormFieldDao(mockFormFieldDao);
+		formService.setAccountService(mockAccountService);
 	}
 
 	@Test
@@ -88,13 +93,15 @@ public class FormServiceTest  {
 		CreateFormDTO createFormDTO = new CreateFormDTO();
 		createFormDTO.setName("Dangerous Speech Categorisation");
 
-		formService.createForm(createFormDTO, "");
+		formService.createForm(createFormDTO, "user");
 
 		ArgumentCaptor<Form> argument = ArgumentCaptor.forClass(Form.class);
 		verify(mockFormDao).create(argument.capture());
 
-		assertEquals("Dangerous Speech Categorisation", argument.getValue()
-				.getName());
+		Form form = argument.getValue();
+		assertEquals("Dangerous Speech Categorisation", form.getName());
+		
+		verify(mockAccountService).logActivity(account, ActivityType.CREATE, form);
 	}
 	
 	@Test

@@ -3,22 +3,59 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
+import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountActivity;
 import com.ushahidi.swiftriver.core.model.Activity;
 import com.ushahidi.swiftriver.core.model.BucketActivity;
 import com.ushahidi.swiftriver.core.model.FormActivity;
+import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverActivity;
 
 public class JpaActivityDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	private ActivityDao activityDao;
+
+	@Autowired
+	private RiverDao riverDao;
+
+	@Autowired
+	private AccountDao accountDao;
+
+	@Test
+	public void create() {
+		River river = riverDao.findById(1L);
+		Account account = accountDao.findById(3L);
+		RiverActivity activity = new RiverActivity();
+		activity.setAccount(account);
+		activity.setAction("create");
+		activity.setActionDateAdd(new Date());
+		activity.setActionOnObj(river);
+
+		activityDao.create(activity);
+
+		String sql = "SELECT account_id, action, action_on, action_on_id, action_date_add FROM account_actions WHERE id = ?";
+
+		Map<String, Object> results = this.jdbcTemplate.queryForMap(sql,
+				activity.getId());
+
+		assertEquals(3L, ((Number) results.get("account_id")).longValue());
+		assertEquals("create", results.get("action"));
+		assertEquals("river", results.get("action_on"));
+		assertEquals(1L, ((Number) results.get("action_on_id")).longValue());
+		assertEquals(activity.getActionDateAdd().getTime(),
+				((Date) results.get("action_date_add")).getTime());
+	}
 
 	@Test
 	public void find() {
@@ -57,7 +94,7 @@ public class JpaActivityDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void findNewerThanId() {
 		List<Activity> activities = activityDao.find(3L, 100, 7L, true);
-		
+
 		assertEquals(1, activities.size());
 		assertEquals(8L, activities.get(0).getId());
 	}

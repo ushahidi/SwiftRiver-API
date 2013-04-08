@@ -60,6 +60,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketComment;
@@ -115,6 +116,9 @@ public class BucketService {
 
 	@Autowired
 	private BucketCommentDao bucketCommentDao;
+	
+	@Autowired
+	private AccountService accountService;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
@@ -180,6 +184,10 @@ public class BucketService {
 		this.riverDropDao = riverDropDao;
 	}
 
+	public void setAccountService(AccountService accountService) {
+		this.accountService = accountService;
+	}
+
 	/**
 	 * Creates a new {@link Bucket} entity under the {@link Account} associated
 	 * with <code>username</code>.
@@ -218,6 +226,8 @@ public class BucketService {
 
 		// Save bucket
 		bucketDao.create(bucket);
+		
+		accountService.logActivity(account, ActivityType.CREATE, bucket);
 
 		return mapper.map(bucket, GetBucketDTO.class);
 	}
@@ -502,6 +512,7 @@ public class BucketService {
 		bucket.getFollowers().add(account);
 		bucketDao.update(bucket);
 
+		accountService.logActivity(account, ActivityType.FOLLOW, bucket);
 	}
 
 	/**
