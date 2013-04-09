@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:solr="http://www.springframework.org/schema/data/solr"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+		http://www.springframework.org/schema/data/solr http://www.springframework.org/schema/data/solr/spring-solr-1.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+
+	<!-- Enable Solr repositories and configure repository base package -->
+	<solr:repositories base-package="com.ushahidi.swiftriver.core.solr.repository" />
+
+	<!-- Configures Solr template -->
+	<bean id="solrTemplate" class="org.springframework.data.solr.core.SolrTemplate">
+		<constructor-arg ref="solrServer"/>
+	</bean>	
+
+	<!-- Prod environment configuration -->
+	<beans profile="prod">
+		<!-- Configures HTTP Solr server -->
+		<solr:solr-server id="solrServer" url="${solr.server.url}"/>
+
+		<!-- Properties for solr-server -->
+		<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="properties">
+				<bean class="java.util.Properties">
+					<constructor-arg>
+						<map>
+							<entry key="solr.server.url">
+								<jee:jndi-lookup jndi-name="solr/serverURL" />
+							</entry>
+						</map>
+					</constructor-arg>
+				</bean>
+			</property>
+		</bean>
+	</beans>
+	
+	<!-- Dev environment configuration -->
+	<beans profile="test">
+		<!--  Configures the location of the solr properties -->
+		<context:property-placeholder location="classpath:solr.properties" />
+		
+		<!-- Configures embedded solr server -->
+		<solr:embedded-solr-server id="solrServer" solrHome="${solr.solr.home}"/>
+		
+		<!-- Solr search index initialization bean -->
+		<bean id="initSearchIndex" 
+			class="com.ushahidi.swiftriver.core.solr.InitSolrSearchIndex" init-method="init" />
+
+	</beans>
+
+</beans>

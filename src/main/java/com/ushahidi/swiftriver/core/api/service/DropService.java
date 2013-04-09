@@ -19,6 +19,8 @@ package com.ushahidi.swiftriver.core.api.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +41,7 @@ import com.ushahidi.swiftriver.core.model.Drop;
 @Transactional(readOnly = true)
 public class DropService {
 
-	final Logger logger = LoggerFactory.getLogger(DropService.class);
+	final Logger LOGGER = LoggerFactory.getLogger(DropService.class);
 
 	@Autowired
 	private Mapper mapper;
@@ -58,6 +60,9 @@ public class DropService {
 
 	@Autowired
 	private TagDao tagDao;
+	
+	@Resource
+	private DropIndexService dropIndexService;
 
 	public Mapper getMapper() {
 		return mapper;
@@ -107,6 +112,10 @@ public class DropService {
 		this.tagDao = tagDao;
 	}
 
+	public void setDropIndexService(DropIndexService dropIndexService) {
+		this.dropIndexService = dropIndexService;
+	}
+
 	/**
 	 * Create the given list of drops
 	 * 
@@ -122,6 +131,10 @@ public class DropService {
 		}
 
 		dropDao.createDrops(drops);
+		
+		// Index all the created drops
+		LOGGER.debug("Indexing newly created drops {}", drops);
+		dropIndexService.addAllToIndex(drops);
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 		for (Drop drop : drops) {

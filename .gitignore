@@ -13,3 +13,4 @@ velocity.log
 .*swp
 *~
 *.DS_Store
+solr/swiftriver/data
