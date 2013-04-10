@@ -29,4 +29,13 @@ public interface DropDao extends GenericDao<Drop> {
 	 * @return
 	 */
 	public List<Drop> createDrops(List<Drop> drops);
+
+	/**
+	 * Gets and returns the {@link List} of all {@link Drop} entities 
+	 * with the IDs specified in <code>dropIds</code>
+	 * 
+	 * @param dropIds
+	 * @return
+	 */
+	public List<Drop> findAll(List<Long> dropIds);
 }

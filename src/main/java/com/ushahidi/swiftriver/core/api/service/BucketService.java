@@ -1383,4 +1383,24 @@ public class BucketService {
 		accountDao.update(account);
 	}
 
+	/**
+	 * Search buckets
+	 * 
+	 * @param searchTerm
+	 * @param page
+	 * @param count
+	 * @return
+	 */
+	@Transactional
+	public List<GetBucketDTO> findBuckets(String searchTerm, int page, int count) {
+		List<Bucket> buckets = bucketDao.findAll(searchTerm, page, count);
+
+		List<GetBucketDTO> bucketDTOs = new ArrayList<GetBucketDTO>();
+		for (Bucket bucket: buckets) {
+			bucketDTOs.add(mapper.map(bucket, GetBucketDTO.class));
+		}
+
+		return bucketDTOs;
+	}
+
 }

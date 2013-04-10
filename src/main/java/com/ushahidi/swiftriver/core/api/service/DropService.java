@@ -19,8 +19,6 @@ package com.ushahidi.swiftriver.core.api.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +59,7 @@ public class DropService {
 	@Autowired
 	private TagDao tagDao;
 	
-	@Resource
+	@Autowired
 	private DropIndexService dropIndexService;
 
 	public Mapper getMapper() {

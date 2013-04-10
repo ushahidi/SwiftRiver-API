@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.persistence.TypedQuery;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang.StringUtils;
@@ -46,6 +47,7 @@ import com.ushahidi.swiftriver.core.api.dao.MediaDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Sequence;
 import com.ushahidi.swiftriver.core.util.MD5Util;
@@ -459,5 +461,44 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				"SET `buckets`.`drop_count` = `buckets`.`drop_count` + `t`.`drop_count` ";
 
 		this.jdbcTemplate.update(updateSQL);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findAll(java.util.List)
+	 */
+	public List<Drop> findAll(List<Long> dropIds) {
+		// JPQL query string
+		String qlString = "FROM Drop WHERE id IN :dropIds";
+
+		TypedQuery<Drop> query = em.createQuery(qlString, Drop.class);
+		query.setParameter("dropIds", dropIds);
+
+		List<Drop> drops = query.getResultList();
+
+		// Store the ID of each drop against its index in the drops list
+		Map<Long, Integer> dropsIndex = new HashMap<Long, Integer>();
+		int i = 0;
+		for (Drop drop: drops) {
+			dropsIndex.put(drop.getId(), i);
+			i++;
+		}
+		
+		// Fetch the bucket drops
+		String qlBucketDrops = "FROM BucketDrop b WHERE b.drop.id IN :dropIds AND b.bucket.published = 1";
+		TypedQuery<BucketDrop> bucketDropQuery = em.createQuery(qlBucketDrops, BucketDrop.class);
+		bucketDropQuery.setParameter("dropIds", dropIds);
+
+		for (BucketDrop bucketDrop: bucketDropQuery.getResultList()) {
+			int dropIndex = dropsIndex.get(bucketDrop.getDrop().getId());
+			Drop drop =  drops.get(dropIndex);
+			if (drop.getBucketDrops() == null) {
+				drop.setBucketDrops(new ArrayList<BucketDrop>());
+			}
+			drop.getBucketDrops().add(bucketDrop);
+		}
+
+		// Get the list of buckets
+		return drops;
 	}
 }

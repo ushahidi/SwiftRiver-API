@@ -259,4 +259,17 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public void increaseDropCount(Bucket bucket);
 
+	
+	/**
+	 * Finds and returns a {@link List} of {@link Bucket} entities
+	 * that contain the phrase in <code>searchTerm</code> in their
+	 * <code>name</code> or <code>description</code> fields
+	 * 
+	 * @param searchTerm
+	 * @param page
+	 * @param count
+	 * @return
+	 */
+	public List<Bucket> findAll(String searchTerm, int page, int count);
+
 }

@@ -18,8 +18,10 @@ package com.ushahidi.swiftriver.core.solr.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.repository.Query;
 import org.springframework.data.solr.repository.SolrCrudRepository;
+import org.springframework.data.web.PageableDefaults;
 
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 
@@ -27,15 +29,29 @@ public interface DropDocumentRepository extends SolrCrudRepository<DropDocument,
 	
 	/**
 	 * Finds and returns a {@link List} of {@link DropDocument} entities
-	 * that contain the specified keyword in their title or content
-	 *  
-	 * @param keywords
+	 * that contain the phrase specified in <code>searchTerm</code> in their
+	 * title or content.
+	 * 
+	 * <b>NOTE:</b> Pages are zero-indexed, thus providing 0 for 
+	 * <code>page</code> - in the {@link Pageable} instance for the 
+	 * <code>pageable</code> parameter-  will return the first page
+	 * 
+	 * @param searchTerm
+	 * @param pageable
 	 * @return
 	 */
-	@Query("droplet_title:*?0* OR droplet_content:*?0*")
-	public List<DropDocument> findByTitleOrContentContains(String keyword);
+	@Query(value = "title:*?0* OR content:*?0*")
+	public List<DropDocument> findByTitleOrContentContains(String searchTerm,
+			@PageableDefaults(pageNumber = 0, value = 50) Pageable pageable);
 	
-	@Query("id:(?0)")
+	/**
+	 * Returns all {@link DropDocument} entities with the IDs
+	 * specified in <code>ids</code>
+	 * 
+	 * @param ids
+	 * @return
+	 */
+	@Query(value = "id:(?0)")
 	public List<DropDocument> findAll(List<String> ids);
-	
+		
 }

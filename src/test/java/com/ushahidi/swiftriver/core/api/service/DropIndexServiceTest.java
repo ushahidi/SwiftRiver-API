@@ -16,8 +16,12 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +31,10 @@ import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
@@ -46,13 +53,17 @@ public class DropIndexServiceTest {
 	
 	private Mapper mapper = new DozerBeanMapper();
 	
+	private DropDao mockDropDao;
+	
 	@Before
 	public void setUp() {
 		mockRepository = mock(DropDocumentRepository.class);
+		mockDropDao = mock(DropDao.class);
 
 		dropIndexService = new DropIndexService();
 		dropIndexService.setRepository(mockRepository);
 		dropIndexService.setMapper(mapper);
+		dropIndexService.setDropDao(mockDropDao);
 	}
 	
 	@Test
@@ -75,6 +86,44 @@ public class DropIndexServiceTest {
 		ArgumentCaptor<List> dropDocumentListArgument = ArgumentCaptor
 				.forClass(List.class);
 		verify(mockRepository).save(dropDocumentListArgument.capture());
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void findDrops() {
+		DropDocument dropDocument = new DropDocument();
+		dropDocument.setId("1");
+		dropDocument.setChannel("channel");
+		dropDocument.setTitle("title");
+		dropDocument.setContent("content");
+
+		List<DropDocument> dropDocuments = new ArrayList<DropDocument>();
+		dropDocuments.add(dropDocument);
+		
+		when(mockRepository.findByTitleOrContentContains(anyString(), 
+				any(Pageable.class))).thenReturn(dropDocuments);
+		dropIndexService.findDrops("keyword", 6, 30);
+
+		// First, we verify that a search is performed against the index
+		ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(
+				PageRequest.class);
+		ArgumentCaptor<String> searchTermArgument = ArgumentCaptor.forClass(String.class);
+
+		verify(mockRepository).findByTitleOrContentContains(searchTermArgument.capture(), 
+				pageRequestArgument.capture());
+		
+		// Assert that "keyword" is the value used for the search
+		String searchTerm = searchTermArgument.getValue();
+		assertEquals("keyword", searchTerm);
+
+		// Validate the Pageable instance passed to DropDocumentRepository
+		PageRequest pageRequest = pageRequestArgument.getValue();
+		assertEquals(5, pageRequest.getPageNumber());
+		assertEquals(30, pageRequest.getPageSize());
+
+		// Then we verify that the drops & their metadata are retrieved from the DB 
+		ArgumentCaptor<List> dropIdArgument = ArgumentCaptor.forClass(List.class);
+		verify(mockDropDao).findAll(dropIdArgument.capture());
 	}
 		
 }

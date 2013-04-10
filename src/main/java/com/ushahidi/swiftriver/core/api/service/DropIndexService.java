@@ -25,9 +25,12 @@ import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
@@ -41,6 +44,9 @@ public class DropIndexService {
 	
 	@Autowired
 	private Mapper mapper;
+
+	@Autowired
+	private DropDao dropDao;
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(DropIndexService.class);
 	
@@ -50,6 +56,10 @@ public class DropIndexService {
 
 	public void setMapper(Mapper mapper) {
 		this.mapper = mapper;
+	}
+
+	public void setDropDao(DropDao dropDao) {
+		this.dropDao = dropDao;
 	}
 
 	/**
@@ -131,18 +141,50 @@ public class DropIndexService {
 
 	/**
 	 * Finds and returns a {@link List} of {@link GetDropDTO}
-	 * entities that contain the phrase specified in <code>keyword</code>
+	 * entities that contain the phrase specified in <code>searchTerm</code>
+	 * in their <code>title</code> or <code>content</code>
 	 * 
 	 * The search is performed against the search index and the returned
 	 * document IDs are used to retrieve the drops from the database.
 	 * 
-	 * @param keyword
-	 * @param dropCount
+	 * @param searchTerm
+	 * @param page
+	 * @param count
 	 * @return
 	 */
 	@Transactional
-	public List<GetDropDTO> findByKeyword(String keyword, int dropCount) {
-		return null;
+	public List<GetDropDTO> findDrops(String searchTerm, int page, int count) {
+		// Pages are zero-indexed. Therefore, the first page is 0
+		page = (page >= 1) ? page - 1 : page;
+
+		// Search the index for drops containing searchTerm
+		Pageable pageRequest = new PageRequest(page, count);
+		List<DropDocument> dropDocuments = repository.findByTitleOrContentContains(
+				searchTerm, pageRequest);
+
+		List<GetDropDTO> drops = new ArrayList<GetDropDTO>();
+
+		// Anything from the search?
+		if (dropDocuments.isEmpty()) {
+			// Log
+			LOGGER.debug(String.format("No documents found containing \"%s\" on page %d",
+					searchTerm, page));
+
+			// Return empty list
+			return drops;
+		}
+
+		List<Long> dropIds = new ArrayList<Long>();
+		for (DropDocument document: dropDocuments) {
+			dropIds.add(Long.parseLong(document.getId()));
+		}
+
+		// Retrieve drops from the DB and transform to DTO
+		for(Drop drop: dropDao.findAll(dropIds)) {
+			drops.add(mapper.map(drop, GetDropDTO.class));
+		}
+		
+		return drops;
 	}
 	
 	/**

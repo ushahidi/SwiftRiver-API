@@ -113,9 +113,9 @@
     <!-- SwiftRiver Drop fields -->
     <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
     <field name="channel" type="text_general" indexed="true" stored="false"/>
-    <field name="droplet_title" type="text_general" indexed="true" stored="false"/>
-    <field name="droplet_content" type="text_general" indexed="true" stored="false"/>
-    <field name="droplet_date_pub" type="date" indexed="true" stored="true"/>
+    <field name="title" type="text_general" indexed="true" stored="false"/>
+    <field name="content" type="text_general" indexed="true" stored="false"/>
+    <field name="datePublished" type="date" indexed="true" stored="true"/>
 
    <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names. 
@@ -182,8 +182,8 @@
 
    <!-- Text fields from SwiftRiver to search by default in our catch-all field -->
    <copyField source="channel" dest="text"/>
-   <copyField source="droplet_title" dest="text"/>
-   <copyField source="droplet_content" dest="text"/>
+   <copyField source="title" dest="text"/>
+   <copyField source="content" dest="text"/>
 	
    <!-- Above, multiple source fields are copied to the [text] field. 
 	  Another way to map multiple source fields to the same 

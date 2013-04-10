@@ -1302,5 +1302,18 @@ public class RiverService {
 		account.getReadRiverDrops().add(riverDrop);
 		accountDao.update(account);
 	}
+
+	@Transactional
+	public List<GetRiverDTO> findRivers(String searchTerm, int page,
+			int count) {
+		List<River> rivers = riverDao.findAll(searchTerm, page, count);
+
+		List<GetRiverDTO> riverDTOs = new ArrayList<GetRiverDTO>();
+		for (River river: rivers) {
+			riverDTOs.add(mapper.map(river, GetRiverDTO.class));
+		}
+
+		return riverDTOs;
+	}
 	
 }

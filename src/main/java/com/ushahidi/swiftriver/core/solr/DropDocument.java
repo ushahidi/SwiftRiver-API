@@ -29,26 +29,19 @@ import com.ushahidi.swiftriver.core.model.Drop;
  */
 public class DropDocument {
 	
-	// Field names
-	public static final String FIELD_ID = "id";
-	public static final String FIELD_CHANNEL = "channel";
-	public static final String FIELD_TITLE = "droplet_title";
-	public static final String FIELD_CONTENT = "droplet_content";
-	public static final String FIELD_DATE_PUB = "droplet_date_pub";
-
 	@Field
 	private String id;
 	
 	@Field
 	private String channel;
 	
-	@Field("droplet_title")
+	@Field
 	private String title;
 	
-	@Field("droplet_content")
+	@Field
 	private String content;
 	
-	@Field("droplet_date_pub")
+	@Field
 	private Date datePublished;
 	
 	public String getId() {

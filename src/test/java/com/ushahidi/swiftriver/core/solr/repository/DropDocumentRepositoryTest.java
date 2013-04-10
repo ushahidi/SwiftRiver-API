@@ -21,10 +21,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -42,7 +42,7 @@ import com.ushahidi.swiftriver.core.solr.DropDocument;
 @ActiveProfiles(profiles = {"test"})
 public class DropDocumentRepositoryTest {
 
-	@Resource
+	@Autowired
 	private DropDocumentRepository repository;
 	
 	@Test
@@ -55,7 +55,10 @@ public class DropDocumentRepositoryTest {
 	@Test
 	public void findByTitleOrContentContains() {
 		String keyword = "droplet";
-		repository.findByTitleOrContentContains(keyword);
+
+		// Sample page request 
+		PageRequest pageRequest = new PageRequest(0, 50);
+		repository.findByTitleOrContentContains(keyword, pageRequest);
 		
 		assertEquals(10, repository.count());
 	}

@@ -18,10 +18,10 @@ package com.ushahidi.swiftriver.core.solr;
 
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -45,7 +45,7 @@ import com.ushahidi.swiftriver.core.model.Drop;
 @ActiveProfiles(profiles = {"test"})
 public class InitSolrSearchIndex {
 
-	@Resource
+	@Autowired
 	private DropIndexService dropIndexService;
 
 	@PersistenceContext

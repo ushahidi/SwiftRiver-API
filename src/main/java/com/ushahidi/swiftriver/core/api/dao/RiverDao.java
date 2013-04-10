@@ -207,4 +207,16 @@ public interface RiverDao extends GenericDao<River> {
 			this.photos = photos;
 		}
 	}
+
+	/**
+	 * Finds and returns a {@link List} of {@link River} entities
+	 * that contain the phrase in <code>searchTerm</code> in their
+	 * <code>name</code> or <code>description</code> fields
+	 * 
+	 * @param searchTerm
+	 * @param page
+	 * @param count
+	 * @return
+	 */
+	public List<River> findAll(String searchTerm, int page, int count);
 }
