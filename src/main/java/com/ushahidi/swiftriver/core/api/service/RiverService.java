@@ -1303,10 +1303,19 @@ public class RiverService {
 		accountDao.update(account);
 	}
 
-	@Transactional
-	public List<GetRiverDTO> findRivers(String searchTerm, int page,
-			int count) {
-		List<River> rivers = riverDao.findAll(searchTerm, page, count);
+	/**
+	 * Returns all {@link River} entities that contain the <code>searchTerm</code>
+	 * in their <code>name</code> or <code>description</code> fields. Only entities
+	 * with  <code>isPublic = true</code> are returned
+	 * 
+	 * @param searchTerm
+	 * @param count
+	 * @param page
+	 * @return
+	 */
+	public List<GetRiverDTO> findRivers(String searchTerm, int count,
+			int page) {
+		List<River> rivers = riverDao.findAll(searchTerm, count, page);
 
 		List<GetRiverDTO> riverDTOs = new ArrayList<GetRiverDTO>();
 		for (River river: rivers) {

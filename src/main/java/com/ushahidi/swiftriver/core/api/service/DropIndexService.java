@@ -148,12 +148,12 @@ public class DropIndexService {
 	 * document IDs are used to retrieve the drops from the database.
 	 * 
 	 * @param searchTerm
-	 * @param page
 	 * @param count
+	 * @param page
 	 * @return
 	 */
 	@Transactional
-	public List<GetDropDTO> findDrops(String searchTerm, int page, int count) {
+	public List<GetDropDTO> findDrops(String searchTerm, int count, int page) {
 		// Pages are zero-indexed. Therefore, the first page is 0
 		page = (page >= 1) ? page - 1 : page;
 
@@ -168,7 +168,7 @@ public class DropIndexService {
 		if (dropDocuments.isEmpty()) {
 			// Log
 			LOGGER.debug(String.format("No documents found containing \"%s\" on page %d",
-					searchTerm, page));
+					searchTerm, count));
 
 			// Return empty list
 			return drops;

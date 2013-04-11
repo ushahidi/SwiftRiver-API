@@ -379,23 +379,18 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findAll(java.lang.String, int, int)
 	 */
-	@SuppressWarnings("unchecked")
-	public List<River> findAll(String searchTerm, int page, int count) {
-		String sql = "SELECT * FROM rivers " +
-				"WHERE river_public = 1 " +
-				"AND (river_name LIKE :term " +
-				"OR description LIKE :term " +
-				"OR river_name_canonical LIKE :term) " +
-				"LIMIT :limit OFFSET :offset";
+	public List<River> findAll(String searchTerm, int count, int page) {
+		String qlString = "SELECT r FROM River r WHERE r.riverPublic = 1 " +
+				"AND (r.riverName LIKE :term " +
+				"OR r.description LIKE :term " +
+				"OR r.riverNameCanonical LIKE :term) ";
 
-		searchTerm = "%" + searchTerm + "%";
+		TypedQuery<River> query = em.createQuery(qlString, River.class);
+		query.setParameter("term", "%" + searchTerm + "%");
+		query.setMaxResults(count);
+		query.setFirstResult(count * (page - 1));
 
-		Query query = em.createNativeQuery(sql, River.class);
-		query.setParameter("term", searchTerm);
-		query.setParameter("limit", count);
-		query.setParameter("offset", count * (page - 1));
-
-		return (List<River>) query.getResultList();
+		return query.getResultList();
 	}
 
 }

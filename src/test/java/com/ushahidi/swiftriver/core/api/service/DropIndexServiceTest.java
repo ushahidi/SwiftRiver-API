@@ -102,7 +102,7 @@ public class DropIndexServiceTest {
 		
 		when(mockRepository.findByTitleOrContentContains(anyString(), 
 				any(Pageable.class))).thenReturn(dropDocuments);
-		dropIndexService.findDrops("keyword", 6, 30);
+		dropIndexService.findDrops("keyword", 30, 6);
 
 		// First, we verify that a search is performed against the index
 		ArgumentCaptor<PageRequest> pageRequestArgument = ArgumentCaptor.forClass(

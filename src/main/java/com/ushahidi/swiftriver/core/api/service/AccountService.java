@@ -775,4 +775,23 @@ public class AccountService {
 		}
 	}
 
+	/**
+	 * Search accounts
+	 * 
+	 * @param searchTerm
+	 * @param count
+	 * @param page
+	 * @return
+	 */
+	public List<GetAccountDTO> searchAccounts(String searchTerm, int count, int page) {
+		List<Account> accounts = accountDao.search(searchTerm, count, page);
+		
+		List<GetAccountDTO> getAccountDTOs = new ArrayList<GetAccountDTO>();
+		for (Account account: accounts) {
+			getAccountDTOs.add(mapper.map(account, GetAccountDTO.class));
+		}
+
+		return getAccountDTOs;
+	}
+
 }

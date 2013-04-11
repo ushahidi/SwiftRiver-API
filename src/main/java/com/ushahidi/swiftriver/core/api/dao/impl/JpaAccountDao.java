@@ -157,16 +157,37 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#search(java.lang.String)
 	 */
 	public List<Account> search(String query) {
-		String sql = "SELECT a FROM Account a WHERE a.accountPath like :q or a.owner.name like :q or a.owner.email like :q";
+		return getSearchResultList(query + "%", 10, 0);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#search(java.lang.String, int, int)
+	 */
+	public List<Account> search(String searchTerm, int count, int page) {
+		// Calculate the offset
+		int offset = count * (page - 1);
+		
+		return getSearchResultList("%" + searchTerm + "%", count, offset);
+	}
+	
+	
+	private List<Account> getSearchResultList(String searchTerm, int count, int offset) {
+		String qlString = "SELECT a FROM Account a WHERE a.accountPrivate = 0 " +
+				"AND (a.accountPath like :q or a.owner.name like :q or a.owner.email like :q)";
 
 		List<Account> accounts = null;
 		try {
-			TypedQuery<Account> tQuery = em.createQuery(sql, Account.class);
-			tQuery.setParameter("q", query + "%");
-			accounts = tQuery.setMaxResults(10).getResultList();
+			TypedQuery<Account> query = em.createQuery(qlString, Account.class);
+			query.setParameter("q", searchTerm);
+			query.setMaxResults(count);
+			query.setFirstResult(offset);
+
+			accounts = query.getResultList();
 		} catch (NoResultException e) {
 			// Do nothing;
 		}
 		return accounts;
+		
 	}
 }

@@ -266,10 +266,10 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 * <code>name</code> or <code>description</code> fields
 	 * 
 	 * @param searchTerm
-	 * @param page
 	 * @param count
+	 * @param page
 	 * @return
 	 */
-	public List<Bucket> findAll(String searchTerm, int page, int count);
+	public List<Bucket> findAll(String searchTerm, int count, int page);
 
 }

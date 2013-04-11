@@ -1384,16 +1384,17 @@ public class BucketService {
 	}
 
 	/**
-	 * Search buckets
+	 * Returns all {@link Bucket} entities that contain the <code>searchTerm</code>
+	 * in their <code>name</code> or <code>description</code> fields. Only entities
+	 * with  <code>published = true</code> are returned
 	 * 
 	 * @param searchTerm
-	 * @param page
 	 * @param count
+	 * @param page
 	 * @return
 	 */
-	@Transactional
-	public List<GetBucketDTO> findBuckets(String searchTerm, int page, int count) {
-		List<Bucket> buckets = bucketDao.findAll(searchTerm, page, count);
+	public List<GetBucketDTO> findBuckets(String searchTerm, int count, int page) {
+		List<Bucket> buckets = bucketDao.findAll(searchTerm, count, page);
 
 		List<GetBucketDTO> bucketDTOs = new ArrayList<GetBucketDTO>();
 		for (Bucket bucket: buckets) {

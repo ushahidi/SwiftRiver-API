@@ -454,23 +454,18 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findAll(java.lang.String, int, int)
 	 */
-	@SuppressWarnings("unchecked")
-	public List<Bucket> findAll(String searchTerm, int page, int count) {
-		String sql = "SELECT * FROM buckets " +
-				"WHERE bucket_publish = 1 " +
-				"AND (bucket_name LIKE :term " +
-				"OR bucket_description LIKE :term " +
-				"OR bucket_name_canonical LIKE :term) " +
-				"LIMIT :limit OFFSET :offset";
+	public List<Bucket> findAll(String searchTerm, int count, int page) {
+		String qlString = "SELECT b FROM Bucket b WHERE " +
+				"b.published = 1 " +
+				"AND (b.name LIKE :term OR b.description LIKE :term " +
+				"OR b.bucketNameCanonical LIKE :term)";
 
-		searchTerm = "%" + searchTerm +"%";
+		TypedQuery<Bucket> query = em.createQuery(qlString, Bucket.class);
+		query.setParameter("term", "%" + searchTerm + "%");
+		query.setMaxResults(count);
+		query.setFirstResult(count * (page - 1));
 
-		Query query = em.createNativeQuery(sql, Bucket.class);
-		query.setParameter("term", searchTerm);
-		query.setParameter("limit", count);
-		query.setParameter("offset", count * (page - 1));
-
-		return (List<Bucket>) query.getResultList();
+		return query.getResultList();
 	}
 
 }

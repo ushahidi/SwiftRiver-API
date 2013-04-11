@@ -89,4 +89,15 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param query
 	 */
 	public List<Account> search(String query);
+
+	/**
+	 * Search accounts matching the term specified in 
+	 * <code>searchTerm</code>
+	 * 
+	 * @param searchTerm
+	 * @param count
+	 * @param page
+	 * @return
+	 */
+	public List<Account> search(String searchTerm, int count, int page);
 }

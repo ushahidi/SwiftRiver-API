@@ -214,9 +214,9 @@ public interface RiverDao extends GenericDao<River> {
 	 * <code>name</code> or <code>description</code> fields
 	 * 
 	 * @param searchTerm
-	 * @param page
 	 * @param count
+	 * @param page
 	 * @return
 	 */
-	public List<River> findAll(String searchTerm, int page, int count);
+	public List<River> findAll(String searchTerm, int count, int page);
 }
