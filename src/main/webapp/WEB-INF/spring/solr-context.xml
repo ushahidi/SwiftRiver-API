@@ -24,7 +24,8 @@
 		<solr:solr-server id="solrServer" url="${solr.server.url}"/>
 
 		<!-- Properties for solr-server -->
-		<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<bean id="solrProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="ignoreUnresolvablePlaceholders" value="false" />
 			<property name="properties">
 				<bean class="java.util.Properties">
 					<constructor-arg>
