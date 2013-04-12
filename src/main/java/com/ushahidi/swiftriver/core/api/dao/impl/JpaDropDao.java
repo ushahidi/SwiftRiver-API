@@ -433,7 +433,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 				statement.setLong(1, bucketId);
 				statement.setLong(2, bucketDrop[1]);
-				statement.setTimestamp(2, 
+				statement.setTimestamp(3, 
 						new java.sql.Timestamp(drop.getDateAdded().getTime()));
 
 				Integer count = bucketDropCount.get(bucketId);
