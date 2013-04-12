@@ -173,8 +173,8 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 	
 	
 	private List<Account> getSearchResultList(String searchTerm, int count, int offset) {
-		String qlString = "SELECT a FROM Account a WHERE a.accountPrivate = 0 " +
-				"AND (a.accountPath like :q or a.owner.name like :q or a.owner.email like :q)";
+		String qlString = "SELECT a FROM Account a WHERE a.accountPath like :q " +
+				"OR a.owner.name like :q OR a.owner.email like :q";
 
 		List<Account> accounts = null;
 		try {

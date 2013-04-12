@@ -50,7 +50,9 @@ import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
+import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
@@ -783,8 +785,54 @@ public class AccountService {
 	 * @param page
 	 * @return
 	 */
+	@Transactional
 	public List<GetAccountDTO> searchAccounts(String searchTerm, int count, int page) {
 		List<Account> accounts = accountDao.search(searchTerm, count, page);
+		
+		for (Account account: accounts) {
+			if (account.isAccountPrivate()) {
+				account.setRivers(new ArrayList<River>());
+				account.setCollaboratingRivers(new ArrayList<River>());
+				account.setBuckets(new ArrayList<Bucket>());
+				account.setCollaboratingBuckets(new ArrayList<Bucket>());				
+				continue;
+			}
+			// Remove private buckets (owned and collaborating)
+			List<Bucket> privateOwnerBuckets = new ArrayList<Bucket>();
+			for (Bucket bucket: account.getBuckets()) {
+				if (!bucket.isPublished()) {
+					privateOwnerBuckets.add(bucket);
+				}
+			}
+			account.getBuckets().removeAll(privateOwnerBuckets);
+			
+			// Private buckets the current account is collaborating on
+			List<Bucket> privateCollaboratingBuckets = new ArrayList<Bucket>(); 
+			for (Bucket bucket: account.getCollaboratingBuckets()) {
+				if (!bucket.isPublished()) {
+					privateCollaboratingBuckets.add(bucket);
+				}
+			}
+			account.getCollaboratingBuckets().removeAll(privateCollaboratingBuckets);
+
+			// Remove private rivers (owned and collaborating)
+			List<River> privateOwnerRivers = new ArrayList<River>();
+			for (River river: account.getRivers()) {
+				if (!river.getRiverPublic()) {
+					privateOwnerRivers.add(river);
+				}
+			}
+			account.getRivers().removeAll(privateOwnerRivers);
+			
+			// Private rivers the current account is collaborating on
+			List<River> privateCollaboratingRivers = new ArrayList<River>(); 
+			for (River river: account.getCollaboratingRivers()) {
+				if (!river.getRiverPublic()) {
+					privateCollaboratingRivers.add(river);
+				}
+			}
+			account.getCollaboratingRivers().removeAll(privateCollaboratingRivers);
+		}
 		
 		List<GetAccountDTO> getAccountDTOs = new ArrayList<GetAccountDTO>();
 		for (Account account: accounts) {

@@ -94,4 +94,12 @@ public class SearchControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").value(hasSize(4)));
 	}
+	
+	@Test
+	public void searchUserWithPrivateAsset() throws Exception {
+		this.mockMvc.perform(get("/v1/search?q=user1&type=users"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.[*]").value(hasSize(1)))
+			.andExpect(jsonPath("$.[0].rivers.[*]").value(hasSize(1)));
+	}
 }
