@@ -18,7 +18,6 @@ package com.ushahidi.swiftriver.core.api.controller;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,9 +27,8 @@ public class SearchControllerTest extends AbstractControllerTest {
 	
 	@Test
 	public void searchDrops() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=droplet"))
+		this.mockMvc.perform(get("/v1/search/drops?q=droplet"))
 			.andExpect(status().isOk())
-			.andExpect(content().contentType("application/json;charset=UTF-8"))
 			.andExpect(jsonPath("$.[*]").value(hasSize(10)));
 	}
 	
@@ -42,25 +40,12 @@ public class SearchControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void searchDropsWithCount() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=droplet&count=3"))
+		this.mockMvc.perform(get("/v1/search/drops?q=droplet&count=3"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").value(hasSize(3)));
 		
 	}
-	
-	/**
-	 * Tests search where the search type (<code>type</code> parameter)
-	 * is invalid
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void searchWithInvalidSearchType() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=droplet&type=invalid"))
-		.andExpect(status().isBadRequest());
-		
-	}
-	
+
 	/**
 	 * Tests drops search with a non-existent page number. The request should
 	 * return an empty result
@@ -69,35 +54,35 @@ public class SearchControllerTest extends AbstractControllerTest {
 	 */
 	@Test
 	public void searchDropsNonExistentPageNumber() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=droplet&page=10"))
+		this.mockMvc.perform(get("/v1/search/drops?q=droplet&page=10"))
 			.andExpect(status().isNotFound());
 	}
 	
 	@Test
 	public void searchBuckets() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=bucket&type=buckets"))
+		this.mockMvc.perform(get("/v1/search/buckets?q=bucket"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").value(hasSize(2)));
 	}
 	
 	@Test
 	public void searchRivers() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=river&type=rivers"))
+		this.mockMvc.perform(get("/v1/search/rivers?q=river"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").value(hasSize(1)));
 		
 	}
 	
 	@Test
-	public void searchUsers() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=user&type=users"))
+	public void searchAccounts() throws Exception {
+		this.mockMvc.perform(get("/v1/search/accounts?q=user"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").value(hasSize(4)));
 	}
 	
 	@Test
 	public void searchUserWithPrivateAsset() throws Exception {
-		this.mockMvc.perform(get("/v1/search?q=user1&type=users"))
+		this.mockMvc.perform(get("/v1/search/accounts?q=user1"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.[*]").value(hasSize(1)))
 			.andExpect(jsonPath("$.[0].rivers.[*]").value(hasSize(1)));

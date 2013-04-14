@@ -18,9 +18,7 @@ package com.ushahidi.swiftriver.core.api.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +28,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -64,20 +66,113 @@ public class SearchController extends AbstractController {
 	final static Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
 
 	/**
-	 * Handles search requests
+	 * Handles searching for drops by keyword
 	 * 
 	 * @param searchTerm
 	 * @param searchType
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/drops", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Map<String, Object>> search(
+	public List<GetDropDTO> searchDrops(
 			@RequestParam(value = "q", required = true) String searchTerm,
-			@RequestParam(value = "type", required = false, defaultValue = "drops") String searchType,
 			@RequestParam(value = "count", required = false, defaultValue = "50") int count,
 			@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
 
+		validateBasicParameters(count, page);
+
+		// Find and return the drops
+		List<GetDropDTO> drops = dropIndexService.findDrops(searchTerm, count, page);
+		if (drops.isEmpty())
+			throw new NotFoundException(String.format(
+					"Did not find drops matching '%s' on page %d", searchTerm, page));
+		
+		return drops;
+	}
+	
+	/**
+	 * Handles searching for rivers by keyword
+	 * 
+	 * @param searchTerm
+	 * @param count
+	 * @param page
+	 * @return
+	 */
+	@RequestMapping(value = "/rivers", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetRiverDTO> searchRivers(
+			@RequestParam(value = "q", required = true) String searchTerm,
+			@RequestParam(value = "count", required = false, defaultValue = "20") int count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
+		
+		validateBasicParameters(count, page);
+		List<GetRiverDTO> rivers = riverService.findRivers(searchTerm, count, page);
+		
+		if (rivers.isEmpty()) {
+			throw new NotFoundException(String.format(
+					"Did not find any rivers matching '%s' on page %d", searchTerm, page));
+		}
+		
+		return rivers;
+	}
+	
+	/**
+	 * Handles searching for buckets by keyword
+	 * 
+	 * @param searchTerm
+	 * @param count
+	 * @param page
+	 * @return
+	 */
+	@RequestMapping(value = "/buckets", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetBucketDTO> searchBuckets(
+			@RequestParam(value = "q", required = true) String searchTerm,
+			@RequestParam(value = "count", required = false, defaultValue = "20") int count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
+		
+		validateBasicParameters(count, page);
+		List<GetBucketDTO> buckets = bucketService.findBuckets(searchTerm, count, page);
+		
+		if (buckets.isEmpty()) {
+			throw new NotFoundException(String.format(
+					"Did not find any bucktes matching '%s' on page %d", searchTerm, page));
+		}
+		return buckets;
+	}
+	
+	/**
+	 * Handles searching for accounts by keyword
+	 * 
+	 * @param searchTerm
+	 * @param count
+	 * @param page
+	 * @return
+	 */
+	@RequestMapping(value = "/accounts", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetAccountDTO> searchAccounts(
+			@RequestParam(value = "q", required = true) String searchTerm,
+			@RequestParam(value = "count", required = false, defaultValue = "20") int count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
+		
+		validateBasicParameters(count, page);
+		List<GetAccountDTO> accounts =  accountService.searchAccounts(searchTerm, count, page);
+		
+		if (accounts.isEmpty()) {
+			throw new NotFoundException(String.format(
+					"Did not find any accounts matching '%s' on page %d", searchTerm, page));
+		}
+		return accounts;
+	}
+	
+	/**
+	 * Utility method to validate the count and page query parameters
+	 * 
+	 * @param count
+	 * @param page
+	 */
+	private void validateBasicParameters(int count, int page) {
 		List<ErrorField> errors = new ArrayList<ErrorField>();
 		
 		// Count must be > 1
@@ -86,65 +181,13 @@ public class SearchController extends AbstractController {
 		// Page must be >= 0
 		if (page < 0) errors.add(new ErrorField("page", "invalid"));
 		
-		// Validate the search type
-		String[] validSearchTypes = {"drops", "buckets", "rivers", "users"};
-		boolean isValidSearchType = false;
-		for (String type: validSearchTypes) {
-			if (type.equalsIgnoreCase(searchType)) {
-				isValidSearchType = true;
-				break;
-			}
-		}
-		
-		if (!isValidSearchType) errors.add(new ErrorField("type", "invalid"));
-		
 		// Do we have any errors
 		if (!errors.isEmpty()) {
 			BadRequestException e = new BadRequestException("Invalid search parameters");
 			e.setErrors(errors);
 			throw e;
 		}
-
-		// No errors, proceed
-		LOGGER.debug("Search request for {}", searchType);		
-
-		List<Map<String, Object>> results = new ArrayList<Map<String,Object>>();
 		
-		if (searchType.equalsIgnoreCase("drops")) {
-			// Find the drops
-			results = toMapList(dropIndexService.findDrops(searchTerm, count, page));
-		} else if (searchType.equalsIgnoreCase("rivers")) {
-			results = toMapList(riverService.findRivers(searchTerm, count, page));
-		} else if (searchType.equalsIgnoreCase("buckets")) {
-			results = toMapList(bucketService.findBuckets(searchTerm, count, page));
-		} else if (searchType.equalsIgnoreCase("users")) {
-			results = toMapList(accountService.searchAccounts(searchTerm, count, page));
-		}
-		
-		if (results.isEmpty()) {
-			throw new NotFoundException(String.format("We couldn't find any %s matching '%s'", searchType,
-					searchTerm));
-		}
-
-		// Return result to client
-		return results;
 	}
 	
-	/**
-	 * Generates and returns a {@link Map} representation of the entities
-	 * specified in <code>source</code>
-	 * 
-	 * @param source
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private List<Map<String, Object>> toMapList(List<? extends Object> source) {		
-		List<Map<String, Object>> mapList = new ArrayList<Map<String,Object>>();
-		ObjectMapper mapper = new ObjectMapper();
-		for (Object entity: source) {
-			Map<String, Object> entityMap = mapper.convertValue(entity, Map.class);
-			mapList.add(entityMap);
-		}
-		return mapList;
-	}
 }
