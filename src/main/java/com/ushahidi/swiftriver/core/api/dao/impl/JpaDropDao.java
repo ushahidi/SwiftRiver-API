@@ -501,4 +501,17 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		// Get the list of buckets
 		return drops;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findAll(long, int)
+	 */
+	public List<Drop> findAll(long sinceId, int batchSize) {
+		TypedQuery<Drop> query = em.createQuery("FROM Drop d WHERE d.id > :sinceId ORDER BY d.id ASC", 
+				Drop.class);
+		query.setParameter("sinceId", sinceId);
+		query.setMaxResults(batchSize);
+
+		return query.getResultList();
+	}
 }

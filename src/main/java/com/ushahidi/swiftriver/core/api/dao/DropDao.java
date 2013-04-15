@@ -38,4 +38,14 @@ public interface DropDao extends GenericDao<Drop> {
 	 * @return
 	 */
 	public List<Drop> findAll(List<Long> dropIds);
+
+	/**
+	 * Returns <code>batchSize</code> {@link Drop} entities with an 
+	 * ID greater than the value specified in <code>sinceId</code>
+	 *  
+	 * @param sinceId
+	 * @param batchSize
+	 * @return
+	 */
+	public List<Drop> findAll(long sinceId, int batchSize);
 }

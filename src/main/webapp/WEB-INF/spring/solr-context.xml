@@ -4,9 +4,13 @@
 	xmlns:solr="http://www.springframework.org/schema/data/solr"
 	xmlns:jee="http://www.springframework.org/schema/jee"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 		http://www.springframework.org/schema/data/solr http://www.springframework.org/schema/data/solr/spring-solr-1.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
 
 
@@ -38,6 +42,30 @@
 				</bean>
 			</property>
 		</bean>
+		
+		<util:properties id="indexerProperties" location="classpath:indexer.properties" />
+		
+		<bean id="classPathResource" class="org.springframework.core.io.ClassPathResource">
+			<constructor-arg value="/indexer.properties" />
+		</bean>
+		
+		<bean id="indexerConfigFile" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+			<property name="targetObject" ref="classPathResource" />
+			<property name="targetMethod" value="getFile" />
+		</bean>
+
+		<!-- Drop Index manager -->
+		<bean id="dropIndexManager" class="com.ushahidi.swiftriver.core.solr.DropIndexManager">
+			<property name="propertiesFile" ref="indexerConfigFile" />
+			<property name="indexerProperties" ref="indexerProperties" />
+		</bean>
+		
+		<!-- Background indexing task -->
+		<task:scheduler id="solrScheduler"/>
+
+		<task:scheduled-tasks scheduler="solrScheduler">
+			<task:scheduled ref="dropIndexManager" method="updateIndex" fixed-delay="10000"/>
+		</task:scheduled-tasks>
 	</beans>
 	
 	<!-- Dev environment configuration -->
