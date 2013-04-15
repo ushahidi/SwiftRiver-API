@@ -24,6 +24,7 @@ import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,6 +72,9 @@ import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.solr.DropDocument;
+import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
@@ -115,6 +119,9 @@ public class BucketService {
 
 	@Autowired
 	private BucketCommentDao bucketCommentDao;
+	
+	@Autowired
+	private DropDocumentRepository repository;
 
 	/* Logger */
 	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
@@ -582,44 +589,73 @@ public class BucketService {
 	}
 
 	/**
-	 * Gets and returns the drops for the bucket specified in <code>id</code>
-	 * using the parameters contained in <code>requestParams</code>
-	 * 
-	 * Nullity and type safety checks are performed on the request parameters
-	 * before they're passed on to DAO for building out the DB query and
-	 * subsequent fetching of the {@link Drop} entities
+	 * Returns the drops for the bucket with the ID specified in <code>id</code>
+	 * using the {@link DropFilter} specified in <code>dropFilter</code>
 	 * 
 	 * @param id
+	 * @param dropFilter
+	 * @param page
+	 * @param dropCount
 	 * @param authUser
-	 * @param requestParams
 	 * @return
 	 */
-	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
-			int page, int dropCount, List<String> channelList,
-			Boolean isRead, Date dateFrom, Date dateTo,
-			String authUser) {
+	public List<GetDropDTO> getDrops(Long id, DropFilter dropFilter, int page,
+			int dropCount, String authUser) {
 
+		Bucket bucket = getBucket(id);
 		Account queryingAccount = accountDao.findByUsername(authUser);
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
-		filter.setChannels(channelList);
-		filter.setDateFrom(dateFrom);
-		filter.setDateTo(dateTo);
-		filter.setRead(isRead);
 		
-		List<Drop> drops = null;
-		if (sinceId != null) {
-			drops = bucketDao.getDropsSince(id, sinceId, dropCount, filter, queryingAccount);
-		} else {
-			drops = bucketDao.getDrops(id, maxId, page, dropCount, filter, queryingAccount);
+		if (!hasAccess(bucket, queryingAccount)) {
+			throw new ForbiddenException("Access denied");
 		}
+		
+		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
-		List<GetDropDTO> bucketDrops = new ArrayList<GetDropDTO>();
+		if (dropFilter.getKeywords() != null) {
+			PageRequest pageRequest = new PageRequest(page - 1, dropCount);
+			List<DropDocument> dropDocuments = repository.findInBucket(id, 
+					dropFilter.getKeywords(), pageRequest);
+			
+			List<Long> dropIds = new ArrayList<Long>();
+			for (DropDocument document: dropDocuments) {
+				dropIds.add(Long.parseLong(document.getId()));
+			}
+			
+			// No documents found in index. Return empty response
+			if (dropIds.isEmpty()) {
+				return getDropDTOs;
+			}
+			
+			// Set page number to 1
+			page = 1;
+			dropFilter.setDropIds(dropIds);
+		}
+		
+		List<Drop> drops = bucketDao.getDrops(id, dropFilter, page, dropCount, queryingAccount);
+
 		for (Drop drop : drops) {
 			GetDropDTO dropDto = mapper.map(drop, GetDropDTO.class);
-			bucketDrops.add(dropDto);
+			getDropDTOs.add(dropDto);
 		}
 
-		return bucketDrops;
+		return getDropDTOs;
+	}
+
+	/**
+	 * Verifies whether the {@link Account} specified in 
+	 * <code>queryingAccount</code> has access to the bucket specified
+	 * in <code>bucket</code>
+	 * 
+	 * @param bucket
+	 * @param queryingAccount
+	 * @return
+	 */
+	private boolean hasAccess(Bucket bucket, Account queryingAccount) {
+		if (bucket.isPublished())
+			return true;
+
+		return bucket.getAccount().equals(queryingAccount) || 
+			bucket.getCollaborators().contains(queryingAccount);
 	}
 
 	/**

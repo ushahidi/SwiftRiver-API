@@ -41,6 +41,7 @@ import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Repository
@@ -116,47 +117,8 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	 * com.ushahidi.swiftriver.core.api.dao.RiverDao.DropFilter,
 	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
-	@Override
-	public List<Drop> getDrops(Long riverId, Long maxId, int page,
-			int dropCount, DropFilter filter, Account queryingAccount) {
-		return doGetDrops(riverId, maxId, false, page, dropCount, filter,
-				queryingAccount);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ushahidi.swiftriver.core.api.dao.RiverDao#getDropsSince(java.lang
-	 * .Long, java.lang.Long, int, com.ushahidi.swiftriver.core.model.Account)
-	 */
-	@Override
-	public List<Drop> getDropsSince(Long riverId, Long sinceId, int dropCount,
-			DropFilter filter, Account queryingAccount) {
-		return doGetDrops(riverId, sinceId, true, 1, dropCount, filter,
-				queryingAccount);
-	}
-
-	/**
-	 * Helper method for building and executing the query to obtain drops.
-	 * 
-	 * @param riverId
-	 *            The river to obtain drops from
-	 * @param id
-	 *            The reference drop id from which to obtain drops
-	 * @param newer
-	 *            If true, obtain drops newer than the given id otherwise older.
-	 * @param dropCount
-	 *            Maximum number of drops to return
-	 * @param page
-	 *            The page of drops relative to the given id and dropCount
-	 * @param filter
-	 *            Drop filter to apply
-	 * @param queryingAccount
-	 * @return
-	 */
-	private List<Drop> doGetDrops(Long riverId, Long id, boolean newer,
-			int page, int dropCount, DropFilter filter, Account queryingAccount) {
+	public List<Drop> getDrops(Long riverId, DropFilter filter, int page,
+			int dropCount, Account queryingAccount) {
 		String sql = "SELECT rivers_droplets.id AS id, droplet_title, droplet_content, droplets.channel, ";
 		sql += "identities.id AS identity_id, identity_name, identity_avatar, rivers_droplets.droplet_date_pub, droplet_orig_id, ";
 		sql += "user_scores.score AS user_score, links.id as original_url_id, links.url AS original_url, comment_count, river_droplets_read.rivers_droplets_id AS drop_read ";
@@ -164,7 +126,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "INNER JOIN droplets ON (rivers_droplets.droplet_id = droplets.id) ";
 		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
 
-		if (filter.getChannelIds() != null && filter.getChannelIds().size() > 0) {
+		if (filter.getChannelIds() != null && !filter.getChannelIds().isEmpty()) {
 			sql += "INNER JOIN river_channels ON (rivers_droplets.channel_id = river_channels.id) ";
 		}
 
@@ -174,17 +136,19 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "WHERE rivers_droplets.droplet_date_pub > '1970-01-01 00:00:00' ";
 		sql += "AND rivers_droplets.river_id = :riverId ";
 
-		if (newer) {
-			sql += "AND rivers_droplets.id > :id ";
-		} else {
-			sql += "AND rivers_droplets.id <= :id ";
+		if (filter.getSinceId() != null) {
+			sql += "AND rivers_droplets.id > :since_id ";
+		}
+		
+		if (filter.getMaxId() != null) {
+			sql += "AND rivers_droplets.id <= :max_id ";
 		}
 
-		if (filter.getChannelList() != null && filter.getChannelList().size() > 0) {
+		if (filter.getChannels() != null && !filter.getChannels().isEmpty()) {
 			sql += "AND rivers_droplets.channel IN (:channels) ";
 		}
 
-		if (filter.getChannelIds() != null && filter.getChannelIds().size() > 0) {
+		if (filter.getChannelIds() != null && !filter.getChannelIds().isEmpty()) {
 			sql += "AND rivers_droplets.channel_id IN (:channel_ids) ";
 		}
 
@@ -208,6 +172,12 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			sql += "AND rivers_droplets.droplet_date_pub <= :date_to ";
 		}
 
+		if (filter.getDropIds() != null && !filter.getDropIds().isEmpty()) {
+			sql += "AND `droplets`.`id` IN (:dropIds) ";
+		}
+
+		boolean newer = filter.getSinceId() != null;
+
 		if (newer) {
 			sql += "ORDER BY rivers_droplets.droplet_date_pub ASC ";
 		} else {
@@ -216,18 +186,24 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
 
-
 		MapSqlParameterSource params = new MapSqlParameterSource();
 		params.addValue("userId", queryingAccount.getOwner().getId());
 		params.addValue("accountId", queryingAccount.getId());
 		params.addValue("riverId", riverId);
-		params.addValue("id", id);
-
-		if (filter.getChannelList() != null && filter.getChannelList().size() > 0) {
-			params.addValue("channels", filter.getChannelList());
+		
+		if (filter.getSinceId() != null) {
+			params.addValue("since_id", filter.getSinceId());
+		}
+		
+		if (filter.getMaxId() != null) {
+			params.addValue("max_id", filter.getMaxId());
 		}
 
-		if (filter.getChannelIds() != null && filter.getChannelIds().size() > 0) {
+		if (filter.getChannels() != null && !filter.getChannels().isEmpty()) {
+			params.addValue("channels", filter.getChannels());
+		}
+
+		if (filter.getChannelIds() != null && !filter.getChannelIds().isEmpty()) {
 			params.addValue("channel_ids", filter.getChannelIds());
 		}
 
@@ -237,7 +213,10 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 		if (filter.getDateTo() != null) {
 			params.addValue("date_to", filter.getDateTo());
+		}
 
+		if (filter.getDropIds() != null && !filter.getDropIds().isEmpty()) {
+			params.addValue("dropIds", filter.getDropIds());
 		}
 
 		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,

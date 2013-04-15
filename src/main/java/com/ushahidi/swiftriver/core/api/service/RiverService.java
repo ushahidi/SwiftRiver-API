@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,6 +84,9 @@ import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.Rule;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.solr.DropDocument;
+import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
@@ -128,6 +132,9 @@ public class RiverService {
 
 	@Autowired
 	private AmqpTemplate amqpTemplate;
+	
+	@Autowired
+	private DropDocumentRepository repository;
 
 	public RiverDao getRiverDao() {
 		return riverDao;
@@ -371,47 +378,54 @@ public class RiverService {
 	}
 
 	/**
-	 * Get a list of drops in the river
+	 * Returns the drops for the river with the ID specified in <code>id</code>
+	 * using the {@link DropFilter} specified in <code>dropFilter</code>
 	 * 
 	 * @param id
-	 *            - Id of the river
-	 * @param maxId
-	 *            - Maximum id of the drops to return
+	 * @param dropFilter
+	 * @param page
 	 * @param dropCount
-	 *            - Number of drops to return
 	 * @param username
-	 *            - Username of the account querying the drops
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public List<GetDropDTO> getDrops(Long id, Long maxId, Long sinceId,
-			int page, int dropCount, List<String> channelList,
-			List<Long> channelIds, Boolean isRead, Date dateFrom, Date dateTo,
-			Boolean photos, String username) throws NotFoundException {
+	public List<GetDropDTO> getDrops(Long id, DropFilter dropFilter, int page,
+			int dropCount, String username) throws NotFoundException {
 
 		if (riverDao.findById(id) == null) {
-			throw new NotFoundException(String.format(
-					"River %d does not exist", id));
+			throw new NotFoundException(String.format("River %d does not exist", id));
 		}
 
 		Account queryingAccount = accountDao.findByUsername(username);
 
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
-		filter.setChannelIds(channelIds);
-		filter.setChannelList(channelList);
-		filter.setDateFrom(dateFrom);
-		filter.setDateTo(dateTo);
-		filter.setRead(isRead);
-		filter.setPhotos(photos);
-		
-		List<Drop> drops = null;
-		if (sinceId != null) {
-			drops = riverDao.getDropsSince(id, sinceId, dropCount, filter, queryingAccount);
-		} else {
-			drops = riverDao.getDrops(id, maxId, page, dropCount, filter, queryingAccount);
+		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
+
+		// If keywords have been specified, perform search on Solr
+		if (dropFilter.getKeywords() != null) {
+			String searchTerm = dropFilter.getKeywords();
+
+			PageRequest pageRequest = new PageRequest(page - 1, dropCount);
+			List<DropDocument> dropDocuments = repository.findInRiver(id, 
+					searchTerm, pageRequest);
+
+			List<Long> dropIds = new ArrayList<Long>();
+			for (DropDocument document: dropDocuments) {
+				dropIds.add(Long.parseLong(document.getId()));
+			}
+			
+			// Add the drop ids to the filters
+			if (dropIds.isEmpty()) {
+				return getDropDTOs;
+			}
+
+			// Set page number to 1
+			page = 1;
+			dropFilter.setDropIds(dropIds);
 		}
 
-		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
+		// Get the drops
+		List<Drop> drops = riverDao.getDrops(id, dropFilter, page, 
+				dropCount, queryingAccount);
 
 		if (drops == null) {
 			throw new NotFoundException("No drops found");

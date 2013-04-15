@@ -59,9 +59,6 @@ public class DropService {
 	@Autowired
 	private TagDao tagDao;
 	
-	@Autowired
-	private DropIndexService dropIndexService;
-
 	public Mapper getMapper() {
 		return mapper;
 	}
@@ -110,10 +107,6 @@ public class DropService {
 		this.tagDao = tagDao;
 	}
 
-	public void setDropIndexService(DropIndexService dropIndexService) {
-		this.dropIndexService = dropIndexService;
-	}
-
 	/**
 	 * Create the given list of drops
 	 * 
@@ -130,10 +123,6 @@ public class DropService {
 
 		dropDao.createDrops(drops);
 		
-		// Index all the created drops
-		LOGGER.debug("Indexing newly created drops {}", drops);
-		dropIndexService.addAllToIndex(drops);
-
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 		for (Drop drop : drops) {
 			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));

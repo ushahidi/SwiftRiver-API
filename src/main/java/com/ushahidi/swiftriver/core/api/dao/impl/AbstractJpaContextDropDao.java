@@ -228,8 +228,6 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 		Map<Long, Long> dropImagesMap = new HashMap<Long, Long>();
 		for (Object oRow2 : query.getResultList()) {
 			Object[] r2 = (Object[]) oRow2;
-			System.out.println((Number) r2[0]);
-			System.out.println((Number) r2[1]);
 			dropImagesMap.put(((Number) r2[0]).longValue(),
 					((Number) r2[1]).longValue());
 		}
