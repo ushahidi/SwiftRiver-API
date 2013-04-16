@@ -46,9 +46,6 @@ public class DropIndexManager {
 	private DropDao dropDao;
 	
 	@Autowired
-	private DropDocumentRepository repository;
-	
-	@Autowired
 	private DropIndexService dropIndexService;
 
 	// Indexer properties

@@ -75,6 +75,7 @@ import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
+import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
 /**
@@ -124,7 +125,7 @@ public class BucketService {
 	private DropDocumentRepository repository;
 
 	/* Logger */
-	final static Logger LOG = LoggerFactory.getLogger(BucketService.class);
+	final static Logger logger = LoggerFactory.getLogger(BucketService.class);
 
 	public void setBucketDao(BucketDao bucketDao) {
 		this.bucketDao = bucketDao;
@@ -612,18 +613,22 @@ public class BucketService {
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
 		if (dropFilter.getKeywords() != null) {
+			String searchTerm = QueryUtil.getQueryString(dropFilter.getKeywords());
+
 			PageRequest pageRequest = new PageRequest(page - 1, dropCount);
 			List<DropDocument> dropDocuments = repository.findInBucket(id, 
-					dropFilter.getKeywords(), pageRequest);
+					searchTerm, pageRequest);
 			
+			if (dropDocuments.isEmpty()) {
+				return getDropDTOs;
+			}
+			// Logger
+			logger.info("Found {} matches for '{}' in bucket" + id, 
+					dropDocuments.size(), searchTerm);
+
 			List<Long> dropIds = new ArrayList<Long>();
 			for (DropDocument document: dropDocuments) {
 				dropIds.add(Long.parseLong(document.getId()));
-			}
-			
-			// No documents found in index. Return empty response
-			if (dropIds.isEmpty()) {
-				return getDropDTOs;
 			}
 			
 			// Set page number to 1

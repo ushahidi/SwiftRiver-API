@@ -87,6 +87,7 @@ import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
+import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
 import com.ushahidi.swiftriver.core.util.HashUtil;
 
@@ -402,22 +403,24 @@ public class RiverService {
 
 		// If keywords have been specified, perform search on Solr
 		if (dropFilter.getKeywords() != null) {
-			String searchTerm = dropFilter.getKeywords();
+			String searchTerm = QueryUtil.getQueryString(dropFilter.getKeywords());
 
 			PageRequest pageRequest = new PageRequest(page - 1, dropCount);
 			List<DropDocument> dropDocuments = repository.findInRiver(id, 
 					searchTerm, pageRequest);
+
+			logger.info("Found {} matches for '{}' in river" + id, 
+					dropDocuments.size(), searchTerm);
+
+			if (dropDocuments.isEmpty()) {
+				return getDropDTOs;
+			}
 
 			List<Long> dropIds = new ArrayList<Long>();
 			for (DropDocument document: dropDocuments) {
 				dropIds.add(Long.parseLong(document.getId()));
 			}
 			
-			// Add the drop ids to the filters
-			if (dropIds.isEmpty()) {
-				return getDropDTOs;
-			}
-
 			// Set page number to 1
 			page = 1;
 			dropFilter.setDropIds(dropIds);
