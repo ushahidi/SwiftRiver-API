@@ -26,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.service.DropIndexService;
 import com.ushahidi.swiftriver.core.model.Drop;
 
@@ -50,6 +51,9 @@ public class InitSolrSearchIndex {
 
 	@PersistenceContext
 	private EntityManager entityManager;
+	
+	@Autowired
+	private DropDao dropDao;
 
 	public void init() {
 		// First, purge all items from the index
@@ -58,6 +62,9 @@ public class InitSolrSearchIndex {
 		// Fetch the drops and them to the index 
 		List<Drop> drops = entityManager.createQuery("FROM Drop", 
 				Drop.class).getResultList();
+
+		dropDao.populateBucketIds(drops);
+		dropDao.populateRiverIds(drops);
 		
 		dropIndexService.addAllToIndex(drops);
 	}

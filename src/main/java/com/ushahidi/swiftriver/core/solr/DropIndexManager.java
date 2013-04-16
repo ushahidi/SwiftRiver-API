@@ -84,11 +84,17 @@ public class DropIndexManager {
 		long lastDropId = Long.parseLong(indexerProperties.getProperty(PROP_LAST_DROP_ID));
 
 		List<Drop> drops = dropDao.findAll(lastDropId, batchSize);
+
 		if (drops.isEmpty()) {
 			logger.info("No drops found");
 			return;
 		}
 		
+		// Set the riverId and bucketId properties
+		logger.info("Setting the riverId and bucketId properties");
+		dropDao.populateRiverIds(drops);
+		dropDao.populateBucketIds(drops);
+
 		// Add drops to search index
 		dropIndexService.addAllToIndex(drops);
 

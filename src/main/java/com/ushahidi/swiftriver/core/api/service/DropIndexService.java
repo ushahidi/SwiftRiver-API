@@ -159,8 +159,7 @@ public class DropIndexService {
 
 		// Search the index for drops containing searchTerm
 		Pageable pageRequest = new PageRequest(page, count);
-		List<DropDocument> dropDocuments = repository.findByTitleOrContentContains(
-				searchTerm, pageRequest);
+		List<DropDocument> dropDocuments = repository.find(searchTerm, pageRequest);
 
 		List<GetDropDTO> drops = new ArrayList<GetDropDTO>();
 

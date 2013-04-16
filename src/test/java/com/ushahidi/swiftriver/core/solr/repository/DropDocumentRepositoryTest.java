@@ -53,12 +53,12 @@ public class DropDocumentRepositoryTest {
 	}
 	
 	@Test
-	public void findByTitleOrContentContains() {
+	public void find() {
 		String keyword = "droplet";
 
 		// Sample page request 
 		PageRequest pageRequest = new PageRequest(0, 50);
-		repository.findByTitleOrContentContains(keyword, pageRequest);
+		repository.find(keyword, pageRequest);
 		
 		assertEquals(10, repository.count());
 	}

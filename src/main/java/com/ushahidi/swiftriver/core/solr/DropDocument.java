@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.solr;
 
 import java.util.Date;
+import java.util.List;
 
 import org.apache.solr.client.solrj.beans.Field;
 
@@ -43,6 +44,12 @@ public class DropDocument {
 	
 	@Field
 	private Date datePublished;
+	
+	@Field("riverId")
+	private List<Long> riverIds;
+	
+	@Field("bucketId")
+	private List<Long> bucketIds;
 	
 	public String getId() {
 		return id;
@@ -72,16 +79,32 @@ public class DropDocument {
 		return content;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
-	}
-
 	public Date getDatePublished() {
 		return datePublished;
 	}
 
 	public void setDatePublished(Date datePublished) {
 		this.datePublished = datePublished;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public List<Long> getRiverIds() {
+		return riverIds;
+	}
+
+	public void setRiverIds(List<Long> riverIds) {
+		this.riverIds = riverIds;
+	}
+
+	public List<Long> getBucketIds() {
+		return bucketIds;
+	}
+
+	public void setBucketIds(List<Long> bucketIds) {
+		this.bucketIds = bucketIds;
 	}
 
 }

@@ -14,7 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -39,18 +39,14 @@ public class DropServiceTest {
 	
 	DropDao mockDropDao;
 
-	private DropIndexService mockDropIndexService;
-	
 	@Before
 	public void setup() {
 		
 		mockDropDao = mock(DropDao.class);
-		mockDropIndexService = mock(DropIndexService.class);
 		
 		dropService = new DropService();
 		dropService.setMapper(mapper);
 		dropService.setDropDao(mockDropDao);
-		dropService.setDropIndexService(mockDropIndexService);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -66,8 +62,6 @@ public class DropServiceTest {
 		ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
 		verify(mockDropDao).createDrops(argument.capture());
 		List<Drop> drops = argument.getValue();
-		
-		verify(mockDropIndexService).addAllToIndex(drops);
 		
 		assertEquals(1, drops.size());
 		assertEquals("test", drops.get(0).getTitle());

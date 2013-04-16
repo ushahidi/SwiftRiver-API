@@ -100,7 +100,7 @@ public class DropIndexServiceTest {
 		List<DropDocument> dropDocuments = new ArrayList<DropDocument>();
 		dropDocuments.add(dropDocument);
 		
-		when(mockRepository.findByTitleOrContentContains(anyString(), 
+		when(mockRepository.find(anyString(), 
 				any(Pageable.class))).thenReturn(dropDocuments);
 		dropIndexService.findDrops("keyword", 30, 6);
 
@@ -109,7 +109,7 @@ public class DropIndexServiceTest {
 				PageRequest.class);
 		ArgumentCaptor<String> searchTermArgument = ArgumentCaptor.forClass(String.class);
 
-		verify(mockRepository).findByTitleOrContentContains(searchTermArgument.capture(), 
+		verify(mockRepository).find(searchTermArgument.capture(), 
 				pageRequestArgument.capture());
 		
 		// Assert that "keyword" is the value used for the search
