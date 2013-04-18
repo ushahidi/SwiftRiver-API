@@ -409,9 +409,6 @@ public class RiverService {
 			List<DropDocument> dropDocuments = repository.findInRiver(id, 
 					searchTerm, pageRequest);
 
-			logger.info("Found {} matches for '{}' in river" + id, 
-					dropDocuments.size(), searchTerm);
-
 			if (dropDocuments.isEmpty()) {
 				return getDropDTOs;
 			}

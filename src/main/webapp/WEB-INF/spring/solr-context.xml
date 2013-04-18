@@ -37,16 +37,28 @@
 							<entry key="solr.server.url">
 								<jee:jndi-lookup jndi-name="solr/serverURL" />
 							</entry>
+							<entry key="solr.indexer.properties" value-ref="indexerPropertiesFile" />
+							
+							<!-- Property keys in the indexer properties file  -->
+							<entry key="solr.indexer.lastDropIdPropKey">
+								<jee:jndi-lookup jndi-name="indexer/lastDropIdPropKey" />
+							</entry>
+							<entry key="solr.indexer.batchSizePropKey">
+								<jee:jndi-lookup jndi-name="indexer/batchSizePropKey" />
+							</entry>
 						</map>
 					</constructor-arg>
 				</bean>
 			</property>
 		</bean>
 		
-		<util:properties id="indexerProperties" location="classpath:indexer.properties" />
+		<jee:jndi-lookup id="indexerPropertiesFile" 
+			jndi-name="solr/indexerProperties" expected-type="java.lang.String"/>
 		
-		<bean id="classPathResource" class="org.springframework.core.io.ClassPathResource">
-			<constructor-arg value="/indexer.properties" />
+		<util:properties id="indexerProperties" location="file://${solr.indexer.properties}" />
+
+		<bean id="classPathResource" class="org.springframework.core.io.FileSystemResource">
+			<constructor-arg value="/${solr.indexer.properties}" />
 		</bean>
 		
 		<bean id="indexerConfigFile" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
@@ -58,6 +70,8 @@
 		<bean id="dropIndexManager" class="com.ushahidi.swiftriver.core.solr.DropIndexManager">
 			<property name="propertiesFile" ref="indexerConfigFile" />
 			<property name="indexerProperties" ref="indexerProperties" />
+			<property name="batchSizePropertyKey" value="${solr.indexer.batchSizePropKey}" />
+			<property name="lastDropIdPropertyKey" value="${solr.indexer.lastDropIdPropKey}" />
 		</bean>
 		
 		<!-- Background indexing task -->

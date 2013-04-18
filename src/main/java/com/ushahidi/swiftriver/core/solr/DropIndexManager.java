@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.service.DropIndexService;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 
 /**
  * Manages the drop index while the application is running. The tasks
@@ -54,9 +53,11 @@ public class DropIndexManager {
 	// Indexer properties file
 	private File propertiesFile;
 	
-	// Property file keys
-	final static String PROP_LAST_DROP_ID = "indexer.last_drop_id";
-	final static String PROP_BATCH_SIZE = "indexer.batch_size";
+	// Property key for the ID of the last drop to be indexed
+	private String lastDropIdPropertyKey;
+
+	// Property key for the no. of drops to fetch for indexing
+	private String batchSizePropertyKey;
 	
 	// Logger
 	final static Logger logger = LoggerFactory.getLogger(DropIndexManager.class);
@@ -69,6 +70,14 @@ public class DropIndexManager {
 		this.propertiesFile = propertiesFile;
 	}
 
+	public void setLastDropIdPropertyKey(String lastDropIdPropertyKey) {
+		this.lastDropIdPropertyKey = lastDropIdPropertyKey;
+	}
+
+	public void setBatchSizePropertyKey(String batchSizePropertyKey) {
+		this.batchSizePropertyKey = batchSizePropertyKey;
+	}
+
 	/**
 	 * Periodically adds drops to the search index. This method acts as
 	 * a fail-safe in the event that the application is restarted before
@@ -77,8 +86,8 @@ public class DropIndexManager {
 	 * @throws IOException
 	 */
 	public void updateIndex() throws IOException {
-		int batchSize = Integer.parseInt(indexerProperties.getProperty(PROP_BATCH_SIZE));
-		long lastDropId = Long.parseLong(indexerProperties.getProperty(PROP_LAST_DROP_ID));
+		int batchSize = Integer.parseInt(indexerProperties.getProperty(batchSizePropertyKey));
+		long lastDropId = Long.parseLong(indexerProperties.getProperty(lastDropIdPropertyKey));
 
 		List<Drop> drops = dropDao.findAll(lastDropId, batchSize);
 
@@ -99,7 +108,7 @@ public class DropIndexManager {
 		lastDropId = drops.get(drops.size() - 1).getId();
 
 		logger.info("Saving ID of last indexed drop {}", lastDropId);
-		indexerProperties.setProperty(PROP_LAST_DROP_ID, Long.toString(lastDropId));
+		indexerProperties.setProperty(lastDropIdPropertyKey, Long.toString(lastDropId));
 		
 		OutputStream outputStream = new FileOutputStream(propertiesFile);
 		indexerProperties.store(outputStream, null);
