@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.solr;
+package com.ushahidi.swiftriver.core.scheduling;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,7 +39,7 @@ import com.ushahidi.swiftriver.core.model.Drop;
  * <li>Removing orphaned drops (not in a bucket or river) from the search index</li>
  * </ul>
  */
-public class DropIndexManager {
+public class DropIndexingTask {
 
 	@Autowired
 	private DropDao dropDao;
@@ -60,7 +60,7 @@ public class DropIndexManager {
 	private String batchSizePropertyKey;
 	
 	// Logger
-	final static Logger logger = LoggerFactory.getLogger(DropIndexManager.class);
+	final static Logger logger = LoggerFactory.getLogger(DropIndexingTask.class);
 
 	public void setIndexerProperties(Properties indexerProperties) {
 		this.indexerProperties = indexerProperties;
@@ -79,13 +79,18 @@ public class DropIndexManager {
 	}
 
 	/**
-	 * Periodically adds drops to the search index. This method acts as
-	 * a fail-safe in the event that the application is restarted before
-	 * incoming drops are posted to the search index
+	 * Adds new drops to the search index in a single batch. The method
+	 * uses the <code>batchSizeProperty</code> to retrieve
+	 * the value of the batch size from the <code>indexerProprties</code>
+	 * file.
+	 * 
+	 * The reference point for new drops is the ID of the last 
+	 * drop to be indexed so all drops with an ID value greater 
+	 * than this value candidates for indexing.
 	 * 
 	 * @throws IOException
 	 */
-	public void updateIndex() throws IOException {
+	public void updateDropIndex() throws IOException {
 		int batchSize = Integer.parseInt(indexerProperties.getProperty(batchSizePropertyKey));
 		long lastDropId = Long.parseLong(indexerProperties.getProperty(lastDropIdPropertyKey));
 

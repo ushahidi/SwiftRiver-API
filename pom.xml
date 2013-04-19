@@ -56,6 +56,11 @@
 			<version>${org.springframework.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.security.oauth</groupId>
 			<artifactId>spring-security-oauth2</artifactId>
 			<version>1.0.1.RELEASE</version>
@@ -180,6 +185,13 @@
 					<groupId>org.slf4j</groupId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		
+		<!-- Quartz Framework -->
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>1.8.6</version>
 		</dependency>
 	</dependencies>
 	

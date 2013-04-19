@@ -4,10 +4,8 @@
 	xmlns:solr="http://www.springframework.org/schema/data/solr"
 	xmlns:jee="http://www.springframework.org/schema/jee"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:task="http://www.springframework.org/schema/task"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
-		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd
 		http://www.springframework.org/schema/data/solr http://www.springframework.org/schema/data/solr/spring-solr-1.0.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
@@ -46,6 +44,9 @@
 							<entry key="solr.indexer.batchSizePropKey">
 								<jee:jndi-lookup jndi-name="indexer/batchSizePropKey" />
 							</entry>
+ 							<entry key="solr.indexer.interval">
+								<jee:jndi-lookup jndi-name="indexer/runInterval" />
+							</entry>
 						</map>
 					</constructor-arg>
 				</bean>
@@ -66,21 +67,34 @@
 			<property name="targetMethod" value="getFile" />
 		</bean>
 
-		<!-- Drop Index manager -->
-		<bean id="dropIndexManager" class="com.ushahidi.swiftriver.core.solr.DropIndexManager">
+		<!-- Configures the drop indexing task -->
+		<bean id="dropIndexingTask" class="com.ushahidi.swiftriver.core.scheduling.DropIndexingTask">
 			<property name="propertiesFile" ref="indexerConfigFile" />
 			<property name="indexerProperties" ref="indexerProperties" />
 			<property name="batchSizePropertyKey" value="${solr.indexer.batchSizePropKey}" />
 			<property name="lastDropIdPropertyKey" value="${solr.indexer.lastDropIdPropKey}" />
 		</bean>
 		
-		<!-- Background indexing task -->
-		<task:scheduler id="solrScheduler"/>
-
-		<task:scheduled-tasks scheduler="solrScheduler">
-			<task:scheduled ref="dropIndexManager" method="updateIndex" fixed-delay="10000"/>
-		</task:scheduled-tasks>
-	</beans>
+		<!-- Configures the JobDetailBean -->
+ 		<bean name="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+ 			<property name="targetObject" ref="dropIndexingTask" />
+ 			<property name="targetMethod" value="updateDropIndex" />
+		</bean>
+		
+		<!-- Configures the trigger for the scheduler -->
+		<bean id="dropIndexingTrigger" 
+			class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
+			<property name="jobDetail" ref="jobDetail" />
+			<property name="repeatInterval" value="${solr.indexer.interval}"/>
+		</bean>
+		
+		<!-- Configures the scheduler of the dropIndexingTrigger -->
+		<bean id="dropIndexingScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+			<property name="triggers">
+				<ref bean="dropIndexingTrigger" />
+			</property>
+		</bean>
+ 	</beans>
 	
 	<!-- Dev environment configuration -->
 	<beans profile="test">
