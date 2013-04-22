@@ -127,17 +127,16 @@ CREATE TABLE IF NOT EXISTS  account_droplet_media (
 CREATE TABLE IF NOT EXISTS rivers_droplets (
   id bigint NOT NULL,
   river_id bigint NOT NULL,
-  channel_id bigint,
+  river_channel_id bigint,
   droplet_id bigint NOT NULL,
   droplet_date_pub timestamp,
-  channel varchar(20) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE (river_id,droplet_id)
 );
 CREATE INDEX rivers_idx_river_id ON rivers_droplets (river_id);
 CREATE INDEX rivers_idx_droplet_id ON rivers_droplets (droplet_id);
 CREATE INDEX rivers_idx_droplet_date_pub ON rivers_droplets (droplet_date_pub);
-CREATE INDEX rivers_idx_channel_id ON rivers_droplets (channel_id);
+CREATE INDEX rivers_idx_channel_id ON rivers_droplets (river_channel_id);
 
 -- ----------------------------------------
 -- Table river_droplet_tags

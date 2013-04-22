@@ -693,10 +693,24 @@ public class RiverService {
 	 * 
 	 * @param id
 	 * @param dropId
-	 * @return boolean
+	 * @param authUser
 	 */
-	public boolean deleteDrop(Long id, Long dropId) {
-		return riverDao.removeDrop(id, dropId);
+	@Transactional(readOnly = false)
+	public void deleteDrop(Long id, Long dropId, String authUser) {
+		River river = getRiver(id);
+		if (!isOwner(river, authUser)) {
+			throw new ForbiddenException("Permission denied");
+		}
+		
+		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		
+		// Update the channel count
+		Channel channel = riverDrop.getChannel();
+		channel.setDropCount(channel.getDropCount() - 1);
+		channelDao.update(channel);
+		
+		// Delete the river drop
+		riverDropDao.delete(riverDrop);
 	}
 
 	public boolean isOwner(River river, String authUser) {

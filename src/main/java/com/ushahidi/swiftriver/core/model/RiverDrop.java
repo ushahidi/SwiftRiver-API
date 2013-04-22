@@ -50,6 +50,10 @@ public class RiverDrop {
 	@Column(name="droplet_date_pub")
 	private Date datePublished;
 	
+	@ManyToOne
+	@JoinColumn(name="river_channel_id")
+	private Channel channel;
+	
 	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
 	private List<RiverDropLink> links;
 	
@@ -95,6 +99,14 @@ public class RiverDrop {
 
 	public void setDatePublished(Date datePublished) {
 		this.datePublished = datePublished;
+	}
+
+	public Channel getChannel() {
+		return channel;
+	}
+
+	public void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 	public List<RiverDropLink> getLinks() {

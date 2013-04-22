@@ -127,7 +127,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
 
 		if (filter.getChannelIds() != null && !filter.getChannelIds().isEmpty()) {
-			sql += "INNER JOIN river_channels ON (rivers_droplets.channel_id = river_channels.id) ";
+			sql += "INNER JOIN river_channels ON (rivers_droplets.river_channel_id = river_channels.id) ";
 		}
 
 		sql += "LEFT JOIN droplet_scores AS user_scores ON (user_scores.droplet_id = droplets.id AND user_scores.user_id = :userId) ";
@@ -145,11 +145,11 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		}
 
 		if (filter.getChannels() != null && !filter.getChannels().isEmpty()) {
-			sql += "AND rivers_droplets.channel IN (:channels) ";
+			sql += "AND `droplets`.`channel` IN (:channels) ";
 		}
 
 		if (filter.getChannelIds() != null && !filter.getChannelIds().isEmpty()) {
-			sql += "AND rivers_droplets.channel_id IN (:channel_ids) ";
+			sql += "AND rivers_droplets.river_channel_id IN (:channel_ids) ";
 		}
 
 		if (filter.getRead() != null) {

@@ -27,7 +27,17 @@ public class DropsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void createDrops() throws Exception {
-		String postBody = "[{\"source\": {\"origin_id\": \"the original identity id\"}, \"original_id\": \"the original\", \"channel\":\"manual channel\", \"title\":\"the title\", \"content\":\"the content\", \"date_published\":\"Tue, 7 Mar 2013 03:08:45 +0000\"}]";
+		String postBody = "[" +
+				"{\"source\": {\"origin_id\": \"the original identity id\"}, " +
+				"\"original_id\": \"the original\"," +
+				"\"channel\":\"manual channel\", " +
+				"\"rivers\":[1], " +
+				"\"channel_ids\":[2], " +
+				"\"title\":\"the title\", " +
+				"\"content\":\"the content\", " +
+				"\"date_published\":\"Tue, 7 Mar 2013 03:08:45 +0000\", " +
+				"\"original_url\":\"http://gizmodo.com/5995191/is-anyone-actually-going-to-buy-an-ibeetle\"" +
+				"}]";
 
 		this.mockMvc
 				.perform(

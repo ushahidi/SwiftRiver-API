@@ -256,16 +256,33 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		// Mapping of drop id to list index position
 		final Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+
 		// List of rivers in a drop
 		Map<Long, Set<Long>> dropRiversMap = new HashMap<Long, Set<Long>>();
+		Map<Long, Set<Long>> dropChannelsMap = new HashMap<Long, Set<Long>>();
+
+		// Registry for all channels and rivers
+		Set<Long> allChannelIds = new HashSet<Long>();
+		Set<Long> allRiverIds = new HashSet<Long>();
+
 		int i = 0;
 		for (Drop drop : drops) {
-			if (drop.getRiverIds() == null)
+			if (drop.getRiverIds() == null || drop.getChannelIds() == null) {
+				logger.error("No rivers or channels for drop {}", drop.getId());
 				continue;
+			}
 
 			Set<Long> rivers = new HashSet<Long>();
+			Set<Long> channels = new HashSet<Long>();
+
 			rivers.addAll(drop.getRiverIds());
+			channels.addAll(drop.getChannelIds());
+
 			dropRiversMap.put(drop.getId(), rivers);
+			dropChannelsMap.put(drop.getId(), channels);
+			
+			allRiverIds.addAll(rivers);
+			allChannelIds.addAll(channels);
 
 			dropIndex.put(drop.getId(), i++);
 		}
@@ -283,11 +300,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		List<Map<String, Object>> results = this.namedJdbcTemplate
 				.queryForList(sql, params);
 
-		// Remove already existing rivers_droplets from our Set
-		for (Map<String, Object> result : results) {
-			long dropletId = ((Number) result.get("droplet_id"))
-					.longValue();
-			long riverId = ((Number) result.get("river_id")).longValue();
+		// Remove existing rivers_droplets entries from our Set
+		for (Map<String, Object> row : results) {
+			long dropletId = ((Number) row.get("droplet_id")).longValue();
+			long riverId = ((Number) row.get("river_id")).longValue();
 
 			Set<Long> riverSet = dropRiversMap.get(dropletId);
 			if (riverSet != null) {
@@ -295,52 +311,90 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		}
 
-		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO rivers_droplets (id, droplet_id, river_id, droplet_date_pub, channel) VALUES (?,?,?,?,?)";
-
-		final List<long[]> dropRiverList = new ArrayList<long[]>();
-		for (Long dropletId : dropRiversMap.keySet()) {
-			for (Long riverId : dropRiversMap.get(dropletId)) {
-				long[] riverDrop = { dropletId, riverId };
-				dropRiverList.add(riverDrop);
-			}
-		}
-		
-		if (dropRiverList.size() == 0)
+		if (dropRiversMap.isEmpty())
 			return;
 
-		// Insert the remaining items in the set into the db
-		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, `droplet_date_pub`, `channel`) VALUES (?,?,?,?,?)";
+		// Associate the channels with rivers
+		sql = "SELECT id, river_id FROM river_channels WHERE id IN (:channelIds)";
+		MapSqlParameterSource channelParams = new MapSqlParameterSource();
+		channelParams.addValue("channelIds", allChannelIds);
+		Map<Long, Long> riverChannelsMap = new HashMap<Long, Long>();
 
-		final long startKey = sequenceDao.getIds(seq, dropRiverList.size());
+		for (Map<String, Object> row: namedJdbcTemplate.queryForList(sql,
+				channelParams)) {
+
+			Long channelId = ((Number) row.get("id")).longValue();
+			Long riverId = ((Number) row.get("river_id")).longValue();
+			
+			if (!allRiverIds.contains(riverId))
+				continue;
+
+			riverChannelsMap.put(channelId, riverId);
+		}
+		
+		// Map to hold the association between a drop, river and channel 
+		final List<Map<String, Long>> riverDropChannelList = new ArrayList<Map<String,Long>>();
+		for (Long dropletId: dropChannelsMap.keySet()) {
+			for (Long channelId: dropChannelsMap.get(dropletId)) {
+				if (riverChannelsMap.containsKey(channelId)) {
+					Map<String, Long> entry = new HashMap<String, Long>();
+					entry.put("dropletId", dropletId);
+					entry.put("channelId", channelId);
+					entry.put("riverId", riverChannelsMap.get(channelId));
+					
+					riverDropChannelList.add(entry);
+				}
+			}
+		}
+
+		// Insert the remaining items in the set into the DB
+		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, " +
+				"`river_channel_id`, `droplet_date_pub`) " +
+				"VALUES (?, ?, ?, ?, ?)";
+
+		final long startKey = sequenceDao.getIds(seq, riverDropChannelList.size());
+
+		// Map to hold to hold the no. of drops created per channel
+		final Map<Long, Long> channelDropCountMap = new HashMap<Long, Long>();
+
 		// A map to hold the new max_drop_id and drop_count per river
 		final Map<Long, long[]> riverDropsMap = new HashMap<Long, long[]>();
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
 					throws SQLException {
-				long[] riverDrop = dropRiverList.get(i);
+				Map<String, Long> dropEntry = riverDropChannelList.get(i);
 				long id = startKey + i;
-				Drop drop = drops.get(dropIndex.get(riverDrop[0]));
+
+				Long dropletId = dropEntry.get("dropletId");
+				Long riverId = dropEntry.get("riverId");
+				Long channelId = dropEntry.get("channelId");
+				Drop drop = drops.get(dropIndex.get(dropletId));
+
 				ps.setLong(1, id);
-				ps.setLong(2, riverDrop[0]);
-				ps.setLong(3, riverDrop[1]);
-				ps.setTimestamp(4, new java.sql.Timestamp(drop
+				ps.setLong(2, dropletId);
+				ps.setLong(3, riverId);
+				ps.setLong(4, channelId);
+				ps.setTimestamp(5, new java.sql.Timestamp(drop
 						.getDatePublished().getTime()));
-				ps.setString(5, drop.getChannel());
 
 				// Get updated max_drop_id and drop_count for the rivers table
-				long[] update = riverDropsMap.get(riverDrop[1]);
+				long[] update = riverDropsMap.get(riverId);
 				if (update == null) {
 					long[] u = { id, 1 };
-					riverDropsMap.put(riverDrop[1], u);
+					riverDropsMap.put(riverId, u);
 				} else {
 					update[0] = Math.max(update[0], id);
 					update[1] = update[1] + 1;
 				}
+				
+				// Update the drop count for the channel
+				Long channelDropCount = channelDropCountMap.get(channelId);
+				channelDropCount = (channelDropCount == null) ? 1 : channelDropCount++;
+				channelDropCountMap.put(channelId, channelDropCount);
 			}
 
 			public int getBatchSize() {
-				return dropRiverList.size();
+				return riverDropChannelList.size();
 			}
 		});
 		
@@ -360,6 +414,24 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
                 return riverUpdate.size();
             }
         } );
+		
+		// Update the drop_count in TABLE `river_channels`
+		sql = "UPDATE river_channels SET drop_count = drop_count + ? WHERE id = ?";
+		final List<Entry<Long, Long>> riverChannelUpdate = new ArrayList<Entry<Long,Long>>();
+		riverChannelUpdate.addAll(channelDropCountMap.entrySet());
+		this.jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				Entry<Long, Long> entry = riverChannelUpdate.get(i);
+				ps.setLong(1, entry.getKey());
+				ps.setLong(2, entry.getValue());
+			}
+			
+			@Override
+			public int getBatchSize() {
+				return riverChannelUpdate.size();
+			}
+		});
 	}
 	
 	/**

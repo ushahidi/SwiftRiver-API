@@ -45,6 +45,10 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		List<Long> riverIds = new ArrayList<Long>();
 		riverIds.add(1L);
 		drop.setRiverIds(riverIds);
+		
+		List<Long> channelIds = new ArrayList<Long>();
+		channelIds.add(3L);
+		drop.setChannelIds(channelIds);
 
 		Tag tag = new Tag();
 		tag.setTag(" Test tag ");
@@ -91,13 +95,13 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		assertNotNull(place.getId());
 		assertNotNull(newMedia.getId());
 
-		sql = "SELECT id, river_id, droplet_date_pub, channel FROM rivers_droplets WHERE droplet_id = ?";
+		sql = "SELECT id, river_id, droplet_date_pub, river_channel_id FROM rivers_droplets WHERE droplet_id = ?";
 
 		results = this.jdbcTemplate.queryForMap(sql, drop.getId());
 		assertEquals(6L, ((Number) results.get("id")).longValue());
 		assertEquals(1L, ((Number) results.get("river_id")).longValue());
 		assertEquals(drop.getDatePublished().getTime(), ((Date)results.get("droplet_date_pub")).getTime());
-		assertEquals("test channel", results.get("channel"));
+		assertEquals(3L, ((Number) results.get("river_channel_id")).longValue());
 		
 		// Ensure rivers_droplets sequence was updated correctly
 		assertEquals(6, sequenceDao.findById("rivers_droplets").getId());

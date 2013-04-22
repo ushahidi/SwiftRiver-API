@@ -451,8 +451,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
-		riverService.deleteDrop(id, dropId);
+	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId, Principal principal) {
+		riverService.deleteDrop(id, dropId, principal.getName());
 	}
 
 	/**

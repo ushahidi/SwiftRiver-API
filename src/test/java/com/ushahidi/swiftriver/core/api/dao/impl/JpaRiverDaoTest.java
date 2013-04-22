@@ -331,10 +331,7 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		filter.setChannels(channels);
 		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
-		assertEquals(2, drops.size());
-
-		Drop drop = drops.get(1);
-		assertEquals(1, drop.getId());
+		assertEquals(3, drops.size());
 	}
 
 	@Test
