@@ -704,7 +704,6 @@ public class RiverService {
 	}
 
 	public boolean isOwner(River river, Account account) {
-		logger.debug(account.toString());
 		RiverCollaborator collaborator = riverDao.findCollaborator(river.getId(), account.getId());
 		
 		return river.getAccount() == account

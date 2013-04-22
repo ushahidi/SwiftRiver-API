@@ -771,10 +771,10 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 	
 	@Test
-	public void getActivitiesOfFollowedAccounts() throws Exception {
+	public void getTimeline() throws Exception {
 		this.mockMvc
 				.perform(
-						get("/v1/accounts/activities").principal(
+						get("/v1/accounts/timeline").principal(
 								getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$").isArray())

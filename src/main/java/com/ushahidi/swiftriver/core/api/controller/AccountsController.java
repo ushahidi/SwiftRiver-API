@@ -17,7 +17,6 @@ package com.ushahidi.swiftriver.core.api.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -182,13 +181,6 @@ public class AccountsController extends AbstractController {
 				principal.getName());
 	}
 
-	@RequestMapping(value = "/{id}/verify", method = RequestMethod.POST)
-	@ResponseBody
-	public Account verifyAccount(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
-	}
-
 	/**
 	 * Add a follower to an account
 	 * 
@@ -201,6 +193,13 @@ public class AccountsController extends AbstractController {
 		accountService.addFollower(id, accountId);
 	}
 
+	/**
+	 * Get a list of followers for the given account
+	 * 
+	 * @param id
+	 * @param accountId
+	 * @return
+	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
 	public List<FollowerDTO> getFollowers(@PathVariable Long id,
@@ -221,28 +220,50 @@ public class AccountsController extends AbstractController {
 		accountService.deleteFollower(id, accountId);
 	}
 
+	/**
+	 * Get a list of followers the account is following
+	 * 
+	 * @param id
+	 * @return
+	 */
 	@RequestMapping(value = "/{id}/following", method = RequestMethod.GET)
 	@ResponseBody
 	public Account getFollowing(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
+	/**
+	 * Get Activities by the given accoun
+	 * 
+	 * @param accountId
+	 * @param principal
+	 * @return
+	 */
 	@RequestMapping(value = "/{accountId}/activities", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetActivityDTO> getAccountActivities(
+	public List<GetActivityDTO> getActivities(
 			@PathVariable Long accountId,
 			Principal principal) {
-		return accountService.getAccountActivities(accountId, principal.getName());
+		return accountService.getActivities(accountId, principal.getName());
 	}
 	
-	@RequestMapping(value = "/activities", method = RequestMethod.GET)
+	/**
+	 * Get activities from Accounts the logged in user is following
+	 * 
+	 * @param principal
+	 * @param count
+	 * @param lastId
+	 * @param newer
+	 * @return
+	 */
+	@RequestMapping(value = "/timeline", method = RequestMethod.GET)
 	@ResponseBody
-	public List<GetActivityDTO> getFollowedAccountActivities(
+	public List<GetActivityDTO> getTimeline(
 			Principal principal,
 			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
 			@RequestParam(value = "last_id", required = false) Long lastId,
 			@RequestParam(value = "newer", required = false) Boolean newer) {
-		return accountService.getFollowActivities(count, lastId, newer, principal.getName());
+		return accountService.getTimeline(count, lastId, newer, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.POST)

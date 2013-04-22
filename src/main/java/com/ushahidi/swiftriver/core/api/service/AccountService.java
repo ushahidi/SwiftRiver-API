@@ -927,17 +927,28 @@ public class AccountService {
 	}
 
 	/**
+	 * Get Activities for the given account.
+	 * 
 	 * @param accountId
 	 * @param authUser
 	 * @return
 	 */
-	public List<GetActivityDTO> getAccountActivities(Long accountId, String authUser) {
+	public List<GetActivityDTO> getActivities(Long accountId, String authUser) {
 		
 		Account account = accountDao.findByUsername(authUser);
 		return getActivities(accountId, 50, Long.MAX_VALUE, false, false, account);
 	}
 
-	public List<GetActivityDTO> getFollowActivities(Integer count, Long lastId,
+	/**
+	 * Get Activities by the Account that authUser is following.
+	 * 
+	 * @param count
+	 * @param lastId
+	 * @param newer
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetActivityDTO> getTimeline(Integer count, Long lastId,
 			Boolean newer, String authUser) {
 		
 		Account account = accountDao.findByUsername(authUser);

@@ -150,11 +150,11 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	public BucketCollaborator findCollaborator(Long bucketId, Long accountId) {
 		String sql = "FROM BucketCollaborator bc "
 				+ "WHERE bc.account.id = :accountId "
-				+ "AND bc.bucket.id =:riverId";
+				+ "AND bc.bucket.id =:bucketId";
 
 		Query query = this.em.createQuery(sql);
 		query.setParameter("accountId", accountId);
-		query.setParameter("riverId", bucketId);
+		query.setParameter("bucketId", bucketId);
 
 		BucketCollaborator collaborator = null;
 		try {
