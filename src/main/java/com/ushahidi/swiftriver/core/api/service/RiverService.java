@@ -302,6 +302,7 @@ public class RiverService {
 		channelDao.create(channel);
 
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
+		notification.setId(channel.getId());
 		notification.setChannel(channel.getChannel());
 		notification.setRiverId(riverId);
 		notification.setParameters(channel.getParameters());
@@ -321,6 +322,7 @@ public class RiverService {
 		channelDao.delete(channel);
 
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
+		notification.setId(channelId);
 		notification.setChannel(channel.getChannel());
 		notification.setRiverId(riverId);
 		notification.setParameters(channel.getParameters());
@@ -335,6 +337,7 @@ public class RiverService {
 
 		// Get the channel before modification for a deletion notification
 		ChannelUpdateNotification beforeNotification = new ChannelUpdateNotification();
+		beforeNotification.setId(channelId);
 		beforeNotification.setChannel(channel.getChannel());
 		beforeNotification.setRiverId(riverId);
 		beforeNotification.setParameters(channel.getParameters());
@@ -344,6 +347,7 @@ public class RiverService {
 
 		// Get the channel after modification for an add notification
 		ChannelUpdateNotification afterNotification = new ChannelUpdateNotification();
+		afterNotification.setId(channelId);
 		afterNotification.setChannel(channel.getChannel());
 		afterNotification.setRiverId(riverId);
 		afterNotification.setParameters(channel.getParameters());

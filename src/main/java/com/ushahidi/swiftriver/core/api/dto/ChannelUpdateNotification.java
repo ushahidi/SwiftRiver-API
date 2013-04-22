@@ -22,12 +22,22 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 public class ChannelUpdateNotification {
 	
+	private Long id;
+
 	@JsonProperty("river_id")
 	private long riverId;
 	
 	private String channel;
 	
 	private String parameters;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public long getRiverId() {
 		return riverId;
