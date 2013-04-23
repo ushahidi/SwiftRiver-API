@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS account_followers (
 CREATE TABLE IF NOT EXISTS tags (
   id bigint NOT NULL,
   hash char(32) NOT NULL,
-  tag varchar(100) NOT NULL,
-  tag_canonical varchar(100) NOT NULL,
+  tag varchar(200) NOT NULL,
+  tag_canonical varchar(200) NOT NULL,
   tag_type varchar(50) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE  (hash)

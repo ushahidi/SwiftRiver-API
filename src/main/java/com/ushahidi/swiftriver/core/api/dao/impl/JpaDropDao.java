@@ -397,8 +397,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				}
 				
 				// Update the drop count for the channel
-				Long channelDropCount = channelDropCountMap.get(channelId);
-				channelDropCount = (channelDropCount == null) ? 1 : channelDropCount++;
+				Long channelDropCount = channelDropCountMap.remove(channelId);
+				channelDropCount = (channelDropCount == null) 
+						? 1L : Long.valueOf(channelDropCount.longValue() + 1);
 				channelDropCountMap.put(channelId, channelDropCount);
 			}
 
@@ -432,8 +433,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
 				Entry<Long, Long> entry = riverChannelUpdate.get(i);
-				ps.setLong(1, entry.getKey());
-				ps.setLong(2, entry.getValue());
+				ps.setLong(1, entry.getValue());
+				ps.setLong(2, entry.getKey());
 			}
 			
 			@Override

@@ -69,6 +69,11 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		Media newMedia = new Media();
 		newMedia.setUrl("http://example.com/new ");
 		media.add(newMedia);
+		
+		// Get the current channel drop count
+		String channelDropCountSQL = "SELECT drop_count " +
+				"FROM river_channels WHERE id = ? AND river_id = ?";
+		int channelDropCount = this.jdbcTemplate.queryForInt(channelDropCountSQL, 3L, 1L);
 
 		dropDao.createDrops(drops);
 
@@ -110,5 +115,9 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		results = this.jdbcTemplate.queryForMap(sql, 1L);
 		assertEquals(6L, results.get("max_drop_id"));
 		assertEquals(7, results.get("drop_count"));
+		
+		// Verify that the channel drop count has been updated
+		int updatedChannelDropCount = this.jdbcTemplate.queryForInt(channelDropCountSQL, 3L, 1L);
+		assertEquals(channelDropCount + 1, updatedChannelDropCount);
 	}	
 }
