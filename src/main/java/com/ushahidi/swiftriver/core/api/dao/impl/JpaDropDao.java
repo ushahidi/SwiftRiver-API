@@ -263,12 +263,11 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		// Registry for all channels and rivers
 		Set<Long> allChannelIds = new HashSet<Long>();
-		Set<Long> allRiverIds = new HashSet<Long>();
 
 		int i = 0;
 		for (Drop drop : drops) {
 			if (drop.getRiverIds() == null || drop.getChannelIds() == null) {
-				logger.error("No rivers or channels for drop {}", drop.getId());
+				logger.debug("No rivers or channels for drop {}", drop.getId());
 				continue;
 			}
 
@@ -281,7 +280,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			dropRiversMap.put(drop.getId(), rivers);
 			dropChannelsMap.put(drop.getId(), channels);
 			
-			allRiverIds.addAll(rivers);
 			allChannelIds.addAll(channels);
 
 			dropIndex.put(drop.getId(), i++);
@@ -302,47 +300,58 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 
 		// Remove existing rivers_droplets entries from our Set
 		for (Map<String, Object> row : results) {
-			long dropletId = ((Number) row.get("droplet_id")).longValue();
-			long riverId = ((Number) row.get("river_id")).longValue();
+			Long dropletId = ((Number) row.get("droplet_id")).longValue();
+			Long riverId = ((Number) row.get("river_id")).longValue();
 
-			Set<Long> riverSet = dropRiversMap.get(dropletId);
+			Set<Long> riverSet = dropRiversMap.remove(dropletId);
 			if (riverSet != null) {
 				riverSet.remove(riverId);
+
+				// Only add back the destination rivers if the set is non empty
+				if (!riverSet.isEmpty()) {
+					dropRiversMap.put(dropletId, riverSet);
+				}
 			}
 		}
 
-		if (dropRiversMap.isEmpty())
+		// If all drops are duplicates, return early
+		if (dropRiversMap.isEmpty()) {
+			logger.info("No drops to add to the rivers");
 			return;
+		}
 
 		// Associate the channels with rivers
 		sql = "SELECT id, river_id FROM river_channels WHERE id IN (:channelIds)";
 		MapSqlParameterSource channelParams = new MapSqlParameterSource();
 		channelParams.addValue("channelIds", allChannelIds);
+		
 		Map<Long, Long> riverChannelsMap = new HashMap<Long, Long>();
-
 		for (Map<String, Object> row: namedJdbcTemplate.queryForList(sql,
 				channelParams)) {
 
 			Long channelId = ((Number) row.get("id")).longValue();
 			Long riverId = ((Number) row.get("river_id")).longValue();
 			
-			if (!allRiverIds.contains(riverId))
-				continue;
-
 			riverChannelsMap.put(channelId, riverId);
 		}
 		
-		// Map to hold the association between a drop, river and channel 
+		// Map to hold the association between a drop, river and channel
+		// During the association, we verify that the river is in the drop's
+		// destination river list
 		final List<Map<String, Long>> riverDropChannelList = new ArrayList<Map<String,Long>>();
 		for (Long dropletId: dropChannelsMap.keySet()) {
 			for (Long channelId: dropChannelsMap.get(dropletId)) {
 				if (riverChannelsMap.containsKey(channelId)) {
-					Map<String, Long> entry = new HashMap<String, Long>();
-					entry.put("dropletId", dropletId);
-					entry.put("channelId", channelId);
-					entry.put("riverId", riverChannelsMap.get(channelId));
-					
-					riverDropChannelList.add(entry);
+					Long riverId = riverChannelsMap.get(channelId);
+
+					if (dropRiversMap.containsKey(dropletId) && 
+							dropRiversMap.get(dropletId).contains(riverId)) {
+						Map<String, Long> entry = new HashMap<String, Long>();
+						entry.put("dropletId", dropletId);
+						entry.put("channelId", channelId);
+						entry.put("riverId", riverId);
+						riverDropChannelList.add(entry);
+					}
 				}
 			}
 		}
