@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	This is an example of a simple "solr.xml" file for configuring one or more
+	Solr cores. More information about options available in this configuration
+	file can be found at: http://wiki.apache.org/solr/CoreAdmin
+ -->
+
+ <!--
+ 	All paths are relative to the Solr Home directory 
+ -->
+<solr persistent="false">
+	<cores defaultCoreName="swiftriver" host="${host:}" hostPort="${jetty.port:}">
+		<core name="swiftriver" instanceDir="swiftriver"/>
+	</cores>
+</solr>

@@ -17,13 +17,16 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 @Entity
@@ -53,6 +56,9 @@ public class Channel {
 	
 	@Column(name = "drop_count")
 	private int dropCount;
+	
+	@OneToMany(cascade=CascadeType.ALL, mappedBy="channel")
+	private List<RiverDrop> drops;
 	
 	public Channel() {
 		
@@ -120,6 +126,14 @@ public class Channel {
 
 	public void setDropCount(int dropCount) {
 		this.dropCount = dropCount;
+	}
+
+	public List<RiverDrop> getDrops() {
+		return drops;
+	}
+
+	public void setDrops(List<RiverDrop> drops) {
+		this.drops = drops;
 	}
 
 }

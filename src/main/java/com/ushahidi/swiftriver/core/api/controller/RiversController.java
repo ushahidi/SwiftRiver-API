@@ -40,13 +40,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
-import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCommentDTO;
@@ -65,6 +65,7 @@ import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 
 @Controller
 @RequestMapping("/v1/rivers")
@@ -355,7 +356,6 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "channel_ids", required = false) String cIds,
-			@RequestParam(value = "locations", required = false) String location,
 			@RequestParam(value = "state", required = false) String state,
 			@RequestParam(value = "photos", required = false) Boolean photos)
 			throws NotFoundException {
@@ -417,9 +417,18 @@ public class RiversController extends AbstractController {
 			throw e;
 		}
 		
-		return riverService.getDrops(id, maxId, sinceId, page, count,
-				channelList, channelIds, isRead, dateFrom, dateTo, photos,
-				principal.getName());
+		DropFilter dropFilter = new DropFilter();
+		dropFilter.setMaxId(maxId);
+		dropFilter.setSinceId(sinceId);
+		dropFilter.setChannels(channelList);
+		dropFilter.setChannelIds(channelIds);
+		dropFilter.setDateFrom(dateFrom);
+		dropFilter.setDateTo(dateTo);
+		dropFilter.setRead(isRead);
+		dropFilter.setPhotos(photos);
+		dropFilter.setKeywords(keywords);
+
+		return riverService.getDrops(id, dropFilter, page, count, principal.getName());
 	}
 
 	/**
@@ -442,8 +451,8 @@ public class RiversController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId) {
-		riverService.deleteDrop(id, dropId);
+	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId, Principal principal) {
+		riverService.deleteDrop(id, dropId, principal.getName());
 	}
 
 	/**

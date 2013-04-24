@@ -16,7 +16,10 @@
  */
 package com.ushahidi.swiftriver.core.api.dao.impl;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -41,6 +44,7 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.RiverDropFormField;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 public class JpaRiverDaoTest extends AbstractJpaDaoTest {
@@ -78,9 +82,8 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void getDrops() {
 		Account account = accountDao.findById(1L);
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		DropFilter filter = new DropFilter();
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(5, drops.size());
 
@@ -157,10 +160,9 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(1L);
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setChannelIds(channels);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(2, drops.size());
 
@@ -171,8 +173,9 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void getDropsSince() {
 		Account account = accountDao.findById(1L);
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, filter, account);
+		DropFilter filter = new DropFilter();
+		filter.setSinceId(3L);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 1, account);
 
 		assertEquals(1, drops.size());
 
@@ -234,9 +237,10 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 		ArrayList<Long> channels = new ArrayList<Long>();
 		channels.add(2L);
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setChannelIds(channels);
-		List<Drop> drops = riverDao.getDropsSince(1L, 4L, 1, filter, account);
+		filter.setSinceId(4L);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -249,10 +253,9 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		Account account = accountDao.findById(1L);
 
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setDateFrom(dateFormat.parse("01/01/2013"));
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -265,10 +268,9 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		Account account = accountDao.findById(1L);
 
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setDateTo(dateFormat.parse("01/01/2012"));
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -280,10 +282,9 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	public void getReadDrops() {
 		Account account = accountDao.findById(3L);
 
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setRead(true);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(2, drops.size());
 
@@ -295,9 +296,10 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	public void getReadDropsSince() {
 		Account account = accountDao.findById(3L);
 
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setRead(true);
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, filter, account);
+		filter.setSinceId(3L);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -309,10 +311,9 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	public void getUnreadDrops() {
 		Account account = accountDao.findById(3L);
 
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setRead(false);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(3, drops.size());
 
@@ -326,15 +327,11 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("rss");
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
-		filter.setChannelList(channels);
-		List<Drop> drops = riverDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		DropFilter filter = new DropFilter();
+		filter.setChannels(channels);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
-		assertEquals(2, drops.size());
-
-		Drop drop = drops.get(1);
-		assertEquals(1, drop.getId());
+		assertEquals(3, drops.size());
 	}
 
 	@Test
@@ -343,9 +340,10 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("twitter");
-		RiverDao.DropFilter filter = new RiverDao.DropFilter();
-		filter.setChannelList(channels);
-		List<Drop> drops = riverDao.getDropsSince(1L, 3L, 1, filter, account);
+		DropFilter filter = new DropFilter();
+		filter.setChannels(channels);
+		filter.setSinceId(3L);
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 

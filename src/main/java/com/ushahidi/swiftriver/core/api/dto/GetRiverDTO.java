@@ -134,6 +134,14 @@ public class GetRiverDTO {
 			this.parameters = parameters;
 		}
 
+		public int getDropCount() {
+			return dropCount;
+		}
+
+		public void setDropCount(int dropCount) {
+			this.dropCount = dropCount;
+		}
+
 	}
 
 	public long getId() {

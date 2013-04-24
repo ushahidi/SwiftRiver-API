@@ -59,6 +59,9 @@ public class CreateDropDTO {
 	@JsonProperty("mark_as_read")
 	private List<Long> markAsRead;
 	
+	@JsonProperty("channel_ids")
+	private List<Long> channelIds;
+	
 	public String getTitle() {
 		return title;
 	}
@@ -177,6 +180,14 @@ public class CreateDropDTO {
 
 	public void setMarkAsRead(List<Long> markAsRead) {
 		this.markAsRead = markAsRead;
+	}
+
+	public List<Long> getChannelIds() {
+		return channelIds;
+	}
+
+	public void setChannelIds(List<Long> channelIds) {
+		this.channelIds = channelIds;
 	}
 
 	public static class Identity {

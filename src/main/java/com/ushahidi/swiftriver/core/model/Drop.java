@@ -125,6 +125,9 @@ public class Drop {
 	
 	@Transient
 	private List<Long> bucketIds;
+	
+	@Transient
+	private List<Long> channelIds;
 
 	public Drop() {
 
@@ -322,6 +325,14 @@ public class Drop {
 
 	public void setBucketIds(List<Long> bucketIds) {
 		this.bucketIds = bucketIds;
+	}
+
+	public List<Long> getChannelIds() {
+		return channelIds;
+	}
+
+	public void setChannelIds(List<Long> channelIds) {
+		this.channelIds = channelIds;
 	}
 
 }

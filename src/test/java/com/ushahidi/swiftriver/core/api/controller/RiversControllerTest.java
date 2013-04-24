@@ -191,7 +191,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 						get("/v1/rivers/1/drops?channels=rss").principal(
 								authentication)).andExpect(status().isOk())
 
-				.andExpect(jsonPath("$[1].id").value(1));
+				.andExpect(jsonPath("$[*]").value(hasSize(3)));
 	}
 
 	@Test

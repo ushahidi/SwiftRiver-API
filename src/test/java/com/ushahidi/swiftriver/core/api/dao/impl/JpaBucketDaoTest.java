@@ -45,6 +45,7 @@ import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 
 public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 
@@ -159,9 +160,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void getDrops() {
 		Account account = accountDao.findById(1L);
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
-		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10,
-				filter, account);
+		DropFilter filter = new DropFilter();
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10,
+				account);
 
 		assertEquals(5, drops.size());
 
@@ -235,8 +236,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void getDropsSince() {
 		Account account = accountDao.findById(1L);
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
-		List<Drop> drops = bucketDao.getDropsSince(1L, 3L, 1, filter, account);
+		DropFilter filter = new DropFilter();
+		filter.setSinceId(3L);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 1, account);
 
 		assertEquals(1, drops.size());
 
@@ -297,10 +299,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 		Account account = accountDao.findById(1L);
 
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setDateFrom(dateFormat.parse("01/01/2013"));
-		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -313,10 +314,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 		Account account = accountDao.findById(1L);
 
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setDateTo(dateFormat.parse("01/01/2012"));
-		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -328,10 +328,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	public void getReadDrops() {
 		Account account = accountDao.findById(3L);
 
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setRead(true);
-		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(2, drops.size());
 
@@ -343,9 +342,10 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	public void getReadDropsSince() {
 		Account account = accountDao.findById(3L);
 
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
+		filter.setSinceId(3L);
 		filter.setRead(true);
-		List<Drop> drops = bucketDao.getDropsSince(1L, 3L, 1, filter, account);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
@@ -357,10 +357,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	public void getUnreadDrops() {
 		Account account = accountDao.findById(3L);
 
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setRead(false);
-		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(3, drops.size());
 
@@ -374,10 +373,9 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("rss");
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setChannels(channels);
-		List<Drop> drops = bucketDao.getDrops(1L, Long.MAX_VALUE, 1, 10, filter,
-				account);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(3, drops.size());
 
@@ -391,9 +389,10 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 
 		List<String> channels = new ArrayList<String>();
 		channels.add("twitter");
-		BucketDao.DropFilter filter = new BucketDao.DropFilter();
+		DropFilter filter = new DropFilter();
 		filter.setChannels(channels);
-		List<Drop> drops = bucketDao.getDropsSince(1L, 3L, 1, filter, account);
+		filter.setSinceId(3L);
+		List<Drop> drops = bucketDao.getDrops(1L, filter, 1, 10, account);
 
 		assertEquals(1, drops.size());
 
