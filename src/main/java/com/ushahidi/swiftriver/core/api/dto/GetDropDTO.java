@@ -48,7 +48,7 @@ public class GetDropDTO {
 	@JsonProperty("comment_count")
 	private int commentCount;
 	
-	private GetMediaDTO image;
+	private String image;
 	
 	@JsonProperty("buckets")
 	private List<GetBucketDropDTO> bucketDrops;
@@ -403,11 +403,11 @@ public class GetDropDTO {
 		this.commentCount = commentCount;
 	}
 
-	public GetMediaDTO getImage() {
+	public String getImage() {
 		return image;
 	}
 
-	public void setImage(GetMediaDTO image) {
+	public void setImage(String image) {
 		this.image = image;
 	}
 
