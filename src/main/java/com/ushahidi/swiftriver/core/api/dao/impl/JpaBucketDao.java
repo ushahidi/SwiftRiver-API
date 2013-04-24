@@ -42,6 +42,7 @@ import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 /**
@@ -190,48 +191,8 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
 	@Override
-	public List<Drop> getDrops(Long bucketId, Long maxId, int page,
-			int dropCount, DropFilter filter, Account queryingAccount) {
-		return doGetDrops(bucketId, maxId, false, page, dropCount, filter,
-				queryingAccount);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ushahidi.swiftriver.core.api.dao.BucketDao#getDropsSince(java.lang
-	 * .Long, java.lang.Long, int,
-	 * com.ushahidi.swiftriver.core.api.dao.BucketDao.DropFilter,
-	 * com.ushahidi.swiftriver.core.model.Account)
-	 */
-	@Override
-	public List<Drop> getDropsSince(Long bucketId, Long sinceId, int dropCount,
-			DropFilter filter, Account queryingAccount) {
-		return doGetDrops(bucketId, sinceId, true, 1, dropCount, filter,
-				queryingAccount);
-	}
-
-	/**
-	 * Helper method for building and executing the query to obtain drops.
-	 * 
-	 * @param bucketId
-	 *            The bucket to obtain drops from
-	 * @param id
-	 *            The reference drop id from which to obtain drops
-	 * @param newer
-	 *            If true, obtain drops newer than the given id otherwise older.
-	 * @param dropCount
-	 *            Maximum number of drops to return
-	 * @param page
-	 *            The page of drops relative to the given id and dropCount
-	 * @param filter
-	 *            Drop filter to apply
-	 * @param queryingAccount
-	 * @return
-	 */
-	private List<Drop> doGetDrops(Long bucketId, Long id, boolean newer,
-			int page, int dropCount, DropFilter filter, Account queryingAccount) {
+	public List<Drop> getDrops(Long bucketId, DropFilter filter, int page,
+			int dropCount, Account queryingAccount) {
 		String sql = "SELECT buckets_droplets.id AS id, droplet_title, ";
 		sql += "droplet_content, droplets.channel, identities.id AS identity_id, identity_name, ";
 		sql += "identity_avatar, droplets.droplet_date_pub, droplet_orig_id, ";
@@ -247,7 +208,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		sql += "AND buckets_droplets.bucket_id = :bucketId ";
 
 		// Check for channel parameter
-		if (filter.getChannels() != null && filter.getChannels().size() > 0) {
+		if (filter.getChannels() != null && !filter.getChannels().isEmpty()) {
 			sql += "AND droplets.channel IN (:channels) ";
 		}
 
@@ -262,12 +223,14 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 				sql += "AND bucket_droplets_read.buckets_droplets_id IS NULL ";
 			}
 		}
-
+		
 		// Check for since_id
-		if (newer) {
-			sql += " AND buckets_droplets.id > :id ";
-		} else {
-			sql += " AND buckets_droplets.id <= :id ";
+		if (filter.getSinceId() != null) {
+			sql += " AND buckets_droplets.id > :since_id ";
+		}
+		
+		if (filter.getMaxId() != null){
+			sql += " AND buckets_droplets.id <= :max_id ";
 		}
 		
 		if (filter.getDateFrom() != null) {
@@ -277,7 +240,12 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		if (filter.getDateTo() != null) {
 			sql += "AND droplets.droplet_date_pub <= :date_to ";
 		}
+		
+		if (filter.getDropIds() != null && !filter.getDropIds().isEmpty()) {
+			sql += "AND `droplets`.`id` IN (:dropIds) ";
+		}
 
+		boolean newer = filter.getSinceId() != null;
 		if (newer) {
 			sql += "ORDER BY droplets.droplet_date_pub ASC ";
 		} else {
@@ -290,9 +258,18 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		params.addValue("userId", queryingAccount.getOwner().getId());
 		params.addValue("accountId", queryingAccount.getId());
 		params.addValue("bucketId", bucketId);
-		params.addValue("id", id);
 		
-		if (filter.getChannels() != null && filter.getChannels().size() > 0) {
+		// since_id
+		if (filter.getSinceId() != null) {
+			params.addValue("since_id", filter.getSinceId());
+		}
+		
+		// max_id
+		if (filter.getMaxId() != null) {
+			params.addValue("max_id", filter.getMaxId());
+		}
+		
+		if (filter.getChannels() != null && !filter.getChannels().isEmpty()) {
 			params.addValue("channels", filter.getChannels());
 		}
 		
@@ -304,8 +281,11 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 			params.addValue("date_to", filter.getDateTo());
 		}
 		
-		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql,
-				params);
+		if (filter.getDropIds() != null && !filter.getDropIds().isEmpty()) {
+			params.addValue("dropIds", filter.getDropIds());
+		}
+		
+		List<Map<String, Object>> results = this.jdbcTemplate.queryForList(sql, params);
 
 		List<Drop> drops = new ArrayList<Drop>();
 
@@ -448,6 +428,24 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		int dropCount = bucket.getDropCount() + 1;
 		bucket.setDropCount(dropCount);
 		this.update(bucket);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findAll(java.lang.String, int, int)
+	 */
+	public List<Bucket> findAll(String searchTerm, int count, int page) {
+		String qlString = "SELECT b FROM Bucket b WHERE " +
+				"b.published = 1 " +
+				"AND (b.name LIKE :term OR b.description LIKE :term " +
+				"OR b.bucketNameCanonical LIKE :term)";
+
+		TypedQuery<Bucket> query = em.createQuery(qlString, Bucket.class);
+		query.setParameter("term", "%" + searchTerm + "%");
+		query.setMaxResults(count);
+		query.setFirstResult(count * (page - 1));
+
+		return query.getResultList();
 	}
 
 }

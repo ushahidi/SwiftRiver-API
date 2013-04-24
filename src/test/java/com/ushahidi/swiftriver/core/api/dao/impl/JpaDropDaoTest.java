@@ -45,6 +45,10 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		List<Long> riverIds = new ArrayList<Long>();
 		riverIds.add(1L);
 		drop.setRiverIds(riverIds);
+		
+		List<Long> channelIds = new ArrayList<Long>();
+		channelIds.add(3L);
+		drop.setChannelIds(channelIds);
 
 		Tag tag = new Tag();
 		tag.setTag(" Test tag ");
@@ -65,6 +69,11 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		Media newMedia = new Media();
 		newMedia.setUrl("http://example.com/new ");
 		media.add(newMedia);
+		
+		// Get the current channel drop count
+		String channelDropCountSQL = "SELECT drop_count " +
+				"FROM river_channels WHERE id = ? AND river_id = ?";
+		int channelDropCount = this.jdbcTemplate.queryForInt(channelDropCountSQL, 3L, 1L);
 
 		dropDao.createDrops(drops);
 
@@ -91,13 +100,13 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		assertNotNull(place.getId());
 		assertNotNull(newMedia.getId());
 
-		sql = "SELECT id, river_id, droplet_date_pub, channel FROM rivers_droplets WHERE droplet_id = ?";
+		sql = "SELECT id, river_id, droplet_date_pub, river_channel_id FROM rivers_droplets WHERE droplet_id = ?";
 
 		results = this.jdbcTemplate.queryForMap(sql, drop.getId());
 		assertEquals(6L, ((Number) results.get("id")).longValue());
 		assertEquals(1L, ((Number) results.get("river_id")).longValue());
 		assertEquals(drop.getDatePublished().getTime(), ((Date)results.get("droplet_date_pub")).getTime());
-		assertEquals("test channel", results.get("channel"));
+		assertEquals(3L, ((Number) results.get("river_channel_id")).longValue());
 		
 		// Ensure rivers_droplets sequence was updated correctly
 		assertEquals(6, sequenceDao.findById("rivers_droplets").getId());
@@ -106,5 +115,9 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		results = this.jdbcTemplate.queryForMap(sql, 1L);
 		assertEquals(6L, results.get("max_drop_id"));
 		assertEquals(7, results.get("drop_count"));
+		
+		// Verify that the channel drop count has been updated
+		int updatedChannelDropCount = this.jdbcTemplate.queryForInt(channelDropCountSQL, 3L, 1L);
+		assertEquals(channelDropCount + 1, updatedChannelDropCount);
 	}	
 }

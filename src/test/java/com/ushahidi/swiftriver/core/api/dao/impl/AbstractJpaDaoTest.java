@@ -9,7 +9,11 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
 import org.springframework.test.context.web.WebAppConfiguration;
 
 @WebAppConfiguration
-@ContextConfiguration(locations={"file:src/main/webapp/WEB-INF/spring/root-context.xml", "file:src/main/webapp/WEB-INF/spring/web-context.xml"})
+@ContextConfiguration(locations={
+		"file:src/main/webapp/WEB-INF/spring/root-context.xml",
+		"file:src/main/webapp/WEB-INF/spring/web-context.xml",
+		"file:src/main/webapp/WEB-INF/spring/solr-context.xml"
+})
 @ActiveProfiles(profiles = { "test" })
 public abstract class AbstractJpaDaoTest extends
 		AbstractTransactionalJUnit4SpringContextTests {

@@ -14,7 +14,7 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -38,7 +38,7 @@ public class DropServiceTest {
 	Mapper mapper =  new DozerBeanMapper();
 	
 	DropDao mockDropDao;
-	
+
 	@Before
 	public void setup() {
 		

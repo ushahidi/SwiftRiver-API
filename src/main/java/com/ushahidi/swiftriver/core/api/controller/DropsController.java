@@ -48,38 +48,55 @@ public class DropsController extends AbstractController {
 	public List<GetDropDTO> createDrop(@RequestBody List<CreateDropDTO> drops) {
 
 		List<ErrorField> errors = new ArrayList<ErrorField>();
+
+		// Validate each drop that has been submitted
 		for (int i=0; i < drops.size(); i++) {
 			CreateDropDTO drop = drops.get(i);
 
+			// Drop title
 			if (drop.getTitle() == null) {
 				errors.add(new ErrorField("[" + i + "].title", "missing"));
 			}
 
+			// Drop content
 			if (drop.getContent() == null) {
 				errors.add(new ErrorField("[" + i + "].content", "missing"));
 			}
 
+			// Channel name
 			if (drop.getChannel() == null) {
 				errors.add(new ErrorField("[" + i + "].channel", "missing"));
 			}
 
+			// Date published
 			if (drop.getDatePublished() == null) {
 				errors.add(new ErrorField("[" + i + "].date_published", "missing"));
 			}
 
+			// Original ID of the drop
 			if (drop.getOriginalId() == null) {
 				errors.add(new ErrorField("[" + i + "].original_id", "missing"));
 			}
 
+			// Identity of the drop
 			if (drop.getIdentity() == null
 					|| drop.getIdentity().getOriginId() == null) {
 				errors.add(new ErrorField("[" + i + "].identity.origin_id", "missing"));
 			}
+
+			// Destination rivers
+			if (drop.getRiverIds() == null || drop.getRiverIds().isEmpty()) {
+				errors.add(new ErrorField("[" + i + "].rivers", "missing"));
+			}
+
+			// Source channels
+			if (drop.getChannelIds() == null || drop.getChannelIds().isEmpty()) {
+				errors.add(new ErrorField("[" + i + "].channel_ids", "missing"));
+			}
 		}
 		
 		if (!errors.isEmpty()) {
-			BadRequestException e = new BadRequestException(
-					"Invalid parameter.");
+			BadRequestException e = new BadRequestException("Invalid parameter.");
 			e.setErrors(errors);
 			throw e;
 		}

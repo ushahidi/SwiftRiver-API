@@ -57,6 +57,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
+import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 
 @Controller
 @RequestMapping("/v1/buckets")
@@ -304,7 +305,6 @@ public class BucketsController extends AbstractController {
 			@RequestParam(value = "date_to", required = false) String dateToS,
 			@RequestParam(value = "keywords", required = false) String keywords,
 			@RequestParam(value = "channels", required = false) String channels,
-			@RequestParam(value = "location", required = false) String location,
 			@RequestParam(value = "photos", required = false) Boolean photos,
 			@RequestParam(value = "state", required = false) String state,
 			Principal principal) {
@@ -354,9 +354,18 @@ public class BucketsController extends AbstractController {
 			e.setErrors(errors);
 			throw e;
 		}
+		
+		DropFilter dropFilter = new DropFilter();
+		dropFilter.setMaxId(maxId);
+		dropFilter.setSinceId(sinceId);
+		dropFilter.setChannels(channelList);
+		dropFilter.setDateFrom(dateFrom);
+		dropFilter.setDateTo(dateTo);
+		dropFilter.setRead(isRead);
+		dropFilter.setPhotos(photos);
+		dropFilter.setKeywords(keywords);
 
-		return bucketService.getDrops(id, maxId, sinceId, page, count,
-				channelList, isRead, dateFrom, dateTo, principal.getName());
+		return bucketService.getDrops(id, dropFilter, page, count, principal.getName());
 	}
 
 	/**

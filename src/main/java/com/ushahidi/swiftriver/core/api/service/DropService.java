@@ -39,7 +39,7 @@ import com.ushahidi.swiftriver.core.model.Drop;
 @Transactional(readOnly = true)
 public class DropService {
 
-	final Logger logger = LoggerFactory.getLogger(DropService.class);
+	final Logger LOGGER = LoggerFactory.getLogger(DropService.class);
 
 	@Autowired
 	private Mapper mapper;
@@ -58,7 +58,7 @@ public class DropService {
 
 	@Autowired
 	private TagDao tagDao;
-
+	
 	public Mapper getMapper() {
 		return mapper;
 	}
@@ -122,7 +122,7 @@ public class DropService {
 		}
 
 		dropDao.createDrops(drops);
-
+		
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 		for (Drop drop : drops) {
 			getDropDTOs.add(mapper.map(drop, GetDropDTO.class));

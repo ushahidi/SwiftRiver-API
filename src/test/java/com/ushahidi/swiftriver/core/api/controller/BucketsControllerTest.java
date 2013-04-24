@@ -225,7 +225,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	}
 
 	/**
-	 * Test for {@link BucketsController#deleteDrop(Long, Long)} where the
+	 * Test for {@link BucketsController#deleteDrop(Long, Long, String)} where the
 	 * drop exists in the target bucket
 	 * 
 	 * @throws Exception
@@ -238,7 +238,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	}
 	
 	/**
-	 * Test for {@link BucketsController#deleteDrop(Long, Long)} where the
+	 * Test for {@link BucketsController#deleteDrop(Long, Long, String)} where the
 	 * drop does not exist in the target bucket. Should return a 404
 	 * 
 	 * @throws Exception

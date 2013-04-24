@@ -105,8 +105,8 @@
 		<jee:jndi-lookup id="encryptionKey" jndi-name="encryptionKey"
 			expected-type="java.lang.String" />
 
-		<bean
-			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<bean id="mqProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="ignoreUnresolvablePlaceholders" value="true" />
 			<property name="properties">
 				<bean class="java.util.Properties">
 					<constructor-arg>

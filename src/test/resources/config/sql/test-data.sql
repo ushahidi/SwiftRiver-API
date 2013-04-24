@@ -162,12 +162,12 @@ INSERT INTO droplets (id, identity_id, channel, droplet_hash, droplet_orig_id, d
 -- -----------------------------------------------------
 -- Data for table rivers_droplets
 -- -----------------------------------------------------
-INSERT INTO rivers_droplets (id, river_id, droplet_id, channel_id, channel, droplet_date_pub) VALUES
-(1, 1, 1, 1, 'rss', '2011-11-12 00:00:01'),
-(2, 1, 2, 2, 'twitter', '2012-11-15 00:00:02'),
-(3, 1, 3, 1, 'rss', '2012-11-15 00:00:03'),
-(4, 1, 4, 2, 'twitter', '2012-11-15 00:00:04'),
-(5, 1, 5, 2, '', '2013-02-01 00:00:05');
+INSERT INTO rivers_droplets (id, river_id, droplet_id, river_channel_id, droplet_date_pub) VALUES
+(1, 1, 1, 1, '2011-11-12 00:00:01'),
+(2, 1, 2, 2, '2012-11-15 00:00:02'),
+(3, 1, 3, 1, '2012-11-15 00:00:03'),
+(4, 1, 4, 2, '2012-11-15 00:00:04'),
+(5, 1, 5, 2, '2013-02-01 00:00:05');
 
 -- -----------------------------------------------------
 -- Data for table buckets_droplets
@@ -227,7 +227,7 @@ INSERT INTO droplets_links(id, droplet_id, link_id) VALUES
 (3, 5, 2);
 
 -- -----------------------------------------------------
--- Data for table medi
+-- Data for table media
 -- -----------------------------------------------------
 INSERT INTO media (id, hash, url, type) VALUES
 (1, 'f0807c04135cf82a482bb24eca691ed4', 'http://gigaom2.files.wordpress.com/2012/10/datacapspercentage.jpeg', 'image'),
@@ -258,7 +258,7 @@ INSERT INTO media_thumbnails (id, media_id, size, url) VALUES
 (11, 10, 200, 'https://2bcbd22fbb0a02d76141-1680e9dfed1be27cdc47787ec5d4ef89.ssl.cf1.rackcdn.com/a32d58f1e286cc52de54a48d04ab5c85311de82edd11cc414cd266d7a1375f27.jpg');
 
 -- -----------------------------------------------------
--- Data for table media_thumbnails
+-- Data for table droplets_media
 -- -----------------------------------------------------
 INSERT INTO droplets_media (id, droplet_id, media_id) VALUES
 (1, 5, 1),
@@ -281,7 +281,7 @@ INSERT INTO places (id, hash, place_name, place_name_canonical, longitude, latit
 (10, '5e1df0f9094710d86c6a3496522ec989', 'London City', 'london city', -0.09184, 51.5128);
 
 -- -----------------------------------------------------
--- Data for table droplets_links
+-- Data for table droplets_places
 -- -----------------------------------------------------
 INSERT INTO droplets_places(id, droplet_id, place_id) VALUES
 (1, 5, 1),
