@@ -1327,12 +1327,11 @@ public class RiverService {
 		}
 
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
-		if (riverDropDao.isRead(riverDrop, account)) {
-			throw new BadRequestException(String.format("%s has already read drop %d", 
-					authUser, dropId));
+		// Only add drop to the list if it doesn't exist
+		if (!riverDropDao.isRead(riverDrop, account)) {
+			account.getReadRiverDrops().add(riverDrop);
+			accountDao.update(account);
 		}
-		account.getReadRiverDrops().add(riverDrop);
-		accountDao.update(account);
 	}
 
 	/**

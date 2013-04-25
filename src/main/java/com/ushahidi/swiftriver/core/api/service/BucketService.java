@@ -1414,14 +1414,13 @@ public class BucketService {
 			throw new ForbiddenException("Access denied");
 		}
 		
+		// Only add a drop to the list if it doesn't exist
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-		if (bucketDropDao.isRead(bucketDrop, account)) {
-			throw new BadRequestException(String.format("User %s has already read drop %d", 
-					authUser, dropId));
+		if (!bucketDropDao.isRead(bucketDrop, account)) {
+			account.getReadBucketDrops().add(bucketDrop);
+			accountDao.update(account);
 		}
 		
-		account.getReadBucketDrops().add(bucketDrop);
-		accountDao.update(account);
 	}
 
 	/**
