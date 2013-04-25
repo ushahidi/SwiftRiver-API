@@ -50,6 +50,11 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		channelIds.add(3L);
 		drop.setChannelIds(channelIds);
 
+		// Destination buckets
+		List<Long> bucketIds = new ArrayList<Long>();
+		bucketIds.add(1L);
+		drop.setBucketIds(bucketIds);
+		
 		Tag tag = new Tag();
 		tag.setTag(" Test tag ");
 		tag.setType(" Just a test ");
@@ -74,6 +79,10 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		String channelDropCountSQL = "SELECT drop_count " +
 				"FROM river_channels WHERE id = ? AND river_id = ?";
 		int channelDropCount = this.jdbcTemplate.queryForInt(channelDropCountSQL, 3L, 1L);
+		
+		// Get the current drop count for the destination bucket
+		String bucketDropCountSQL = "SELECT drop_count FROM buckets WHERE id = ?";
+		int bucketDropCount = this.jdbcTemplate.queryForInt(bucketDropCountSQL, 1L);
 
 		dropDao.createDrops(drops);
 
@@ -119,5 +128,9 @@ public class JpaDropDaoTest extends AbstractJpaDaoTest {
 		// Verify that the channel drop count has been updated
 		int updatedChannelDropCount = this.jdbcTemplate.queryForInt(channelDropCountSQL, 3L, 1L);
 		assertEquals(channelDropCount + 1, updatedChannelDropCount);
+		
+		// Verify that the drop count for the bucket was incremented
+		int updatedBucketDropCount = this.jdbcTemplate.queryForInt(bucketDropCountSQL, 1L);
+		assertEquals(bucketDropCount + 1, updatedBucketDropCount);
 	}	
 }

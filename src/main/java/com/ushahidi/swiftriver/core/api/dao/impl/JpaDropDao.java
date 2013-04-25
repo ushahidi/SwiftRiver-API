@@ -30,7 +30,6 @@ import java.util.Set;
 import javax.persistence.TypedQuery;
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -487,7 +486,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		}
 
-		// Stores each bucket id
 		// List of arrays comprised of the drop id and bucket id
 		final List<Long[]> bucketDropList = new ArrayList<Long[]>();
 		for (Map.Entry<Long, Set<Long>> entry: dropBucketsMap.entrySet()) {
@@ -500,7 +498,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		if (bucketDropList.isEmpty())
 			return;
 
-		// Store for the no. of drops inserted for each bucket
+		// Store for the no. of drops inserted per bucket
 		final Map<Long, Integer> bucketDropCount = new HashMap<Long, Integer>();
 
 		// Query for populating TABLE buckets_droplets
@@ -508,18 +506,17 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				"VALUES (?, ?, ?)";
 
 		jdbcTemplate.batchUpdate(insertSQL, new BatchPreparedStatementSetter() {
-			public void setValues(PreparedStatement statement, int index) throws SQLException {
+			public void setValues(PreparedStatement ps, int index) throws SQLException {
 				Long[] bucketDrop = bucketDropList.get(index);
 				Long bucketId = bucketDrop[0];
-				Drop drop = drops.get(dropsIndex.get(bucketDrop[1]));
 
-				statement.setLong(1, bucketId);
-				statement.setLong(2, bucketDrop[1]);
-				statement.setTimestamp(3, 
-						new java.sql.Timestamp(drop.getDateAdded().getTime()));
+				ps.setLong(1, bucketId);
+				ps.setLong(2, bucketDrop[1]);
+				ps.setTimestamp(3, 
+						new java.sql.Timestamp(new Date().getTime()));
 
-				Integer count = bucketDropCount.get(bucketId);
-				count = (count == null) ? 0 : count + 1;
+				Integer count = bucketDropCount.remove(bucketId);
+				count = (count == null) ? 1 : new Integer(count.intValue() + 1);
 				bucketDropCount.put(bucketId, count);
 			}
 
@@ -529,20 +526,24 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		});
 
-		// Update the drop count for the populated buckets
-		List<String> tempTableQuery = new ArrayList<String>();
-		for (Map.Entry<Long, Integer> entry: bucketDropCount.entrySet()) {
-			String sql = String.format("SELECT %d AS `id`, %d AS `drop_count`", 
-					entry.getKey(), entry.getValue());
-			tempTableQuery.add(sql);
-		}
+		// Update the drop count for the updated buckets
+		final List<Entry<Long, Integer>> bucketDropCountList = new ArrayList<Map.Entry<Long, Integer>>();
+		bucketDropCountList.addAll(bucketDropCount.entrySet());
 
-		String joinQuery = StringUtils.join(tempTableQuery, " UNION ALL ");
-		String updateSQL = "UPDATE `buckets` JOIN(" + joinQuery + ") AS t " +
-				"USING (`id`) " +
-				"SET `buckets`.`drop_count` = `buckets`.`drop_count` + `t`.`drop_count` ";
+		String updateSQL = "UPDATE `buckets` SET `drop_count` = `drop_count` + ? WHERE `id` = ?";
+		jdbcTemplate.batchUpdate(updateSQL, new BatchPreparedStatementSetter() {
+			
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				Entry<Long, Integer> entry = bucketDropCountList.get(i);
+				ps.setLong(1, entry.getValue());
+				ps.setLong(2, entry.getKey());
+			}
+			
+			public int getBatchSize() {
+				return bucketDropCountList.size();
+			}
+		});
 
-		this.jdbcTemplate.update(updateSQL);
 	}
 
 	/*
