@@ -69,6 +69,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	@Override
 	public River create(River river) {
 		river.setRiverNameCanonical(TextUtil.getURLSlug(river.getRiverName()));
+		river.setDropCount(0);
 		return super.create(river);
 	}
 

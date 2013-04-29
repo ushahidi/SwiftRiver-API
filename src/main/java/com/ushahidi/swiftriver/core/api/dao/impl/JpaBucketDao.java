@@ -76,6 +76,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	@Override
 	public Bucket create(Bucket bucket) {
 		bucket.setBucketNameCanonical(TextUtil.getURLSlug(bucket.getName()));
+		bucket.setDropCount(0);
 		return super.create(bucket);
 	}
 
