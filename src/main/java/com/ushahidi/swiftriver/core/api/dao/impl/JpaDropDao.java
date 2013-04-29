@@ -18,6 +18,8 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -48,7 +50,11 @@ import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.Place;
+import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverTagTrend;
 import com.ushahidi.swiftriver.core.model.Sequence;
+import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
 @Repository
@@ -109,6 +115,12 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			batchInsert(newDropIndex, drops, seq);
 		}
 
+		// Populate metadata
+		tagDao.getTags(drops);
+		linkDao.getLinks(drops);
+		placeDao.getPlaces(drops);
+		mediaDao.getMedia(drops);
+
 		// Add drops to their respective rivers
 		insertRiverDrops(drops);
 		
@@ -117,11 +129,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		
 		// TODO Mark as read
 
-		// Populate metadata
-		tagDao.getTags(drops);
-		linkDao.getLinks(drops);
-		placeDao.getPlaces(drops);
-		mediaDao.getMedia(drops);
 
 		return drops;
 	}
@@ -441,8 +448,162 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				return riverChannelUpdate.size();
 			}
 		});
+
+		// Insert the trend data
+		try {
+			insertRiverTagTrends(drops, dropIndex, riverDropChannelList);
+		} catch (Exception e) {
+			logger.error("An error occurred while inserting the trend data", e);
+		}
+		
 	}
 	
+	/**
+	 * Populates the river_tag_trends table
+	 * 
+	 * @param drops
+	 * @param dropIndex
+	 * @param riverDropChannelList
+	 * @throws Exception
+	 */
+	private void insertRiverTagTrends(List<Drop> drops, Map<Long, Integer> dropIndex,
+			List<Map<String, Long>> riverDropChannelList) throws Exception {
+
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd H:00:00");
+		Map<String,RiverTagTrend> trendsData = new HashMap<String, RiverTagTrend>();
+
+		for(Map<String, Long> entry: riverDropChannelList) {
+			Long dropletId = entry.get("dropletId");
+			Long riverId = entry.get("riverId");
+			
+			River river = new River();
+			river.setId(riverId);
+
+			Drop drop = drops.get(dropIndex.get(dropletId));
+			String datePublishedStr = dateFormat.format(drop.getDatePublished());
+			Date datePublished = dateFormat.parse(datePublishedStr);
+
+			// Tags
+			if (drop.getTags() != null) {
+				for (Tag tag: drop.getTags()) {
+					String hash = MD5Util.md5Hex(riverId.toString(),
+							datePublishedStr, tag.getTag(), tag.getType());
+
+					RiverTagTrend tagTrend = trendsData.remove(hash);
+					if (tagTrend == null) {
+						tagTrend = new RiverTagTrend();
+						tagTrend.setRiver(river);
+						tagTrend.setDatePublished(datePublished);
+						tagTrend.setTag(tag.getTag());
+						tagTrend.setTagType(tag.getType());
+						tagTrend.setHash(hash);
+						tagTrend.setCount(1L);
+					} else {
+						Long count = new Long(tagTrend.getCount() + 1L);
+						tagTrend.setCount(count);
+					}
+
+					trendsData.put(hash, tagTrend);
+				}
+			}
+
+			// Places
+			if (drop.getPlaces() != null) {
+				for (Place place: drop.getPlaces()) {
+					String hash = MD5Util.md5Hex(riverId.toString(),
+							datePublishedStr,  place.getPlaceName(), "place");
+
+					RiverTagTrend tagTrend = trendsData.remove(hash);
+					if (tagTrend == null) {
+						tagTrend = new RiverTagTrend();
+						tagTrend.setRiver(river);
+						tagTrend.setDatePublished(datePublished);
+						tagTrend.setTag(place.getPlaceName());
+						tagTrend.setTagType("place");
+						tagTrend.setHash(hash);
+						tagTrend.setCount(1L);
+					} else {
+						Long count = new Long(tagTrend.getCount() + 1L);
+						tagTrend.setCount(count);
+					}
+
+					trendsData.put(hash, tagTrend);
+				}
+			}
+		}
+
+		// Check for existing trends
+		String sql = "SELECT `id`, `hash` FROM `river_tag_trends` WHERE `hash` IN (:hashes)";
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("hashes", trendsData.keySet());
+
+		// List of trend IDs whose count is to be updated
+		final List<long[]> trendCountUpdate = new ArrayList<long[]>();
+		for(Map<String, Object> row: namedJdbcTemplate.queryForList(sql, params)) {
+			String hash = (String) row.get("hash");
+			long trendId = ((Number) row.get("id")).longValue();
+
+			RiverTagTrend tagTrend = trendsData.remove(hash);
+
+			long[] counters = {trendId, tagTrend.getCount()};
+			trendCountUpdate.add(counters);
+		}
+
+		// Update existing counters
+		if (!trendCountUpdate.isEmpty()) {
+			sql  = "UPDATE `river_tag_trends` SET `count` = `count` + ? WHERE `id` = ?";
+
+			jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+				
+				public void setValues(PreparedStatement ps, int i) throws SQLException {
+					long[] updateIndex = trendCountUpdate.get(i);
+					ps.setLong(1, updateIndex[1]);
+					ps.setLong(2, updateIndex[0]);
+				}
+				
+				public int getBatchSize() {
+					return trendCountUpdate.size();
+				}
+			});
+		}
+		
+		if (trendsData.isEmpty()) {
+			return;
+		}
+
+		Sequence sequence = sequenceDao.findById("river_tag_trends");
+		final long startKey = sequenceDao.getIds(sequence, trendsData.size());
+
+		// SQL to update the river_tag_trends table
+		sql = "INSERT INTO river_tag_trends(`id`, `hash`, `river_id`, `date_pub`, `tag`, " +
+				"`tag_type`, `count`) VALUES(?, ?, ?, ?, ?, ?, ?)";
+
+		final List<Entry<String, RiverTagTrend>> tagTrendsList = new ArrayList<Entry<String,RiverTagTrend>>();
+		tagTrendsList.addAll(trendsData.entrySet());
+
+		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				long id = startKey + i;
+
+				Entry<String, RiverTagTrend> entry = tagTrendsList.get(i);
+				RiverTagTrend tagTrend = entry.getValue();
+
+				ps.setLong(1, id);
+				ps.setString(2, entry.getKey());
+				ps.setLong(3, tagTrend.getRiver().getId());
+				ps.setTimestamp(4, new java.sql.Timestamp(tagTrend.getDatePublished().getTime()));
+				ps.setString(5, tagTrend.getTag());
+				ps.setString(6, tagTrend.getTagType());
+				ps.setLong(7, tagTrend.getCount());
+			}
+			
+			public int getBatchSize() {
+				return tagTrendsList.size();
+			}
+		});
+	}
+
 	/**
 	 * Populates the buckets_droplets table
 	 * 

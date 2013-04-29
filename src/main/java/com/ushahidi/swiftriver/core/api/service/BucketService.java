@@ -76,7 +76,7 @@ import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
-import com.ushahidi.swiftriver.core.util.HashUtil;
+import com.ushahidi.swiftriver.core.util.MD5Util;
 
 /**
  * Service class for buckets
@@ -689,31 +689,6 @@ public class BucketService {
 	}
 	
 	/**
-	 * Deletes the {@link BucketDrop} specified in <code>dropId</code> from the
-	 * {@link Bucket} specified in <code>bucketId</code>
-	 * 
-	 * If the drop does not exist in the specified bucket, a
-	 * {@link NotFoundException} exception is thrown
-	 * 
-	 * @param bucketId
-	 * @param dropId
-	 * @param authUser
-	 */
-	@Transactional(readOnly = false)
-	public void deleteBucketDrop(Long bucketId, Long dropId, String authUser) {
-		Bucket bucket = getBucket(bucketId);
-
-		if (!isOwner(bucket, authUser))
-			throw new ForbiddenException("Permission denied");
-
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-
-		// Delete the drop and decrease bucket drop count
-		bucketDropDao.delete(bucketDrop);
-		bucketDao.decreaseDropCount(bucket);
-	}
-
-	/**
 	 * Adds the {@link Drop} specified in <code>dropId</code> to the
 	 * {@link Bucket} in <code>bucketId</code>. The {@link Account} associated
 	 * with <code>username</code> is used to verify whether the user submitting
@@ -872,7 +847,7 @@ public class BucketService {
 		// Get the bucket drop
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
-		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
+		String hash = MD5Util.md5Hex(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
 		if (tag == null) {
 			tag = new Tag();
@@ -954,7 +929,7 @@ public class BucketService {
 
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
 
-		String hash = HashUtil.md5(createDTO.getUrl());
+		String hash = MD5Util.md5Hex(createDTO.getUrl());
 		Link link = linkDao.findByHash(hash);
 		if (link == null) {
 			link = new Link();
@@ -1038,7 +1013,7 @@ public class BucketService {
 		hashInput += Float.toString(createDTO.getLongitude());
 		hashInput += Float.toString(createDTO.getLatitude());
 
-		String hash = HashUtil.md5(hashInput);
+		String hash = MD5Util.md5Hex(hashInput);
 
 		// Generate a hash for the place name
 		Place place = placeDao.findByHash(hash);

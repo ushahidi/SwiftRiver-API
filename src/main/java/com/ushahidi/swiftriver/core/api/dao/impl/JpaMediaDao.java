@@ -38,6 +38,7 @@ import com.ushahidi.swiftriver.core.api.dao.MediaDao;
 import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Media;
+import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Sequence;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
@@ -218,6 +219,31 @@ public class JpaMediaDao extends AbstractJpaDao<Media> implements MediaDao {
 			}
 		});
 
+		// Media Thumbnails
+		sql = "INSERT INTO media_thumbnails(`media_id`, `size`, `url`) VALUES(?, ?, ?)";
+		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+
+			private int thumbnailCount = 0;
+
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				String hash = hashes.get(i);
+				int[] index = newMediaIndex.get(hash).get(0);
+				Media media = drops.get(index[0]).getMedia().get(index[1]);
+
+				for (MediaThumbnail thumbnail: media.getThumbnails()) {
+					ps.setLong(1, media.getId());
+					ps.setInt(2, thumbnail.getSize());
+					ps.setString(3, thumbnail.getUrl());
+
+					thumbnailCount++;
+				}
+			}
+			
+			public int getBatchSize() {
+				return thumbnailCount;
+			}
+		});
+		
 		// Update the droplet_media table
 		insertDropletMedia(drops);
 

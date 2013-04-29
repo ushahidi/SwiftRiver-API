@@ -89,7 +89,7 @@ import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
-import com.ushahidi.swiftriver.core.util.HashUtil;
+import com.ushahidi.swiftriver.core.util.MD5Util;
 
 @Service
 @Transactional(readOnly = true)
@@ -763,7 +763,7 @@ public class RiverService {
 		// Get the bucket drop
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
 
-		String hash = HashUtil.md5(createDTO.getTag() + createDTO.getTagType());
+		String hash = MD5Util.md5Hex(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
 		if (tag == null) {
 			tag = new Tag();
@@ -844,7 +844,7 @@ public class RiverService {
 
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
 
-		String hash = HashUtil.md5(createDTO.getUrl());
+		String hash = MD5Util.md5Hex(createDTO.getUrl());
 		Link link = linkDao.findByHash(hash);
 		if (link == null) {
 			link = new Link();
@@ -928,7 +928,7 @@ public class RiverService {
 		hashInput += Float.toString(createDTO.getLongitude());
 		hashInput += Float.toString(createDTO.getLatitude());
 
-		String hash = HashUtil.md5(hashInput);
+		String hash = MD5Util.md5Hex(hashInput);
 
 		// Generate a hash for the place name
 		Place place = placeDao.findByHash(hash);

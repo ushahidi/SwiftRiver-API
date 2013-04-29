@@ -17,63 +17,52 @@
 package com.ushahidi.swiftriver.core.model;
 
 import java.util.Date;
-import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+/**
+ * This <code>RiverTagTrend</code> class is a persistence class
+ * for the  <code>river_tag_trends</code> table. 
+ * 
+ * @author ekala
+ *
+ */
 @Entity
-@Table(name="rivers_droplets")
-public class RiverDrop {
-	
+@Table(name = "river_tag_trends")
+public class RiverTagTrend {
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.TABLE, generator="Seq")
 	@TableGenerator(name="Seq", table="seq",
 		pkColumnName="name",
 		valueColumnName="id",
-		pkColumnValue="rivers_droplets")
+		pkColumnValue="river_tag_trends")
 	private long id;
 	
-	@ManyToOne
-	@JoinColumn(name="droplet_id")
-	private Drop drop;
+	private String hash;
 	
 	@ManyToOne
 	private River river;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="droplet_date_pub")
+	@Column(name = "date_pub")
 	private Date datePublished;
 	
-	@ManyToOne
-	@JoinColumn(name="river_channel_id")
-	private Channel channel;
+	private String tag;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
-	private List<RiverDropLink> links;
+	@Column(name = "tag_type")
+	private String tagType;
 	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
-	private List<RiverDropPlace> places;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
-	private List<RiverDropTag> tags;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="riverDrop")
-	private List<RiverDropComment> comments;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="drop")
-	private List<RiverDropForm> forms;
+	private long count;
 
 	public long getId() {
 		return id;
@@ -83,12 +72,12 @@ public class RiverDrop {
 		this.id = id;
 	}
 
-	public Drop getDrop() {
-		return drop;
+	public String getHash() {
+		return hash;
 	}
 
-	public void setDrop(Drop drop) {
-		this.drop = drop;
+	public void setHash(String hash) {
+		this.hash = hash;
 	}
 
 	public River getRiver() {
@@ -107,53 +96,54 @@ public class RiverDrop {
 		this.datePublished = datePublished;
 	}
 
-	public Channel getChannel() {
-		return channel;
+	public String getTag() {
+		return tag;
 	}
 
-	public void setChannel(Channel channel) {
-		this.channel = channel;
+	public void setTag(String tag) {
+		this.tag = tag;
 	}
 
-	public List<RiverDropLink> getLinks() {
-		return links;
+	public String getTagType() {
+		return tagType;
 	}
 
-	public void setLinks(List<RiverDropLink> links) {
-		this.links = links;
+	public void setTagType(String tagType) {
+		this.tagType = tagType;
 	}
 
-	public List<RiverDropPlace> getPlaces() {
-		return places;
+	public long getCount() {
+		return count;
 	}
 
-	public void setPlaces(List<RiverDropPlace> places) {
-		this.places = places;
+	public void setCount(long count) {
+		this.count = count;
 	}
 
-	public List<RiverDropTag> getTags() {
-		return tags;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
+		return result;
 	}
 
-	public void setTags(List<RiverDropTag> tags) {
-		this.tags = tags;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RiverTagTrend other = (RiverTagTrend) obj;
+		if (hash == null) {
+			if (other.hash != null)
+				return false;
+		} else if (!hash.equals(other.hash))
+			return false;
+		return true;
 	}
-
-	public List<RiverDropComment> getComments() {
-		return comments;
-	}
-
-	public void setComments(List<RiverDropComment> comments) {
-		this.comments = comments;
-	}
-
-	public List<RiverDropForm> getForms() {
-		return forms;
-	}
-
-	public void setForms(List<RiverDropForm> forms) {
-		this.forms = forms;
-	}
-
+	
 	
 }

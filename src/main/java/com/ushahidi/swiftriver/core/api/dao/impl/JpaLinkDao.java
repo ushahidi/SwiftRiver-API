@@ -39,7 +39,6 @@ import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Sequence;
-import com.ushahidi.swiftriver.core.util.HashUtil;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
 @Repository
@@ -59,7 +58,7 @@ public class JpaLinkDao extends AbstractJpaDao<Link> implements LinkDao {
 
 	@Override
 	public Link create(Link t) {
-		t.setHash(HashUtil.md5(t.getUrl()));
+		t.setHash(MD5Util.md5Hex(t.getUrl()));
 		return super.create(t);
 	}
 

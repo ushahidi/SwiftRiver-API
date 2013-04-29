@@ -608,7 +608,7 @@ CREATE TABLE IF NOT EXISTS river_tag_trends (
   date_pub timestamp NOT NULL,
   tag varchar(50) NOT NULL,
   tag_type varchar(20) NOT NULL,
-  occurences bigint DEFAULT '0',
+  count bigint DEFAULT '0',
   PRIMARY KEY (id),
   UNIQUE (hash)
 );

@@ -377,9 +377,9 @@ public class BucketsController extends AbstractController {
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public void deleteBucketDrop(@PathVariable Long id, @PathVariable Long dropId,
+	public void deleteDrop(@PathVariable Long id, @PathVariable Long dropId,
 			Principal principal) {
-		bucketService.deleteBucketDrop(id, dropId, principal.getName());
+		bucketService.deleteDrop(id, dropId, principal.getName());
 	}
 
 	/**
