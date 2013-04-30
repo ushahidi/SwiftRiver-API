@@ -40,8 +40,7 @@
 	</mapping>
 
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO
-		</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Channel</class-b>
 	</mapping>
 
@@ -51,14 +50,12 @@
 	</mapping>
 
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO
-		</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.Account</class-b>
 	</mapping>
 
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO.User
-		</class-a>
+		<class-a>com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO.User</class-a>
 		<class-b>com.ushahidi.swiftriver.core.model.User</class-b>
 	</mapping>
 
@@ -249,6 +246,16 @@
 		<field>
 			<a>river.id</a>
 			<b>riverId</b>
+		</field>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.RuleConditionListToStringConverter">
+			<a>conditions</a>
+			<b>conditions</b>
+		</field>
+
+		<field custom-converter="com.ushahidi.swiftriver.core.support.dozer.RuleActionListToStringConverter">
+			<a>actions</a>
+			<b>actions</b>
 		</field>
 	</mapping>
 	

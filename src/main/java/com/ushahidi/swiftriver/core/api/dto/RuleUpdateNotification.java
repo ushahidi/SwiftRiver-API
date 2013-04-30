@@ -16,7 +16,12 @@
  */
 package com.ushahidi.swiftriver.core.api.dto;
 
+import java.util.List;
+
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleAction;
+import com.ushahidi.swiftriver.core.api.dto.CreateRuleDTO.RuleCondition;
 
 public class RuleUpdateNotification {
 
@@ -25,9 +30,9 @@ public class RuleUpdateNotification {
 	@JsonProperty("river_id")
 	private long riverId;
 		
-	private String conditions;
+	private List<RuleCondition> conditions;
 	
-	private String actions;
+	private List<RuleAction> actions;
 	
 	@JsonProperty("all_conditions")
 	private boolean matchAllConditions;
@@ -48,19 +53,19 @@ public class RuleUpdateNotification {
 		this.riverId = riverId;
 	}
 
-	public String getConditions() {
+	public List<RuleCondition> getConditions() {
 		return conditions;
 	}
 
-	public void setConditions(String conditions) {
+	public void setConditions(List<RuleCondition> conditions) {
 		this.conditions = conditions;
 	}
 
-	public String getActions() {
+	public List<RuleAction> getActions() {
 		return actions;
 	}
 
-	public void setActions(String actions) {
+	public void setActions(List<RuleAction> actions) {
 		this.actions = actions;
 	}
 
