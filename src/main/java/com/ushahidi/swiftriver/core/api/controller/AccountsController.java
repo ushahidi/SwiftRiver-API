@@ -17,7 +17,6 @@ package com.ushahidi.swiftriver.core.api.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
@@ -145,8 +145,8 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params = "q")
 	@ResponseBody
-	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query, Principal principal)
-			throws NotFoundException {
+	public List<GetAccountDTO> searchAccounts(@RequestParam("q") String query,
+			Principal principal) throws NotFoundException {
 		return accountService.searchAccounts(query, principal.getName());
 	}
 
@@ -177,14 +177,8 @@ public class AccountsController extends AbstractController {
 	@ResponseBody
 	public GetAccountDTO modifyAccount(@RequestBody ModifyAccountDTO body,
 			@PathVariable Long accountId, Principal principal) {
-		return accountService.modifyAccount(accountId, body, principal.getName());
-	}
-
-	@RequestMapping(value = "/{id}/verify", method = RequestMethod.POST)
-	@ResponseBody
-	public Account verifyAccount(@RequestBody Map<String, Object> body,
-			@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+		return accountService.modifyAccount(accountId, body,
+				principal.getName());
 	}
 
 	/**
@@ -199,6 +193,13 @@ public class AccountsController extends AbstractController {
 		accountService.addFollower(id, accountId);
 	}
 
+	/**
+	 * Get a list of followers for the given account
+	 * 
+	 * @param id
+	 * @param accountId
+	 * @return
+	 */
 	@RequestMapping(value = "/{id}/followers", method = RequestMethod.GET)
 	@ResponseBody
 	public List<FollowerDTO> getFollowers(@PathVariable Long id,
@@ -219,16 +220,50 @@ public class AccountsController extends AbstractController {
 		accountService.deleteFollower(id, accountId);
 	}
 
+	/**
+	 * Get a list of followers the account is following
+	 * 
+	 * @param id
+	 * @return
+	 */
 	@RequestMapping(value = "/{id}/following", method = RequestMethod.GET)
 	@ResponseBody
 	public Account getFollowing(@PathVariable Long id) {
 		throw new UnsupportedOperationException("Method Not Yet Implemented");
 	}
 
-	@RequestMapping(value = "/{id}/activities", method = RequestMethod.GET)
+	/**
+	 * Get Activities by the given accoun
+	 * 
+	 * @param accountId
+	 * @param principal
+	 * @return
+	 */
+	@RequestMapping(value = "/{accountId}/activities", method = RequestMethod.GET)
 	@ResponseBody
-	public Account getActivities(@PathVariable Long id) {
-		throw new UnsupportedOperationException("Method Not Yet Implemented");
+	public List<GetActivityDTO> getActivities(
+			@PathVariable Long accountId,
+			Principal principal) {
+		return accountService.getActivities(accountId, principal.getName());
+	}
+	
+	/**
+	 * Get activities from Accounts the logged in user is following
+	 * 
+	 * @param principal
+	 * @param count
+	 * @param lastId
+	 * @param newer
+	 * @return
+	 */
+	@RequestMapping(value = "/timeline", method = RequestMethod.GET)
+	@ResponseBody
+	public List<GetActivityDTO> getTimeline(
+			Principal principal,
+			@RequestParam(value = "count", required = false, defaultValue = "50") Integer count,
+			@RequestParam(value = "last_id", required = false) Long lastId,
+			@RequestParam(value = "newer", required = false) Boolean newer) {
+		return accountService.getTimeline(count, lastId, newer, principal.getName());
 	}
 
 	@RequestMapping(value = "/{accountId}/apps", method = RequestMethod.POST)

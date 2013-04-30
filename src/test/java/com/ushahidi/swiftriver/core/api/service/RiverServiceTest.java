@@ -17,7 +17,7 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
@@ -57,6 +57,7 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Channel;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
@@ -84,6 +85,8 @@ public class RiverServiceTest {
 
 	private RiverService riverService;
 
+	private AccountService mockAccountService;
+
 	private RiverDropDao mockRiverDropDao;
 
 	private RiverDropFormDao mockRiverDropFormDao;
@@ -109,6 +112,7 @@ public class RiverServiceTest {
 		mockPlaceDao = mock(PlaceDao.class);
 		mockMapper = mock(Mapper.class);
 		mockAmqpTemplate = mock(AmqpTemplate.class);
+		mockAccountService = mock(AccountService.class);
 
 		riverService = new RiverService();
 		riverService.setRiverDao(mockRiverDao);
@@ -122,6 +126,7 @@ public class RiverServiceTest {
 		riverService.setPlaceDao(mockPlaceDao);
 		riverService.setMapper(mockMapper);
 		riverService.setAmqpTemplate(mockAmqpTemplate);
+		riverService.setAccountService(mockAccountService);
 	}
 
 	@Test
@@ -161,6 +166,8 @@ public class RiverServiceTest {
 		verify(mockRiverDao).create(mockRiver);
 		verify(mockAccountDao).decreaseRiverQuota(mockAccount, 1);
 		verify(mockMapper).map(mockRiver, GetRiverDTO.class);
+		verify(mockAccountService).logActivity(mockAccount,
+				ActivityType.CREATE, mockRiver);
 
 		assertEquals(mockGetRiverTO, actualGetRiverTO);
 
@@ -216,16 +223,23 @@ public class RiverServiceTest {
 	}
 
 	@Test
-	public void isOwnerForCollaboratingAccount() {
-		River river = new River();
+	public void isOwnerForEditorCollaboratingAccount() {
+		RiverCollaborator collaborator = new RiverCollaborator();
+		collaborator.setReadOnly(false);
+		when(mockRiverDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
 
-		Account account = new Account();
-		List<River> collaboratingRivers = new ArrayList<River>();
-		collaboratingRivers.add(river);
-		account.setCollaboratingRivers(collaboratingRivers);
-
-		assertTrue(riverService.isOwner(river, account));
+		assertTrue(riverService.isOwner(new River(), new Account()));
 	}
+	
+	@Test
+	public void isOwnerForViewerCollaboratingAccount() {
+		RiverCollaborator collaborator = new RiverCollaborator();
+		collaborator.setReadOnly(true);
+		when(mockRiverDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
+
+		assertFalse(riverService.isOwner(new River(), new Account()));
+	}
+
 
 	@Test
 	public void isOwnerForNoneOwnerAccount() {
@@ -428,6 +442,9 @@ public class RiverServiceTest {
 		riverService.addCollaborator(1L, createCollaborator, "admin");
 
 		verify(mockRiverDao).addCollaborator(mockRiver, mockAccount, true);
+
+		verify(mockAccountService).logActivity(eq(mockAuthAccount),
+				eq(ActivityType.INVITE), any(RiverCollaborator.class));
 	}
 
 	@Test
@@ -679,7 +696,7 @@ public class RiverServiceTest {
 		assertEquals(2L, ((Number) fieldValue.getField().getId().longValue()));
 		assertEquals("[\"Value 1\",\"Value 2\"]", fieldValue.getValue());
 	}
-	
+
 	@Test
 	public void modifyDropForm() {
 		Account account = new Account();
@@ -717,7 +734,7 @@ public class RiverServiceTest {
 		RiverDropFormField fieldValue = dropForm.getValues().get(0);
 		assertEquals("[\"Value 3\",\"Value 4\"]", fieldValue.getValue());
 	}
-	
+
 	@Test
 	public void deleteDropForm() {
 		Account account = new Account();
@@ -753,27 +770,49 @@ public class RiverServiceTest {
 
 		assertEquals(form, argument.getValue());
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void markDropAsRead() {
 		River mockRiver = mock(River.class);
 		Account mockAccount = mock(Account.class);
 		RiverDrop mockRiverDrop = mock(RiverDrop.class);
-		List<RiverDrop> mockReadRiverDrops = (List<RiverDrop>) mock(List.class); 
+		List<RiverDrop> mockReadRiverDrops = (List<RiverDrop>) mock(List.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(mockAccount);
+		when(mockAccountDao.findByUsername(anyString()))
+				.thenReturn(mockAccount);
 		when(mockRiver.getRiverPublic()).thenReturn(true);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
-		when(mockRiverDropDao.isRead(mockRiverDrop, mockAccount)).thenReturn(false);
+		when(mockRiverDropDao.isRead(mockRiverDrop, mockAccount)).thenReturn(
+				false);
 		when(mockAccount.getReadRiverDrops()).thenReturn(mockReadRiverDrops);
-		
+
 		riverService.markDropAsRead(1L, 4L, "user1");
-	
+
 		verify(mockRiverDropDao).isRead(mockRiverDrop, mockAccount);
 		verify(mockReadRiverDrops).add(mockRiverDrop);
 		verify(mockAccountDao).update(mockAccount);
+	}
+
+	@Test
+	public void addFollower() {
+		River river = new River();
+		river.setFollowers(new ArrayList<Account>());
+		when(mockRiverDao.findById(anyLong())).thenReturn(river);
+
+		Account account = new Account();
+		when(mockAccountDao.findById(anyLong())).thenReturn(account);
+
+		riverService.addFollower(1L, 1L);
+
+		ArgumentCaptor<River> argument = ArgumentCaptor.forClass(River.class);
+		verify(mockRiverDao).update(argument.capture());
+
+		assertTrue(argument.getValue().getFollowers().contains(account));
+
+		verify(mockAccountService).logActivity(account, ActivityType.FOLLOW,
+				river);
 	}
 }

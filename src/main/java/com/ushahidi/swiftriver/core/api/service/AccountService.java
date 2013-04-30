@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
@@ -41,6 +42,7 @@ import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
@@ -49,10 +51,21 @@ import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.AccountActivity;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
+import com.ushahidi.swiftriver.core.model.Activity;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketActivity;
+import com.ushahidi.swiftriver.core.model.BucketCollaborator;
+import com.ushahidi.swiftriver.core.model.BucketCollaboratorActivity;
 import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormActivity;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverActivity;
+import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverCollaboratorActivity;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
@@ -76,6 +89,9 @@ public class AccountService {
 
 	@Autowired
 	private AccountDao accountDao;
+
+	@Autowired
+	private ActivityDao activityDao;
 
 	@Autowired
 	private UserTokenDao userTokenDao;
@@ -116,6 +132,10 @@ public class AccountService {
 
 	public void setAccountDao(AccountDao accountDao) {
 		this.accountDao = accountDao;
+	}
+
+	public void setActivityDao(ActivityDao activityDao) {
+		this.activityDao = activityDao;
 	}
 
 	public UserDao getUserDao() {
@@ -334,8 +354,8 @@ public class AccountService {
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public GetAccountDTO modifyAccount(Long accountId, ModifyAccountDTO modifyAccountTO,
-			String authUser) {
+	public GetAccountDTO modifyAccount(Long accountId,
+			ModifyAccountDTO modifyAccountTO, String authUser) {
 
 		Account account = accountDao.findById(accountId);
 		Account queryingAccount = accountDao.findByUsername(authUser);
@@ -343,30 +363,34 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found.");
 
-		// If the querying account is not the the same as the account being modified
+		// If the querying account is not the the same as the account being
+		// modified
 		// raise an error
 		if (!account.equals(queryingAccount)) {
-			throw new ForbiddenException("You do not have sufficient privileges to modify this account");
+			throw new ForbiddenException(
+					"You do not have sufficient privileges to modify this account");
 		}
 
 		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
 
-		// If another account already has the specified account path, raise an error
+		// If another account already has the specified account path, raise an
+		// error
 		if (modifyAccountTO.getAccountPath() != null) {
 			String accountPath = modifyAccountTO.getAccountPath();
-			Account otherAccount = accountDao.findByAccountPath(accountPath); 
+			Account otherAccount = accountDao.findByAccountPath(accountPath);
 			if (otherAccount != null && !otherAccount.equals(account)) {
 				throw ErrorUtil.getBadRequestException("account_path",
 						"duplicate");
 			}
 		}
-		
+
 		// If modifying password without a token, raise an error
 		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
-				&& modifyAcOwner.getPassword() != null && modifyAcOwner.getCurrentPassword() == null)
+				&& modifyAcOwner.getPassword() != null
+				&& modifyAcOwner.getCurrentPassword() == null)
 			throw ErrorUtil.getBadRequestException("token", "missing");
 
-		//> Account Owner properties
+		// > Account Owner properties
 		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
 			String email = modifyAcOwner.getEmail();
 			Account otherAccount = accountDao.findByEmail(email);
@@ -378,23 +402,25 @@ public class AccountService {
 
 		// Password change
 		if (modifyAcOwner != null && modifyAcOwner.getCurrentPassword() != null) {
-			// No token required for a change password 
+			// No token required for a change password
 			if (modifyAccountTO.getToken() != null) {
-				throw ErrorUtil.getBadRequestException("token", "Invalid parameter");
+				throw ErrorUtil.getBadRequestException("token",
+						"Invalid parameter");
 			}
-			
-			// Check for new password 
+
+			// Check for new password
 			if (modifyAcOwner.getPassword() == null) {
 				throw ErrorUtil.getBadRequestException("password", "missing");
 			}
-			
+
 			// Current password
-			if (!passwordEncoder.matches(modifyAcOwner.getCurrentPassword(), 
+			if (!passwordEncoder.matches(modifyAcOwner.getCurrentPassword(),
 					account.getOwner().getPassword())) {
 				throw ErrorUtil.getBadRequestException("password", "invalid");
 			}
-			
-			String password = passwordEncoder.encode(modifyAcOwner.getPassword());
+
+			String password = passwordEncoder.encode(modifyAcOwner
+					.getPassword());
 			modifyAcOwner.setPassword(password);
 		}
 
@@ -423,13 +449,14 @@ public class AccountService {
 			}
 
 			// Encode and set the new password
-			if (modifyAccountTO.getToken() != null && 
-					modifyAcOwner != null && modifyAcOwner.getPassword() != null) {
-				String password = passwordEncoder.encode(modifyAcOwner.getPassword());
+			if (modifyAccountTO.getToken() != null && modifyAcOwner != null
+					&& modifyAcOwner.getPassword() != null) {
+				String password = passwordEncoder.encode(modifyAcOwner
+						.getPassword());
 				modifyAcOwner.setPassword(password);
 			}
 		}
-		
+
 		mapper.map(modifyAccountTO, account);
 		accountDao.update(account);
 		return mapGetAccountDTO(account, account);
@@ -742,6 +769,8 @@ public class AccountService {
 
 		Account follower = getAccount(accountId);
 		accountDao.addFollower(account, follower);
+		
+		logActivity(follower, ActivityType.FOLLOW, account);
 	}
 
 	/**
@@ -842,4 +871,152 @@ public class AccountService {
 		return getAccountDTOs;
 	}
 
+	/**
+	 * Create an activity for the given account action.
+	 * 
+	 * @param account
+	 * @param action
+	 * @param actionOn
+	 */
+	@Transactional(readOnly = true)
+	public void logActivity(Account account, ActivityType action,
+			Object actionOn) {
+
+		Activity activity = null;
+		if (actionOn instanceof River) {
+			activity = new RiverActivity();
+			((RiverActivity) activity).setActionOnObj((River) actionOn);
+		} else if (actionOn instanceof Bucket) {
+			activity = new BucketActivity();
+			((BucketActivity) activity).setActionOnObj((Bucket) actionOn);
+		} else if (actionOn instanceof Form) {
+			activity = new FormActivity();
+			((FormActivity) activity).setActionOnObj((Form) actionOn);
+		} else if (actionOn instanceof Account) {
+			activity = new AccountActivity();
+			((AccountActivity) activity).setActionOnObj((Account)actionOn);
+		} else if (actionOn instanceof RiverCollaborator) {
+			activity = new RiverCollaboratorActivity();
+			((RiverCollaboratorActivity) activity).setActionOnObj((RiverCollaborator)actionOn);
+		} else if (actionOn instanceof BucketCollaborator) {
+			activity = new BucketCollaboratorActivity();
+			((BucketCollaboratorActivity) activity).setActionOnObj((BucketCollaborator)actionOn);
+		}
+		
+		if (activity == null)
+			throw new RuntimeException("Unknown actionOn obj provided");
+
+		activity.setAccount(account);
+		activity.setActionDateAdd(new Date());
+
+		switch (action) {
+		case CREATE:
+			activity.setAction("create");
+			break;
+		case FOLLOW:
+			activity.setAction("follow");
+			break;
+		case INVITE:
+			activity.setAction("invite");
+			break;
+		case COMMENT:
+			activity.setAction("comment");
+			break;
+		}
+		
+		activityDao.create(activity);
+	}
+
+	/**
+	 * Get an activity stream
+	 * 
+	 * When the followers parameter is true, get activities for 
+	 * the accounts <code>accountId</code> is following otherwise 
+	 * get <code>accountId</code>'s own activities.
+	 * 
+	 * @param accountId
+	 * @param count
+	 * @param lastId
+	 * @param newer
+	 * @param followers
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetActivityDTO> getActivities(Long accountId, Integer count,
+			Long lastId, Boolean newer, boolean followers, Account authAccount) {
+	
+		List<Activity> activities = activityDao.find(accountId, count, lastId,
+				newer, followers);
+	
+		if (activities == null)
+			throw new NotFoundException("No activities found.");
+	
+		List<GetActivityDTO> activityDtos = new ArrayList<GetActivityDTO>();
+		for (Activity activity : activities) {
+	
+			// Update last id
+			if (lastId != null) {
+				if (newer != null && newer) {
+					lastId = Math.max(lastId, activity.getId());
+				} else {
+					lastId = Math.min(lastId, activity.getId());
+				}
+			} else {
+				lastId = activity.getId();
+			}
+	
+			// Filter out activities on objects the authenticated user has
+			// no access to
+			if (activity instanceof RiverActivity) {
+				River river = ((RiverActivity) activity).getActionOnObj();
+	
+				if (!river.getRiverPublic()
+						&& !riverService.isOwner(river, authAccount))
+					continue;
+			} else if (activity instanceof BucketActivity) {
+				Bucket bucket = ((BucketActivity) activity).getActionOnObj();
+	
+				if (!bucket.isPublished()
+						&& !bucketService.isOwner(bucket, authAccount))
+					continue;
+			}
+	
+			activityDtos.add(mapper.map(activity, GetActivityDTO.class));
+		}
+	
+		// If all activities removed due to permisions, repeat
+		if (activityDtos.size() == 0)
+			return getActivities(accountId, count, lastId, newer, followers, authAccount);
+	
+		return activityDtos;
+	}
+
+	/**
+	 * Get Activities for the given account.
+	 * 
+	 * @param accountId
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetActivityDTO> getActivities(Long accountId, String authUser) {
+		Account account = accountDao.findByUsername(authUser);
+		return getActivities(accountId, 50, Long.MAX_VALUE, false, false, account);
+	}
+
+	/**
+	 * Get Activities by the Account that authUser is following.
+	 * 
+	 * @param count
+	 * @param lastId
+	 * @param newer
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetActivityDTO> getTimeline(Integer count, Long lastId,
+			Boolean newer, String authUser) {
+		Account account = accountDao.findByUsername(authUser);
+		return getActivities(account.getId(), count, lastId, newer, true, account);
+	}
+	
+	
 }

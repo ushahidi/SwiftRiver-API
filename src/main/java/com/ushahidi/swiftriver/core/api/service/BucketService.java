@@ -61,6 +61,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketComment;
@@ -123,6 +124,9 @@ public class BucketService {
 	
 	@Autowired
 	private DropDocumentRepository repository;
+
+	@Autowired
+	private AccountService accountService;
 
 	/* Logger */
 	final static Logger logger = LoggerFactory.getLogger(BucketService.class);
@@ -188,6 +192,10 @@ public class BucketService {
 		this.riverDropDao = riverDropDao;
 	}
 
+	public void setAccountService(AccountService accountService) {
+		this.accountService = accountService;
+	}
+
 	/**
 	 * Creates a new {@link Bucket} entity under the {@link Account} associated
 	 * with <code>username</code>.
@@ -226,6 +234,8 @@ public class BucketService {
 
 		// Save bucket
 		bucketDao.create(bucket);
+		
+		accountService.logActivity(account, ActivityType.CREATE, bucket);
 
 		return mapper.map(bucket, GetBucketDTO.class);
 	}
@@ -399,6 +409,8 @@ public class BucketService {
 
 		BucketCollaborator collaborator = bucketDao.addCollaborator(bucket,
 				account, createCollaboratorTO.isReadOnly());
+		
+		accountService.logActivity(authAccount, ActivityType.INVITE, collaborator);
 
 		return mapper.map(collaborator, GetCollaboratorDTO.class);
 	}
@@ -510,6 +522,7 @@ public class BucketService {
 		bucket.getFollowers().add(account);
 		bucketDao.update(bucket);
 
+		accountService.logActivity(account, ActivityType.FOLLOW, bucket);
 	}
 
 	/**
@@ -796,31 +809,13 @@ public class BucketService {
 	 * @param account
 	 * @return
 	 */
-	private boolean isOwner(Bucket bucket, Account account) {
+	public boolean isOwner(Bucket bucket, Account account) {
+		BucketCollaborator collaborator = bucketDao.findCollaborator(bucket.getId(), account.getId());
+		
 		return bucket.getAccount() == account
-				|| isCollaborator(bucket, account, false);
-
+				|| (collaborator != null && !collaborator.isReadOnly());
 	}
 
-	/**
-	 * Verifies whether the {@link Account} in <code>account</code> is
-	 * collaborating on the {@link Bucket} in <code>bucket</code>
-	 * 
-	 * @param bucket
-	 * @param account
-	 * @param readOnly
-	 * @return
-	 */
-	private boolean isCollaborator(Bucket bucket, Account account,
-			boolean readOnly) {
-		BucketCollaborator collaborator = bucketDao.findCollaborator(
-				bucket.getId(), account.getId());
-		if (collaborator == null) {
-			return false;
-		}
-
-		return (readOnly && collaborator.isReadOnly());
-	}
 
 	/**
 	 * Adds a {@link Tag} to the {@link BucketDrop} with the specified

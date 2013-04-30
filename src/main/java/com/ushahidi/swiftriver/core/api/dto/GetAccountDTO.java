@@ -134,30 +134,6 @@ public class GetAccountDTO {
 		}
     }
 
-	public static class Account {
-		
-		private long id;
-		
-		@JsonProperty("account_path")
-		private String accountPath;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-	}
-	
 	public long getId() {
 		return id;
 	}

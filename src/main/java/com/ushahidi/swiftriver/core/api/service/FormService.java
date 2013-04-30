@@ -32,6 +32,7 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyFormFieldDTO;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Form;
 import com.ushahidi.swiftriver.core.model.FormField;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
@@ -55,6 +56,9 @@ public class FormService {
 
 	@Autowired
 	private AccountDao accountDao;
+	
+	@Autowired
+	private AccountService accountService;
 
 	public void setFormDao(FormDao formDao) {
 		this.formDao = formDao;
@@ -70,6 +74,10 @@ public class FormService {
 
 	public void setAccountDao(AccountDao accountDao) {
 		this.accountDao = accountDao;
+	}
+
+	public void setAccountService(AccountService accountService) {
+		this.accountService = accountService;
 	}
 
 	/**
@@ -91,6 +99,8 @@ public class FormService {
 		} catch (DataIntegrityViolationException e) {
 			throw ErrorUtil.getBadRequestException("name", "duplicate");
 		}
+		
+		accountService.logActivity(account, ActivityType.CREATE, form);
 
 		return mapper.map(form, GetFormDTO.class);
 	}

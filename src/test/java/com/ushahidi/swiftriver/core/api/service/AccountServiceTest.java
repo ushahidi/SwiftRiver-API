@@ -16,18 +16,9 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +36,7 @@ import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
+import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
@@ -52,14 +44,21 @@ import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetAccountDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
+import com.ushahidi.swiftriver.core.model.Activity;
+import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
+import com.ushahidi.swiftriver.core.model.BucketActivity;
 import com.ushahidi.swiftriver.core.model.Client;
+import com.ushahidi.swiftriver.core.model.Form;
+import com.ushahidi.swiftriver.core.model.FormActivity;
 import com.ushahidi.swiftriver.core.model.River;
+import com.ushahidi.swiftriver.core.model.RiverActivity;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
@@ -80,6 +79,8 @@ public class AccountServiceTest {
 	private ClientDao mockClientDao;
 
 	private RoleDao mockRoleDao;
+
+	private ActivityDao mockActivityDao;
 
 	private Mapper mockMapper;
 
@@ -108,6 +109,7 @@ public class AccountServiceTest {
 		mockUserTokenDao = mock(UserTokenDao.class);
 		mockClientDao = mock(ClientDao.class);
 		mockRoleDao = mock(RoleDao.class);
+		mockActivityDao = mock(ActivityDao.class);
 		mockMapper = mock(Mapper.class);
 		mapper = new DozerBeanMapper();
 		passwordEncoder = new BCryptPasswordEncoder();
@@ -125,6 +127,7 @@ public class AccountServiceTest {
 		accountService.setUserTokenDao(mockUserTokenDao);
 		accountService.setClientDao(mockClientDao);
 		accountService.setRoleDao(mockRoleDao);
+		accountService.setActivityDao(mockActivityDao);
 		accountService.setPasswordEncoder(passwordEncoder);
 		accountService.setKey("2344228477#97{7&6>82");
 	}
@@ -189,7 +192,7 @@ public class AccountServiceTest {
 				account, account);
 
 		assertEquals(getAccountDTO, actualGetAccountDTO);
-		
+
 		ArgumentCaptor<Account> argument = ArgumentCaptor
 				.forClass(Account.class);
 		verify(mockMapper).map(argument.capture(), any(Class.class));
@@ -408,5 +411,193 @@ public class AccountServiceTest {
 		accountService.deleteApp(1L, 1L, "admin");
 
 		verify(mockClientDao).delete(client);
+	}
+
+	@Test
+	public void getActivities() {
+		accountService.setMapper(mapper);
+
+		List<Activity> activities = new ArrayList<Activity>();
+
+		// The authenticated account
+		Account account = new Account();
+
+		// Add a river activity the authenticated user owns
+		Activity activity = new RiverActivity();
+		activity.setId(1L);
+		River river = new River();
+		river.setAccount(account);
+		river.setRiverPublic(true);
+		((RiverActivity) activity).setActionOnObj(river);
+		activities.add(activity);
+
+		// Add a river activity the authenticated user *does not* own
+		activity = new RiverActivity();
+		activity.setId(2L);
+		river = new River();
+		river.setAccount(account);
+		river.setRiverPublic(false);
+		((RiverActivity) activity).setActionOnObj(river);
+		activities.add(activity);
+
+		// Add a bucket activity the authenticated user owns
+		activity = new BucketActivity();
+		activity.setId(3L);
+		Bucket bucket = new Bucket();
+		bucket.setAccount(account);
+		bucket.setPublished(true);
+		((BucketActivity) activity).setActionOnObj(bucket);
+		activities.add(activity);
+
+		// Add a bucket activity the authenticated user *does not* own
+		activity = new BucketActivity();
+		activity.setId(4L);
+		bucket = new Bucket();
+		bucket.setAccount(account);
+		bucket.setPublished(false);
+		((BucketActivity) activity).setActionOnObj(bucket);
+		activities.add(activity);
+
+		// Add a form activity the authenticated user owns
+		activity = new FormActivity();
+		activity.setId(5L);
+		Form form = new Form();
+		form.setAccount(account);
+		((FormActivity) activity).setActionOnObj(form);
+		activities.add(activity);
+
+		when(mockActivityDao.find(1L, 2, 3L, true, false)).thenReturn(activities);
+
+		List<GetActivityDTO> ret = accountService.getActivities(1L, 2, 3L,
+				true, false, account);
+		assertEquals(3, ret.size());
+		assertEquals("1", ret.get(0).getId());
+		assertEquals("3", ret.get(1).getId());
+		assertEquals("5", ret.get(2).getId());
+	}
+
+	/**
+	 * Check that getActivities will continue searching for results when all
+	 * activities are removed due to the permissions check.
+	 */
+	@Test(expected = NotFoundException.class)
+	public void getActivitiesRecursively() {
+		accountService.setMapper(mapper);
+
+		List<Activity> activities = new ArrayList<Activity>();
+
+		// The authenticated account
+		Account account = new Account();
+
+		// Add a river activity the authenticated user *does not* own
+		Activity activity = new RiverActivity();
+		activity.setId(2L);
+		River river = new River();
+		river.setAccount(account);
+		river.setRiverPublic(false);
+		((RiverActivity) activity).setActionOnObj(river);
+		activities.add(activity);
+
+		when(mockActivityDao.find(1L, 2, 1L, true, false)).thenReturn(activities);
+		when(mockActivityDao.find(1L, 2, 2L, true, false)).thenReturn(null);
+
+		accountService.getActivities(1L, 2, 1L, true, false, account);
+
+	}
+
+	@Test
+	public void logRiverActivity() {
+		Account account = new Account();
+		River river = new River();
+
+		accountService.logActivity(account, ActivityType.CREATE, river);
+
+		ArgumentCaptor<Activity> argument = ArgumentCaptor
+				.forClass(Activity.class);
+		verify(mockActivityDao).create(argument.capture());
+		Activity activity = argument.getValue();
+		
+		assertTrue(activity instanceof RiverActivity);
+		assertEquals(river, ((RiverActivity)activity).getActionOnObj());
+		assertEquals(account, activity.getAccount());
+	}
+	
+	@Test
+	public void logBucketActivity() {
+		Account account = new Account();
+		Bucket bucket = new Bucket();
+
+		accountService.logActivity(account, ActivityType.CREATE, bucket);
+
+		ArgumentCaptor<Activity> argument = ArgumentCaptor
+				.forClass(Activity.class);
+		verify(mockActivityDao).create(argument.capture());
+		Activity activity = argument.getValue();
+		
+		assertTrue(activity instanceof BucketActivity);
+		assertEquals(bucket, ((BucketActivity)activity).getActionOnObj());
+		assertEquals(account, activity.getAccount());
+	}
+	
+	@Test
+	public void logFormActivity() {
+		Account account = new Account();
+		Form form = new Form();
+
+		accountService.logActivity(account, ActivityType.CREATE, form);
+
+		ArgumentCaptor<Activity> argument = ArgumentCaptor
+				.forClass(Activity.class);
+		verify(mockActivityDao).create(argument.capture());
+		Activity activity = argument.getValue();
+		
+		assertTrue(activity instanceof FormActivity);
+		assertEquals(form, ((FormActivity)activity).getActionOnObj());
+		assertEquals(account, activity.getAccount());
+	}
+	
+	@Test
+	public void logActivityCheckActionOn() {
+		Account account = new Account();
+		River river = new River();
+
+		accountService.logActivity(account, ActivityType.CREATE, river);
+		accountService.logActivity(account, ActivityType.FOLLOW, river);
+		accountService.logActivity(account, ActivityType.INVITE, river);
+		accountService.logActivity(account, ActivityType.COMMENT, river);
+
+		ArgumentCaptor<Activity> argument = ArgumentCaptor
+				.forClass(Activity.class);
+		verify(mockActivityDao, times(4)).create(argument.capture());
+		
+		List<Activity> activities = argument.getAllValues();
+		assertEquals("create", activities.get(0).getAction());
+		assertEquals("follow", activities.get(1).getAction());
+		assertEquals("invite", activities.get(2).getAction());
+		assertEquals("comment", activities.get(3).getAction());
+		
+	}
+	
+	@Test(expected = RuntimeException.class)
+	public void logActivityOnUnknownObject() {
+		Account account = new Account();
+		
+		accountService.logActivity(account, ActivityType.CREATE, new Object());
+	}
+	
+	@Test
+	public void addFollower() {
+		AccountService spy = spy(accountService);
+		
+		Account account = new Account();
+		Account follower = new Account();
+		
+		when(mockAccountDao.findById(1L)).thenReturn(account);
+		when(mockAccountDao.findById(2L)).thenReturn(follower);
+		
+		spy.addFollower(1L, 2L);
+		
+		verify(mockAccountDao).addFollower(account, follower);
+		verify(spy).logActivity(follower, ActivityType.FOLLOW, account);
 	}
 }
