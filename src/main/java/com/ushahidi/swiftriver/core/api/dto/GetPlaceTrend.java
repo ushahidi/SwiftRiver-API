@@ -37,6 +37,9 @@ public class GetPlaceTrend {
 	
 	@JsonProperty("occurrences")
 	private long count;
+	
+	@JsonProperty("trend_date")
+	private String datePublished;
 
 	public String getTag() {
 		return tag;
@@ -68,6 +71,14 @@ public class GetPlaceTrend {
 
 	public void setCount(long count) {
 		this.count = count;
+	}
+
+	public String getDatePublished() {
+		return datePublished;
+	}
+
+	public void setDatePublished(String datePublished) {
+		this.datePublished = datePublished;
 	}
 	
 }

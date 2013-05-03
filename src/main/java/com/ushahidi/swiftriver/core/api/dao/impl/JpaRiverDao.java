@@ -419,6 +419,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			tagTrend.setTag((String) row.get("tag"));
 			tagTrend.setTagType((String) row.get("tag_type"));
 			tagTrend.setCount(((Number) row.get("tag_count")).longValue());
+			tagTrend.setDatePublished((Date) row.get("trend_date"));
 			
 			tagTrends.add(tagTrend);
 		}
@@ -473,6 +474,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			tagTrend.setLatitude(((Number) row.get("latitude")).floatValue());
 			tagTrend.setLongitude(((Number) row.get("longitude")).floatValue());
 			tagTrend.setCount(((Number) row.get("tag_count")).longValue());
+			tagTrend.setDatePublished((Date) row.get("trend_date"));
 			
 			placeTrends.add(tagTrend);
 		}
