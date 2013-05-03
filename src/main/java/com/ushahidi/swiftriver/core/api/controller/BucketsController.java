@@ -57,7 +57,7 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.support.DropFilter;
 
 @Controller
 @RequestMapping("/v1/buckets")

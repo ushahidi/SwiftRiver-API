@@ -7,25 +7,6 @@ INSERT INTO roles (id, name, description, permissions) VALUES
 (3, 'client', 'Client application', NULL),
 (4, 'trusted_client', 'Truested client application', NULL);
 
-
--- -----------------------------------------------------
--- Data for table settings
--- -----------------------------------------------------
-INSERT INTO settings (id, key, value) VALUES 
-(1, 'site_name', 'SwiftRiver'),
-(2, 'site_theme', 'default'),
-(3, 'site_locale', 'en'),
-(4, 'public_registration_enabled', '0'),
-(5, 'anonymous_access_enabled', '0'),
-(6, 'default_river_lifetime', '14'),
-(7, 'river_expiry_notice_period', '3'),
-(8, 'general_invites_enabled', '0'),
-(9, 'default_river_quota', '1'),
-(10, 'default_river_drop_quota', '10000'),
-(11, 'site_url', 'http://www.example.com'),
-(12, 'email_domain', 'example.com'),
-(13, 'comments_email_domain', 'example.com');
-
 -- -----------------------------------------------------
 -- Data for table users
 -- -----------------------------------------------------
@@ -43,11 +24,11 @@ INSERT INTO users (id, active, email, name, username, password, logins, last_log
 INSERT INTO seq (name, id) VALUES 
 ('droplets', 10),
 ('tags', 11),
-('places', 10),
+('places', 13),
 ('links', 10),
 ('identities', 2),
 ('media', 10),
-('river_tag_trends', 1),
+('river_tag_trends', 11),
 ('rivers_droplets', 5);
 
 -- -----------------------------------------------------
@@ -278,7 +259,11 @@ INSERT INTO places (id, hash, place_name, place_name_canonical, longitude, latit
 (7, '775e8cd530ca804bcc098f61560de061', 'US', 'us', -98.5, 39.76),
 (8, 'a03122d00783b59d218abbee8061129d', 'Pakistani', 'pakistani', 70, 30),
 (9, '6f8225cfb55ab7a1eda96d05bb737e32', 'Heathrow', 'heathrow', -81.3722, 28.7633),
-(10, '5e1df0f9094710d86c6a3496522ec989', 'London City', 'london city', -0.09184, 51.5128);
+(10, '5e1df0f9094710d86c6a3496522ec989', 'London City', 'london city', -0.09184, 51.5128),
+(11, 'b15166a6aa1ccb440a2036620bb94e8e', 'Mogadishu', 'mogadishu', 45.3438, 2.03711),
+(12, '5c088e22cd3fd2b3f60ff09deefe7213', 'Paris', 'paris', 2.34864, 48.8534),
+(13, '4163f1c66f9b0264217b246f6a4c6674', 'Zimbabwe', 'zimbabwe', 29, -19);
+
 
 -- -----------------------------------------------------
 -- Data for table droplets_places
@@ -422,3 +407,16 @@ INSERT INTO account_actions(id, account_id, action, action_on, action_on_id, act
 (6, 5, 'follow', 'bucket', 1, NULL, '2013-01-02 00:00:06', NULL),
 (7, 3, 'invite', 'river_collaborator', 2, 5, '2013-01-02 00:00:07', 1),
 (8, 3, 'invite', 'bucket_collaborator', 2, 5, '2013-01-02 00:00:08', 0);
+
+INSERT INTO `river_tag_trends` (`id`, `hash`, `river_id`, `date_pub`, `tag`, `tag_type`, `count`) VALUES
+(1, '0e08ce8e9c25bcd6255c5b8184f76018', 1, '2012-04-29 13:00:00', 'MFWA', 'organization', 2),
+(2, 'a63b6f3548add134a16e50835b5834a3', 1, '2012-04-29 09:00:00', 'Paris', 'place', 1),
+(3, 'ef3eb5b187244d2bf5160c55d70f0bf7', 1, '2012-04-30 10:00:00', 'Mohamed Ibrahim Rageh', 'person', 1),
+(4, '177a07a20b0ec340d70329a909cf2823', 1, '2012-05-02 23:00:00', 'Musalia Mudavadi', 'person', 1),
+(5, '8fb067a1386598207cfe09af4752c391', 1, '2012-05-09 09:00:00', 'Zimbabwe', 'place', 1),
+(6, '526045c4874b0ccc08bcfef1a791a7fd', 1, '2012-05-10 13:00:00', 'Ellen Johnson Sirleaf', 'person', 1),
+(7, '4ddf6557fabafa92256517e9f526e36a', 1, '2012-05-16 11:00:00', 'Ilebiri Creek', 'organization', 1),
+(8, 'f14b7d59257e108421d51769f1d527f7', 1, '2012-05-21 23:00:00', 'Machakos Boys High School', 'organization', 1),
+(9, '59c6a6c9cc1f93135da2a9dfbc3e3906', 1, '2012-05-24 13:00:00', 'Planete FM', 'organization', 1),
+(10, 'c592a66c3b610171d3ed932f6c5276c3', 1, '2012-06-06 10:00:00', 'Mogadishu', 'place', 1),
+(11, '8d81522dab202dd1d367e53e84679765', 1, '2012-07-12 23:00:00', 'Elgeyo-Marakwet', 'organization', 1);

@@ -856,4 +856,89 @@ public class RiversControllerTest extends AbstractControllerTest {
 						MediaType.APPLICATION_JSON).principal(
 						getAuthentication("user1"))).andExpect(status().isNotFound());
 	}
+	
+	/**
+	 * Test for trending tags within a river 
+	 * @throws Exception
+	 */
+	@Test
+	public void getRiverTagTrends() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/trends/tags")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(0)));
+	}
+	
+	
+	/**
+	 * Test for trending places within a river 
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getRiverPlaceTrends() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/trends/places")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(0)));
+	}
+	
+	/**
+	 * Test for a river's trending tags since a specific date
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getRiverTagTrendsSince() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/trends/tags?since=2012-04-30")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(7)));
+		
+	}
+	
+	/**
+	 * Test for fetching a river's trending places where only the
+	 * <code>since</code> query parameter has been specified
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getRiverPlaceTrendsSince() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/trends/places?since=2012-05-16")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(1)))
+			.andExpect(jsonPath("$[0].place_name").value("Mogadishu"))
+			.andExpect(jsonPath("$[0].latitude").value(2.03711))
+			.andExpect(jsonPath("$[0].longitude").value(45.3438));
+	}
+	
+	/**
+	 * Test for fetching a river's trending tags where only <code>until</code>
+	 * query parameter has been specified
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void getRiverTagTrendsUntil() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/trends/tags?until=2012-05-05")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(3)));		
+	}
+	
+	/**
+	 * Test for fetching a river's trending places where only the
+	 * <code>until</code> parameter has been specified
+	 *  
+	 * @throws Exception
+	 */
+	@Test
+	public void getRiverPlaceTrendsUntil() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/trends/places?until=2012-07-23")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[*]").value(hasSize(3)));		
+	}
 }

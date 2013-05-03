@@ -73,10 +73,10 @@ import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
+import com.ushahidi.swiftriver.core.support.DropFilter;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
 /**

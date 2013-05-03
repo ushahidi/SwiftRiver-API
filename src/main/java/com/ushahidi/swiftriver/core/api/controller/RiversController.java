@@ -54,8 +54,10 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetPlaceTrend;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRuleDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetTagTrend;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
@@ -65,7 +67,8 @@ import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.support.DropFilter;
+import com.ushahidi.swiftriver.core.support.TrendFilter;
 
 @Controller
 @RequestMapping("/v1/rivers")
@@ -719,6 +722,121 @@ public class RiversController extends AbstractController {
 	@ResponseBody
 	public void deleteRule(@PathVariable Long id, @PathVariable Long ruleId, Principal principal) {
 		riverService.deleteRule(id, ruleId, principal.getName());
+	}
+	
+	/**
+	 * Handler for getting the list of trending tags within the
+	 * river with the specified <code>id</code>
+	 * 
+	 * @param id
+	 * @param principal
+	 * @param since
+	 * @param until
+	 * @return
+	 */
+	@RequestMapping(value="{id}/trends/tags", method=RequestMethod.GET)
+	@ResponseBody
+	public List<GetTagTrend> getTrendingTags(@PathVariable Long id, Principal principal,
+			@RequestParam(value = "count", required = false, defaultValue = "20") int count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page,
+			@RequestParam(value = "since", required = false) String since,
+			@RequestParam(value = "until", required = false) String until) {
+		
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+
+		// Validate the dates
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date dateFrom = null;
+		Date dateTo = null;
+		
+		if (since != null) {
+			try {
+				dateFrom = dateFormat.parse(since);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("since", "invalid"));
+			}
+		}
+		
+		if (until != null) {
+			try {
+				dateTo = dateFormat.parse(until);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("until", "invalid"));
+			}
+		}
+		
+		// Do we have any validation errors
+		if (!errors.isEmpty()) {
+			BadRequestException exception =  new BadRequestException();
+			exception.setErrors(errors);
+			throw exception;
+		}
+
+		TrendFilter trendFilter = new TrendFilter();
+		trendFilter.setCount(count);
+		trendFilter.setPage(page);
+		trendFilter.setDateFrom(dateFrom);
+		trendFilter.setDateTo(dateTo);
+
+		return riverService.getTrendingTags(id, trendFilter, principal.getName());
+	}
+	
+	
+	/**
+	 * Handler for getting the list of trending places within the
+	 * river with the specified <code>id</code>
+	 * 
+	 * @param id
+	 * @param principal
+	 * @param since
+	 * @param until
+	 * @return
+	 */
+	@RequestMapping(value="{id}/trends/places", method=RequestMethod.GET)
+	@ResponseBody
+	public List<GetPlaceTrend> getTrendingPlaces(@PathVariable Long id, Principal principal,
+			@RequestParam(value = "count", required = false, defaultValue = "20") int count,
+			@RequestParam(value = "page", required = false, defaultValue = "1") int page,
+			@RequestParam(value = "since", required = false) String since,
+			@RequestParam(value = "until", required = false) String until) {
+		
+		List<ErrorField> errors = new ArrayList<ErrorField>();
+
+		// Validate the dates
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date dateFrom = null;
+		Date dateTo = null;
+		
+		if (since != null) {
+			try {
+				dateFrom = dateFormat.parse(since);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("since", "invalid"));
+			}
+		}
+		
+		if (until != null) {
+			try {
+				dateTo = dateFormat.parse(until);
+			} catch (ParseException e) {
+				errors.add(new ErrorField("until", "invalid"));
+			}
+		}
+
+		// Do we have any validation errors
+		if (!errors.isEmpty()) {
+			BadRequestException exception =  new BadRequestException();
+			exception.setErrors(errors);
+			throw exception;
+		}
+		
+		TrendFilter trendFilter = new TrendFilter();
+		trendFilter.setCount(count);
+		trendFilter.setPage(page);
+		trendFilter.setDateFrom(dateFrom);
+		trendFilter.setDateTo(dateTo);
+
+		return riverService.getTredingPlaces(id, trendFilter, principal.getName());
 	}
 	
 }

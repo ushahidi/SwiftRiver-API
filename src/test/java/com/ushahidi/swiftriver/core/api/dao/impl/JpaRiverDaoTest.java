@@ -44,7 +44,7 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.RiverDropFormField;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.support.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 public class JpaRiverDaoTest extends AbstractJpaDaoTest {

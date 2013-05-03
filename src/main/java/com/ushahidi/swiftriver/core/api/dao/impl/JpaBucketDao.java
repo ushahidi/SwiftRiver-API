@@ -42,7 +42,7 @@ import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.support.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 /**

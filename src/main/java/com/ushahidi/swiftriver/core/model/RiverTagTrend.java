@@ -28,10 +28,11 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 /**
  * This <code>RiverTagTrend</code> class is a persistence class
- * for the  <code>river_tag_trends</code> table. 
+ * for the <code>river_tag_trends</code> table. 
  * 
  * @author ekala
  *
@@ -63,6 +64,12 @@ public class RiverTagTrend {
 	private String tagType;
 	
 	private long count;
+	
+	@Transient
+	private Float latitude;
+	
+	@Transient
+	private Float longitude;
 
 	public long getId() {
 		return id;
@@ -118,6 +125,22 @@ public class RiverTagTrend {
 
 	public void setCount(long count) {
 		this.count = count;
+	}
+
+	public Float getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(Float latitude) {
+		this.latitude = latitude;
+	}
+
+	public Float getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(Float longitude) {
+		this.longitude = longitude;
 	}
 
 	@Override

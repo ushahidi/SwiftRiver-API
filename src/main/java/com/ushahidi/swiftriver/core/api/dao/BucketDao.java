@@ -24,7 +24,7 @@ import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.support.DropFilter;
 
 public interface BucketDao extends GenericDao<Bucket> {
 

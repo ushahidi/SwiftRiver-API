@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.model.drop;
+package com.ushahidi.swiftriver.core.support;
 
 import java.util.Date;
 import java.util.List;

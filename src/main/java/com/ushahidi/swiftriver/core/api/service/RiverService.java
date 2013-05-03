@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -59,8 +60,10 @@ import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetPlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetPlaceTrend;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRuleDTO;
+import com.ushahidi.swiftriver.core.api.dto.GetTagTrend;
 import com.ushahidi.swiftriver.core.api.dto.ModifyChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
@@ -83,12 +86,14 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverDropComment;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
+import com.ushahidi.swiftriver.core.model.RiverTagTrend;
 import com.ushahidi.swiftriver.core.model.Rule;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
+import com.ushahidi.swiftriver.core.support.DropFilter;
+import com.ushahidi.swiftriver.core.support.TrendFilter;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
@@ -742,6 +747,23 @@ public class RiverService {
 				|| (collaborator != null && !collaborator.isReadOnly());
 	}
 
+	/**
+	 * Verifies whether the {@link Account} specified in 
+	 * <code>queryingAccount</code> has access to the river specified
+	 * in <code>river</code>
+	 * 
+	 * @param river
+	 * @param queryingAccount
+	 * @return
+	 */
+	private boolean hasAccess(River river, Account queryingAccount) {
+		if (river.getRiverPublic())
+			return true;
+		
+		return river.getAccount().equals(queryingAccount) || 
+				river.getCollaborators().contains(queryingAccount);
+	}
+
 	private River getRiver(Long id) {
 		River river = riverDao.findById(id);
 		if (river == null) {
@@ -1369,6 +1391,91 @@ public class RiverService {
 		}
 
 		return riverDTOs;
+	}
+
+	/**
+	 * Returns the list of trending tags for the river with the ID specified
+	 * in <code>riverId</code>
+	 * 
+	 * @param riverId
+	 * @param trendFilter
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetTagTrend> getTrendingTags(Long riverId, TrendFilter trendFilter, String authUser) {
+		
+		River river = getRiver(riverId);
+		Account queryingAccount = accountDao.findByUsername(authUser);
+
+		if (!hasAccess(river, queryingAccount)) {
+			throw new ForbiddenException("Permission denied");
+		}
+
+		// If no dates specified, get data for the last 1 week
+		if (trendFilter.getDateFrom() == null && trendFilter.getDateTo() == null) {
+			trendFilter.setDateTo(new Date());
+
+			Calendar now = Calendar.getInstance();
+			now.add(Calendar.DATE, -7);
+			
+			trendFilter.setDateFrom(now.getTime());
+		}
+		
+		List<RiverTagTrend> tagTrends = riverDao.getTrendingTags(riverId, trendFilter);
+		if (tagTrends == null) {
+			throw new NotFoundException(String.format("No trending tags found for river %d", riverId));
+		}
+		
+		List<GetTagTrend> tagTrendDtos = new ArrayList<GetTagTrend>();
+		for (RiverTagTrend trend: tagTrends) {
+			GetTagTrend trendDto = mapper.map(trend, GetTagTrend.class);
+			tagTrendDtos.add(trendDto);
+		}
+
+		return tagTrendDtos;
+	}
+
+
+	/**
+	 * Returns the list of trending places in the river with the ID specified
+	 * in <code>riverId</code>
+	 * 
+	 * @param riverId
+	 * @param trendFilter
+	 * @param authUser
+	 * @return
+	 */
+	public List<GetPlaceTrend> getTredingPlaces(Long riverId, TrendFilter trendFilter,
+			String authUser) {
+		River river = getRiver(riverId);
+		Account queryingAccount = accountDao.findByUsername(authUser);
+
+		if (!hasAccess(river, queryingAccount)) {
+			throw new ForbiddenException("Permission denied");
+		}
+		
+		// If no dates specified, get data for the last 1 week
+		if (trendFilter.getDateFrom() == null && trendFilter.getDateTo() == null) {
+			trendFilter.setDateTo(new Date());
+
+			Calendar now = Calendar.getInstance();
+			now.add(Calendar.DATE, -7);
+			
+			trendFilter.setDateFrom(now.getTime());
+		}
+		
+		List<RiverTagTrend> placeTrends = riverDao.getTrendingPlaces(riverId, trendFilter);
+		if (placeTrends == null) {
+			throw new NotFoundException(String.format("No trending places found for river %d", riverId));
+		}
+		
+		List<GetPlaceTrend> placeTrendDtos = new ArrayList<GetPlaceTrend>();
+		for (RiverTagTrend trend: placeTrends) {
+			GetPlaceTrend trendDto = mapper.map(trend, GetPlaceTrend.class);
+			placeTrendDtos.add(trendDto);
+		}
+
+		return placeTrendDtos;
 	}
 	
 }

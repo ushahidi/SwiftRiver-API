@@ -41,7 +41,9 @@ import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.model.RiverTagTrend;
+import com.ushahidi.swiftriver.core.support.DropFilter;
+import com.ushahidi.swiftriver.core.support.TrendFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 @Repository
@@ -371,6 +373,111 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		query.setFirstResult(count * (page - 1));
 
 		return query.getResultList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#getTrendingTags(java.lang.Long, com.ushahidi.swiftriver.core.support.TrendFilter)
+	 */
+	public List<RiverTagTrend> getTrendingTags(Long riverId, TrendFilter trendFilter) {
+		int count = trendFilter.getCount();
+		int page = trendFilter.getPage(); 
+		
+		String sql = "SELECT a.tag, a.tag_type, SUM(a.count) AS tag_count, " +
+				"a.date_pub AS trend_date " +
+				"FROM river_tag_trends a " +
+				"WHERE a.tag_type <> 'place' " +
+				"AND a.river_id = :riverId ";
+
+		if (trendFilter.getDateFrom() != null) {
+			sql += "AND a.date_pub > :dateFrom ";
+		}
+		
+		if (trendFilter.getDateTo() != null) {
+			sql += "AND a.date_pub <= :dateTo ";
+		}
+		
+		sql += "GROUP BY a.tag, a.tag_type, trend_date " +
+				"ORDER BY `tag_count` DESC " +
+				"LIMIT " + count + " OFFSET " + count * (page - 1);
+
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("riverId", riverId);
+		
+		if (trendFilter.getDateFrom() != null) {
+			params.addValue("dateFrom", trendFilter.getDateFrom());
+		}
+		
+		if (trendFilter.getDateTo() != null) {
+			params.addValue("dateTo", trendFilter.getDateTo());
+		}
+
+		List<RiverTagTrend> tagTrends = new ArrayList<RiverTagTrend>();
+		for (Map<String, Object> row: jdbcTemplate.queryForList(sql, params)) {
+			RiverTagTrend tagTrend = new RiverTagTrend();
+
+			tagTrend.setTag((String) row.get("tag"));
+			tagTrend.setTagType((String) row.get("tag_type"));
+			tagTrend.setCount(((Number) row.get("tag_count")).longValue());
+			
+			tagTrends.add(tagTrend);
+		}
+
+		return tagTrends;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#getTrendingPlaces(java.lang.Long, com.ushahidi.swiftriver.core.support.TrendFilter)
+	 */
+	public List<RiverTagTrend> getTrendingPlaces(Long riverId, TrendFilter trendFilter) {
+		int count = trendFilter.getCount();
+		int page = trendFilter.getPage();
+
+		String sql = "SELECT a.tag, SUM(a.count) AS tag_count, " +
+				"p.latitude, p.longitude, " +
+				"a.date_pub AS trend_date " +
+				"FROM river_tag_trends a " +
+				"INNER JOIN places p ON (p.place_name = a.tag) " +
+				"WHERE a.tag_type = 'place' " +
+				"AND a.river_id = :riverId ";
+		if (trendFilter.getDateFrom() != null) {
+			sql += "AND a.date_pub > :dateFrom ";
+		}
+		
+		if (trendFilter.getDateTo() != null) {
+			sql += "AND a.date_pub <= :dateTo ";
+		}
+		
+		sql += "GROUP BY a.tag, trend_date ORDER BY tag_count DESC " +
+				"LIMIT " + count + " OFFSET " + count * (page - 1);
+
+
+		MapSqlParameterSource params = new MapSqlParameterSource();		
+		params.addValue("riverId", riverId);
+
+		if (trendFilter.getDateFrom() != null) {
+			params.addValue("dateFrom", trendFilter.getDateFrom());
+		}
+		
+		if (trendFilter.getDateTo() != null) {
+			params.addValue("dateTo", trendFilter.getDateTo());
+		}
+		
+		List<RiverTagTrend> placeTrends = new ArrayList<RiverTagTrend>();
+		for (Map<String, Object> row: jdbcTemplate.queryForList(sql, params)) {
+			RiverTagTrend tagTrend = new RiverTagTrend();
+
+			tagTrend.setTag((String) row.get("tag"));
+			tagTrend.setTagType("place");
+			tagTrend.setLatitude(((Number) row.get("latitude")).floatValue());
+			tagTrend.setLongitude(((Number) row.get("longitude")).floatValue());
+			tagTrend.setCount(((Number) row.get("tag_count")).longValue());
+			
+			placeTrends.add(tagTrend);
+		}
+
+		return placeTrends;
 	}
 
 }

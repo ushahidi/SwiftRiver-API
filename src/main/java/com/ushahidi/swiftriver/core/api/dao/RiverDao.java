@@ -22,7 +22,9 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
-import com.ushahidi.swiftriver.core.model.drop.DropFilter;
+import com.ushahidi.swiftriver.core.model.RiverTagTrend;
+import com.ushahidi.swiftriver.core.support.DropFilter;
+import com.ushahidi.swiftriver.core.support.TrendFilter;
 
 public interface RiverDao extends GenericDao<River> {
 
@@ -104,4 +106,26 @@ public interface RiverDao extends GenericDao<River> {
 	 * @return
 	 */
 	public List<River> findAll(String searchTerm, int count, int page);
+
+	/**
+	 * Returns the tags that are trending in the river with the ID
+	 * specified in <code>riverId</code>. The returned records
+	 * are grouped by date
+	 *  
+	 * @param riverId
+	 * @param trendFilter
+	 * @return
+	 */
+	public List<RiverTagTrend> getTrendingTags(Long riverId, TrendFilter trendFilter);
+
+	/**
+	 * Returns the places that are trending in the river with the ID
+	 * specified in <code>riverId</code>. The returned records
+	 * are grouped by date
+	 * 
+	 * @param riverId
+	 * @param trendFilter
+	 * @return
+	 */
+	public List<RiverTagTrend> getTrendingPlaces(Long riverId, TrendFilter trendFilter);
 }
