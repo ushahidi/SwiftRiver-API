@@ -397,8 +397,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			sql += "AND a.date_pub <= :dateTo ";
 		}
 		
-		sql += "GROUP BY a.tag, a.tag_type, trend_date " +
-				"ORDER BY `tag_count` DESC " +
+		sql += "GROUP BY a.tag, a.tag_type, trend_date ORDER BY `trend_date` ASC " +
 				"LIMIT " + count + " OFFSET " + count * (page - 1);
 
 		MapSqlParameterSource params = new MapSqlParameterSource();
@@ -450,7 +449,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 			sql += "AND a.date_pub <= :dateTo ";
 		}
 		
-		sql += "GROUP BY a.tag, trend_date ORDER BY tag_count DESC " +
+		sql += "GROUP BY a.tag, trend_date ORDER BY trend_date ASC " +
 				"LIMIT " + count + " OFFSET " + count * (page - 1);
 
 
