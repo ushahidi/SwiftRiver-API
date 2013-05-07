@@ -532,6 +532,9 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		}
 
+		if (trendsData.keySet().isEmpty())
+			return;
+
 		// Check for existing trends
 		String sql = "SELECT `id`, `hash` FROM `river_tag_trends` WHERE `hash` IN (:hashes)";
 		MapSqlParameterSource params = new MapSqlParameterSource();
