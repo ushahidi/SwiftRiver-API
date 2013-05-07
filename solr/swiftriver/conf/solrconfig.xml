@@ -25,18 +25,18 @@
   <!--  The DirectoryFactory to use for indexes.
         solr.StandardDirectoryFactory, the default, is filesystem based.
         solr.RAMDirectoryFactory is memory based, not persistent, and doesn't work with replication. -->
-  <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.StandardDirectoryFactory}"/>
+	<directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.StandardDirectoryFactory}"/>
 
-  <dataDir>solr/swiftriver/data</dataDir>
+	<dataDir>solr/swiftriver/data</dataDir>
   
-  <!--
+	<!--
   	These settings control low-level behaviour of indexing
     -->
-  <indexConfig>
-  	<writeLockTimeout>1000</writeLockTimeout>
-  </indexConfig>
+	<indexConfig>
+		<writeLockTimeout>1000</writeLockTimeout>
+	</indexConfig>
 
-  <updateHandler class="solr.DirectUpdateHandler2">
+	<updateHandler class="solr.DirectUpdateHandler2">
 
   	<!-- AutoCommit
   		Perform a hard commit automatically under certain conditions.
@@ -59,44 +59,51 @@
   		<maxTime>1000</maxTime>
   	</autoSoftCommit>
 
-<!--     <updateLog>
-      <str name="dir">solr/swiftriver/data</str>
-    </updateLog> -->
-  </updateHandler>
+	</updateHandler>
 
-  <!-- realtime get handler, guaranteed to return the latest stored fields 
+	<!-- realtime get handler, guaranteed to return the latest stored fields 
     of any document, without the need to commit or open a new searcher. The current 
     implementation relies on the updateLog feature being enabled. -->
-  <requestHandler name="/get" class="solr.RealTimeGetHandler">
-    <lst name="defaults">
-      <str name="omitHeader">true</str>
-    </lst>
-  </requestHandler>
+	<requestHandler name="/get" class="solr.RealTimeGetHandler">
+		<lst name="defaults">
+			<str name="omitHeader">true</str>
+		</lst>
+	</requestHandler>
   
-  <requestHandler name="/replication" class="solr.ReplicationHandler" startup="lazy" /> 
+	<requestHandler name="/replication" class="solr.ReplicationHandler" startup="lazy" /> 
 
-  <requestDispatcher handleSelect="true" >
-    <requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="2048" />
-  </requestDispatcher>
+	<requestDispatcher handleSelect="true" >
+		<requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="2048" />
+  	</requestDispatcher>
   
-  <requestHandler name="standard" class="solr.StandardRequestHandler" default="true" />
-  <requestHandler name="/analysis/field" startup="lazy" class="solr.FieldAnalysisRequestHandler" />
-  <requestHandler name="/update" class="solr.UpdateRequestHandler"  />
-  <requestHandler name="/admin/" class="org.apache.solr.handler.admin.AdminHandlers" />
+	<requestHandler name="standard" class="solr.StandardRequestHandler" default="true" />
+	<requestHandler name="/analysis/field" startup="lazy" class="solr.FieldAnalysisRequestHandler" />
+	<requestHandler name="/update" class="solr.UpdateRequestHandler"  />
+	<requestHandler name="/admin/" class="org.apache.solr.handler.admin.AdminHandlers" />
 
-  <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
-    <lst name="invariants">
-      <str name="q">solrpingquery</str>
-    </lst>
-    <lst name="defaults">
-      <str name="echoParams">all</str>
-    </lst>
-  </requestHandler>
+	<requestHandler name="/admin/ping" class="solr.PingRequestHandler">
+		<lst name="invariants">
+			<str name="q">solrpingquery</str>
+		</lst>
+		<lst name="defaults">
+			<str name="echoParams">all</str>
+		</lst>
+	</requestHandler>
+	
+	<requestHandler name="/select" class="solr.SearchHandler">
+    <!-- default values for query parameters can be specified, these
+         will be overridden by parameters in the request
+      -->
+		<lst name="defaults">
+			<str name="echoParams">explicit</str>
+			<int name="rows">20</int>
+			<str name="df">text</str>
+		</lst>
+	</requestHandler>
 
-  <!-- config for the admin interface --> 
-  <admin>
-    <defaultQuery>solr</defaultQuery>
-  </admin>
+	<!-- config for the admin interface --> 
+  	<admin>
+  		<defaultQuery>solr</defaultQuery>
+  	</admin>
 
 </config>
-
