@@ -243,6 +243,7 @@ public class RiverService {
 
 		River river = mapper.map(riverTO, River.class);
 		river.setAccount(account);
+		river.setActive(Boolean.TRUE);
 		riverDao.create(river);
 
 		accountDao.decreaseRiverQuota(account, 1);
@@ -314,6 +315,7 @@ public class RiverService {
 
 		Channel channel = mapper.map(createChannelTO, Channel.class);
 		channel.setRiver(river);
+		channel.setActive(Boolean.TRUE);
 		channelDao.create(channel);
 
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
@@ -725,8 +727,12 @@ public class RiverService {
 		}
 		
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
-		
-		// Update the channel count
+
+		// Update the river drop count
+		river.setDropCount(river.getDropCount() - 1);
+		riverDao.update(river);
+
+		// Update the channel drop count
 		Channel channel = riverDrop.getChannel();
 		channel.setDropCount(channel.getDropCount() - 1);
 		channelDao.update(channel);
