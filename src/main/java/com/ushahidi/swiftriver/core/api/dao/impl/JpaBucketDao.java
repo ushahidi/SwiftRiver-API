@@ -34,6 +34,7 @@ import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
@@ -42,7 +43,6 @@ import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
-import com.ushahidi.swiftriver.core.support.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 /**

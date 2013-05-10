@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
@@ -45,7 +46,6 @@ import com.ushahidi.swiftriver.core.model.Media;
 import com.ushahidi.swiftriver.core.model.MediaThumbnail;
 import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.DropFilter;
 
 public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 

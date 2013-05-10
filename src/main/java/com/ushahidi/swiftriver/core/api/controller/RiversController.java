@@ -64,11 +64,12 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyRiverDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
+import com.ushahidi.swiftriver.core.api.exception.InvalidFilterException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
+import com.ushahidi.swiftriver.core.api.filter.TrendFilter;
 import com.ushahidi.swiftriver.core.api.service.RiverService;
 import com.ushahidi.swiftriver.core.model.Account;
-import com.ushahidi.swiftriver.core.support.DropFilter;
-import com.ushahidi.swiftriver.core.support.TrendFilter;
 
 @Controller
 @RequestMapping("/v1/rivers")
@@ -420,16 +421,35 @@ public class RiversController extends AbstractController {
 			throw e;
 		}
 		
+		// Build the drop filter
 		DropFilter dropFilter = new DropFilter();
 		dropFilter.setMaxId(maxId);
 		dropFilter.setSinceId(sinceId);
 		dropFilter.setChannels(channelList);
 		dropFilter.setChannelIds(channelIds);
-		dropFilter.setDateFrom(dateFrom);
-		dropFilter.setDateTo(dateTo);
+		
+		try {
+			dropFilter.setDateFrom(dateFrom);
+		} catch (InvalidFilterException e) {
+			errors.add(new ErrorField("date_from", e.getMessage()));
+		}
+		
+		try {
+			dropFilter.setDateTo(dateTo);
+		} catch (InvalidFilterException e) {
+			errors.add(new ErrorField("date_to", e.getMessage()));
+		}
+		
 		dropFilter.setRead(isRead);
 		dropFilter.setPhotos(photos);
 		dropFilter.setKeywords(keywords);
+
+		// Check for errors
+		if (!errors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(errors);
+			throw exception;
+		}
 
 		return riverService.getDrops(id, dropFilter, page, count, principal.getName());
 	}

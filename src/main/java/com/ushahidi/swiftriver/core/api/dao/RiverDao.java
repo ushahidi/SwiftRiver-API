@@ -18,13 +18,13 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
+import com.ushahidi.swiftriver.core.api.filter.TrendFilter;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverTagTrend;
-import com.ushahidi.swiftriver.core.support.DropFilter;
-import com.ushahidi.swiftriver.core.support.TrendFilter;
 
 public interface RiverDao extends GenericDao<River> {
 

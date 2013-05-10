@@ -18,13 +18,13 @@ package com.ushahidi.swiftriver.core.api.dao;
 
 import java.util.List;
 
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketCollaborator;
 import com.ushahidi.swiftriver.core.model.BucketComment;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.support.DropFilter;
 
 public interface BucketDao extends GenericDao<Bucket> {
 

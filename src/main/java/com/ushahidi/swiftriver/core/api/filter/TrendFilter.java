@@ -14,7 +14,7 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.support;
+package com.ushahidi.swiftriver.core.api.filter;
 
 import java.util.Date;
 

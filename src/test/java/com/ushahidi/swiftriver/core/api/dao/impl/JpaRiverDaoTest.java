@@ -27,12 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverCollaboratorDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDao;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
@@ -44,7 +46,6 @@ import com.ushahidi.swiftriver.core.model.RiverCollaborator;
 import com.ushahidi.swiftriver.core.model.RiverDropForm;
 import com.ushahidi.swiftriver.core.model.RiverDropFormField;
 import com.ushahidi.swiftriver.core.model.Tag;
-import com.ushahidi.swiftriver.core.support.DropFilter;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
 public class JpaRiverDaoTest extends AbstractJpaDaoTest {
@@ -57,6 +58,13 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 	@Autowired
 	AccountDao accountDao;
+	
+	private DateFormat dateFormat;
+	
+	@Before
+	public void setUp() {
+		dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+	}
 
 	@Test
 	public void findById() {
@@ -252,7 +260,6 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	public void getDropsFromDate() throws Exception {
 		Account account = accountDao.findById(1L);
 
-		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 		DropFilter filter = new DropFilter();
 		filter.setDateFrom(dateFormat.parse("01/01/2013"));
 		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
@@ -267,7 +274,6 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	public void getDropsToDate() throws Exception {
 		Account account = accountDao.findById(1L);
 
-		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 		DropFilter filter = new DropFilter();
 		filter.setDateTo(dateFormat.parse("01/01/2012"));
 		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
@@ -276,6 +282,24 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 		Drop drop = drops.get(0);
 		assertEquals(1, drop.getId());
+	}
+	
+	/**
+	 * Tests drop fetch where the dateFrom and dateTo
+	 * are the same
+	 * @throws Exception
+	 */
+	@Test
+	public void getDropsForDate() throws Exception {
+		Account account = accountDao.findById(1L);
+		
+		DropFilter filter = new DropFilter();
+		filter.setDateFrom(dateFormat.parse("15/11/2012"));
+		filter.setDateTo(dateFormat.parse("15/11/2012"));
+		
+		List<Drop> drops = riverDao.getDrops(1L, filter, 1, 10, account);
+		assertEquals(3, drops.size());
+		
 	}
 
 	@Test

@@ -73,6 +73,8 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
+import com.ushahidi.swiftriver.core.api.filter.TrendFilter;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.ActivityType;
 import com.ushahidi.swiftriver.core.model.Bucket;
@@ -92,8 +94,6 @@ import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
-import com.ushahidi.swiftriver.core.support.DropFilter;
-import com.ushahidi.swiftriver.core.support.TrendFilter;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 

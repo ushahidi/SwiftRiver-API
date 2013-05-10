@@ -14,10 +14,13 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.support;
+package com.ushahidi.swiftriver.core.api.filter;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import com.ushahidi.swiftriver.core.api.exception.InvalidFilterException;
 
 public class DropFilter {
 
@@ -94,26 +97,57 @@ public class DropFilter {
 	}
 
 	/**
+	 * Sets the minimum date to be used for fetching data.
+	 *  
+	 * If {@link DropFilter#dateFrom} > {@link DropFilter#dateTo},  
+	 * a {@link InvalidFilterException} is thrown with a message that
+	 * the dateFrom cannot be later than dateTo
+	 * 
 	 * @param dateFrom
-	 *            the dateFrom to set
+	 * @throws InvalidFilterException 
 	 */
-	public void setDateFrom(Date dateFrom) {
+	public void setDateFrom(Date dateFrom) throws InvalidFilterException {
+		if (dateFrom == null)
+			return;
+
 		this.dateFrom = dateFrom;
+		if (dateTo != null && dateFrom.after(dateTo)) {
+			throw new InvalidFilterException(String.format(
+					"dateFrom %s cannot be later than dateTo %s", 
+					dateFrom.toString(), dateTo.toString()));
+		}
+		verifyDates();
 	}
 
 	/**
-	 * @return the dateTo
+	 * @return Date
 	 */
 	public Date getDateTo() {
 		return dateTo;
 	}
 
 	/**
+	 * Sets the maximum date to be used for fetching data.
+	 * 
+	 * If {@link DropFilter#dateTo} < {@link DropFilter#dateFrom},
+	 * a {@link InvalidFilterException} with a message that dateTo cannot
+	 * be earlier than dateFrom 
+	 *  
 	 * @param dateTo
-	 *            the dateTo to set
+	 * @throws InvalidFilterException 
 	 */
-	public void setDateTo(Date dateTo) {
+	public void setDateTo(Date dateTo) throws InvalidFilterException {
+		if (dateTo == null)
+			return;
 		this.dateTo = dateTo;
+		if (dateFrom != null && dateTo.before(dateFrom)) {
+			throw new InvalidFilterException(String.format(
+					"dateTo %s cannot be earlier than dateFrom %s", 
+					dateTo.toString(), dateFrom.toString()));
+		}
+		
+		verifyDates();
+		
 	}
 
 	public Long getSinceId() {
@@ -154,6 +188,20 @@ public class DropFilter {
 
 	public void setKeywords(String keywords) {
 		this.keywords = keywords;
+	}
+	
+	/**
+	 * Checks if dateFrom = dateTo. If they are equal,
+	 * dateTo = dateFrom + 24 hrs
+	 */
+	private void verifyDates() {
+		if (dateFrom != null && dateTo != null && dateFrom.equals(dateTo)) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(dateTo);
+			calendar.add(Calendar.HOUR, 24);
+
+			this.dateTo = calendar.getTime(); 
+		}
 	}
 
 }

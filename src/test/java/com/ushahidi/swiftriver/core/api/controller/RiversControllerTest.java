@@ -941,4 +941,11 @@ public class RiversControllerTest extends AbstractControllerTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$[*]").value(hasSize(3)));		
 	}
+	
+	@Test
+	public void getDropsWithInvalidDateRange() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/1/drops?date_from=02-MAY-2013&date_to=01-JAN-2012")
+				.principal(getAuthentication("user1")))
+			.andExpect(status().isBadRequest());
+	}
 }

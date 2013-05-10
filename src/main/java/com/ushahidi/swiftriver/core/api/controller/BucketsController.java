@@ -55,9 +55,10 @@ import com.ushahidi.swiftriver.core.api.dto.ModifyCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyFormValueDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
+import com.ushahidi.swiftriver.core.api.exception.InvalidFilterException;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.api.service.BucketService;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
-import com.ushahidi.swiftriver.core.support.DropFilter;
 
 @Controller
 @RequestMapping("/v1/buckets")
@@ -359,11 +360,27 @@ public class BucketsController extends AbstractController {
 		dropFilter.setMaxId(maxId);
 		dropFilter.setSinceId(sinceId);
 		dropFilter.setChannels(channelList);
-		dropFilter.setDateFrom(dateFrom);
-		dropFilter.setDateTo(dateTo);
+		try {
+			dropFilter.setDateFrom(dateFrom);
+		} catch (InvalidFilterException e) {
+			errors.add(new ErrorField("date_from", e.getMessage()));
+		}
+		
+		try {
+			dropFilter.setDateTo(dateTo);
+		} catch (InvalidFilterException e) {
+			errors.add(new ErrorField("date_to", e.getMessage()));
+		}
 		dropFilter.setRead(isRead);
 		dropFilter.setPhotos(photos);
 		dropFilter.setKeywords(keywords);
+
+		// Check for errors
+		if (!errors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(errors);
+			throw exception;
+		}
 
 		return bucketService.getDrops(id, dropFilter, page, count, principal.getName());
 	}
