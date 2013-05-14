@@ -129,7 +129,7 @@ public class AccountServiceTest {
 		accountService.setRoleDao(mockRoleDao);
 		accountService.setActivityDao(mockActivityDao);
 		accountService.setPasswordEncoder(passwordEncoder);
-		accountService.setKey("2344228477#97{7&6>82");
+		accountService.setEncryptionKey("2344228477#97{7&6>82");
 	}
 
 	@Test
@@ -393,7 +393,7 @@ public class AccountServiceTest {
 		assertNotNull(client.getClientSecret());
 
 		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(accountService.getKey()),
+				TextUtil.convertStringToHex(accountService.getEncryptionKey()),
 				TextUtil.convertStringToHex(client.getClientId()));
 		assertEquals(getClientDTO.getClientSecret(),
 				encryptor.decrypt(client.getClientSecret()));

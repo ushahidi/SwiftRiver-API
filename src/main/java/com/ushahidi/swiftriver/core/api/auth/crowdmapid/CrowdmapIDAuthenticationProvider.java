@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -54,12 +55,16 @@ public class CrowdmapIDAuthenticationProvider implements AuthenticationProvider 
 		String password = authentication.getCredentials().toString();
 		
 		User user = crowdmapIDClient.signIn(username, password);
+		if (user == null) {
+			throw new BadCredentialsException(String.format(
+					"Invalid username/password pair for %s", username));
+		}
 		Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
 		for (Role role: user.getRoles()) {
 			authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()));
 		}
 
-		return new UsernamePasswordAuthenticationToken(username, "", authorities);
+		return new UsernamePasswordAuthenticationToken(user.getName(), "", authorities);
 	}
 
 	@Override

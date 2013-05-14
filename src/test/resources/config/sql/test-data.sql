@@ -16,7 +16,8 @@ INSERT INTO users (id, active, email, name, username, password, logins, last_log
 (3, 1, 'user1@myswiftriver.com', 'User 1', 'user1', 'user1_password', 0, NULL, '2013-01-01 00:00:02'),
 (4, 1, 'user2@myswiftriver.com', 'User 2', 'user2', 'user2_password', 0, NULL, '2013-01-01 00:00:03'),
 (5, 1, 'user3@myswiftriver.com', 'User 3', 'user3', 'user3_password', 0, NULL, '2013-01-01 00:00:04'),
-(6, 0, 'user4@myswiftriver.com', 'User 4', 'user4', 'user4_password', 0, NULL, '2013-01-01 00:00:05');
+(6, 0, 'user4@myswiftriver.com', 'User 4', 'user4', 'user4_password', 0, NULL, '2013-01-01 00:00:05'),
+(7, 1, 'test+user@swiftapp.com', 'Test Swiftapp.com Account', 'swiftapp.test', '$2a$10$6hL3dSYS7GahwOpKcxBcK.kyk6cJyeT6YlYkqwaChvAPUDiRCoRq.', 0, NULL, '2013-05-10 10:13:25');
 
 -- -----------------------------------------------------
 -- Data for table seq

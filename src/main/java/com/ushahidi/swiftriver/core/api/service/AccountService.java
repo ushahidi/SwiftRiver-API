@@ -32,6 +32,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme;
+import com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
@@ -108,7 +110,11 @@ public class AccountService {
 	@Autowired
 	private Mapper mapper;
 
-	private String key;
+	private String encryptionKey;
+	
+	private AuthenticationScheme authenticationScheme;
+
+	private CrowdmapIDClient crowdmapIDClient;
 
 	public RiverService getRiverService() {
 		return riverService;
@@ -186,12 +192,24 @@ public class AccountService {
 		this.mapper = mapper;
 	}
 
-	public String getKey() {
-		return key;
+	public String getEncryptionKey() {
+		return encryptionKey;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setEncryptionKey(String key) {
+		this.encryptionKey = key;
+	}
+
+	public AuthenticationScheme getAuthenticationScheme() {
+		return authenticationScheme;
+	}
+
+	public void setAuthenticationScheme(AuthenticationScheme authenticationScheme) {
+		this.authenticationScheme = authenticationScheme;
+	}
+	
+	public void setCrowdmapIDClient(CrowdmapIDClient crowdmapIDClient) {
+		this.crowdmapIDClient = crowdmapIDClient;
 	}
 
 	/**
@@ -673,7 +691,7 @@ public class AccountService {
 
 		// Encrypt the secret
 		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(encryptionKey),
 				TextUtil.convertStringToHex(clientId));
 		client.setClientSecret(encryptor.encrypt(secret));
 		client.setClientId(clientId);
@@ -689,7 +707,7 @@ public class AccountService {
 	 */
 	private String decryptClientSecret(Client client) {
 		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(encryptionKey),
 				TextUtil.convertStringToHex(client.getClientId()));
 		return encryptor.decrypt(client.getClientSecret());
 	}

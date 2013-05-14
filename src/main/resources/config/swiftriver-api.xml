@@ -36,7 +36,7 @@
     		crowdmapid
     	'database' is the default 
     -->
-    <Envrionment name="auth/scheme" type="java.lang.string" value="database" />
+    <Envrionment name="auth/schemeName" type="java.lang.string" value="database" />
     
     <!-- CrowdmapID API URL e.g. https://example.com/ -->
     <Environment name="crowdmapid/serverURL" type="java.lang.String" value="https://crowdmapid.com" />
