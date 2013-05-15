@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import org.apache.http.client.HttpClient;
@@ -67,10 +68,10 @@ public class CrowdmapIDClientTest {
 		String password = "pa55w0rd";
 		
 		User mockUser = mock(User.class);
-		String apiResponse = "{}";
+		String mockResponse = mock(String.class);
 
 		when(mockUserDao.findByUsernameOrEmail(anyString())).thenReturn(mockUser);
-		when(mockHttpClient.execute(any(HttpUriRequest.class), any(ResponseHandler.class))).thenReturn(apiResponse);
+		when(mockHttpClient.execute(any(HttpUriRequest.class), any(ResponseHandler.class))).thenReturn(mockResponse);
 		
 		crowdmapIDClient.signIn(email, password);
 		verify(mockUserDao).findByUsernameOrEmail(email);
@@ -88,6 +89,31 @@ public class CrowdmapIDClientTest {
 		assertEquals("/signin", httpPost.getURI().getPath());
 		assertEquals("pa55w0rd", requestParams.getParameter("password").toString());
 		assertEquals("test@swiftriver.dev", requestParams.getParameter("email").toString());
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+	public void changePassword() throws Exception {
+		String email = "test@swiftriver.dev";
+		String oldPassword = "old-pa55w0rd";
+		String newPassword = "new-pa55w0rd";
+
+		String mockResponse = mock(String.class);
+
+		when(mockHttpClient.execute(any(HttpUriRequest.class), any(ResponseHandler.class))).thenReturn(mockResponse);
+		boolean loginStatus = crowdmapIDClient.changePassword(email, oldPassword, newPassword);
+		
+		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
+		ArgumentCaptor<ResponseHandler> responseHandlerArgument = ArgumentCaptor.forClass(ResponseHandler.class);
+
+		verify(mockHttpClient).execute(httpPostArgument.capture(), responseHandlerArgument.capture());
+		
+		HttpPost httpPost = httpPostArgument.getValue();
+		HttpParams requestParams = httpPost.getParams();
+		
+		assertTrue(loginStatus);
+		assertEquals(oldPassword, requestParams.getParameter("oldpassword"));
+		assertEquals(newPassword, requestParams.getParameter("newpassword"));
 	}
 	
 }

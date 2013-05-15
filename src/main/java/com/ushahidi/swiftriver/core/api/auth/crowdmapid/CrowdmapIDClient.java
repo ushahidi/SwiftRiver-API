@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.client.ClientProtocolException;
@@ -24,11 +25,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.SyncBasicHttpParams;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +87,8 @@ public class CrowdmapIDClient {
 		setServerURL(serverURL);
 		setApiKey(apiKey);
 		setApiKeyParamName(apiKeyParamName);
+		
+		httpClient = new DefaultHttpClient();
 	}
 
 	public void setUserDao(UserDao userDao) {
@@ -110,36 +115,24 @@ public class CrowdmapIDClient {
 		this.jacksonObjectMapper = objectMapper;
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Sends a signin request to the CrowdmapID server
+	 * @param email
+	 * @param password
+	 * @return
+	 */
 	public User signIn(String email, String password) {
 		User user = userDao.findByUsernameOrEmail(email);
 		if (user != null) {
-			String baseUrl = this.getBaseRequestUrl(CrowdmapIDApiRequest.SIGNIN);
-
 			HttpParams params = new SyncBasicHttpParams();
 			params.setParameter("email", email);
 			params.setParameter("password", password);
 			
-			String jsonResponse = executeApiRequest(baseUrl, params);
-
-			if (jsonResponse.length() == 0) {
+			Map<String, Object> apiResponse = executeApiRequest(CrowdmapIDRequestType.SIGNIN, params);
+			if (apiResponse.isEmpty()) {
 				return null;
 			}
 			
-			try {
-				Map<String, Object> responseMap = jacksonObjectMapper.readValue(jsonResponse, Map.class);
-				
-				if (!responseMap.containsKey("session_id") || responseMap.containsKey("user_id")) {
-					// Authentication failed					
-					return null;
-				}
-			} catch (JsonParseException e) {
-				e.printStackTrace();
-			} catch (JsonMappingException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 		return user;
 	}
@@ -147,19 +140,22 @@ public class CrowdmapIDClient {
 	/**
 	 * Internal helper method for sending request to the CrowdmapID server
 	 * 
-	 * @param baseUrl
+	 * @param apiRequest
 	 * @param params
 	 * @return
 	 */
-	private String executeApiRequest(String baseUrl, HttpParams params) {
-		HttpPost httpPost = new HttpPost(baseUrl);
+	private Map<String, Object> executeApiRequest(CrowdmapIDRequestType apiRequest, HttpParams params) {
+		// Base URI for the request
+		String baseURIStr = getBaseRequestUrl(apiRequest);
+
+		HttpPost httpPost = new HttpPost(baseURIStr);
 		params.setParameter(this.apiKeyParamName, this.apiKey);
 		httpPost.setParams(params);
 
-		String response = null;
+		String apiResponse = null;
 		try {
 			ResponseHandler<String> responseHandler = new BasicResponseHandler();
-			response = httpClient.execute(httpPost, responseHandler);
+			apiResponse = httpClient.execute(httpPost, responseHandler);
 		} catch (ClientProtocolException e) {
 			logger.error("An error occurred when processign request: {}",
 					e.getMessage());
@@ -168,7 +164,34 @@ public class CrowdmapIDClient {
 					e.getMessage());
 		}
 
-		return response;
+		// Deserialize the response from the server
+		Map<String, Object> responseMap = new HashMap<String, Object>();
+		if (apiResponse != null) {
+			try {
+				responseMap = jacksonObjectMapper.readValue(apiResponse, 
+						new TypeReference<Map<String, Object>>() {
+				});
+			} catch (JsonParseException e) {
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// Check for the status
+		if (!responseMap.isEmpty()) {
+			Boolean status = (Boolean) responseMap.get("status");
+			if (!status) {
+				logger.error("The API returned the following error message: {}", 
+						responseMap.get("error"));
+
+				// Clear all mappings and return an empty map
+				responseMap.clear();
+			}
+		}
+		return responseMap;
 	}
 
 	/**
@@ -178,7 +201,7 @@ public class CrowdmapIDClient {
 	 * @param apiRequest
 	 * @return
 	 */
-	private String getBaseRequestUrl(CrowdmapIDApiRequest apiRequest) {
+	private String getBaseRequestUrl(CrowdmapIDRequestType apiRequest) {
 		switch (apiRequest) {
 		case SIGNIN:
 			return serverURL + "/signin";
@@ -197,6 +220,27 @@ public class CrowdmapIDClient {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Sends a changepassword to the CrowdmapID server
+	 * 
+	 * @param email
+	 * @param oldPassword
+	 * @param newPassword
+	 * @return
+	 */
+	public boolean changePassword(String email, String oldPassword,
+			String newPassword) {
+		HttpParams params = new SyncBasicHttpParams();
+
+		params.setParameter("email", email);
+		params.setParameter("oldpassword", oldPassword);
+		params.setParameter("newpassword", newPassword);
+		
+		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.CHANGEPASSWORD, params);
+		
+		return response.isEmpty();
 	}
 
 	

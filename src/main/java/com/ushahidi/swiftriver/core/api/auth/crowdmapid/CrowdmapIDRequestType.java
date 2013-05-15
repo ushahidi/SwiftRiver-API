@@ -16,7 +16,7 @@
  */
 package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
-public enum CrowdmapIDApiRequest {
+public enum CrowdmapIDRequestType {
 
 	/**
 	 * Login request
