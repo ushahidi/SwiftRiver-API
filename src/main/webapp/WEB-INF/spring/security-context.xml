@@ -59,7 +59,7 @@
 	</beans:bean>
 
 	<!-- Configures the authentication provider -->
-	<beans:bean id="authenticationProvider" 
+	<beans:bean id="authenticationProvider"   
 		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<beans:property name="targetObject" ref="authenticationProviders" />
 		<beans:property name="targetMethod" value="get" />

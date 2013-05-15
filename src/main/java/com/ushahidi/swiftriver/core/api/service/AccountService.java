@@ -207,7 +207,11 @@ public class AccountService {
 	public void setAuthenticationScheme(AuthenticationScheme authenticationScheme) {
 		this.authenticationScheme = authenticationScheme;
 	}
-	
+
+	public CrowdmapIDClient getCrowdmapIDClient() {
+		return crowdmapIDClient;
+	}
+
 	public void setCrowdmapIDClient(CrowdmapIDClient crowdmapIDClient) {
 		this.crowdmapIDClient = crowdmapIDClient;
 	}

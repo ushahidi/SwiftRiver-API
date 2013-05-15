@@ -107,7 +107,8 @@
 			expected-type="java.lang.String" />
 
 		<!-- Default authentication scheme-->
-		<jee:jndi-lookup id="authenticationSchemeName" jndi-name="auth/schemeName" expected-type="java.lang.String" />
+		<jee:jndi-lookup id="authenticationSchemeName" jndi-name="authSchemeName" 
+			expected-type="java.lang.String" />
 
 		<!-- CrowdmapIDClient configuration parameters -->
 		<jee:jndi-lookup id="crowdmapIDServerURL" jndi-name="crowdmapid/serverURL" 
