@@ -89,7 +89,7 @@ public class FormService {
 	 */
 	@Transactional(readOnly = false)
 	public GetFormDTO createForm(CreateFormDTO formTo, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		Form form = mapper.map(formTo, Form.class);
 		form.setAccount(account);
@@ -131,7 +131,7 @@ public class FormService {
 
 		Form form = getForm(formId);
 
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (form.getAccount().getId() != account.getId())
 			throw new ForbiddenException("Permission denied.");
@@ -152,7 +152,7 @@ public class FormService {
 	public void deleteForm(Long formId, String authUser) {
 		Form form = getForm(formId);
 
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (form.getAccount().getId() != account.getId())
 			throw new ForbiddenException("Permission denied.");
@@ -171,7 +171,7 @@ public class FormService {
 			String authUser) {
 		Form form = getForm(formId);
 
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (form.getAccount().getId() != account.getId())
 			throw new ForbiddenException("Permission denied.");
@@ -196,7 +196,7 @@ public class FormService {
 			ModifyFormFieldDTO modifyFieldTO, String authUser) {
 		FormField field = getFormField(formId, fieldId);
 
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (field.getForm().getAccount().getId() != account.getId())
 			throw new ForbiddenException("Permission denied.");
@@ -217,7 +217,7 @@ public class FormService {
 	public void deleteField(Long formId, Long fieldId, String authUser) {
 		FormField field = getFormField(formId, fieldId);
 		
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (field.getForm().getAccount().getId() != account.getId())
 			throw new ForbiddenException("Permission denied.");

@@ -227,7 +227,7 @@ public class AccountService {
 			throws NotFoundException {
 		Account account = getAccount(id);
 
-		return mapGetAccountDTO(account, accountDao.findByUsername(authUser));
+		return mapGetAccountDTO(account, accountDao.findByUsernameOrEmail(authUser));
 	}
 
 	/**
@@ -239,7 +239,7 @@ public class AccountService {
 	 */
 	public GetAccountDTO getAccountByUsername(String username)
 			throws NotFoundException {
-		Account account = accountDao.findByUsername(username);
+		Account account = accountDao.findByUsernameOrEmail(username);
 
 		if (account == null) {
 			throw new NotFoundException("Account not found");
@@ -264,7 +264,7 @@ public class AccountService {
 		}
 
 		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
-				accountDao.findByUsername(authUser));
+				accountDao.findByUsernameOrEmail(authUser));
 		if (getToken) {
 			getAccountDTO.setToken(createUserToken(account.getOwner())
 					.getToken());
@@ -288,7 +288,7 @@ public class AccountService {
 		}
 
 		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
-				accountDao.findByUsername(authUser));
+				accountDao.findByUsernameOrEmail(authUser));
 		if (getToken) {
 			getAccountDTO.setToken(createUserToken(account.getOwner())
 					.getToken());
@@ -311,7 +311,7 @@ public class AccountService {
 			throw new NotFoundException("No accounts found");
 		}
 
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 		List<GetAccountDTO> getAccountTOs = new ArrayList<GetAccountDTO>();
 		for (Account account : accounts) {
 			getAccountTOs.add(mapGetAccountDTO(account, queryingAccount));
@@ -380,7 +380,7 @@ public class AccountService {
 			ModifyAccountDTO modifyAccountTO, String authUser) {
 
 		Account account = accountDao.findById(accountId);
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (account == null)
 			throw new NotFoundException("Account not found.");
@@ -572,7 +572,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!authAccount.equals(account))
 			throw new ForbiddenException("Permission Denied");
@@ -604,7 +604,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		if (!account.equals(accountDao.findByUsername(name)))
+		if (!account.equals(accountDao.findByUsernameOrEmail(name)))
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = mapper.map(createClientTO, Client.class);
@@ -627,7 +627,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		if (!account.equals(accountDao.findByUsername(authUser)))
+		if (!account.equals(accountDao.findByUsernameOrEmail(authUser)))
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = clientDao.findById(clientId);
@@ -655,7 +655,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		if (!account.equals(accountDao.findByUsername(authUser)))
+		if (!account.equals(accountDao.findByUsernameOrEmail(authUser)))
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = clientDao.findById(dbClientId);
@@ -1021,7 +1021,7 @@ public class AccountService {
 	 * @return
 	 */
 	public List<GetActivityDTO> getActivities(Long accountId, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return getActivities(accountId, 50, Long.MAX_VALUE, false, false, account);
 	}
 
@@ -1036,7 +1036,7 @@ public class AccountService {
 	 */
 	public List<GetActivityDTO> getTimeline(Integer count, Long lastId,
 			Boolean newer, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return getActivities(account.getId(), count, lastId, newer, true, account);
 	}
 	

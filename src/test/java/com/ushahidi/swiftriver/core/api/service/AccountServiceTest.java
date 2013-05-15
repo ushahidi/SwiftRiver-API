@@ -145,12 +145,12 @@ public class AccountServiceTest {
 
 	@Test
 	public void findByUsername() throws NotFoundException {
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 
 		GetAccountDTO actualGetAccountDTO = accountService
 				.getAccountByUsername("admin");
 
-		verify(mockAccountDao).findByUsername("admin");
+		verify(mockAccountDao).findByUsernameOrEmail("admin");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
@@ -211,7 +211,7 @@ public class AccountServiceTest {
 		List<Account> accounts = new ArrayList<Account>();
 		accounts.add(account);
 		when(mockAccountDao.search(anyString())).thenReturn(accounts);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		accountService.setAccountDao(mockAccountDao);
 
 		List<GetAccountDTO> getAccountDTOs = accountService.searchAccounts(
@@ -296,7 +296,7 @@ public class AccountServiceTest {
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
 		when(mockUserTokenDao.findByToken(anyString())).thenReturn(userToken);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 
 		accountService.modifyAccount(1L, modifyAccount, "admin");
 
@@ -346,7 +346,7 @@ public class AccountServiceTest {
 		account.getClients().add(client);
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 
 		accountService.setMapper(mapper);
 		List<GetClientDTO> clients = accountService.getClients(1L, "username");
@@ -373,7 +373,7 @@ public class AccountServiceTest {
 		createClientDTO.setRedirectUri("http://example.com/redirect");
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockRoleDao.findByName(anyString())).thenReturn(role);
 
 		accountService.setMapper(mapper);
@@ -405,7 +405,7 @@ public class AccountServiceTest {
 		Client client = new Client();
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockClientDao.findById(anyLong())).thenReturn(client);
 
 		accountService.deleteApp(1L, 1L, "admin");

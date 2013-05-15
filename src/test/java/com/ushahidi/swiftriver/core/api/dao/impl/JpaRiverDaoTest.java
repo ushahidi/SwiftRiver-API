@@ -378,7 +378,7 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void testCreateRiver() {
 		River river = new River();
-		Account account = accountDao.findByUsername("user1");
+		Account account = accountDao.findByUsernameOrEmail("user1");
 
 		river.setRiverName("Test river");
 		river.setDescription("test description");
@@ -437,7 +437,7 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void testAddCollaborator() {
 		River river = riverDao.findById(1L);
-		Account account = accountDao.findByUsername("user3");
+		Account account = accountDao.findByUsernameOrEmail("user3");
 
 		riverDao.addCollaborator(river, account, true);
 		em.flush();
