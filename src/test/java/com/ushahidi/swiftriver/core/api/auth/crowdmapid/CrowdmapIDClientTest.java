@@ -102,6 +102,8 @@ public class CrowdmapIDClientTest {
 		assertEquals("/api/signin", httpPost.getURI().getPath());
 		assertEquals("pa55w0rd", requestParams.getParameter("password").toString());
 		assertEquals("test@swiftriver.dev", requestParams.getParameter("email").toString());
+		assertEquals(crowdmapIDClient.getApiKey(), 
+				requestParams.getParameter(crowdmapIDClient.getApiKeyParamName()));
 	}
 	
 	@Test

@@ -67,7 +67,6 @@ public class CrowdmapIDClient {
 	@Autowired
 	private ObjectMapper jacksonObjectMapper;
 	
-	
 	/**
 	 * Default empty constructor
 	 */
@@ -93,16 +92,32 @@ public class CrowdmapIDClient {
 		httpClient = new DefaultHttpClient();
 	}
 
+	public UserDao getUserDao() {
+		return userDao;
+	}
+
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
 	}
 	
+	public String getServerURL() {
+		return serverURL;
+	}
+
 	public void setServerURL(String serverURL) {
 		this.serverURL = serverURL;
 	}
 
+	public String getApiKey() {
+		return apiKey;
+	}
+
 	public void setApiKey(String apiKey) {
 		this.apiKey = apiKey;
+	}
+
+	public String getApiKeyParamName() {
+		return apiKeyParamName;
 	}
 
 	public void setApiKeyParamName(String apiKeyParamName) {
@@ -137,6 +152,27 @@ public class CrowdmapIDClient {
 			
 		}
 		return user;
+	}
+
+	/**
+	 * Sends a changepassword to the CrowdmapID server
+	 * 
+	 * @param email
+	 * @param oldPassword
+	 * @param newPassword
+	 * @return
+	 */
+	public boolean changePassword(String email, String oldPassword,
+			String newPassword) {
+		HttpParams params = new SyncBasicHttpParams();
+	
+		params.setParameter("email", email);
+		params.setParameter("oldpassword", oldPassword);
+		params.setParameter("newpassword", newPassword);
+		
+		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.CHANGEPASSWORD, params);
+		
+		return !response.isEmpty();
 	}
 
 	/**
@@ -259,27 +295,6 @@ public class CrowdmapIDClient {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Sends a changepassword to the CrowdmapID server
-	 * 
-	 * @param email
-	 * @param oldPassword
-	 * @param newPassword
-	 * @return
-	 */
-	public boolean changePassword(String email, String oldPassword,
-			String newPassword) {
-		HttpParams params = new SyncBasicHttpParams();
-
-		params.setParameter("email", email);
-		params.setParameter("oldpassword", oldPassword);
-		params.setParameter("newpassword", newPassword);
-		
-		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.CHANGEPASSWORD, params);
-		
-		return !response.isEmpty();
 	}
 
 	
