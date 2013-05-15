@@ -39,7 +39,7 @@
     <Environment name="authSchemeName" type="java.lang.String" value="database" />
     
     <!-- CrowdmapID API URL e.g. https://example.com/ -->
-    <Environment name="crowdmapid/serverURL" type="java.lang.String" value="https://crowdmapid.com" />
+    <Environment name="crowdmapid/serverURL" type="java.lang.String" value="https://crowdmapid.com/api" />
     
     <!-- The CrowdmapID API key -->
     <Environment name="crowdmapid/apiKey" type="java.lang.String" value="" />

@@ -183,7 +183,7 @@
 		</bean>
 		
 		<bean id="crowdmapIDClient" class="com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient">
-			<constructor-arg index="0" value="https://crowdmapid.com" />
+			<constructor-arg index="0" value="https://crowdmapid.com/api" />
 			<constructor-arg index="1" value="AB1A72D3BE4576F259716C90494ECCE8109E080A5B7484E9CEA9B9E7310FAF01" />
 			<constructor-arg index="2" value="api_secret" />
 		</bean>

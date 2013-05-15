@@ -18,13 +18,21 @@ package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -50,10 +58,10 @@ public class CrowdmapIDClientTest {
 	@Before
 	public void setUp() {
 		mockUserDao = mock(UserDao.class);
-		mockHttpClient = mock(DefaultHttpClient.class);
+		mockHttpClient = mock(HttpClient.class);
 
 		crowdmapIDClient = new CrowdmapIDClient();
-		crowdmapIDClient.setServerURL("https://crowdmapid.com");
+		crowdmapIDClient.setServerURL("https://crowdmapid.com/api");
 		crowdmapIDClient.setApiKey("ABXMDJ04874LPD");
 		crowdmapIDClient.setApiKeyParamName("api_secret");
 		crowdmapIDClient.setUserDao(mockUserDao);
@@ -61,57 +69,72 @@ public class CrowdmapIDClientTest {
 		crowdmapIDClient.setObjectMapper(new ObjectMapper());
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void signIn() throws Exception {
 		String email = "test@swiftriver.dev";
 		String password = "pa55w0rd";
 		
+		String apiResponse = "{\"success\": true}";
+		InputStream inputStream = new ByteArrayInputStream(apiResponse.getBytes());
+
+		// Mock objects for this test
 		User mockUser = mock(User.class);
-		String mockResponse = mock(String.class);
+		HttpResponse mockResponse = mock(HttpResponse.class);
+		HttpEntity mockHttpEntity = mock(HttpEntity.class);
+		StatusLine mockStatusLine = mock(StatusLine.class);
 
 		when(mockUserDao.findByUsernameOrEmail(anyString())).thenReturn(mockUser);
-		when(mockHttpClient.execute(any(HttpUriRequest.class), any(ResponseHandler.class))).thenReturn(mockResponse);
+		when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+		when(mockStatusLine.getStatusCode()).thenReturn(200);
+		when(mockResponse.getEntity()).thenReturn(mockHttpEntity);
+		when(mockHttpEntity.getContent()).thenReturn(inputStream);
+		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
 		
 		crowdmapIDClient.signIn(email, password);
 		verify(mockUserDao).findByUsernameOrEmail(email);
 
 		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
-		ArgumentCaptor<ResponseHandler> responseHandlerArgument = ArgumentCaptor.forClass(ResponseHandler.class);
-
-		verify(mockHttpClient).execute(httpPostArgument.capture(), responseHandlerArgument.capture());
+		verify(mockHttpClient).execute(httpPostArgument.capture());
 
 		HttpPost httpPost = httpPostArgument.getValue();
 		HttpParams requestParams = httpPost.getParams();
 
-		assertEquals("https", httpPost.getURI().getScheme());
-		assertEquals("crowdmapid.com", httpPost.getURI().getHost());
-		assertEquals("/signin", httpPost.getURI().getPath());
+		assertEquals("/api/signin", httpPost.getURI().getPath());
 		assertEquals("pa55w0rd", requestParams.getParameter("password").toString());
 		assertEquals("test@swiftriver.dev", requestParams.getParameter("email").toString());
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void changePassword() throws Exception {
 		String email = "test@swiftriver.dev";
 		String oldPassword = "old-pa55w0rd";
 		String newPassword = "new-pa55w0rd";
 
-		String mockResponse = mock(String.class);
+		String apiResponse = "{\"success\": true}";
+		InputStream inputStream = new ByteArrayInputStream(apiResponse.getBytes());
 
-		when(mockHttpClient.execute(any(HttpUriRequest.class), any(ResponseHandler.class))).thenReturn(mockResponse);
+		// Mock objects for this test
+		HttpResponse mockResponse = mock(HttpResponse.class);
+		HttpEntity mockHttpEntity = mock(HttpEntity.class);
+		StatusLine mockStatusLine = mock(StatusLine.class);
+
+		when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+		when(mockStatusLine.getStatusCode()).thenReturn(200);
+		when(mockResponse.getEntity()).thenReturn(mockHttpEntity);
+		when(mockHttpEntity.getContent()).thenReturn(inputStream);
+		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
+
 		boolean loginStatus = crowdmapIDClient.changePassword(email, oldPassword, newPassword);
 		
 		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
-		ArgumentCaptor<ResponseHandler> responseHandlerArgument = ArgumentCaptor.forClass(ResponseHandler.class);
 
-		verify(mockHttpClient).execute(httpPostArgument.capture(), responseHandlerArgument.capture());
+		verify(mockHttpClient).execute(httpPostArgument.capture());
 		
 		HttpPost httpPost = httpPostArgument.getValue();
 		HttpParams requestParams = httpPost.getParams();
 		
 		assertTrue(loginStatus);
+		assertEquals("/api/changepassword", httpPost.getURI().getPath());
 		assertEquals(oldPassword, requestParams.getParameter("oldpassword"));
 		assertEquals(newPassword, requestParams.getParameter("newpassword"));
 	}

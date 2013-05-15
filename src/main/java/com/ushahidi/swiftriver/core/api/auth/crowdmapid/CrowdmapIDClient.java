@@ -16,15 +16,17 @@
  */
 package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.SyncBasicHttpParams;
@@ -147,25 +149,39 @@ public class CrowdmapIDClient {
 	private Map<String, Object> executeApiRequest(CrowdmapIDRequestType apiRequest, HttpParams params) {
 		// Base URI for the request
 		String baseURIStr = getBaseRequestUrl(apiRequest);
+		Map<String, Object> responseMap = new HashMap<String, Object>();
 
+		// Build the request and set parameters
 		HttpPost httpPost = new HttpPost(baseURIStr);
 		params.setParameter(this.apiKeyParamName, this.apiKey);
 		httpPost.setParams(params);
+		httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
 		String apiResponse = null;
+		
+		// Execute the request
 		try {
-			ResponseHandler<String> responseHandler = new BasicResponseHandler();
-			apiResponse = httpClient.execute(httpPost, responseHandler);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			logger.info("{} return status {}", this.serverURL, statusCode);
+
+			apiResponse = readApiResponse(httpResponse);
+
+			if (statusCode != 200) {
+				logger.error("The server returned status {} - {}", 
+						statusCode,  apiResponse);
+				return responseMap;
+			}
+			
 		} catch (ClientProtocolException e) {
-			logger.error("An error occurred when processign request: {}",
-					e.getMessage());
+			logger.error("An error occurred when processing request: {} - {}",
+					this.serverURL, e.getMessage());
 		} catch (IOException e) {
-			logger.error("An error occurred when reading the response from the server: {}",
-					e.getMessage());
+			logger.error("An error occurred when reading the response from the server: {} - {}",
+					this.serverURL, e.getMessage());
 		}
 
-		// Deserialize the response from the server
-		Map<String, Object> responseMap = new HashMap<String, Object>();
+		// Deserialize the response into a java.util.Map
 		if (apiResponse != null) {
 			try {
 				responseMap = jacksonObjectMapper.readValue(apiResponse, 
@@ -182,7 +198,7 @@ public class CrowdmapIDClient {
 
 		// Check for the status
 		if (!responseMap.isEmpty()) {
-			Boolean status = (Boolean) responseMap.get("status");
+			Boolean status = (Boolean) responseMap.get("success");
 			if (!status) {
 				logger.error("The API returned the following error message: {}", 
 						responseMap.get("error"));
@@ -192,6 +208,29 @@ public class CrowdmapIDClient {
 			}
 		}
 		return responseMap;
+	}
+
+	/**
+	 * Reads the response from the API into a <code>java.lang.String</code>
+	 * 
+	 * @param httpResponse
+	 * @return
+	 * @throws IOException
+	 */
+	private String readApiResponse(HttpResponse httpResponse) throws IOException {
+		HttpEntity entity = httpResponse.getEntity();
+
+		// Write the server to response to a buffer
+		BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));
+		StringBuffer buffer = new StringBuffer();
+		String output = null;
+		while ((output = reader.readLine()) != null) {
+			buffer.append(output);
+		}
+
+		// Close the reader
+		reader.close();
+		return buffer.toString();
 	}
 
 	/**
@@ -240,7 +279,7 @@ public class CrowdmapIDClient {
 		
 		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.CHANGEPASSWORD, params);
 		
-		return response.isEmpty();
+		return !response.isEmpty();
 	}
 
 	
