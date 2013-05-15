@@ -64,7 +64,10 @@ public class CrowdmapIDAuthenticationProvider implements AuthenticationProvider 
 			authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName().toUpperCase()));
 		}
 
-		return new UsernamePasswordAuthenticationToken(user.getName(), "", authorities);
+		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(
+				username, authentication.getCredentials(), authorities);
+		result.setDetails(authentication.getDetails());
+		return result;
 	}
 
 	@Override
