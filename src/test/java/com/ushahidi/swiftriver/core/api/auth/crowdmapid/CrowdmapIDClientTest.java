@@ -33,7 +33,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.params.HttpParams;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -97,13 +96,8 @@ public class CrowdmapIDClientTest {
 		verify(mockHttpClient).execute(httpPostArgument.capture());
 
 		HttpPost httpPost = httpPostArgument.getValue();
-		HttpParams requestParams = httpPost.getParams();
 
 		assertEquals("/api/signin", httpPost.getURI().getPath());
-		assertEquals("pa55w0rd", requestParams.getParameter("password").toString());
-		assertEquals("test@swiftriver.dev", requestParams.getParameter("email").toString());
-		assertEquals(crowdmapIDClient.getApiKey(), 
-				requestParams.getParameter(crowdmapIDClient.getApiKeyParamName()));
 	}
 	
 	@Test
@@ -133,12 +127,9 @@ public class CrowdmapIDClientTest {
 		verify(mockHttpClient).execute(httpPostArgument.capture());
 		
 		HttpPost httpPost = httpPostArgument.getValue();
-		HttpParams requestParams = httpPost.getParams();
 		
 		assertTrue(loginStatus);
 		assertEquals("/api/changepassword", httpPost.getURI().getPath());
-		assertEquals(oldPassword, requestParams.getParameter("oldpassword"));
-		assertEquals(newPassword, requestParams.getParameter("newpassword"));
 	}
 	
 }

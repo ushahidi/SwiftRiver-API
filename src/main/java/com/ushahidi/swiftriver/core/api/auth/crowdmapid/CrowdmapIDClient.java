@@ -19,17 +19,21 @@ package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.SyncBasicHttpParams;
+import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -141,9 +145,9 @@ public class CrowdmapIDClient {
 	public User signIn(String email, String password) {
 		User user = userDao.findByUsernameOrEmail(email);
 		if (user != null) {
-			HttpParams params = new SyncBasicHttpParams();
-			params.setParameter("email", email);
-			params.setParameter("password", password);
+			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("email", email));
+			params.add(new BasicNameValuePair("password", password));
 			
 			Map<String, Object> apiResponse = executeApiRequest(CrowdmapIDRequestType.SIGNIN, params);
 			if (apiResponse.isEmpty()) {
@@ -162,13 +166,12 @@ public class CrowdmapIDClient {
 	 * @param newPassword
 	 * @return
 	 */
-	public boolean changePassword(String email, String oldPassword,
-			String newPassword) {
-		HttpParams params = new SyncBasicHttpParams();
-	
-		params.setParameter("email", email);
-		params.setParameter("oldpassword", oldPassword);
-		params.setParameter("newpassword", newPassword);
+	public boolean changePassword(String email, String oldPassword, String newPassword) {
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+
+		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("oldpassword", oldPassword));
+		params.add(new BasicNameValuePair("newpassword", newPassword));
 		
 		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.CHANGEPASSWORD, params);
 		
@@ -179,19 +182,23 @@ public class CrowdmapIDClient {
 	 * Internal helper method for sending request to the CrowdmapID server
 	 * 
 	 * @param apiRequest
-	 * @param params
+	 * @param requestParams
 	 * @return
 	 */
-	private Map<String, Object> executeApiRequest(CrowdmapIDRequestType apiRequest, HttpParams params) {
+	private Map<String, Object> executeApiRequest(CrowdmapIDRequestType apiRequest, List<NameValuePair> requestParams) {
 		// Base URI for the request
 		String baseURIStr = getBaseRequestUrl(apiRequest);
 		Map<String, Object> responseMap = new HashMap<String, Object>();
 
 		// Build the request and set parameters
 		HttpPost httpPost = new HttpPost(baseURIStr);
-		params.setParameter(this.apiKeyParamName, this.apiKey);
-		httpPost.setParams(params);
-		httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
+		requestParams.add(new BasicNameValuePair(this.apiKeyParamName, this.apiKey));
+
+		try {
+			httpPost.setEntity(new UrlEncodedFormEntity(requestParams, "UTF-8"));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
 
 		String apiResponse = null;
 		
@@ -199,15 +206,15 @@ public class CrowdmapIDClient {
 		try {
 			HttpResponse httpResponse = httpClient.execute(httpPost);
 			int statusCode = httpResponse.getStatusLine().getStatusCode();
-			logger.info("{} return status {}", this.serverURL, statusCode);
 
 			apiResponse = readApiResponse(httpResponse);
-
 			if (statusCode != 200) {
 				logger.error("The server returned status {} - {}", 
 						statusCode,  apiResponse);
 				return responseMap;
 			}
+
+			logger.info("{} returned response: {}", this.serverURL, apiResponse);
 			
 		} catch (ClientProtocolException e) {
 			logger.error("An error occurred when processing request: {} - {}",
