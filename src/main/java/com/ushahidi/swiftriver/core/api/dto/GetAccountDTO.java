@@ -81,7 +81,7 @@ public class GetAccountDTO {
         private String avatar;
         
         @JsonProperty("date_added")
-        private String createdDate;
+        private String dateCreated;
         
         private Boolean active;
 
@@ -109,12 +109,12 @@ public class GetAccountDTO {
 			this.username = username;
 		}
 
-		public String getCreatedDate() {
-			return createdDate;
+		public String getDateCreated() {
+			return dateCreated;
 		}
 
-		public void setCreatedDate(String createdDate) {
-			this.createdDate = createdDate;
+		public void setDateCreated(String dateCreated) {
+			this.dateCreated = dateCreated;
 		}
 
 		public String getAvatar() {

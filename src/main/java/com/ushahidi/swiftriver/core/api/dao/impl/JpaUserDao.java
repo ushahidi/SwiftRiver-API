@@ -32,6 +32,14 @@ import com.ushahidi.swiftriver.core.model.User;
 public class JpaUserDao extends AbstractJpaDao<User> implements UserDao {
 	
 	final Logger logger = LoggerFactory.getLogger(JpaUserDao.class);
+	
+	@Override
+	public User create(User user) {
+		// Set the date created
+		user.setDateCreated(new Date());
+		
+		return super.create(user);
+	}
 
 	/* (non-Javadoc)
 	 * @see com.ushahidi.swiftriver.core.api.dao.UserDao#findByUsername(java.lang.String)
