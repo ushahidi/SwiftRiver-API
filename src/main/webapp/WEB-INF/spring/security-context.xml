@@ -47,17 +47,6 @@
 	<oauth:resource-server id="resourceServerFilter"
 		resource-id="SwiftRiver" token-services-ref="tokenServices" />
 
-	<!-- Configures the authentication scheme -->
-	<beans:bean id="authenticationScheme" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<beans:property name="targetClass" value="com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme"/>
-		<beans:property name="targetMethod" value="getScheme" />
-		<beans:property name="arguments">
-			<beans:list>
-				<beans:ref bean="authenticationSchemeName" />
-			</beans:list>
-		</beans:property>
-	</beans:bean>
-
 	<!-- Configures the authentication provider -->
 	<beans:bean id="authenticationProvider"   
 		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">

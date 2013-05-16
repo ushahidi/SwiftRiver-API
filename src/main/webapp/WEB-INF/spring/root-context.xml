@@ -27,6 +27,7 @@
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
 		<property name="encryptionKey" ref="encryptionKey" />
 		<property name="crowdmapIDClient" ref="crowdmapIDClient" />
+		<property name="authenticationScheme" ref="authenticationScheme" />
 	</bean>
 
 	<!-- Jackson Mapper -->
@@ -97,6 +98,17 @@
 	
 	<!-- Enable DataAccessException translation -->
 	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+	<!-- Configures the authentication scheme -->
+	<bean id="authenticationScheme" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme"/>
+		<property name="targetMethod" value="getScheme" />
+		<property name="arguments">
+			<list>
+				<ref bean="authenticationSchemeName" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- Data Sources -->
 	<beans profile="prod">
@@ -181,7 +193,7 @@
 		<bean id="authenticationSchemeName" class="java.lang.String">
 			<constructor-arg value="database" />
 		</bean>
-		
+
 		<bean id="crowdmapIDClient" class="com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient">
 			<constructor-arg index="0" value="https://crowdmapid.com/api" />
 			<constructor-arg index="1" value="AB1A72D3BE4576F259716C90494ECCE8109E080A5B7484E9CEA9B9E7310FAF01" />
