@@ -404,46 +404,29 @@ public class AccountsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void activateAccount() throws Exception {
-		String postBody = "{\"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\"}";
+		String postBody = "{\"email\":\"user4@myswiftriver.com\", \"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\"}";
 
-		this.mockMvc
-				.perform(
-						put("/v1/accounts/6").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user4")))
-				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.active").value(true))
-				.andExpect(jsonPath("$.owner.active").value(true));
+		this.mockMvc.perform(post("/v1/accounts/activate").content(postBody)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isOk());
 	}
 
 	@Test
 	public void activateAccountWithExpiredToken() throws Exception {
-		String postBody = "{\"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\"}";
+		String postBody = "{\"email\": \"user4@myswiftriver.com\", \"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\"}";
 
-		this.mockMvc
-				.perform(
-						put("/v1/accounts/6").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user4")))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("token"))
-				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+		this.mockMvc.perform(post("/v1/accounts/activate").content(postBody)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest());
 	}
 
 	@Test
 	public void activateAccountWithNonExistentToken() throws Exception {
-		String postBody = "{\"token\":\"this can't be a token\"}";
+		String postBody = "{\"email\": \"user4@myswiftriver.com\", \"token\":\"this can't be a token\"}";
 
-		this.mockMvc
-				.perform(
-						put("/v1/accounts/6").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user4")))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("token"))
-				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+		this.mockMvc.perform(post("/v1/accounts/activate").content(postBody)
+				.contentType(MediaType.APPLICATION_JSON))
+			.andExpect(status().isBadRequest());
 	}
 
 	@Test

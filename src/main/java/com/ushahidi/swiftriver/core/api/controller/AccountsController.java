@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.ActivateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
@@ -312,5 +313,11 @@ public class AccountsController extends AbstractController {
 	public void deleteApp(@PathVariable Long accountId,
 			@PathVariable Long appId, Principal principal) {
 		accountService.deleteApp(accountId, appId, principal.getName());
+	}
+	
+	@RequestMapping(value = "/activate", method = RequestMethod.POST)
+	@ResponseBody
+	public void activateAccount(@RequestBody ActivateAccountDTO body) {
+		accountService.activateAccount(body);
 	}
 }

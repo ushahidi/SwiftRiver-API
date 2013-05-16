@@ -16,9 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +46,8 @@ import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme;
+import com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
@@ -94,6 +107,8 @@ public class AccountServiceTest {
 
 	private PasswordEncoder passwordEncoder;
 
+	private CrowdmapIDClient mockCrowdmapIDClient;
+	
 	@Before
 	public void setup() {
 		account = new Account();
@@ -117,6 +132,7 @@ public class AccountServiceTest {
 				getAccountDTO);
 		mockRiverService = mock(RiverService.class);
 		mockBucketService = mock(BucketService.class);
+		mockCrowdmapIDClient = mock(CrowdmapIDClient.class);
 
 		accountService = new AccountService();
 		accountService.setRiverService(mockRiverService);
@@ -130,6 +146,8 @@ public class AccountServiceTest {
 		accountService.setActivityDao(mockActivityDao);
 		accountService.setPasswordEncoder(passwordEncoder);
 		accountService.setEncryptionKey("2344228477#97{7&6>82");
+		accountService.setAuthenticationScheme(AuthenticationScheme.DEFAULT);
+		accountService.setCrowdmapIDClient(mockCrowdmapIDClient);
 	}
 
 	@Test
@@ -223,7 +241,7 @@ public class AccountServiceTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void createAccount() {
+	public void createAccountForDefaultAuthentication() {
 		when(mockMapper.map(any(Account.class), any(Class.class))).thenReturn(
 				getAccountDTO);
 
@@ -262,6 +280,34 @@ public class AccountServiceTest {
 
 		assertEquals(getAccountDTO, actual);
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void createAccountForCrowdmapIDAuthentication() {
+		accountService.setAuthenticationScheme(AuthenticationScheme.CROWDMAPID);
+
+		CreateAccountDTO createAccount = new CreateAccountDTO();
+		createAccount.setAccountPath("account_path");
+		createAccount.setAccountPrivate(true);
+		createAccount.setEmail("email@example.com");
+		createAccount.setName("account name");
+		createAccount.setPassword("totally secret");
+		
+		String crowdmapIDUID = "0487fLPSOFKFL9484LAJFJGXBN";
+
+		when(mockMapper.map(any(Account.class), any(Class.class))).thenReturn(
+				getAccountDTO);
+
+		when(mockCrowdmapIDClient.isRegistered(anyString())).thenReturn(Boolean.FALSE);
+		when(mockCrowdmapIDClient.register(anyString(), anyString())).thenReturn(crowdmapIDUID);
+		
+		accountService.createAccount(createAccount);
+		
+		verify(mockCrowdmapIDClient).isRegistered("email@example.com");
+		verify(mockCrowdmapIDClient).register("email@example.com", "totally secret");
+		
+	}
+	
 
 	@Test
 	public void modifyAccount() {

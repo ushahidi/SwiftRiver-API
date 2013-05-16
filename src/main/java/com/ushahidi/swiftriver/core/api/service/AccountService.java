@@ -40,6 +40,7 @@ import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
+import com.ushahidi.swiftriver.core.api.dto.ActivateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
@@ -351,7 +352,19 @@ public class AccountService {
 		user.setName(createAccountTO.getName());
 		user.setEmail(createAccountTO.getEmail());
 		user.setUsername(createAccountTO.getEmail());
-		user.setPassword(passwordEncoder.encode(createAccountTO.getPassword()));
+
+		String password = createAccountTO.getPassword();
+
+		// Check the authentication scheme
+		switch (this.authenticationScheme) {
+		case DEFAULT:
+			user.setPassword(passwordEncoder.encode(password));
+			break;
+
+		case CROWDMAPID:
+			createCrowdmapIDAccount(user, password);
+			break;
+		}
 		userDao.create(user);
 
 		Account account = new Account();
@@ -365,6 +378,31 @@ public class AccountService {
 		UserToken token = createUserToken(user);
 		getAccountTo.setToken(token.getToken());
 		return getAccountTo;
+	}
+
+	/**
+	 * Creates a user on CrowdmapID
+	 * 
+	 * @param user
+	 * @param password
+	 */
+	private void createCrowdmapIDAccount(User user, String password) {
+		// Check if the user exists
+		String email = user.getEmail();
+		
+		// Is the email registered on CrowdmapID?
+		if (crowdmapIDClient.isRegistered(email)) {
+			throw new BadRequestException(String.format(
+					"'%s' is already registered to another user", email));
+		}
+		
+		String crowdmapUUID = crowdmapIDClient.register(email, password);
+		if (crowdmapUUID == null) {
+			throw new BadRequestException(String.format(
+					"An error occurred while registering '%s'",email));
+		}
+		
+		logger.debug("{} successfully created with unique ID {}", email, crowdmapUUID);
 	}
 
 	/**
@@ -389,8 +427,7 @@ public class AccountService {
 		// modified
 		// raise an error
 		if (!account.equals(queryingAccount)) {
-			throw new ForbiddenException(
-					"You do not have sufficient privileges to modify this account");
+			throw new ForbiddenException("Permission denied");
 		}
 
 		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
@@ -406,12 +443,6 @@ public class AccountService {
 			}
 		}
 
-		// If modifying password without a token, raise an error
-		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
-				&& modifyAcOwner.getPassword() != null
-				&& modifyAcOwner.getCurrentPassword() == null)
-			throw ErrorUtil.getBadRequestException("token", "missing");
-
 		// > Account Owner properties
 		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
 			String email = modifyAcOwner.getEmail();
@@ -424,11 +455,6 @@ public class AccountService {
 
 		// Password change
 		if (modifyAcOwner != null && modifyAcOwner.getCurrentPassword() != null) {
-			// No token required for a change password
-			if (modifyAccountTO.getToken() != null) {
-				throw ErrorUtil.getBadRequestException("token",
-						"Invalid parameter");
-			}
 
 			// Check for new password
 			if (modifyAcOwner.getPassword() == null) {
@@ -441,42 +467,19 @@ public class AccountService {
 				throw ErrorUtil.getBadRequestException("password", "invalid");
 			}
 
-			String password = passwordEncoder.encode(modifyAcOwner
-					.getPassword());
-			modifyAcOwner.setPassword(password);
-		}
+			String password = modifyAcOwner.getCurrentPassword();
+			
+			// Check the authentication scheme
+			switch (this.authenticationScheme) {
+			case CROWDMAPID:
+				crowdmapIDClient.changePassword(account.getOwner().getEmail(),
+						modifyAcOwner.getCurrentPassword(), password);
+				break;
 
-		// Account activation or password reset
-		if (modifyAccountTO.getToken() != null) {
-			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
-				throw ErrorUtil.getBadRequestException("token", "invalid");
-
-			// If a token is present, the account is active and no password,
-			// then raise an error. Probably a password reset but password
-			// missing.
-			if (account.getOwner().getActive()
-					&& (modifyAcOwner == null || (modifyAcOwner != null && modifyAcOwner
-							.getPassword() == null)))
-				throw ErrorUtil.getBadRequestException("password", "missing");
-
-			// Activate account if inactive
-			if (!account.getOwner().getActive()) {
-				account.setActive(true);
-				User user = account.getOwner();
-				user.setActive(true);
-				user.setExpired(false);
-				user.setLocked(false);
-				user.setRoles(new HashSet<Role>());
-				user.getRoles().add(roleDao.findByName("user"));
+				default:
+					modifyAcOwner.setPassword( passwordEncoder.encode(password));
 			}
-
-			// Encode and set the new password
-			if (modifyAccountTO.getToken() != null && modifyAcOwner != null
-					&& modifyAcOwner.getPassword() != null) {
-				String password = passwordEncoder.encode(modifyAcOwner
-						.getPassword());
-				modifyAcOwner.setPassword(password);
-			}
+			
 		}
 
 		mapper.map(modifyAccountTO, account);
@@ -527,7 +530,7 @@ public class AccountService {
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public boolean isTokenValid(String tokenString, User user) {
+	public boolean isValidToken(String tokenString, User user) {
 		// Activate account is matching user token found
 		UserToken token = userTokenDao.findByToken(tokenString);
 
@@ -1038,6 +1041,41 @@ public class AccountService {
 			Boolean newer, String authUser) {
 		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return getActivities(account.getId(), count, lastId, newer, true, account);
+	}
+
+	/**
+	 * Activates the account with
+	 * 
+	 * @param activateAccountDTO
+	 */
+	public void activateAccount(ActivateAccountDTO activateAccountDTO) {
+		String email = activateAccountDTO.getEmail();
+		Account account = accountDao.findByEmail(email);
+
+		if (account == null) {
+			throw new NotFoundException(String.format("Account %s not found", email));
+		}
+		
+		// Validate the token
+		if (!isValidToken(activateAccountDTO.getToken(), account.getOwner())) {
+			logger.debug("Invalid token {}", activateAccountDTO.getToken());
+			throw new BadRequestException(String.format(
+					"Invalid activation token specified - %s", activateAccountDTO.getToken()));
+		}
+		
+		// Activate account if inactive
+		if (!account.getOwner().getActive()) {
+			account.setActive(true);
+			User user = account.getOwner();
+			user.setActive(true);
+			user.setExpired(false);
+			user.setLocked(false);
+			user.setRoles(new HashSet<Role>());
+			user.getRoles().add(roleDao.findByName("user"));
+			
+			accountDao.update(account);
+			userDao.update(user);
+		}
 	}
 	
 	
