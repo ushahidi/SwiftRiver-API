@@ -179,6 +179,47 @@ public class CrowdmapIDClient {
 	}
 
 	/**
+	 * Checks whether the specified <code>email</code> is registered
+	 * on the CrowdmapID server
+	 *  
+	 * @param email
+	 * @return
+	 */
+	public boolean isRegistered(String email) {
+		logger.info("Checking if {} is registered", email);
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("email", email));
+		
+		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.REGISTERED, params);
+		if (!response.isEmpty()){
+			return (Boolean) response.get("response");
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Sends a user registration request to the CrowdmapID server
+	 * If successful, the server returns a 128 alphanumeric user identifier
+	 * This value is contained in <code>response</code> property
+	 * of the JSON response body returned by the server.
+	 *  
+	 * @param email
+	 * @param password
+	 * @return
+	 */
+	public String register(String email, String password) {
+		// Check if the email is already registered
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("password", password));
+	
+		Map<String, Object> response = executeApiRequest(CrowdmapIDRequestType.REGISTER, params);
+	
+		return response.isEmpty() ? null : (String) response.get("response");
+	}
+
+	/**
 	 * Internal helper method for sending request to the CrowdmapID server
 	 * 
 	 * @param apiRequest
@@ -214,7 +255,7 @@ public class CrowdmapIDClient {
 				return responseMap;
 			}
 
-			logger.info("{} returned response: {}", this.serverURL, apiResponse);
+			logger.debug("{} returned response: {}", this.serverURL, apiResponse);
 			
 		} catch (ClientProtocolException e) {
 			logger.error("An error occurred when processing request: {} - {}",
@@ -299,9 +340,12 @@ public class CrowdmapIDClient {
 			
 		case SETPASSWORD:
 			return serverURL + "/setpassword";
+			
+		case REGISTERED:
+			return serverURL + "/registered";
 		}
 
-		return null;
+		return serverURL;
 	}
 
 	

@@ -44,7 +44,12 @@ public enum CrowdmapIDRequestType {
 	 * sent a <code>REQUESTPASSWORD</code> request and
 	 * received a password reset token 
 	 */
-	SETPASSWORD;
+	SETPASSWORD, 
+	
+	/**
+	 * Used to check whether an email is registered
+	 */
+	REGISTERED;
 	
 	
 }

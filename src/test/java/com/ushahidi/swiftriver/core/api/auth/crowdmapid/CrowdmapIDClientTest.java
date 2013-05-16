@@ -17,6 +17,7 @@
 package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -130,6 +131,58 @@ public class CrowdmapIDClientTest {
 		
 		assertTrue(loginStatus);
 		assertEquals("/api/changepassword", httpPost.getURI().getPath());
+	}
+	
+	@Test
+	public void register() throws Exception {
+		String email = "newuser@myswiftapp.com";
+		String password = "newuser-pa55word";
+		
+		String apiResponse = "{\"success\": true, \"response\": \"XMDJF50FLP039LPOV048585049MCN85MJFFHSA1039\"}";
+		InputStream inputStream = new ByteArrayInputStream(apiResponse.getBytes());
+
+		HttpResponse mockResponse = mock(HttpResponse.class);
+		HttpEntity mockHttpEntity = mock(HttpEntity.class);
+		StatusLine mockStatusLine = mock(StatusLine.class);
+
+		when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+		when(mockStatusLine.getStatusCode()).thenReturn(200);
+		when(mockResponse.getEntity()).thenReturn(mockHttpEntity);
+		when(mockHttpEntity.getContent()).thenReturn(inputStream);
+		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
+		
+		String crowdmapId = crowdmapIDClient.register(email, password);
+		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
+		verify(mockHttpClient).execute(httpPostArgument.capture());
+		
+		HttpPost httpPost = httpPostArgument.getValue();
+		assertEquals("/api/register", httpPost.getURI().getPath());
+		assertEquals("XMDJF50FLP039LPOV048585049MCN85MJFFHSA1039", crowdmapId);
+	}
+	
+	@Test
+	public void isRegistered() throws Exception {
+		String apiResponse = "{\"success\": true, \"response\": false}";
+		InputStream inputStream = new ByteArrayInputStream(apiResponse.getBytes());
+
+		HttpResponse mockResponse = mock(HttpResponse.class);
+		HttpEntity mockHttpEntity = mock(HttpEntity.class);
+		StatusLine mockStatusLine = mock(StatusLine.class);
+
+		when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+		when(mockStatusLine.getStatusCode()).thenReturn(200);
+		when(mockResponse.getEntity()).thenReturn(mockHttpEntity);
+		when(mockHttpEntity.getContent()).thenReturn(inputStream);
+		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
+
+		boolean isRegistered = crowdmapIDClient.isRegistered("newuser@myswiftapp.com");
+		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
+		verify(mockHttpClient).execute(httpPostArgument.capture());
+		
+		HttpPost httpPost = httpPostArgument.getValue();
+		assertEquals("/api/registered", httpPost.getURI().getPath());
+		assertFalse(isRegistered);
+		
 	}
 	
 }
