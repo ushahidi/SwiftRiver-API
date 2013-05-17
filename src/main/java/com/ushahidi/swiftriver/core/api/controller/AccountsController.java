@@ -1,16 +1,18 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
@@ -38,6 +40,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
+import com.ushahidi.swiftriver.core.api.dto.ResetPasswordDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -315,9 +318,28 @@ public class AccountsController extends AbstractController {
 		accountService.deleteApp(accountId, appId, principal.getName());
 	}
 	
+	/**
+	 * Handles activation of newly created accounts
+	 * 
+	 * @param body
+	 */
 	@RequestMapping(value = "/activate", method = RequestMethod.POST)
 	@ResponseBody
 	public void activateAccount(@RequestBody ActivateAccountDTO body) {
 		accountService.activateAccount(body);
+	}
+	
+	/**
+	 * Handles resetting of passwords following a <code>forgot_password</code>
+	 * request i.e. the client must have submitted a <code>forgot_password</code>
+	 * request in order to be issue with a secret token which is then used
+	 * to validate the <code>reset_password</code> operation  
+	 * 
+	 * @param resetPasswordDto
+	 */
+	@RequestMapping(value="/reset_password", method=RequestMethod.POST)
+	@ResponseBody
+	public void resetPassword(@RequestBody ResetPasswordDTO resetPasswordDto) {
+		accountService.resetPassword(resetPasswordDto);
 	}
 }

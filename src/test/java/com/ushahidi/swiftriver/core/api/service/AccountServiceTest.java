@@ -17,7 +17,6 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -318,6 +317,8 @@ public class AccountServiceTest {
 		user.setExpired(true);
 		user.setLocked(true);
 		user.setId(1);
+		user.setPassword("$2a$05$f0I9XjamKm4LEaF8av1Zy.tzBrzFM0smLMKvMAqUWicGAcEnkCdQe");
+
 		Account account = new Account();
 		account.setActive(false);
 		account.setOwner(user);
@@ -334,10 +335,10 @@ public class AccountServiceTest {
 		modifyAccount.setToken("this is a token");
 
 		ModifyAccountDTO.User owner = new ModifyAccountDTO.User();
-		modifyAccount.setOwner(owner);
 		owner.setEmail("email@example.com");
 		owner.setName("owner's new name");
 		owner.setPassword("new password");
+		owner.setCurrentPassword("password");
 		modifyAccount.setOwner(owner);
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
@@ -354,10 +355,6 @@ public class AccountServiceTest {
 		assertEquals("new account path", modifiedAccount.getAccountPath());
 		assertTrue(modifiedAccount.isAccountPrivate());
 		assertEquals(999, modifiedAccount.getRiverQuotaRemaining());
-		assertTrue(modifiedAccount.isActive());
-		assertTrue(modifiedAccount.getOwner().getActive());
-		assertFalse(modifiedAccount.getOwner().getExpired());
-		assertFalse(modifiedAccount.getOwner().getLocked());
 		assertEquals("email@example.com", modifiedAccount.getOwner().getEmail());
 		assertEquals("owner's new name", modifiedAccount.getOwner().getName());
 		assertTrue(passwordEncoder.matches("new password", modifiedAccount

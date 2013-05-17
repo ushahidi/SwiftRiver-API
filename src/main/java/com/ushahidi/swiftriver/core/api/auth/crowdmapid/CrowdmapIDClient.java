@@ -220,13 +220,30 @@ public class CrowdmapIDClient {
 	}
 
 	/**
+	 * Sets a new password for the user with the specified <code>email</code>
+	 *  
+	 * @param token
+	 * @param email
+	 * @param password
+	 */
+	public boolean setPassword(String token, String email, String password) {
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("passsword", password));
+		params.add(new BasicNameValuePair("token", token));
+		
+		return !executeApiRequest(CrowdmapIDRequestType.SETPASSWORD, params).isEmpty();
+	}
+
+	/**
 	 * Internal helper method for sending request to the CrowdmapID server
 	 * 
 	 * @param apiRequest
 	 * @param requestParams
 	 * @return
 	 */
-	private Map<String, Object> executeApiRequest(CrowdmapIDRequestType apiRequest, List<NameValuePair> requestParams) {
+	private Map<String, Object> executeApiRequest(CrowdmapIDRequestType apiRequest, 
+			List<NameValuePair> requestParams) {
 		// Base URI for the request
 		String baseURIStr = getBaseRequestUrl(apiRequest);
 		Map<String, Object> responseMap = new HashMap<String, Object>();
@@ -250,8 +267,7 @@ public class CrowdmapIDClient {
 
 			apiResponse = readApiResponse(httpResponse);
 			if (statusCode != 200) {
-				logger.error("The server returned status {} - {}", 
-						statusCode,  apiResponse);
+				logger.error("The server returned status {} - {}", statusCode,  apiResponse);
 				return responseMap;
 			}
 

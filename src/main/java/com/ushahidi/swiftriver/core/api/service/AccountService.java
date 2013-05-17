@@ -49,6 +49,7 @@ import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
+import com.ushahidi.swiftriver.core.api.dto.ResetPasswordDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
@@ -461,23 +462,23 @@ public class AccountService {
 				throw ErrorUtil.getBadRequestException("password", "missing");
 			}
 
-			// Current password
-			if (!passwordEncoder.matches(modifyAcOwner.getCurrentPassword(),
-					account.getOwner().getPassword())) {
-				throw ErrorUtil.getBadRequestException("password", "invalid");
-			}
-
-			String password = modifyAcOwner.getCurrentPassword();
+			String newPassword = modifyAcOwner.getPassword();
+			String currentPassword = modifyAcOwner.getCurrentPassword();
 			
 			// Check the authentication scheme
 			switch (this.authenticationScheme) {
 			case CROWDMAPID:
 				crowdmapIDClient.changePassword(account.getOwner().getEmail(),
-						modifyAcOwner.getCurrentPassword(), password);
+						currentPassword, newPassword);
 				break;
 
 				default:
-					modifyAcOwner.setPassword( passwordEncoder.encode(password));
+					// Current password
+					if (!passwordEncoder.matches(currentPassword,
+							account.getOwner().getPassword())) {
+						throw ErrorUtil.getBadRequestException("password", "invalid");
+					}
+					modifyAcOwner.setPassword(passwordEncoder.encode(newPassword));
 			}
 			
 		}
@@ -1044,7 +1045,7 @@ public class AccountService {
 	}
 
 	/**
-	 * Activates the account with
+	 * Activates a newly created account.
 	 * 
 	 * @param activateAccountDTO
 	 */
@@ -1053,7 +1054,7 @@ public class AccountService {
 		Account account = accountDao.findByEmail(email);
 
 		if (account == null) {
-			throw new NotFoundException(String.format("Account %s not found", email));
+			throw new NotFoundException(String.format("Account %s does not exist", email));
 		}
 		
 		// Validate the token
@@ -1077,6 +1078,61 @@ public class AccountService {
 			userDao.update(user);
 		}
 	}
-	
+
+	/**
+	 * Sets a new password for the user associated with the email
+	 * specified in <code>resetPasswordDto</code>  
+	 * 
+	 * @param resetPasswordDto
+	 */
+	@Transactional(readOnly = false)
+	public void resetPassword(ResetPasswordDTO resetPasswordDto) {
+		// Validate parameters
+		List<ErrorField> validationErrors = new ArrayList<ErrorField>();
+		if (resetPasswordDto.getEmail() == null) {
+			validationErrors.add(new ErrorField("email", "missing"));
+		}
+		
+		if (resetPasswordDto.getPassword() == null) {
+			validationErrors.add(new ErrorField("password", "missing"));
+		}
+		
+		if (resetPasswordDto.getToken() == null) {
+			validationErrors.add(new ErrorField("token", "missing"));
+		}
+
+		// Do we have validation errors?
+		if (!validationErrors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(validationErrors);
+			throw exception;
+		}
+
+		String email = resetPasswordDto.getEmail();
+		Account account = accountDao.findByEmail(email);
+		if (account == null) {
+			throw new NotFoundException(String.format("Account '%s' does not exist", email));
+		}
+
+		// Reset the password
+		switch (authenticationScheme) {
+		case CROWDMAPID:
+			boolean success = crowdmapIDClient.setPassword(
+					resetPasswordDto.getToken(), email, 
+					resetPasswordDto.getPassword());
+			if (!success) {
+				throw new BadRequestException("Password reset failed");
+			}
+			break;
+
+		default:
+			if (!isValidToken(resetPasswordDto.getToken(), account.getOwner())) {
+				throw new BadRequestException(String.format(
+						"Invalid token specified - '%s'", resetPasswordDto.getToken()));
+			}
+			User user = account.getOwner();
+			user.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+		}
+	}
 	
 }

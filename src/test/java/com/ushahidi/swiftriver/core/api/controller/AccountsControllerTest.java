@@ -318,39 +318,38 @@ public class AccountsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void resetPassword() throws Exception {
-		String postBody = "{\"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\",\"owner\":{\"password\":\"new password\"}}";
+		String postBody = "{\"email\":\"user4@myswiftriver.com\"," +
+				"\"token\":\"18012e9d-0e26-47f5-848f-ad81c96fc3f4\"," +
+				"\"password\":\"new password\"}";
 
 		this.mockMvc.perform(
-				put("/v1/accounts/6").content(postBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user4"))).andExpect(
-				status().isOk());
+				post("/v1/accounts/reset_password").content(postBody)
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
 	}
 
 	@Test
-	public void resetPasswordWithoutOwnerArray() throws Exception {
-		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\"}";
+	public void resetPasswordWithoutEmail() throws Exception {
+		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\", \"password\": \"new-password\"}";
 
 		this.mockMvc
 				.perform(
-						put("/v1/accounts/5").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user3")))
+						post("/v1/accounts/reset_password").content(postBody)
+							.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("password"))
+				.andExpect(jsonPath("$.errors[0].field").value("email"))
 				.andExpect(jsonPath("$.errors[0].code").value("missing"));
 	}
 
 	@Test
-	public void resetasswordWithoutPasswordInOwnerArray() throws Exception {
-		String postBody = "{\"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\",\"owner\":{}}";
+	public void resetasswordWithoutPassword() throws Exception {
+		String postBody = "{\"email\":\"user3@myswiftriver.com\", \"token\":\"15f8cc2c-e7c1-4298-9f41-f42d1de3043e\"}";
 
 		this.mockMvc
 				.perform(
-						put("/v1/accounts/5").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("user3")))
+						post("/v1/accounts/reset_password").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.errors").isArray())
 				.andExpect(jsonPath("$.errors[0].field").value("password"))
@@ -359,13 +358,12 @@ public class AccountsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void resetPasswordWithoutToken() throws Exception {
-		String postBody = "{\"owner\":{\"password\":\"new password\"}}";
+		String postBody = "{\"email\":\"myswiftriver@myswiftriver.com\", \"password\":\"new password\"}";
 
 		this.mockMvc
 				.perform(
-						put("/v1/accounts/1").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("admin")))
+						post("/v1/accounts/reset_password").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.errors").isArray())
 				.andExpect(jsonPath("$.errors[0].field").value("token"))
@@ -374,32 +372,28 @@ public class AccountsControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void resetPasswordWithInvalidTokenToken() throws Exception {
-		String postBody = "{\"token\":\"This is invalid\",\"owner\":{\"password\":\"new password\"}}";
+		String postBody = "{\"token\":\"This is invalid\"," +
+				"\"email\":\"myswiftriver@myswiftriver.com\", " +
+				"\"password\": \"admin-password\"}";
 
 		this.mockMvc
 				.perform(
-						put("/v1/accounts/1").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("admin")))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("token"))
-				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+						post("/v1/accounts/reset_password").content(postBody)
+							.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test
 	public void resetPasswordWithExpiredTokenToken() throws Exception {
-		String postBody = "{\"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\",\"owner\":{\"password\":\"new password\"}}";
+		String postBody = "{\"token\":\"4f3cf69c18da-f848-5f74-62e0-d9e21081\"," +
+				"\"password\":\"new password\"," +
+				"\"email\":\"myswiftriver@myswiftriver.com\"}";
 
 		this.mockMvc
 				.perform(
-						put("/v1/accounts/1").content(postBody)
-								.contentType(MediaType.APPLICATION_JSON)
-								.principal(getAuthentication("admin")))
-				.andExpect(status().isBadRequest())
-				.andExpect(jsonPath("$.errors").isArray())
-				.andExpect(jsonPath("$.errors[0].field").value("token"))
-				.andExpect(jsonPath("$.errors[0].code").value("invalid"));
+						post("/v1/accounts/reset_password").content(postBody)
+								.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isBadRequest());
 	}
 
 	@Test
