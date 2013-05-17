@@ -176,7 +176,7 @@ public class AccountServiceTest {
 		when(mockAccountDao.findByAccountPath(anyString())).thenReturn(account);
 
 		GetAccountDTO actualGetAccountDTO = accountService
-				.getAccountByAccountPath("default", false, "user1");
+				.getAccountByAccountPath("default", "user1");
 
 		verify(mockAccountDao).findByAccountPath("default");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
@@ -187,7 +187,7 @@ public class AccountServiceTest {
 		when(mockAccountDao.findByEmail(anyString())).thenReturn(account);
 
 		GetAccountDTO actualGetAccountDTO = accountService.getAccountByEmail(
-				"email", false, "user1");
+				"email", "user1");
 
 		verify(mockAccountDao).findByEmail("email");
 		assertEquals(getAccountDTO, actualGetAccountDTO);

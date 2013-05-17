@@ -77,32 +77,6 @@ public class AccountsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void getAccountWithTokenForAccountPath() throws Exception {
-		this.mockMvc
-				.perform(
-						get("/v1/accounts?account_path=user1&token=1")
-								.principal(getAuthentication("user1")))
-				.andExpect(status().isOk())
-				.andExpect(
-						content().contentType("application/json;charset=UTF-8"))
-				.andExpect(jsonPath("$.id").value(3))
-				.andExpect(jsonPath("$.token").exists());
-	}
-
-	@Test
-	public void getAccountWithTokenForEmail() throws Exception {
-		this.mockMvc
-				.perform(
-						get("/v1/accounts?email=user3@myswiftriver.com&token=1")
-								.principal(getAuthentication("user1")))
-				.andExpect(status().isOk())
-				.andExpect(
-						content().contentType("application/json;charset=UTF-8"))
-				.andExpect(jsonPath("$.id").value(5))
-				.andExpect(jsonPath("$.token").exists());
-	}
-
-	@Test
 	public void searchAccounts() throws Exception {
 		this.mockMvc
 				.perform(
@@ -172,8 +146,7 @@ public class AccountsControllerTest extends AbstractControllerTest {
 								.principal(getAuthentication("user1")))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.id").value(7))
-				.andExpect(jsonPath("$.active").value(false))
-				.andExpect(jsonPath("$.token").exists());
+				.andExpect(jsonPath("$.active").value(false));
 	}
 
 	@Test

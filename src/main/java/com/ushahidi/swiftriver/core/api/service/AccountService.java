@@ -258,7 +258,7 @@ public class AccountService {
 	 * @throws NotFoundException
 	 */
 	public GetAccountDTO getAccountByAccountPath(String accountPath,
-			boolean getToken, String authUser) throws NotFoundException {
+			String authUser) throws NotFoundException {
 		Account account = accountDao.findByAccountPath(accountPath);
 
 		if (account == null) {
@@ -267,22 +267,17 @@ public class AccountService {
 
 		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
 				accountDao.findByUsernameOrEmail(authUser));
-		if (getToken) {
-			getAccountDTO.setToken(createUserToken(account.getOwner())
-					.getToken());
-		}
 		return getAccountDTO;
 	}
 
 	/**
 	 * Get an account by email
-	 * 
 	 * @param username
+	 * 
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByEmail(String email, boolean getToken,
-			String authUser) throws NotFoundException {
+	public GetAccountDTO getAccountByEmail(String email, String authUser) throws NotFoundException {
 		Account account = accountDao.findByEmail(email);
 
 		if (account == null) {
@@ -291,10 +286,6 @@ public class AccountService {
 
 		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
 				accountDao.findByUsernameOrEmail(authUser));
-		if (getToken) {
-			getAccountDTO.setToken(createUserToken(account.getOwner())
-					.getToken());
-		}
 		return getAccountDTO;
 	}
 
@@ -376,8 +367,9 @@ public class AccountService {
 
 		GetAccountDTO getAccountTo = mapper.map(account, GetAccountDTO.class);
 
-		UserToken token = createUserToken(user);
-		getAccountTo.setToken(token.getToken());
+		createUserToken(user);
+
+		// Send activation email
 		return getAccountTo;
 	}
 
@@ -553,9 +545,11 @@ public class AccountService {
 	public UserToken createUserToken(User user) {
 		UserToken token = new UserToken();
 		token.setToken(UUID.randomUUID().toString());
-		long expiryDate = (new Date()).getTime() + 86400000L;
+		Date dateCreated = new Date();
+		long expiryDate = dateCreated.getTime() + 86400000L;
 		token.setExpires(new Date(expiryDate));
 		token.setUser(user);
+		token.setCreated(dateCreated);
 
 		userTokenDao.create(token);
 

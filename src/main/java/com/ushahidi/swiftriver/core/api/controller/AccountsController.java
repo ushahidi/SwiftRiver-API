@@ -117,11 +117,9 @@ public class AccountsController extends AbstractController {
 	@RequestMapping(method = RequestMethod.GET, params = "account_path")
 	@ResponseBody
 	public GetAccountDTO getAccountByName(
-			@RequestParam("account_path") String accountPath,
-			@RequestParam(value = "token", required = false) boolean getToken,
+			@RequestParam("account_path") String accountPath,			
 			Principal principal) throws NotFoundException {
-		return accountService.getAccountByAccountPath(accountPath, getToken,
-				principal.getName());
+		return accountService.getAccountByAccountPath(accountPath, principal.getName());
 	}
 
 	/**
@@ -133,11 +131,10 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params = "email")
 	@ResponseBody
-	public GetAccountDTO getAccountByEmail(@RequestParam("email") String email,
-			@RequestParam(value = "token", required = false) boolean getToken,
+	public GetAccountDTO getAccountByEmail(
+			@RequestParam("email") String email,
 			Principal principal) throws NotFoundException {
-		return accountService.getAccountByEmail(email, getToken,
-				principal.getName());
+		return accountService.getAccountByEmail(email, principal.getName());
 	}
 
 	/**
