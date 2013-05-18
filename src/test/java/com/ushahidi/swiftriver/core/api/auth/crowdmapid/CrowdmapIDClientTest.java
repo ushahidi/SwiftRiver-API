@@ -54,7 +54,7 @@ public class CrowdmapIDClientTest {
 	private UserDao mockUserDao;
 	
 	private HttpClient mockHttpClient;
-
+	
 	@Before
 	public void setUp() {
 		mockUserDao = mock(UserDao.class);
@@ -122,7 +122,6 @@ public class CrowdmapIDClientTest {
 		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
 
 		boolean loginStatus = crowdmapIDClient.changePassword(email, oldPassword, newPassword);
-		
 		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
 
 		verify(mockHttpClient).execute(httpPostArgument.capture());
@@ -182,7 +181,30 @@ public class CrowdmapIDClientTest {
 		HttpPost httpPost = httpPostArgument.getValue();
 		assertEquals("/api/registered", httpPost.getURI().getPath());
 		assertFalse(isRegistered);
-		
+	}
+	
+	@Test
+	public void requestPassword() throws Exception {
+		String mailBody = "http://swiftriver.test/reset_password/?token=%token%";
+		String apiResponse = "{\"success\": true}";
+		InputStream inputStream = new ByteArrayInputStream(apiResponse.getBytes());
+
+		HttpResponse mockResponse = mock(HttpResponse.class);
+		HttpEntity mockHttpEntity = mock(HttpEntity.class);
+		StatusLine mockStatusLine = mock(StatusLine.class);
+
+		when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+		when(mockStatusLine.getStatusCode()).thenReturn(200);
+		when(mockResponse.getEntity()).thenReturn(mockHttpEntity);
+		when(mockHttpEntity.getContent()).thenReturn(inputStream);
+		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
+
+		crowdmapIDClient.requestPassword("me@example.com", mailBody);
+		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
+		verify(mockHttpClient).execute(httpPostArgument.capture());
+
+		HttpPost httpPost = httpPostArgument.getValue();
+		assertEquals("/api/requestpassword", httpPost.getURI().getPath());
 	}
 	
 }

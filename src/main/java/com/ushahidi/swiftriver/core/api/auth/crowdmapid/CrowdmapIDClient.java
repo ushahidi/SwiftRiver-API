@@ -46,19 +46,21 @@ import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.model.User;
 
 /**
- * This class handles interaction with the 
- * <a href="https://github.com/ushahidi/crowdmapid-server</a>CrowdmapID</a>
- *  identity management system
+ * This class handles interaction with the CrowdmapID 
+ * identity management system
  *  
  * @author ekala
  *
  */
 public class CrowdmapIDClient {
 
+	/** API URL for the CrowdmapID server */
 	private String serverURL;
 	
+	/** The API key */
 	private String apiKey;
-	
+
+	/** Name of the request parameter for specifying the API key */
 	private String apiKeyParamName;
 	
 	@Autowired
@@ -70,7 +72,7 @@ public class CrowdmapIDClient {
 	
 	@Autowired
 	private ObjectMapper jacksonObjectMapper;
-	
+
 	/**
 	 * Default empty constructor
 	 */
@@ -233,6 +235,20 @@ public class CrowdmapIDClient {
 		params.add(new BasicNameValuePair("token", token));
 		
 		return !executeApiRequest(CrowdmapIDRequestType.SETPASSWORD, params).isEmpty();
+	}
+
+	/**
+	 * Sends a password reset request
+	 * 
+	 * @param mailBody
+	 * @param string
+	 */
+	public void requestPassword(String email, String mailBody) {
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("mailbody", mailBody));
+	
+		executeApiRequest(CrowdmapIDRequestType.REQUESTPASSWORD, params);
 	}
 
 	/**

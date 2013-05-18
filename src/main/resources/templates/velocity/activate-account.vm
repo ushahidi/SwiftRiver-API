@@ -1,0 +1,11 @@
+<html>
+<body>
+	<h3>Dear ${user.name}</h3>
+	
+	<div>
+		<p>Welcome to SwiftRiver!</p>
+		To begin using the SwiftRiver service, click 
+		<a href="${baseLinkUrl}/activate?u=${user.email}&token=${token}">here</a> to activate your account.
+	</div>
+</body>
+</html>

@@ -19,6 +19,7 @@ package com.ushahidi.swiftriver.core.api.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +41,6 @@ import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
-import com.ushahidi.swiftriver.core.api.dto.ResetPasswordDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
@@ -336,7 +336,56 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(value="/reset_password", method=RequestMethod.POST)
 	@ResponseBody
-	public void resetPassword(@RequestBody ResetPasswordDTO resetPasswordDto) {
-		accountService.resetPassword(resetPasswordDto);
+	public void resetPassword(@RequestBody Map<String, String> body) {
+		// Grab the request parameters
+		String resetToken = body.get("token");
+		String email = body.get("email");
+		String password = body.get("password");
+
+		// Validate parameters
+		List<ErrorField> validationErrors = new ArrayList<ErrorField>();
+		if (email == null || email.trim().length() == 0) {
+			validationErrors.add(new ErrorField("email", "missing"));
+		}
+		
+		if (password == null || password.trim().length() == 0) {
+			validationErrors.add(new ErrorField("password", "missing"));
+		}
+		
+		if (resetToken == null || resetToken.trim().length() == 0) {
+			validationErrors.add(new ErrorField("token", "missing"));
+		}
+
+		// Do we have validation errors?
+		if (!validationErrors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(validationErrors);
+			throw exception;
+		}
+		accountService.resetPassword(resetToken, email, password);
 	}
+	
+	/**
+	 * Handler for "forgot password" requests
+	 *  
+	 * @param body
+	 */
+	@RequestMapping(value="/forgot_password", method=RequestMethod.POST)
+	@ResponseBody
+	public void forgotPassword(@RequestBody Map<String, String> body) {
+		List<ErrorField> validationErrors = new ArrayList<ErrorField>();
+		String email = body.get("email");
+		if (email == null || email.trim().length() == 0) {
+			validationErrors.add(new ErrorField("email", "missing"));
+		}
+		
+		if (!validationErrors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(validationErrors);
+			throw exception;
+		}
+		
+		accountService.forgotPassword(email);
+	}
+	
 }

@@ -18,8 +18,10 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.dozer.Mapper;
@@ -49,11 +51,12 @@ import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyClientDTO;
-import com.ushahidi.swiftriver.core.api.dto.ResetPasswordDTO;
 import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.mail.EmailHelper;
+import com.ushahidi.swiftriver.core.mail.EmailType;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountActivity;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
@@ -118,24 +121,14 @@ public class AccountService {
 
 	private CrowdmapIDClient crowdmapIDClient;
 
-	public RiverService getRiverService() {
-		return riverService;
-	}
+	private EmailHelper emailHelper;
 
 	public void setRiverService(RiverService riverService) {
 		this.riverService = riverService;
 	}
 
-	public BucketService getBucketService() {
-		return bucketService;
-	}
-
 	public void setBucketService(BucketService bucketService) {
 		this.bucketService = bucketService;
-	}
-
-	public AccountDao getAccountDao() {
-		return accountDao;
 	}
 
 	public void setAccountDao(AccountDao accountDao) {
@@ -146,48 +139,24 @@ public class AccountService {
 		this.activityDao = activityDao;
 	}
 
-	public UserDao getUserDao() {
-		return userDao;
-	}
-
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
-	}
-
-	public UserTokenDao getUserTokenDao() {
-		return userTokenDao;
 	}
 
 	public void setUserTokenDao(UserTokenDao userTokenDao) {
 		this.userTokenDao = userTokenDao;
 	}
 
-	public ClientDao getClientDao() {
-		return clientDao;
-	}
-
 	public void setClientDao(ClientDao clientDao) {
 		this.clientDao = clientDao;
-	}
-
-	public RoleDao getRoleDao() {
-		return roleDao;
 	}
 
 	public void setRoleDao(RoleDao roleDao) {
 		this.roleDao = roleDao;
 	}
 
-	public PasswordEncoder getPasswordEncoder() {
-		return passwordEncoder;
-	}
-
 	public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
-	}
-
-	public Mapper getMapper() {
-		return mapper;
 	}
 
 	public void setMapper(Mapper mapper) {
@@ -210,12 +179,12 @@ public class AccountService {
 		this.authenticationScheme = authenticationScheme;
 	}
 
-	public CrowdmapIDClient getCrowdmapIDClient() {
-		return crowdmapIDClient;
-	}
-
 	public void setCrowdmapIDClient(CrowdmapIDClient crowdmapIDClient) {
 		this.crowdmapIDClient = crowdmapIDClient;
+	}
+
+	public void setEmailHelper(EmailHelper emailHelper) {
+		this.emailHelper = emailHelper;
 	}
 
 	/**
@@ -365,12 +334,12 @@ public class AccountService {
 		account.setOwner(user);
 		accountDao.create(account);
 
-		GetAccountDTO getAccountTo = mapper.map(account, GetAccountDTO.class);
-
-		createUserToken(user);
+		UserToken userToken = createUserToken(user);
 
 		// Send activation email
-		return getAccountTo;
+		emailHelper.sendAccountActivationEmail(user, userToken);
+
+		return mapper.map(account, GetAccountDTO.class);
 	}
 
 	/**
@@ -1075,34 +1044,13 @@ public class AccountService {
 
 	/**
 	 * Sets a new password for the user associated with the email
-	 * specified in <code>resetPasswordDto</code>  
-	 * 
-	 * @param resetPasswordDto
+	 * specified in <code>email</code>  
+	 * @param resetToken
+	 * @param email
+	 * @param password
 	 */
 	@Transactional(readOnly = false)
-	public void resetPassword(ResetPasswordDTO resetPasswordDto) {
-		// Validate parameters
-		List<ErrorField> validationErrors = new ArrayList<ErrorField>();
-		if (resetPasswordDto.getEmail() == null) {
-			validationErrors.add(new ErrorField("email", "missing"));
-		}
-		
-		if (resetPasswordDto.getPassword() == null) {
-			validationErrors.add(new ErrorField("password", "missing"));
-		}
-		
-		if (resetPasswordDto.getToken() == null) {
-			validationErrors.add(new ErrorField("token", "missing"));
-		}
-
-		// Do we have validation errors?
-		if (!validationErrors.isEmpty()) {
-			BadRequestException exception = new BadRequestException();
-			exception.setErrors(validationErrors);
-			throw exception;
-		}
-
-		String email = resetPasswordDto.getEmail();
+	public void resetPassword(String resetToken, String email, String password) {
 		Account account = accountDao.findByEmail(email);
 		if (account == null) {
 			throw new NotFoundException(String.format("Account '%s' does not exist", email));
@@ -1112,20 +1060,50 @@ public class AccountService {
 		switch (authenticationScheme) {
 		case CROWDMAPID:
 			boolean success = crowdmapIDClient.setPassword(
-					resetPasswordDto.getToken(), email, 
-					resetPasswordDto.getPassword());
+					resetToken, email, password);
 			if (!success) {
 				throw new BadRequestException("Password reset failed");
 			}
 			break;
 
 		default:
-			if (!isValidToken(resetPasswordDto.getToken(), account.getOwner())) {
+			if (!isValidToken(resetToken, account.getOwner())) {
 				throw new BadRequestException(String.format(
-						"Invalid token specified - '%s'", resetPasswordDto.getToken()));
+						"Invalid token specified - '%s'", resetToken));
 			}
 			User user = account.getOwner();
-			user.setPassword(passwordEncoder.encode(resetPasswordDto.getPassword()));
+			user.setPassword(passwordEncoder.encode(password));
+			userDao.update(user);
+		}
+	}
+
+	/**
+	 * Creates and sends a password reset token to the user
+	 * with the email address specified in <code>email</code>
+	 * 
+	 * @param email
+	 */
+	public void forgotPassword(String email) {
+		Account account = accountDao.findByEmail(email);
+		if (account == null) {
+			throw new NotFoundException(String.format(
+					"'%s' does not belong to a registered account", email));
+		}
+		
+		// Check the configured authentication scheme
+		switch(authenticationScheme) {
+		case CROWDMAPID:
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("email", email);
+			String mailBody = emailHelper.getEmailBody(
+					EmailType.RESET_CROWDMAPID_PASSWORD, params);
+			crowdmapIDClient.requestPassword(email, mailBody);
+			break;
+			
+		case DEFAULT:
+			User user = account.getOwner();
+			UserToken userToken = createUserToken(user);
+			emailHelper.sendPasswordResetEmail(user, userToken);
 		}
 	}
 	

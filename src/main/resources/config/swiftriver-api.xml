@@ -38,13 +38,14 @@
     -->
     <Environment name="authSchemeName" type="java.lang.String" value="database" />
     
-    <!-- CrowdmapID API URL e.g. https://example.com/ -->
+    <!-- CrowdmapID configuration -->
     <Environment name="crowdmapid/serverURL" type="java.lang.String" value="https://crowdmapid.com/api" />
-    
-    <!-- The CrowdmapID API key -->
     <Environment name="crowdmapid/apiKey" type="java.lang.String" value="" />
-    
-    <!-- Name of the request variable used to specify the API key -->
     <Environment name="crowdmapid/apiKeyParamName" type="java.lang.String" value="api_secret" />
+    
+    <!-- Mail configuration -->
+    <Environment name="mail/host" type="java.lang.String" value="localhost" />
+    <Environment name="mail/sender" type="java.lang.String" value="no-reply@swiftriver.dev" />
+    <Environment name="mail/baseLinkUrl" type="java.lang.String" value="http://swiftriver.dev" />
 
 </Context>
