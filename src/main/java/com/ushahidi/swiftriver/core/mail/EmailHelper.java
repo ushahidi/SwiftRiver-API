@@ -16,11 +16,13 @@
  */
 package com.ushahidi.swiftriver.core.mail;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.mail.internet.MimeMessage;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.velocity.app.VelocityEngine;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -57,6 +59,7 @@ public class EmailHelper {
 	public void setBaseLinkUrl(String baseLinkUrl) {
 		this.baseLinkUrl = baseLinkUrl;
 	}
+	
 
 	/**
 	 * Sends a message requesting the specified <code>user</code>
@@ -69,13 +72,15 @@ public class EmailHelper {
 	public void sendAccountActivationEmail(final User user, UserToken userToken) {
 		// Get the mail body
 		Map<String, Object> templateParams = new HashMap<String, Object>();
-		templateParams.put("user", user);
+		templateParams.put("email", user.getEmail());
 		templateParams.put("token", userToken.getToken());
 
-		final String mailBody = getEmailBody(EmailType.ACTIVATE_ACCOUNT, templateParams);
+		final String mailBody = getEmailBody(EmailType.ACTIVATE_ACCOUNT, templateParams, user.getName());
+		baseLinkUrl += "/activate";
 
 		// Prepare the MIME message
-		MimeMessagePreparator preparator = getMimeMessagePreparator(user, mailBody);
+		final String subject = "Welcome to SwiftRiver";
+		MimeMessagePreparator preparator = getMimeMessagePreparator(user, subject, mailBody);
 
 		// Send the account activation email
 		mailSender.send(preparator);
@@ -91,25 +96,30 @@ public class EmailHelper {
 	public void sendPasswordResetEmail(final User user, UserToken userToken) {
 		// Get the mail body with all the properties set
 		Map<String, Object> templateParams = new HashMap<String, Object>();
-		templateParams.put("user", user);
+		templateParams.put("email", user.getEmail());
 		templateParams.put("token", userToken.getToken());
 
-		String mailBody = getEmailBody(EmailType.RESET_PASSWORD, templateParams);
-		
+		String mailBody = getEmailBody(EmailType.RESET_PASSWORD, templateParams, user.getName());
+		baseLinkUrl += "/reset_password";
+
 		// Prepare the MIME message
-		MimeMessagePreparator preparator = getMimeMessagePreparator(user, mailBody);
+		final String subject = "How to reset your SwiftRiver password"; 
+		MimeMessagePreparator preparator = getMimeMessagePreparator(user, subject, mailBody);
 
 		// Send the message
 		mailSender.send(preparator);
 	}
 	
-	private MimeMessagePreparator getMimeMessagePreparator(final User user, final String mailBody) {
+	private MimeMessagePreparator getMimeMessagePreparator(final User user,
+			final String subject, final String mailBody) {
 		MimeMessagePreparator preparator = new MimeMessagePreparator() {
 			
 			public void prepare(MimeMessage mimeMessage) throws Exception {
 				MimeMessageHelper mimeHelper = new MimeMessageHelper(mimeMessage, true);
 				mimeHelper.setFrom(senderAddress);
 				mimeHelper.setTo(user.getEmail());
+				mimeHelper.setReplyTo(senderAddress);
+				mimeHelper.setSubject(subject);
 				mimeHelper.setText(mailBody, true);
 			}
 		};
@@ -124,13 +134,26 @@ public class EmailHelper {
 	 *  
 	 * @param emailType
 	 * @param templateParams
+	 * @param name
 	 * @return
 	 */
-	public String getEmailBody(EmailType emailType, Map<String, Object> templateParams) {
-		templateParams.put("baseLinkUrl", baseLinkUrl);
+	public String getEmailBody(EmailType emailType, Map<String, Object> templateParams, String name) {
+		Map<String, Object> body = new HashMap<String, Object>();
+		try {
+			URIBuilder uriBuilder = new URIBuilder(baseLinkUrl);
+			for (Map.Entry<String, Object> entry: templateParams.entrySet()) {
+				uriBuilder.addParameter(entry.getKey(), (String) entry.getValue());
+			}
+
+			body.put("name", name);
+			body.put("url", uriBuilder.toString());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		
 		String templateLocation = EmailType.getTemplateLocation(emailType);
 		
 		return VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, 
-				templateLocation, "UTF-8", templateParams);
+				templateLocation, "UTF-8", body);
 	}
 }

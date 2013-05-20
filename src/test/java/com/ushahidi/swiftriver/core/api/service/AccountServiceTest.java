@@ -682,7 +682,7 @@ public class AccountServiceTest {
 		Account mockAccount = mock(Account.class);
 
 		when(mockAccountDao.findByEmail(anyString())).thenReturn(mockAccount);
-		when(mockEmailHelper.getEmailBody(any(EmailType.class), any(Map.class))).thenReturn(mailBody);
+		when(mockEmailHelper.getEmailBody(any(EmailType.class), any(Map.class), anyString())).thenReturn(mailBody);
 		accountService.forgotPassword(email);
 		
 		verify(mockCrowdmapIDClient).requestPassword(email, mailBody);

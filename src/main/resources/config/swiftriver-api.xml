@@ -45,7 +45,7 @@
     
     <!-- Mail configuration -->
     <Environment name="mail/host" type="java.lang.String" value="localhost" />
-    <Environment name="mail/sender" type="java.lang.String" value="no-reply@swiftriver.dev" />
+    <Environment name="mail/senderAddress" type="java.lang.String" value="no-reply@swiftriver.dev" />
     <Environment name="mail/baseLinkUrl" type="java.lang.String" value="http://swiftriver.dev" />
 
 </Context>

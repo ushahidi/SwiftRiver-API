@@ -973,7 +973,7 @@ public class AccountService {
 			activityDtos.add(mapper.map(activity, GetActivityDTO.class));
 		}
 	
-		// If all activities removed due to permisions, repeat
+		// If all activities removed due to permissions, repeat
 		if (activityDtos.size() == 0)
 			return getActivities(accountId, count, lastId, newer, followers, authAccount);
 	
@@ -1096,7 +1096,7 @@ public class AccountService {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("email", email);
 			String mailBody = emailHelper.getEmailBody(
-					EmailType.RESET_CROWDMAPID_PASSWORD, params);
+					EmailType.RESET_CROWDMAPID_PASSWORD, params, null);
 			crowdmapIDClient.requestPassword(email, mailBody);
 			break;
 			
