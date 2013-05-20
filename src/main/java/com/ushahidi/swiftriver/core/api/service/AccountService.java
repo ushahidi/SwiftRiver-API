@@ -1091,17 +1091,17 @@ public class AccountService {
 		}
 		
 		// Check the configured authentication scheme
+		User user = account.getOwner();
 		switch(authenticationScheme) {
 		case CROWDMAPID:
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("email", email);
 			String mailBody = emailHelper.getEmailBody(
-					EmailType.RESET_CROWDMAPID_PASSWORD, params, null);
+					EmailType.RESET_CROWDMAPID_PASSWORD, params, user.getName());
 			crowdmapIDClient.requestPassword(email, mailBody);
 			break;
 			
 		case DEFAULT:
-			User user = account.getOwner();
 			UserToken userToken = createUserToken(user);
 			emailHelper.sendPasswordResetEmail(user, userToken);
 		}
