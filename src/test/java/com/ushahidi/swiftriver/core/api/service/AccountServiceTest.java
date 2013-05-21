@@ -24,6 +24,7 @@ import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -78,6 +79,7 @@ import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
 import com.ushahidi.swiftriver.core.util.TextUtil;
+
 
 public class AccountServiceTest {
 
@@ -658,17 +660,19 @@ public class AccountServiceTest {
 	@Test
 	public void forgotPassword_Default() {
 		String email = "me@example.com";
+		String fullName = "Example user";
 		Account mockAccount = mock(Account.class);
 		User mockUser = mock(User.class);
 
 		when(mockAccountDao.findByEmail(anyString())).thenReturn(mockAccount);
 		when(mockAccount.getOwner()).thenReturn(mockUser);
+		when(mockUser.getName()).thenReturn(fullName);
+
 		accountService.forgotPassword(email);
 
-		ArgumentCaptor<User> userArgument = ArgumentCaptor.forClass(User.class);
 		ArgumentCaptor<UserToken> tokenArgument = ArgumentCaptor.forClass(UserToken.class);
 
-		verify(mockEmailHelper).sendPasswordResetEmail(userArgument.capture(), tokenArgument.capture());
+		verify(mockEmailHelper).sendPasswordResetEmail(eq(mockUser), tokenArgument.capture());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -677,11 +681,13 @@ public class AccountServiceTest {
 		accountService.setAuthenticationScheme(AuthenticationScheme.CROWDMAPID);
 
 		String email = "me@example.com";
-		String mailBody = "Dear user, click http://swiftriver.dev/reset_password/%token% to reset your password";
+		String mailBody = "Dear user, click http://swiftriver.dev/reset_password?token=%token% to reset your password";
 
 		Account mockAccount = mock(Account.class);
+		User mockUser = mock(User.class);
 
 		when(mockAccountDao.findByEmail(anyString())).thenReturn(mockAccount);
+		when(mockAccount.getOwner()).thenReturn(mockUser);
 		when(mockEmailHelper.getEmailBody(any(EmailType.class), any(Map.class), anyString())).thenReturn(mailBody);
 		accountService.forgotPassword(email);
 		

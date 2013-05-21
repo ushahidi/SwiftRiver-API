@@ -110,23 +110,6 @@ public class EmailHelper {
 		mailSender.send(preparator);
 	}
 	
-	private MimeMessagePreparator getMimeMessagePreparator(final User user,
-			final String subject, final String mailBody) {
-		MimeMessagePreparator preparator = new MimeMessagePreparator() {
-			
-			public void prepare(MimeMessage mimeMessage) throws Exception {
-				MimeMessageHelper mimeHelper = new MimeMessageHelper(mimeMessage, true);
-				mimeHelper.setFrom(senderAddress);
-				mimeHelper.setTo(user.getEmail());
-				mimeHelper.setReplyTo(senderAddress);
-				mimeHelper.setSubject(subject);
-				mimeHelper.setText(mailBody, true);
-			}
-		};
-		
-		return preparator;
-	}
-	
 	/**
 	 * Returns the mail body for the specified <code>emailType</code>
 	 * with all the properties in <code>templateParams</code> having been
@@ -144,7 +127,7 @@ public class EmailHelper {
 			for (Map.Entry<String, Object> entry: templateParams.entrySet()) {
 				uriBuilder.addParameter(entry.getKey(), (String) entry.getValue());
 			}
-
+	
 			body.put("name", name);
 			body.put("url", uriBuilder.toString());
 		} catch (URISyntaxException e) {
@@ -155,5 +138,22 @@ public class EmailHelper {
 		
 		return VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, 
 				templateLocation, "UTF-8", body);
+	}
+
+	private MimeMessagePreparator getMimeMessagePreparator(final User user,
+			final String subject, final String mailBody) {
+		MimeMessagePreparator preparator = new MimeMessagePreparator() {
+			
+			public void prepare(MimeMessage mimeMessage) throws Exception {
+				MimeMessageHelper mimeHelper = new MimeMessageHelper(mimeMessage, true);
+				mimeHelper.setFrom(senderAddress);
+				mimeHelper.setTo(user.getEmail());
+				mimeHelper.setReplyTo(senderAddress);
+				mimeHelper.setSubject(subject);
+				mimeHelper.setText(mailBody, true);
+			}
+		};
+		
+		return preparator;
 	}
 }

@@ -27,13 +27,7 @@ public enum EmailType {
 	 * Reset password email - where a user has forgotten
 	 * their password
 	 */
-	RESET_PASSWORD, 
-	
-	/**
-	 * Reset password email where CrowdmapID is the
-	 * authentication backend
-	 */
-	RESET_CROWDMAPID_PASSWORD;
+	RESET_PASSWORD; 
 	
 	/**
 	 * Returns the path for the Velocity template to be used
@@ -49,9 +43,6 @@ public enum EmailType {
 
 		case RESET_PASSWORD:
 			return "templates/velocity/reset-password.vm";
-			
-		case RESET_CROWDMAPID_PASSWORD:
-			return "templates/velocity/reset-password-crowdmapid.vm";
 		}
 		return null;
 	}

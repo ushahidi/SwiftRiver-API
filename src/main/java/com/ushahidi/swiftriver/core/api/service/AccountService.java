@@ -1096,8 +1096,9 @@ public class AccountService {
 		case CROWDMAPID:
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("email", email);
+			params.put("token", "%token%");
 			String mailBody = emailHelper.getEmailBody(
-					EmailType.RESET_CROWDMAPID_PASSWORD, params, user.getName());
+					EmailType.RESET_PASSWORD, params, user.getName());
 			crowdmapIDClient.requestPassword(email, mailBody);
 			break;
 			
