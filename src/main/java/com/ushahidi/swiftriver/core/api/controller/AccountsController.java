@@ -1,22 +1,25 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Affero General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Affero General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/agpl.html>
+ * 
+ * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
 package com.ushahidi.swiftriver.core.api.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.ushahidi.swiftriver.core.api.dto.ActivateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
@@ -113,11 +117,9 @@ public class AccountsController extends AbstractController {
 	@RequestMapping(method = RequestMethod.GET, params = "account_path")
 	@ResponseBody
 	public GetAccountDTO getAccountByName(
-			@RequestParam("account_path") String accountPath,
-			@RequestParam(value = "token", required = false) boolean getToken,
+			@RequestParam("account_path") String accountPath,			
 			Principal principal) throws NotFoundException {
-		return accountService.getAccountByAccountPath(accountPath, getToken,
-				principal.getName());
+		return accountService.getAccountByAccountPath(accountPath, principal.getName());
 	}
 
 	/**
@@ -129,11 +131,10 @@ public class AccountsController extends AbstractController {
 	 */
 	@RequestMapping(method = RequestMethod.GET, params = "email")
 	@ResponseBody
-	public GetAccountDTO getAccountByEmail(@RequestParam("email") String email,
-			@RequestParam(value = "token", required = false) boolean getToken,
+	public GetAccountDTO getAccountByEmail(
+			@RequestParam("email") String email,
 			Principal principal) throws NotFoundException {
-		return accountService.getAccountByEmail(email, getToken,
-				principal.getName());
+		return accountService.getAccountByEmail(email, principal.getName());
 	}
 
 	/**
@@ -313,4 +314,78 @@ public class AccountsController extends AbstractController {
 			@PathVariable Long appId, Principal principal) {
 		accountService.deleteApp(accountId, appId, principal.getName());
 	}
+	
+	/**
+	 * Handles activation of newly created accounts
+	 * 
+	 * @param body
+	 */
+	@RequestMapping(value = "/activate", method = RequestMethod.POST)
+	@ResponseBody
+	public void activateAccount(@RequestBody ActivateAccountDTO body) {
+		accountService.activateAccount(body);
+	}
+	
+	/**
+	 * Handles resetting of passwords following a <code>forgot_password</code>
+	 * request i.e. the client must have submitted a <code>forgot_password</code>
+	 * request in order to be issue with a secret token which is then used
+	 * to validate the <code>reset_password</code> operation  
+	 * 
+	 * @param resetPasswordDto
+	 */
+	@RequestMapping(value="/reset_password", method=RequestMethod.POST)
+	@ResponseBody
+	public void resetPassword(@RequestBody Map<String, String> body) {
+		// Grab the request parameters
+		String resetToken = body.get("token");
+		String email = body.get("email");
+		String password = body.get("password");
+
+		// Validate parameters
+		List<ErrorField> validationErrors = new ArrayList<ErrorField>();
+		if (email == null || email.trim().length() == 0) {
+			validationErrors.add(new ErrorField("email", "missing"));
+		}
+		
+		if (password == null || password.trim().length() == 0) {
+			validationErrors.add(new ErrorField("password", "missing"));
+		}
+		
+		if (resetToken == null || resetToken.trim().length() == 0) {
+			validationErrors.add(new ErrorField("token", "missing"));
+		}
+
+		// Do we have validation errors?
+		if (!validationErrors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(validationErrors);
+			throw exception;
+		}
+		accountService.resetPassword(resetToken, email, password);
+	}
+	
+	/**
+	 * Handler for "forgot password" requests
+	 *  
+	 * @param body
+	 */
+	@RequestMapping(value="/forgot_password", method=RequestMethod.POST)
+	@ResponseBody
+	public void forgotPassword(@RequestBody Map<String, String> body) {
+		List<ErrorField> validationErrors = new ArrayList<ErrorField>();
+		String email = body.get("email");
+		if (email == null || email.trim().length() == 0) {
+			validationErrors.add(new ErrorField("email", "missing"));
+		}
+		
+		if (!validationErrors.isEmpty()) {
+			BadRequestException exception = new BadRequestException();
+			exception.setErrors(validationErrors);
+			throw exception;
+		}
+		
+		accountService.forgotPassword(email);
+	}
+	
 }

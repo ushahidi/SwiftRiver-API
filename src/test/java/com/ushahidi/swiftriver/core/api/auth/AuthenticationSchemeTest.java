@@ -14,48 +14,32 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao.impl;
+package com.ushahidi.swiftriver.core.api.auth;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.ushahidi.swiftriver.core.api.dao.UserDao;
-import com.ushahidi.swiftriver.core.model.User;
 
 /**
- * Tests for {@link JpaUserDao}
+ * Unit test for {@link AuthenticationScheme}
+ * 
  * @author ekala
- *
  */
-public class JpaUserDaoTest extends AbstractJpaDaoTest {
-	
-	@Autowired
-	UserDao userDao;
-	
-	@Test
-	public void findByUsername() {
-		User user = userDao.findByUsername("user2");
-
-		assertNotNull(user);
-		assertEquals(4, user.getId());
-	}
+public class AuthenticationSchemeTest {
 
 	/**
-	 * Tests {@link UserDao#create(User)}
+	 * Verifies that given a scheme name, an 
+	 * <code>com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme</code>
+	 * object is returned
 	 */
 	@Test
-	public void create() {
-		User user = new User();
-		user.setName("New User");
-		user.setUsername("newuser");
-		user.setEmail("newuser@myswiftriver.com");
-		user.setPassword("new-user-pa55w0rd");
-
-		userDao.create(user);
-
-		assertNotNull(user.getDateCreated());
+	public void getAuthenticationScheme() {
+		// When the crowdmapid auth scheme is specified
+		AuthenticationScheme authScheme = AuthenticationScheme.getScheme("crowdmapid");
+		assertEquals(AuthenticationScheme.CROWDMAPID, authScheme);
+		
+		// When an invalid authentication scheme name is specified
+		AuthenticationScheme defaultScheme = AuthenticationScheme.getScheme("unknown-scheme");
+		assertEquals(AuthenticationScheme.DEFAULT, defaultScheme);
 	}
 }

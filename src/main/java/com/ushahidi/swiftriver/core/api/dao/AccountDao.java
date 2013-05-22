@@ -26,7 +26,7 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @param username
 	 * @return
 	 */
-	public Account findByUsername(String username);
+	public Account findByUsernameOrEmail(String username);
 	
 	/**
 	 * Get an account by its account path

@@ -32,7 +32,7 @@ public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 
 	@Test
 	public void findByUsername() {
-		Account account = accountDao.findByUsername("user2");
+		Account account = accountDao.findByUsernameOrEmail("user2");
 
 		assertNotNull(account);
 		assertEquals(4, account.getId());
@@ -40,7 +40,7 @@ public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 
 	@Test
 	public void findByNonExistentUsername() {
-		Account account = accountDao.findByUsername("chris");
+		Account account = accountDao.findByUsernameOrEmail("chris");
 
 		assertNull(account);
 	}
@@ -108,12 +108,12 @@ public class JpaAccountDaoTest extends AbstractJpaDaoTest {
 	
 	@Test
 	public void addReadRiverDrop() {
-		Account account = accountDao.findByUsername("user1");		
+		Account account = accountDao.findByUsernameOrEmail("user1");		
 		RiverDrop riverDrop = riverDropDao.findById(4L);
 		
 		account.getReadRiverDrops().add(riverDrop);
 		accountDao.update(account);
 		
-		assertEquals(3, accountDao.findByUsername("user1").getReadRiverDrops().size());
+		assertEquals(3, accountDao.findByUsernameOrEmail("user1").getReadRiverDrops().size());
 	}
 }

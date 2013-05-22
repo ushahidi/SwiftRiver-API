@@ -14,31 +14,42 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao.impl;
+package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 
-import javax.persistence.NoResultException;
+public enum CrowdmapIDRequestType {
 
-import org.springframework.stereotype.Repository;
-
-import com.ushahidi.swiftriver.core.api.dao.RoleDao;
-import com.ushahidi.swiftriver.core.model.Role;
-
-@Repository
-public class JpaRoleDao extends AbstractJpaDao<Role> implements RoleDao {
-
-	@Override
-	public Role findByName(String name) {
-		String query = "SELECT r FROM Role r WHERE r.name = :name";
-
-		Role role = null;
-		try {
-			role = (Role) em.createQuery(query)
-					.setParameter("name", name).getSingleResult();
-		} catch (NoResultException e) {
-			// Do nothing
-		}
-		return role;
-	}
-
+	/**
+	 * Login request
+	 */
+	SIGNIN,
+	
+	/**
+	 * Request to register for a new account
+	 */
+	REGISTER,
+	
+	/**
+	 * Change password request
+	 */
+	CHANGEPASSWORD,
+	
+	/**
+	 * Reset password request; for use where a user
+	 * has forgotten their password
+	 */
+	REQUESTPASSWORD,
+	
+	/**
+	 * Set password request; for a user who has already
+	 * sent a <code>REQUESTPASSWORD</code> request and
+	 * received a password reset token 
+	 */
+	SETPASSWORD, 
+	
+	/**
+	 * Used to check whether an email is registered
+	 */
+	REGISTERED;
+	
 	
 }

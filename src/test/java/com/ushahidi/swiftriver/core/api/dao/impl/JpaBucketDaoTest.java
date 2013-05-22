@@ -63,7 +63,7 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	 */
 	@Test
 	public void createBucket() {
-		Account account = accountDao.findByUsername("user1");
+		Account account = accountDao.findByUsernameOrEmail("user1");
 		Bucket bucket = new Bucket();
 
 		bucket.setName("Test Bucket Number 2");
@@ -129,7 +129,7 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void testAddCollaborator() {
 		Bucket bucket = bucketDao.findById(1L);
-		Account account = accountDao.findByUsername("user3");
+		Account account = accountDao.findByUsernameOrEmail("user3");
 
 		bucketDao.addCollaborator(bucket, account, true);
 		em.flush();

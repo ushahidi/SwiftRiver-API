@@ -16,14 +16,26 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
@@ -35,6 +47,8 @@ import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme;
+import com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
@@ -48,6 +62,8 @@ import com.ushahidi.swiftriver.core.api.dto.GetActivityDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.ModifyAccountDTO;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.mail.EmailHelper;
+import com.ushahidi.swiftriver.core.mail.EmailType;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 import com.ushahidi.swiftriver.core.model.Activity;
@@ -63,6 +79,7 @@ import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 import com.ushahidi.swiftriver.core.model.UserToken;
 import com.ushahidi.swiftriver.core.util.TextUtil;
+
 
 public class AccountServiceTest {
 
@@ -94,6 +111,10 @@ public class AccountServiceTest {
 
 	private PasswordEncoder passwordEncoder;
 
+	private CrowdmapIDClient mockCrowdmapIDClient;
+
+	private EmailHelper mockEmailHelper;
+	
 	@Before
 	public void setup() {
 		account = new Account();
@@ -117,6 +138,8 @@ public class AccountServiceTest {
 				getAccountDTO);
 		mockRiverService = mock(RiverService.class);
 		mockBucketService = mock(BucketService.class);
+		mockCrowdmapIDClient = mock(CrowdmapIDClient.class);
+		mockEmailHelper = mock(EmailHelper.class);
 
 		accountService = new AccountService();
 		accountService.setRiverService(mockRiverService);
@@ -129,7 +152,10 @@ public class AccountServiceTest {
 		accountService.setRoleDao(mockRoleDao);
 		accountService.setActivityDao(mockActivityDao);
 		accountService.setPasswordEncoder(passwordEncoder);
-		accountService.setKey("2344228477#97{7&6>82");
+		accountService.setEncryptionKey("2344228477#97{7&6>82");
+		accountService.setAuthenticationScheme(AuthenticationScheme.DEFAULT);
+		accountService.setCrowdmapIDClient(mockCrowdmapIDClient);
+		accountService.setEmailHelper(mockEmailHelper);
 	}
 
 	@Test
@@ -145,12 +171,12 @@ public class AccountServiceTest {
 
 	@Test
 	public void findByUsername() throws NotFoundException {
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 
 		GetAccountDTO actualGetAccountDTO = accountService
 				.getAccountByUsername("admin");
 
-		verify(mockAccountDao).findByUsername("admin");
+		verify(mockAccountDao).findByUsernameOrEmail("admin");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
 	}
 
@@ -159,7 +185,7 @@ public class AccountServiceTest {
 		when(mockAccountDao.findByAccountPath(anyString())).thenReturn(account);
 
 		GetAccountDTO actualGetAccountDTO = accountService
-				.getAccountByAccountPath("default", false, "user1");
+				.getAccountByAccountPath("default", "user1");
 
 		verify(mockAccountDao).findByAccountPath("default");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
@@ -170,7 +196,7 @@ public class AccountServiceTest {
 		when(mockAccountDao.findByEmail(anyString())).thenReturn(account);
 
 		GetAccountDTO actualGetAccountDTO = accountService.getAccountByEmail(
-				"email", false, "user1");
+				"email", "user1");
 
 		verify(mockAccountDao).findByEmail("email");
 		assertEquals(getAccountDTO, actualGetAccountDTO);
@@ -211,7 +237,7 @@ public class AccountServiceTest {
 		List<Account> accounts = new ArrayList<Account>();
 		accounts.add(account);
 		when(mockAccountDao.search(anyString())).thenReturn(accounts);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		accountService.setAccountDao(mockAccountDao);
 
 		List<GetAccountDTO> getAccountDTOs = accountService.searchAccounts(
@@ -223,7 +249,7 @@ public class AccountServiceTest {
 
 	@SuppressWarnings("unchecked")
 	@Test
-	public void createAccount() {
+	public void createAccountForDefaultAuthentication() {
 		when(mockMapper.map(any(Account.class), any(Class.class))).thenReturn(
 				getAccountDTO);
 
@@ -238,6 +264,7 @@ public class AccountServiceTest {
 
 		ArgumentCaptor<User> userArgument = ArgumentCaptor.forClass(User.class);
 		verify(mockUserDao).create(userArgument.capture());
+
 		User user = userArgument.getValue();
 		assertEquals("email@example.com", user.getEmail());
 		assertEquals("account name", user.getName());
@@ -245,16 +272,17 @@ public class AccountServiceTest {
 		assertTrue(passwordEncoder
 				.matches("totally secret", user.getPassword()));
 
-		ArgumentCaptor<UserToken> tokenArgument = ArgumentCaptor
-				.forClass(UserToken.class);
+		ArgumentCaptor<UserToken> tokenArgument = ArgumentCaptor.forClass(UserToken.class);
 		verify(mockUserTokenDao).create(tokenArgument.capture());
+		verify(mockEmailHelper).sendAccountActivationEmail(userArgument.capture(), tokenArgument.capture());
+
 		UserToken token = tokenArgument.getValue();
 		assertEquals(user, token.getUser());
 		assertNotNull(token.getToken());
 
-		ArgumentCaptor<Account> accountArgument = ArgumentCaptor
-				.forClass(Account.class);
+		ArgumentCaptor<Account> accountArgument = ArgumentCaptor.forClass(Account.class);
 		verify(mockAccountDao).create(accountArgument.capture());
+
 		Account account = accountArgument.getValue();
 		assertEquals("account_path", account.getAccountPath());
 		assertTrue(account.isAccountPrivate());
@@ -262,6 +290,36 @@ public class AccountServiceTest {
 
 		assertEquals(getAccountDTO, actual);
 	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void createAccountForCrowdmapIDAuthentication() {
+		accountService.setAuthenticationScheme(AuthenticationScheme.CROWDMAPID);
+
+		CreateAccountDTO createAccount = new CreateAccountDTO();
+		createAccount.setAccountPath("account_path");
+		createAccount.setAccountPrivate(true);
+		createAccount.setEmail("email@example.com");
+		createAccount.setName("account name");
+		createAccount.setPassword("totally secret");
+		
+		String crowdmapIDUID = "0487fLPSOFKFL9484LAJFJGXBN";
+
+		when(mockMapper.map(any(Account.class), any(Class.class))).thenReturn(
+				getAccountDTO);
+
+		when(mockCrowdmapIDClient.isRegistered(anyString())).thenReturn(Boolean.FALSE);
+		when(mockCrowdmapIDClient.register(anyString(), anyString())).thenReturn(crowdmapIDUID);
+		
+		accountService.createAccount(createAccount);
+		ArgumentCaptor<User> userArgument = ArgumentCaptor.forClass(User.class);
+		ArgumentCaptor<UserToken> tokenArgument = ArgumentCaptor.forClass(UserToken.class);
+		
+		verify(mockCrowdmapIDClient).isRegistered("email@example.com");
+		verify(mockCrowdmapIDClient).register("email@example.com", "totally secret");
+		verify(mockEmailHelper).sendAccountActivationEmail(userArgument.capture(), tokenArgument.capture());
+	}
+	
 
 	@Test
 	public void modifyAccount() {
@@ -272,6 +330,8 @@ public class AccountServiceTest {
 		user.setExpired(true);
 		user.setLocked(true);
 		user.setId(1);
+		user.setPassword("$2a$05$f0I9XjamKm4LEaF8av1Zy.tzBrzFM0smLMKvMAqUWicGAcEnkCdQe");
+
 		Account account = new Account();
 		account.setActive(false);
 		account.setOwner(user);
@@ -288,15 +348,15 @@ public class AccountServiceTest {
 		modifyAccount.setToken("this is a token");
 
 		ModifyAccountDTO.User owner = new ModifyAccountDTO.User();
-		modifyAccount.setOwner(owner);
 		owner.setEmail("email@example.com");
 		owner.setName("owner's new name");
 		owner.setPassword("new password");
+		owner.setCurrentPassword("password");
 		modifyAccount.setOwner(owner);
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
 		when(mockUserTokenDao.findByToken(anyString())).thenReturn(userToken);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 
 		accountService.modifyAccount(1L, modifyAccount, "admin");
 
@@ -308,10 +368,6 @@ public class AccountServiceTest {
 		assertEquals("new account path", modifiedAccount.getAccountPath());
 		assertTrue(modifiedAccount.isAccountPrivate());
 		assertEquals(999, modifiedAccount.getRiverQuotaRemaining());
-		assertTrue(modifiedAccount.isActive());
-		assertTrue(modifiedAccount.getOwner().getActive());
-		assertFalse(modifiedAccount.getOwner().getExpired());
-		assertFalse(modifiedAccount.getOwner().getLocked());
 		assertEquals("email@example.com", modifiedAccount.getOwner().getEmail());
 		assertEquals("owner's new name", modifiedAccount.getOwner().getName());
 		assertTrue(passwordEncoder.matches("new password", modifiedAccount
@@ -346,7 +402,7 @@ public class AccountServiceTest {
 		account.getClients().add(client);
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 
 		accountService.setMapper(mapper);
 		List<GetClientDTO> clients = accountService.getClients(1L, "username");
@@ -373,7 +429,7 @@ public class AccountServiceTest {
 		createClientDTO.setRedirectUri("http://example.com/redirect");
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockRoleDao.findByName(anyString())).thenReturn(role);
 
 		accountService.setMapper(mapper);
@@ -393,7 +449,7 @@ public class AccountServiceTest {
 		assertNotNull(client.getClientSecret());
 
 		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(accountService.getKey()),
+				TextUtil.convertStringToHex(accountService.getEncryptionKey()),
 				TextUtil.convertStringToHex(client.getClientId()));
 		assertEquals(getClientDTO.getClientSecret(),
 				encryptor.decrypt(client.getClientSecret()));
@@ -405,7 +461,7 @@ public class AccountServiceTest {
 		Client client = new Client();
 
 		when(mockAccountDao.findById(anyLong())).thenReturn(account);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockClientDao.findById(anyLong())).thenReturn(client);
 
 		accountService.deleteApp(1L, 1L, "admin");
@@ -599,5 +655,42 @@ public class AccountServiceTest {
 		
 		verify(mockAccountDao).addFollower(account, follower);
 		verify(spy).logActivity(follower, ActivityType.FOLLOW, account);
+	}
+	
+	@Test
+	public void forgotPassword_Default() {
+		String email = "me@example.com";
+		String fullName = "Example user";
+		Account mockAccount = mock(Account.class);
+		User mockUser = mock(User.class);
+
+		when(mockAccountDao.findByEmail(anyString())).thenReturn(mockAccount);
+		when(mockAccount.getOwner()).thenReturn(mockUser);
+		when(mockUser.getName()).thenReturn(fullName);
+
+		accountService.forgotPassword(email);
+
+		ArgumentCaptor<UserToken> tokenArgument = ArgumentCaptor.forClass(UserToken.class);
+
+		verify(mockEmailHelper).sendPasswordResetEmail(eq(mockUser), tokenArgument.capture());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void forgotPassword_CrowdmapID() {
+		accountService.setAuthenticationScheme(AuthenticationScheme.CROWDMAPID);
+
+		String email = "me@example.com";
+		String mailBody = "Dear user, click http://swiftriver.dev/reset_password?token=%token% to reset your password";
+
+		Account mockAccount = mock(Account.class);
+		User mockUser = mock(User.class);
+
+		when(mockAccountDao.findByEmail(anyString())).thenReturn(mockAccount);
+		when(mockAccount.getOwner()).thenReturn(mockUser);
+		when(mockEmailHelper.getEmailBody(any(EmailType.class), any(Map.class), anyString())).thenReturn(mailBody);
+		accountService.forgotPassword(email);
+		
+		verify(mockCrowdmapIDClient).requestPassword(email, mailBody);
 	}
 }

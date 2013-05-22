@@ -17,7 +17,6 @@ package com.ushahidi.swiftriver.core.api.dto;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * Transfer Object for Accounts
@@ -67,9 +66,6 @@ public class GetAccountDTO {
 	
 	private List<GetFormDTO> forms;
 	
-	@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
-	private String token;
-	
 	public static class Owner {
 		
         private String name;
@@ -81,7 +77,7 @@ public class GetAccountDTO {
         private String avatar;
         
         @JsonProperty("date_added")
-        private String createdDate;
+        private String dateCreated;
         
         private Boolean active;
 
@@ -109,12 +105,12 @@ public class GetAccountDTO {
 			this.username = username;
 		}
 
-		public String getCreatedDate() {
-			return createdDate;
+		public String getDateCreated() {
+			return dateCreated;
 		}
 
-		public void setCreatedDate(String createdDate) {
-			this.createdDate = createdDate;
+		public void setDateCreated(String dateCreated) {
+			this.dateCreated = dateCreated;
 		}
 
 		public String getAvatar() {
@@ -260,14 +256,6 @@ public class GetAccountDTO {
 
 	public void setForms(List<GetFormDTO> forms) {
 		this.forms = forms;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
 	}
 
 

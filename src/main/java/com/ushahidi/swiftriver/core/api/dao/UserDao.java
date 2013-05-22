@@ -21,7 +21,7 @@ import com.ushahidi.swiftriver.core.model.User;
 public interface UserDao extends GenericDao<User> {
 
 	/**
-	 * Get a user by his username
+	 * Get a user by their username
 	 * 
 	 * @param username
 	 * @return
@@ -34,4 +34,12 @@ public interface UserDao extends GenericDao<User> {
 	 * @param dbUser
 	 */
 	public void updateLastLogin(User user);
+	
+	/**
+	 * Gets a user by their username or email address
+	 * 
+	 * @param search
+	 * @return
+	 */
+	public User findByUsernameOrEmail(String search);
 }

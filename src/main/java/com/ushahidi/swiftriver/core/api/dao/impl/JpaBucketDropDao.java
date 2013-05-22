@@ -137,7 +137,7 @@ public class JpaBucketDropDao extends AbstractJpaContextDropDao<BucketDrop>
 		placesQuery += "WHERE buckets_droplets_id IN :drop_ids ";
 		placesQuery += "AND deleted = 0 ";
 
-		// Query for retieving the BucketDrop id for the given drops
+		// Query for retrieving the BucketDrop id for the given drops
 		contextDropQuery = "SELECT id, droplet_id FROM buckets_droplets WHERE id IN :dropIds";
 
 	}

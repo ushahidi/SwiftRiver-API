@@ -23,6 +23,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
@@ -30,8 +32,10 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
 
 @Repository
-public class JpaAccountDao extends AbstractJpaDao<Account> implements
-		AccountDao {
+public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao {
+
+	private final Logger logger = LoggerFactory.getLogger(JpaAccountDao.class);
+
 
 	@Override
 	public Account update(Account t) {
@@ -46,15 +50,18 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements
 	 * com.ushahidi.swiftriver.core.data.dao.AccountDao#findByUsername(java.
 	 * lang.String)
 	 */
-	public Account findByUsername(String username) {
-		String query = "SELECT a FROM Account a JOIN a.owner o WHERE o.username = :username";
+	public Account findByUsernameOrEmail(String username) {
+		String qlString = "SELECT a FROM Account a JOIN a.owner o " +
+				"WHERE o.username = :username OR o.email = :email";
 
 		Account account = null;
 		try {
-			account = (Account) em.createQuery(query)
-					.setParameter("username", username).getSingleResult();
+			TypedQuery<Account> query = em.createQuery(qlString, Account.class);
+			query.setParameter("username", username);
+			query.setParameter("email", username);
+			account = query.getSingleResult();
 		} catch (NoResultException e) {
-			// Do nothing
+			logger.info("Account associated with {} not found", username);
 		}
 		return account;
 	}

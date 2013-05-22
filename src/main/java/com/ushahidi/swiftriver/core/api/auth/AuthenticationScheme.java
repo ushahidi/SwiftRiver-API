@@ -14,31 +14,35 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao.impl;
+package com.ushahidi.swiftriver.core.api.auth;
 
-import javax.persistence.NoResultException;
+public enum AuthenticationScheme {
 
-import org.springframework.stereotype.Repository;
-
-import com.ushahidi.swiftriver.core.api.dao.RoleDao;
-import com.ushahidi.swiftriver.core.model.Role;
-
-@Repository
-public class JpaRoleDao extends AbstractJpaDao<Role> implements RoleDao {
-
-	@Override
-	public Role findByName(String name) {
-		String query = "SELECT r FROM Role r WHERE r.name = :name";
-
-		Role role = null;
-		try {
-			role = (Role) em.createQuery(query)
-					.setParameter("name", name).getSingleResult();
-		} catch (NoResultException e) {
-			// Do nothing
-		}
-		return role;
-	}
-
+	/**
+	 * Use the application's DB to authenticate users 
+	 */
+	DEFAULT,
 	
+	/**
+	 * User CrowdmapID to authenticate users
+	 */
+	CROWDMAPID;
+	
+	/**
+	 * Gets the {@link AuthenticationScheme} given it's canonical
+	 * name. 
+	 * 
+	 * {@link AuthenticationScheme#DEFAULT} is the default
+	 * scheme
+	 * 
+	 * @param schemeName
+	 * @return
+	 */
+	public static AuthenticationScheme getScheme(String schemeName) {
+		if (schemeName.toLowerCase().equals("crowdmapid")) {
+			return CROWDMAPID;
+		}
+		
+		return DEFAULT;
+	}
 }
