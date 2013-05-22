@@ -50,7 +50,7 @@ public class EmailHelperTest {
 		emailHelper = new EmailHelper();
 		emailHelper.setMailSender(mockMailSender);
 		emailHelper.setSenderAddress("no-reply@myswiftriver.com");
-		emailHelper.setBaseLinkUrl("http://myswiftriver.com");
+		emailHelper.setResetPasswordUrl("http://myswiftriver.com");
 		emailHelper.setVelocityEngine(velocityEngine);
 	}
 

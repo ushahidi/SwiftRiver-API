@@ -46,6 +46,7 @@
     <!-- Mail configuration -->
     <Environment name="mail/host" type="java.lang.String" value="localhost" />
     <Environment name="mail/senderAddress" type="java.lang.String" value="no-reply@swiftriver.dev" />
-    <Environment name="mail/baseLinkUrl" type="java.lang.String" value="http://swiftriver.dev" />
+    <Environment name="mail/resetPasswordUrl" type="java.lang.String" value="http://swiftriver.dev/login/reset_password" />
+    <Environment name="mail/activateAccountUrl" type="java.lang.String" value="http://swiftriver.dev/login/activate" />
 
 </Context>

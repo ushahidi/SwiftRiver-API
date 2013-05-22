@@ -131,7 +131,8 @@
 		<property name="mailSender" ref="mailSender" />
 		<property name="velocityEngine" ref="velocityEngine" />
 		<property name="senderAddress" ref="senderAddress" />
-		<property name="baseLinkUrl" ref="baseLinkUrl" />
+		<property name="resetPasswordUrl" ref="resetPasswordUrl" />
+		<property name="activateAccountUrl" ref="activateAccountUrl" />
 	</bean> 
 
 	<!-- Data Sources -->
@@ -159,7 +160,10 @@
 		<!-- Mail configuration  -->
 		<jee:jndi-lookup id="mailHost" jndi-name="mail/host" expected-type="java.lang.String" />
 		<jee:jndi-lookup id="senderAddress" jndi-name="mail/senderAddress" expected-type="java.lang.String" />
-		<jee:jndi-lookup id="baseLinkUrl" jndi-name="mail/baseLinkUrl" expected-type="java.lang.String" />
+		<jee:jndi-lookup id="resetPasswordUrl" jndi-name="mail/resetPasswordUrl" 
+			expected-type="java.lang.String" />
+		<jee:jndi-lookup id="activateAccountUrl" jndi-name="mail/activateAccountUrl"
+			expected-type="java.lang.String" />
 			
 
 		<bean id="mqProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -232,8 +236,12 @@
 			<constructor-arg value="no-reply@swiftriver.dev"/>
 		</bean>
 		
-		<bean id="baseLinkUrl" class="java.lang.String">
-			<constructor-arg value="http://swiftriver.dev" />
+		<bean id="resetPasswordUrl" class="java.lang.String">
+			<constructor-arg value="http://swiftriver.dev/login/reset_password" />
+		</bean>
+
+		<bean id="activateAccountUrl" class="java.lang.String">
+			<constructor-arg value="http://swiftriver.dev/login/activate" />
 		</bean>
 
 		<bean id="crowdmapIDClient" class="com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient">

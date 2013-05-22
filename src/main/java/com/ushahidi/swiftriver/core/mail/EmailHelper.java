@@ -41,8 +41,11 @@ public class EmailHelper {
 	/** Email address of the sender */
 	private String senderAddress;
 	
-	/** Base URL for creating links within the mail message */
-	private String baseLinkUrl;
+	/** Password reset url for the UI client */
+	private String resetPasswordUrl;
+	
+	/** Account activation url */
+	private String activateAccountUrl;
 
 	public void setMailSender(JavaMailSender mailSender) {
 		this.mailSender = mailSender;
@@ -56,8 +59,12 @@ public class EmailHelper {
 		this.senderAddress = senderAddress;
 	}
 	
-	public void setBaseLinkUrl(String baseLinkUrl) {
-		this.baseLinkUrl = baseLinkUrl;
+	public void setResetPasswordUrl(String resetPasswordUrl) {
+		this.resetPasswordUrl = resetPasswordUrl;
+	}
+	
+	public void setActivateAccountUrl(String activateAccountUrl) {
+		this.activateAccountUrl = activateAccountUrl;
 	}
 	
 
@@ -76,7 +83,6 @@ public class EmailHelper {
 		templateParams.put("token", userToken.getToken());
 
 		final String mailBody = getEmailBody(EmailType.ACTIVATE_ACCOUNT, templateParams, user.getName());
-		baseLinkUrl += "/activate";
 
 		// Prepare the MIME message
 		final String subject = "Welcome to SwiftRiver";
@@ -100,7 +106,6 @@ public class EmailHelper {
 		templateParams.put("token", userToken.getToken());
 
 		String mailBody = getEmailBody(EmailType.RESET_PASSWORD, templateParams, user.getName());
-		baseLinkUrl += "/reset_password";
 
 		// Prepare the MIME message
 		final String subject = "How to reset your SwiftRiver password"; 
@@ -123,7 +128,7 @@ public class EmailHelper {
 	public String getEmailBody(EmailType emailType, Map<String, Object> templateParams, String name) {
 		Map<String, Object> body = new HashMap<String, Object>();
 		try {
-			URIBuilder uriBuilder = new URIBuilder(baseLinkUrl);
+			URIBuilder uriBuilder = new URIBuilder(getBaseUrl(emailType));
 			for (Map.Entry<String, Object> entry: templateParams.entrySet()) {
 				uriBuilder.addParameter(entry.getKey(), (String) entry.getValue());
 			}
@@ -138,6 +143,17 @@ public class EmailHelper {
 		
 		return VelocityEngineUtils.mergeTemplateIntoString(velocityEngine, 
 				templateLocation, "UTF-8", body);
+	}
+
+	private String getBaseUrl(EmailType emailType) {
+		switch (emailType) {
+		case ACTIVATE_ACCOUNT:
+			return activateAccountUrl;
+
+		case RESET_PASSWORD:
+			return resetPasswordUrl;
+		}
+		return null;
 	}
 
 	private MimeMessagePreparator getMimeMessagePreparator(final User user,
