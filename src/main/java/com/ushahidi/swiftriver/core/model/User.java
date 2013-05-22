@@ -64,7 +64,7 @@ public class User {
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="created_date")
-	private Date createdDate;
+	private Date dateCreated;
 	
 	@ManyToMany
 	@JoinTable(name="roles_users", joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name="role_id"))
@@ -156,12 +156,12 @@ public class User {
 		this.lastLoginDate = lastLoginDate;
 	}
 
-	public Date getCreatedDate() {
-		return createdDate;
+	public Date getDateCreated() {
+		return dateCreated;
 	}
 
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
+	public void setDateCreated(Date dateCreated) {
+		this.dateCreated = dateCreated;
 	}
 	
 	public String getAvatar() {

@@ -76,7 +76,7 @@ public class FormServiceTest  {
 		field.setForm(form);
 		form.getFields().add(field);
 		
-		when(mockAccountDao.findByUsername("user")).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail("user")).thenReturn(account);
 		when(mockFormDao.findById(1L)).thenReturn(form);
 		when(mockFormFieldDao.findById(1L)).thenReturn(field);
 

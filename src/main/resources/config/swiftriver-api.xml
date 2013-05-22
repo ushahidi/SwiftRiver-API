@@ -8,9 +8,9 @@
 		maxActive="8" maxIdle="4" 
 		name="jdbc/SwiftRiverDB"
 		type="javax.sql.DataSource"
-		url="jdbc:mysql://localhost/swiftriver?zeroDateTimeBehavior=convertToNull"
-		username="swiftriver"
-		password="swiftriver" />
+		url="jdbc:mysql://localhost/swiftriver_api?zeroDateTimeBehavior=convertToNull"
+		username="root"
+		password="" />
 
 	<!-- Encryption Key -->
 	<Environment name="encryptionKey" type="java.lang.String" value="2344228477#97{7&amp;6&gt;82"/>
@@ -30,4 +30,23 @@
 	<Environment name="indexer/lastDropIdPropKey" type="java.lang.String" value="indexer.lastDropId" />
 	<Environment name="indexer/batchSizePropKey" type="java.lang.String" value="indexer.batchSize" />
     <Environment name="indexer/runInterval" type="java.lang.String" value="30000"/>
+    
+    <!-- Default authentication scheme. Possible values are: 
+    		database
+    		crowdmapid
+    	'database' is the default 
+    -->
+    <Environment name="authSchemeName" type="java.lang.String" value="database" />
+    
+    <!-- CrowdmapID configuration -->
+    <Environment name="crowdmapid/serverURL" type="java.lang.String" value="https://crowdmapid.com/api" />
+    <Environment name="crowdmapid/apiKey" type="java.lang.String" value="" />
+    <Environment name="crowdmapid/apiKeyParamName" type="java.lang.String" value="api_secret" />
+    
+    <!-- Mail configuration -->
+    <Environment name="mail/host" type="java.lang.String" value="localhost" />
+    <Environment name="mail/senderAddress" type="java.lang.String" value="no-reply@swiftriver.dev" />
+    <Environment name="mail/resetPasswordUrl" type="java.lang.String" value="http://swiftriver.dev/login/reset_password" />
+    <Environment name="mail/activateAccountUrl" type="java.lang.String" value="http://swiftriver.dev/login/activate" />
+
 </Context>

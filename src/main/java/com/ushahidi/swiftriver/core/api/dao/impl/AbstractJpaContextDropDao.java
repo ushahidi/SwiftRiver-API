@@ -432,6 +432,6 @@ public abstract class AbstractJpaContextDropDao<T> extends AbstractJpaDao<T>
 	 * 
 	 * @param drops
 	 */
-	abstract public void populateForms(List<Drop> drops);
+	public abstract void populateForms(List<Drop> drops);
 	
 }

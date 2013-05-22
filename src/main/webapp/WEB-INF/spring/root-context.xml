@@ -25,7 +25,10 @@
 
 	<!-- Service Beans -->
 	<bean id="accountService" class="com.ushahidi.swiftriver.core.api.service.AccountService">
-		<property name="key" ref="encryptionKey" />
+		<property name="encryptionKey" ref="encryptionKey" />
+		<property name="crowdmapIDClient" ref="crowdmapIDClient" />
+		<property name="authenticationScheme" ref="authenticationScheme" />
+		<property name="emailHelper" ref="emailHelper" />
 	</bean>
 
 	<!-- Jackson Mapper -->
@@ -57,7 +60,7 @@
 		<property name="objectMapper" ref="jacksonObjectMapper" />
 	</bean>
 
-	<!-- Bean Mapper -->
+	<!-- Dozer Bean Mapper -->
 	<bean id="mapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>
@@ -97,6 +100,41 @@
 	<!-- Enable DataAccessException translation -->
 	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
 
+	<!-- Configures the authentication scheme -->
+	<bean id="authenticationScheme" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme"/>
+		<property name="targetMethod" value="getScheme" />
+		<property name="arguments">
+			<list>
+				<ref bean="authenticationSchemeName" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- Velocity engine -->
+	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="velocityProperties">
+			<value>
+			resource.loader=class
+			class.resource.loader.class=org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader
+			</value>
+		</property>
+	</bean>
+	
+	<!-- JavaMail Sender -->
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" ref="mailHost" />
+	</bean>
+	
+	<!-- Email sender -->
+	<bean id="emailHelper" class="com.ushahidi.swiftriver.core.mail.EmailHelper">
+		<property name="mailSender" ref="mailSender" />
+		<property name="velocityEngine" ref="velocityEngine" />
+		<property name="senderAddress" ref="senderAddress" />
+		<property name="resetPasswordUrl" ref="resetPasswordUrl" />
+		<property name="activateAccountUrl" ref="activateAccountUrl" />
+	</bean> 
+
 	<!-- Data Sources -->
 	<beans profile="prod">
 		<jee:jndi-lookup id="dataSource" jndi-name="jdbc/SwiftRiverDB"
@@ -104,6 +142,29 @@
 
 		<jee:jndi-lookup id="encryptionKey" jndi-name="encryptionKey"
 			expected-type="java.lang.String" />
+
+		<!-- Default authentication scheme-->
+		<jee:jndi-lookup id="authenticationSchemeName" jndi-name="authSchemeName" 
+			expected-type="java.lang.String" />
+
+		<!-- CrowdmapIDClient configuration parameters -->
+		<jee:jndi-lookup id="crowdmapIDServerURL" jndi-name="crowdmapid/serverURL" 
+			expected-type="java.lang.String" />
+
+		<jee:jndi-lookup id="crowdmapIDApiKey" jndi-name="crowdmapid/apiKey" 
+			expected-type="java.lang.String" />
+
+		<jee:jndi-lookup id="crowdmapIDApiKeyParamName" jndi-name="crowdmapid/apiKeyParamName" 
+			expected-type="java.lang.String" />
+			
+		<!-- Mail configuration  -->
+		<jee:jndi-lookup id="mailHost" jndi-name="mail/host" expected-type="java.lang.String" />
+		<jee:jndi-lookup id="senderAddress" jndi-name="mail/senderAddress" expected-type="java.lang.String" />
+		<jee:jndi-lookup id="resetPasswordUrl" jndi-name="mail/resetPasswordUrl" 
+			expected-type="java.lang.String" />
+		<jee:jndi-lookup id="activateAccountUrl" jndi-name="mail/activateAccountUrl"
+			expected-type="java.lang.String" />
+			
 
 		<bean id="mqProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 			<property name="ignoreUnresolvablePlaceholders" value="true" />
@@ -141,6 +202,13 @@
 
 		<rabbit:template id="amqpTemplate" connection-factory="rabbitConnectionFactory"
 			exchange="chatter" message-converter="messageConverter" />
+			
+		<!-- Configures the CrowdmapID client -->
+		<bean id="crowdmapIDClient" class="com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient">
+			<constructor-arg name="serverURL" ref="crowdmapIDServerURL" />
+			<constructor-arg name="apiKey" ref="crowdmapIDApiKey" />
+			<constructor-arg name="apiKeyParamName" ref="crowdmapIDApiKeyParamName" />
+		</bean>
 	</beans>
 
 	<beans profile="test">
@@ -154,5 +222,32 @@
 		</jdbc:embedded-database>
 
 		<bean id="amqpTemplate" class="com.ushahidi.swiftriver.core.support.MockAmqpTemplate" />
+		
+		<bean id="authenticationSchemeName" class="java.lang.String">
+			<constructor-arg value="database" />
+		</bean>
+		
+		<!-- Mail configuration -->
+		<bean id="mailHost" class="java.lang.String">
+			<constructor-arg value="localhost" />
+		</bean>
+		
+		<bean id="senderAddress" class="java.lang.String">
+			<constructor-arg value="no-reply@swiftriver.dev"/>
+		</bean>
+		
+		<bean id="resetPasswordUrl" class="java.lang.String">
+			<constructor-arg value="http://swiftriver.dev/login/reset_password" />
+		</bean>
+
+		<bean id="activateAccountUrl" class="java.lang.String">
+			<constructor-arg value="http://swiftriver.dev/login/activate" />
+		</bean>
+
+		<bean id="crowdmapIDClient" class="com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient">
+			<constructor-arg index="0" value="https://crowdmapid.com/api" />
+			<constructor-arg index="1" value="AB1A72D3BE4576F259716C90494ECCE8109E080A5B7484E9CEA9B9E7310FAF01" />
+			<constructor-arg index="2" value="api_secret" />
+		</bean>
 	</beans>
 </beans>

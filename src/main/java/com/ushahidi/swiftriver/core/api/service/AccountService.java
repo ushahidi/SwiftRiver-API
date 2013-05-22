@@ -18,8 +18,10 @@ package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.dozer.Mapper;
@@ -32,12 +34,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.auth.AuthenticationScheme;
+import com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDClient;
 import com.ushahidi.swiftriver.core.api.dao.AccountDao;
 import com.ushahidi.swiftriver.core.api.dao.ActivityDao;
 import com.ushahidi.swiftriver.core.api.dao.ClientDao;
 import com.ushahidi.swiftriver.core.api.dao.RoleDao;
 import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.api.dao.UserTokenDao;
+import com.ushahidi.swiftriver.core.api.dto.ActivateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateAccountDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateClientDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
@@ -50,6 +55,8 @@ import com.ushahidi.swiftriver.core.api.exception.BadRequestException;
 import com.ushahidi.swiftriver.core.api.exception.ErrorField;
 import com.ushahidi.swiftriver.core.api.exception.ForbiddenException;
 import com.ushahidi.swiftriver.core.api.exception.NotFoundException;
+import com.ushahidi.swiftriver.core.mail.EmailHelper;
+import com.ushahidi.swiftriver.core.mail.EmailType;
 import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.AccountActivity;
 import com.ushahidi.swiftriver.core.model.AccountFollower;
@@ -108,26 +115,20 @@ public class AccountService {
 	@Autowired
 	private Mapper mapper;
 
-	private String key;
+	private String encryptionKey;
+	
+	private AuthenticationScheme authenticationScheme;
 
-	public RiverService getRiverService() {
-		return riverService;
-	}
+	private CrowdmapIDClient crowdmapIDClient;
+
+	private EmailHelper emailHelper;
 
 	public void setRiverService(RiverService riverService) {
 		this.riverService = riverService;
 	}
 
-	public BucketService getBucketService() {
-		return bucketService;
-	}
-
 	public void setBucketService(BucketService bucketService) {
 		this.bucketService = bucketService;
-	}
-
-	public AccountDao getAccountDao() {
-		return accountDao;
 	}
 
 	public void setAccountDao(AccountDao accountDao) {
@@ -138,60 +139,52 @@ public class AccountService {
 		this.activityDao = activityDao;
 	}
 
-	public UserDao getUserDao() {
-		return userDao;
-	}
-
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;
-	}
-
-	public UserTokenDao getUserTokenDao() {
-		return userTokenDao;
 	}
 
 	public void setUserTokenDao(UserTokenDao userTokenDao) {
 		this.userTokenDao = userTokenDao;
 	}
 
-	public ClientDao getClientDao() {
-		return clientDao;
-	}
-
 	public void setClientDao(ClientDao clientDao) {
 		this.clientDao = clientDao;
-	}
-
-	public RoleDao getRoleDao() {
-		return roleDao;
 	}
 
 	public void setRoleDao(RoleDao roleDao) {
 		this.roleDao = roleDao;
 	}
 
-	public PasswordEncoder getPasswordEncoder() {
-		return passwordEncoder;
-	}
-
 	public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
-	}
-
-	public Mapper getMapper() {
-		return mapper;
 	}
 
 	public void setMapper(Mapper mapper) {
 		this.mapper = mapper;
 	}
 
-	public String getKey() {
-		return key;
+	public String getEncryptionKey() {
+		return encryptionKey;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setEncryptionKey(String key) {
+		this.encryptionKey = key;
+	}
+
+	public AuthenticationScheme getAuthenticationScheme() {
+		return authenticationScheme;
+	}
+
+	public void setAuthenticationScheme(AuthenticationScheme authenticationScheme) {
+		this.authenticationScheme = authenticationScheme;
+	}
+
+	public void setCrowdmapIDClient(CrowdmapIDClient crowdmapIDClient) {
+		this.crowdmapIDClient = crowdmapIDClient;
+	}
+
+	public void setEmailHelper(EmailHelper emailHelper) {
+		this.emailHelper = emailHelper;
 	}
 
 	/**
@@ -205,7 +198,7 @@ public class AccountService {
 			throws NotFoundException {
 		Account account = getAccount(id);
 
-		return mapGetAccountDTO(account, accountDao.findByUsername(authUser));
+		return mapGetAccountDTO(account, accountDao.findByUsernameOrEmail(authUser));
 	}
 
 	/**
@@ -217,7 +210,7 @@ public class AccountService {
 	 */
 	public GetAccountDTO getAccountByUsername(String username)
 			throws NotFoundException {
-		Account account = accountDao.findByUsername(username);
+		Account account = accountDao.findByUsernameOrEmail(username);
 
 		if (account == null) {
 			throw new NotFoundException("Account not found");
@@ -234,7 +227,7 @@ public class AccountService {
 	 * @throws NotFoundException
 	 */
 	public GetAccountDTO getAccountByAccountPath(String accountPath,
-			boolean getToken, String authUser) throws NotFoundException {
+			String authUser) throws NotFoundException {
 		Account account = accountDao.findByAccountPath(accountPath);
 
 		if (account == null) {
@@ -242,23 +235,18 @@ public class AccountService {
 		}
 
 		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
-				accountDao.findByUsername(authUser));
-		if (getToken) {
-			getAccountDTO.setToken(createUserToken(account.getOwner())
-					.getToken());
-		}
+				accountDao.findByUsernameOrEmail(authUser));
 		return getAccountDTO;
 	}
 
 	/**
 	 * Get an account by email
-	 * 
 	 * @param username
+	 * 
 	 * @return
 	 * @throws NotFoundException
 	 */
-	public GetAccountDTO getAccountByEmail(String email, boolean getToken,
-			String authUser) throws NotFoundException {
+	public GetAccountDTO getAccountByEmail(String email, String authUser) throws NotFoundException {
 		Account account = accountDao.findByEmail(email);
 
 		if (account == null) {
@@ -266,11 +254,7 @@ public class AccountService {
 		}
 
 		GetAccountDTO getAccountDTO = mapGetAccountDTO(account,
-				accountDao.findByUsername(authUser));
-		if (getToken) {
-			getAccountDTO.setToken(createUserToken(account.getOwner())
-					.getToken());
-		}
+				accountDao.findByUsernameOrEmail(authUser));
 		return getAccountDTO;
 	}
 
@@ -289,7 +273,7 @@ public class AccountService {
 			throw new NotFoundException("No accounts found");
 		}
 
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 		List<GetAccountDTO> getAccountTOs = new ArrayList<GetAccountDTO>();
 		for (Account account : accounts) {
 			getAccountTOs.add(mapGetAccountDTO(account, queryingAccount));
@@ -329,7 +313,19 @@ public class AccountService {
 		user.setName(createAccountTO.getName());
 		user.setEmail(createAccountTO.getEmail());
 		user.setUsername(createAccountTO.getEmail());
-		user.setPassword(passwordEncoder.encode(createAccountTO.getPassword()));
+
+		String password = createAccountTO.getPassword();
+
+		// Check the authentication scheme
+		switch (this.authenticationScheme) {
+		case DEFAULT:
+			user.setPassword(passwordEncoder.encode(password));
+			break;
+
+		case CROWDMAPID:
+			createCrowdmapIDAccount(user, password);
+			break;
+		}
 		userDao.create(user);
 
 		Account account = new Account();
@@ -338,11 +334,37 @@ public class AccountService {
 		account.setOwner(user);
 		accountDao.create(account);
 
-		GetAccountDTO getAccountTo = mapper.map(account, GetAccountDTO.class);
+		UserToken userToken = createUserToken(user);
 
-		UserToken token = createUserToken(user);
-		getAccountTo.setToken(token.getToken());
-		return getAccountTo;
+		// Send activation email
+		emailHelper.sendAccountActivationEmail(user, userToken);
+
+		return mapper.map(account, GetAccountDTO.class);
+	}
+
+	/**
+	 * Creates a user on CrowdmapID
+	 * 
+	 * @param user
+	 * @param password
+	 */
+	private void createCrowdmapIDAccount(User user, String password) {
+		// Check if the user exists
+		String email = user.getEmail();
+		
+		// Is the email registered on CrowdmapID?
+		if (crowdmapIDClient.isRegistered(email)) {
+			throw new BadRequestException(String.format(
+					"'%s' is already registered to another user", email));
+		}
+		
+		String crowdmapUUID = crowdmapIDClient.register(email, password);
+		if (crowdmapUUID == null) {
+			throw new BadRequestException(String.format(
+					"An error occurred while registering '%s'",email));
+		}
+		
+		logger.debug("{} successfully created with unique ID {}", email, crowdmapUUID);
 	}
 
 	/**
@@ -358,7 +380,7 @@ public class AccountService {
 			ModifyAccountDTO modifyAccountTO, String authUser) {
 
 		Account account = accountDao.findById(accountId);
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (account == null)
 			throw new NotFoundException("Account not found.");
@@ -367,8 +389,7 @@ public class AccountService {
 		// modified
 		// raise an error
 		if (!account.equals(queryingAccount)) {
-			throw new ForbiddenException(
-					"You do not have sufficient privileges to modify this account");
+			throw new ForbiddenException("Permission denied");
 		}
 
 		ModifyAccountDTO.User modifyAcOwner = modifyAccountTO.getOwner();
@@ -384,12 +405,6 @@ public class AccountService {
 			}
 		}
 
-		// If modifying password without a token, raise an error
-		if (modifyAccountTO.getToken() == null && modifyAcOwner != null
-				&& modifyAcOwner.getPassword() != null
-				&& modifyAcOwner.getCurrentPassword() == null)
-			throw ErrorUtil.getBadRequestException("token", "missing");
-
 		// > Account Owner properties
 		if (modifyAcOwner != null && modifyAcOwner.getEmail() != null) {
 			String email = modifyAcOwner.getEmail();
@@ -402,59 +417,31 @@ public class AccountService {
 
 		// Password change
 		if (modifyAcOwner != null && modifyAcOwner.getCurrentPassword() != null) {
-			// No token required for a change password
-			if (modifyAccountTO.getToken() != null) {
-				throw ErrorUtil.getBadRequestException("token",
-						"Invalid parameter");
-			}
 
 			// Check for new password
 			if (modifyAcOwner.getPassword() == null) {
 				throw ErrorUtil.getBadRequestException("password", "missing");
 			}
 
-			// Current password
-			if (!passwordEncoder.matches(modifyAcOwner.getCurrentPassword(),
-					account.getOwner().getPassword())) {
-				throw ErrorUtil.getBadRequestException("password", "invalid");
+			String newPassword = modifyAcOwner.getPassword();
+			String currentPassword = modifyAcOwner.getCurrentPassword();
+			
+			// Check the authentication scheme
+			switch (this.authenticationScheme) {
+			case CROWDMAPID:
+				crowdmapIDClient.changePassword(account.getOwner().getEmail(),
+						currentPassword, newPassword);
+				break;
+
+				default:
+					// Current password
+					if (!passwordEncoder.matches(currentPassword,
+							account.getOwner().getPassword())) {
+						throw ErrorUtil.getBadRequestException("password", "invalid");
+					}
+					modifyAcOwner.setPassword(passwordEncoder.encode(newPassword));
 			}
-
-			String password = passwordEncoder.encode(modifyAcOwner
-					.getPassword());
-			modifyAcOwner.setPassword(password);
-		}
-
-		// Account activation or password reset
-		if (modifyAccountTO.getToken() != null) {
-			if (!isTokenValid(modifyAccountTO.getToken(), account.getOwner()))
-				throw ErrorUtil.getBadRequestException("token", "invalid");
-
-			// If a token is present, the account is active and no password,
-			// then raise an error. Probably a password reset but password
-			// missing.
-			if (account.getOwner().getActive()
-					&& (modifyAcOwner == null || (modifyAcOwner != null && modifyAcOwner
-							.getPassword() == null)))
-				throw ErrorUtil.getBadRequestException("password", "missing");
-
-			// Activate account if inactive
-			if (!account.getOwner().getActive()) {
-				account.setActive(true);
-				User user = account.getOwner();
-				user.setActive(true);
-				user.setExpired(false);
-				user.setLocked(false);
-				user.setRoles(new HashSet<Role>());
-				user.getRoles().add(roleDao.findByName("user"));
-			}
-
-			// Encode and set the new password
-			if (modifyAccountTO.getToken() != null && modifyAcOwner != null
-					&& modifyAcOwner.getPassword() != null) {
-				String password = passwordEncoder.encode(modifyAcOwner
-						.getPassword());
-				modifyAcOwner.setPassword(password);
-			}
+			
 		}
 
 		mapper.map(modifyAccountTO, account);
@@ -505,7 +492,7 @@ public class AccountService {
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public boolean isTokenValid(String tokenString, User user) {
+	public boolean isValidToken(String tokenString, User user) {
 		// Activate account is matching user token found
 		UserToken token = userTokenDao.findByToken(tokenString);
 
@@ -527,9 +514,11 @@ public class AccountService {
 	public UserToken createUserToken(User user) {
 		UserToken token = new UserToken();
 		token.setToken(UUID.randomUUID().toString());
-		long expiryDate = (new Date()).getTime() + 86400000L;
+		Date dateCreated = new Date();
+		long expiryDate = dateCreated.getTime() + 86400000L;
 		token.setExpires(new Date(expiryDate));
 		token.setUser(user);
+		token.setCreated(dateCreated);
 
 		userTokenDao.create(token);
 
@@ -550,7 +539,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!authAccount.equals(account))
 			throw new ForbiddenException("Permission Denied");
@@ -582,7 +571,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		if (!account.equals(accountDao.findByUsername(name)))
+		if (!account.equals(accountDao.findByUsernameOrEmail(name)))
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = mapper.map(createClientTO, Client.class);
@@ -605,7 +594,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		if (!account.equals(accountDao.findByUsername(authUser)))
+		if (!account.equals(accountDao.findByUsernameOrEmail(authUser)))
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = clientDao.findById(clientId);
@@ -633,7 +622,7 @@ public class AccountService {
 		if (account == null)
 			throw new NotFoundException("Account not found");
 
-		if (!account.equals(accountDao.findByUsername(authUser)))
+		if (!account.equals(accountDao.findByUsernameOrEmail(authUser)))
 			throw new ForbiddenException("Permission Denied");
 
 		Client client = clientDao.findById(dbClientId);
@@ -673,7 +662,7 @@ public class AccountService {
 
 		// Encrypt the secret
 		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(encryptionKey),
 				TextUtil.convertStringToHex(clientId));
 		client.setClientSecret(encryptor.encrypt(secret));
 		client.setClientId(clientId);
@@ -689,7 +678,7 @@ public class AccountService {
 	 */
 	private String decryptClientSecret(Client client) {
 		TextEncryptor encryptor = Encryptors.text(
-				TextUtil.convertStringToHex(key),
+				TextUtil.convertStringToHex(encryptionKey),
 				TextUtil.convertStringToHex(client.getClientId()));
 		return encryptor.decrypt(client.getClientSecret());
 	}
@@ -984,7 +973,7 @@ public class AccountService {
 			activityDtos.add(mapper.map(activity, GetActivityDTO.class));
 		}
 	
-		// If all activities removed due to permisions, repeat
+		// If all activities removed due to permissions, repeat
 		if (activityDtos.size() == 0)
 			return getActivities(accountId, count, lastId, newer, followers, authAccount);
 	
@@ -999,7 +988,7 @@ public class AccountService {
 	 * @return
 	 */
 	public List<GetActivityDTO> getActivities(Long accountId, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return getActivities(accountId, 50, Long.MAX_VALUE, false, false, account);
 	}
 
@@ -1014,9 +1003,109 @@ public class AccountService {
 	 */
 	public List<GetActivityDTO> getTimeline(Integer count, Long lastId,
 			Boolean newer, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return getActivities(account.getId(), count, lastId, newer, true, account);
 	}
-	
+
+	/**
+	 * Activates a newly created account.
+	 * 
+	 * @param activateAccountDTO
+	 */
+	public void activateAccount(ActivateAccountDTO activateAccountDTO) {
+		String email = activateAccountDTO.getEmail();
+		Account account = accountDao.findByEmail(email);
+
+		if (account == null) {
+			throw new NotFoundException(String.format("Account %s does not exist", email));
+		}
+		
+		// Validate the token
+		if (!isValidToken(activateAccountDTO.getToken(), account.getOwner())) {
+			logger.debug("Invalid token {}", activateAccountDTO.getToken());
+			throw new BadRequestException(String.format(
+					"Invalid activation token specified - %s", activateAccountDTO.getToken()));
+		}
+		
+		// Activate account if inactive
+		if (!account.getOwner().getActive()) {
+			account.setActive(true);
+			User user = account.getOwner();
+			user.setActive(true);
+			user.setExpired(false);
+			user.setLocked(false);
+			user.setRoles(new HashSet<Role>());
+			user.getRoles().add(roleDao.findByName("user"));
+			
+			accountDao.update(account);
+			userDao.update(user);
+		}
+	}
+
+	/**
+	 * Sets a new password for the user associated with the email
+	 * specified in <code>email</code>  
+	 * @param resetToken
+	 * @param email
+	 * @param password
+	 */
+	@Transactional(readOnly = false)
+	public void resetPassword(String resetToken, String email, String password) {
+		Account account = accountDao.findByEmail(email);
+		if (account == null) {
+			throw new NotFoundException(String.format("Account '%s' does not exist", email));
+		}
+
+		// Reset the password
+		switch (authenticationScheme) {
+		case CROWDMAPID:
+			boolean success = crowdmapIDClient.setPassword(
+					resetToken, email, password);
+			if (!success) {
+				throw new BadRequestException("Password reset failed");
+			}
+			break;
+
+		default:
+			if (!isValidToken(resetToken, account.getOwner())) {
+				throw new BadRequestException(String.format(
+						"Invalid token specified - '%s'", resetToken));
+			}
+			User user = account.getOwner();
+			user.setPassword(passwordEncoder.encode(password));
+			userDao.update(user);
+		}
+	}
+
+	/**
+	 * Creates and sends a password reset token to the user
+	 * with the email address specified in <code>email</code>
+	 * 
+	 * @param email
+	 */
+	public void forgotPassword(String email) {
+		Account account = accountDao.findByEmail(email);
+		if (account == null) {
+			throw new NotFoundException(String.format(
+					"'%s' does not belong to a registered account", email));
+		}
+		
+		// Check the configured authentication scheme
+		User user = account.getOwner();
+		switch(authenticationScheme) {
+		case CROWDMAPID:
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("email", email);
+			params.put("token", "%token%");
+			String mailBody = emailHelper.getEmailBody(
+					EmailType.RESET_PASSWORD, params, user.getName());
+			crowdmapIDClient.requestPassword(email, mailBody);
+			break;
+			
+		case DEFAULT:
+			UserToken userToken = createUserToken(user);
+			emailHelper.sendPasswordResetEmail(user, userToken);
+		}
+	}
 	
 }

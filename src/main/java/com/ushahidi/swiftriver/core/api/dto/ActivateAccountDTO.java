@@ -14,31 +14,37 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao.impl;
+package com.ushahidi.swiftriver.core.api.dto;
 
-import javax.persistence.NoResultException;
+/**
+ * This class is a wrapper for the
+ * <code>com.ushahidi.swiftriver.core.model.Account</code>
+ * activation information
+ * 
+ * @author ekala
+ *
+ */
+public class ActivateAccountDTO {
 
-import org.springframework.stereotype.Repository;
+	private String email;
+	
+	private String token;
 
-import com.ushahidi.swiftriver.core.api.dao.RoleDao;
-import com.ushahidi.swiftriver.core.model.Role;
-
-@Repository
-public class JpaRoleDao extends AbstractJpaDao<Role> implements RoleDao {
-
-	@Override
-	public Role findByName(String name) {
-		String query = "SELECT r FROM Role r WHERE r.name = :name";
-
-		Role role = null;
-		try {
-			role = (Role) em.createQuery(query)
-					.setParameter("name", name).getSingleResult();
-		} catch (NoResultException e) {
-			// Do nothing
-		}
-		return role;
+	public String getEmail() {
+		return email;
 	}
 
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+	
 	
 }

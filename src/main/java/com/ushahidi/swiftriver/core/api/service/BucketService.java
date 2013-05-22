@@ -215,7 +215,7 @@ public class BucketService {
 			throw new BadRequestException("The bucket name must be specified");
 		}
 
-		Account account = accountDao.findByUsername(username);
+		Account account = accountDao.findByUsernameOrEmail(username);
 
 		// Check if a bucket with the specified name already exists
 		if (bucketDao.findBucketByName(account, bucketName) != null) {
@@ -261,7 +261,7 @@ public class BucketService {
 		if (bucket == null)
 			throw new NotFoundException("Bucket not found");
 
-		Account queryingAccount = accountDao.findByUsername(username);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(username);
 
 		if (!bucket.isPublished() && !isOwner(bucket, queryingAccount))
 			throw new ForbiddenException("Permission Denied");
@@ -292,7 +292,7 @@ public class BucketService {
 			throw new NotFoundException();
 		}
 
-		Account account = accountDao.findByUsername(username);
+		Account account = accountDao.findByUsernameOrEmail(username);
 
 		// Is the account the creator of the bucket or a collaborator with edit
 		// privileges?
@@ -345,7 +345,7 @@ public class BucketService {
 	@Transactional(readOnly = false)
 	public void deleteBucket(Long id, String username) {
 		Bucket bucket = getBucket(id);
-		Account queryingAccount = accountDao.findByUsername(username);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(username);
 		if (!bucket.getAccount().equals(queryingAccount)) {
 			throw new ForbiddenException();
 		}
@@ -392,7 +392,7 @@ public class BucketService {
 		Bucket bucket = getBucket(bucketId);
 
 		// Check if the authenticating user has permission to add a collaborator
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 		if (!isOwner(bucket, authAccount))
 			throw new ForbiddenException("Permission denied.");
 
@@ -433,7 +433,7 @@ public class BucketService {
 		if (bucket == null)
 			throw new NotFoundException("Bucket not found.");
 
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(bucket, authAccount))
 			throw new ForbiddenException("Permission denied.");
@@ -477,7 +477,7 @@ public class BucketService {
 		if (bucket == null)
 			throw new NotFoundException("Bucket not found.");
 
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(bucket, authAccount))
 			throw new ForbiddenException("Permission denied.");
@@ -617,7 +617,7 @@ public class BucketService {
 			int dropCount, String authUser) {
 
 		Bucket bucket = getBucket(id);
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 		
 		if (!hasAccess(bucket, queryingAccount)) {
 			throw new ForbiddenException("Access denied");
@@ -723,7 +723,7 @@ public class BucketService {
 		}
 
 		Bucket bucket = getBucket(bucketId);
-		Account account = accountDao.findByUsername(username);
+		Account account = accountDao.findByUsernameOrEmail(username);
 
 		if (!isOwner(bucket, account))
 			throw new ForbiddenException("Permission denied.");
@@ -793,7 +793,7 @@ public class BucketService {
 	 * @param authUser
 	 */
 	public boolean isOwner(Bucket bucket, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return isOwner(bucket, account);
 	}
 
@@ -1140,7 +1140,7 @@ public class BucketService {
 			throw new ForbiddenException("Permission Denied");
 
 		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		BucketDropComment dropComment = bucketDropDao.addComment(bucketDrop,
 				account, createDTO.getCommentText());
 
@@ -1227,7 +1227,7 @@ public class BucketService {
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		BucketComment bucketComment = bucketDao.addComment(bucket,
 				createDTO.getCommentText(), account);
 
@@ -1378,7 +1378,7 @@ public class BucketService {
 	@Transactional(readOnly = false)
 	public void markDropAsRead(Long bucketId, Long dropId, String authUser) {
 		Bucket bucket = getBucket(bucketId);
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!bucket.isPublished() && !this.isOwner(bucket, account)) {
 			throw new ForbiddenException("Access denied");

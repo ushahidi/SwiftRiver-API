@@ -151,7 +151,7 @@ public class RiverServiceTest {
 		River mockRiver = mock(River.class);
 		GetRiverDTO mockGetRiverTO = mock(GetRiverDTO.class);
 
-		when(mockAccountDao.findByUsername(anyString()))
+		when(mockAccountDao.findByUsernameOrEmail(anyString()))
 				.thenReturn(mockAccount);
 		when(mockAccount.getRiverQuotaRemaining()).thenReturn(1);
 		when(mockRiverDao.findByName(anyString())).thenReturn(null);
@@ -281,7 +281,7 @@ public class RiverServiceTest {
 		account.setAccountPath("other-account");
 		account.setCollaboratingRivers(new ArrayList<River>());
 
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockChannelDao.findById(anyLong())).thenReturn(mockChannel);
 		when(mockChannel.getRiver()).thenReturn(river);
 
@@ -301,7 +301,7 @@ public class RiverServiceTest {
 		channel.setParameters("the parameters");
 		channel.setRiver(river);
 
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockChannelDao.findById(anyLong())).thenReturn(channel);
 
 		riverService.deleteChannel(1L, 1L, "user");
@@ -342,7 +342,7 @@ public class RiverServiceTest {
 		modifyChannelTo.setChannel("channel after");
 		modifyChannelTo.setParameters("parameters after");
 
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockChannelDao.findById(anyLong())).thenReturn(channel);
 		riverService.setMapper(mapper);
 
@@ -383,7 +383,7 @@ public class RiverServiceTest {
 		ModifyRiverDTO modifyRiverTO = mock(ModifyRiverDTO.class);
 		GetRiverDTO expectedGetRiverDTO = mock(GetRiverDTO.class);
 
-		when(mockAccountDao.findByUsername(anyString()))
+		when(mockAccountDao.findByUsernameOrEmail(anyString()))
 				.thenReturn(mockAccount);
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockRiver.getAccount()).thenReturn(mockAccount);
@@ -432,7 +432,7 @@ public class RiverServiceTest {
 		Account mockAccount = mock(Account.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDao.findCollaborator(anyLong(), anyLong())).thenReturn(
@@ -460,7 +460,7 @@ public class RiverServiceTest {
 		when(mockRiverCollaboratorDao.findById(anyLong())).thenReturn(
 				collaborator);
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 
@@ -480,7 +480,7 @@ public class RiverServiceTest {
 		when(mockRiverCollaboratorDao.findById(anyLong())).thenReturn(
 				collaborator);
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 
@@ -498,7 +498,7 @@ public class RiverServiceTest {
 		Tag mockTag = mock(Tag.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
@@ -521,7 +521,7 @@ public class RiverServiceTest {
 		Tag mockTag = mock(Tag.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
@@ -547,7 +547,7 @@ public class RiverServiceTest {
 		Link mockLink = mock(Link.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
@@ -568,7 +568,7 @@ public class RiverServiceTest {
 		Link mockLink = mock(Link.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
@@ -595,7 +595,7 @@ public class RiverServiceTest {
 		Place mockPlace = mock(Place.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
@@ -604,7 +604,7 @@ public class RiverServiceTest {
 
 		riverService.addDropPlace(2L, 33L, createPlace, "user1");
 		verify(mockRiverDropDao).findById(33L);
-		verify(mockAccountDao).findByUsername("user1");
+		verify(mockAccountDao).findByUsernameOrEmail("user1");
 		verify(mockRiverDropDao).findPlace(mockRiverDrop, mockPlace);
 		verify(mockRiverDropDao).addPlace(mockRiverDrop, mockPlace);
 
@@ -618,7 +618,7 @@ public class RiverServiceTest {
 		Place mockPlace = mock(Place.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
@@ -669,7 +669,7 @@ public class RiverServiceTest {
 		RiverDrop drop = new RiverDrop();
 		drop.setRiver(river);
 
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockRiverDao.findById(anyLong())).thenReturn(river);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
 
@@ -710,7 +710,7 @@ public class RiverServiceTest {
 		form.setId(1L);
 		drop.getForms().add(form);
 
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockRiverDao.findById(anyLong())).thenReturn(river);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
 		when(mockRiverDropDao.findForm(anyLong(), anyLong())).thenReturn(form);
@@ -748,7 +748,7 @@ public class RiverServiceTest {
 		form.setId(1L);
 		drop.getForms().add(form);
 
-		when(mockAccountDao.findByUsername(anyString())).thenReturn(account);
+		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockRiverDao.findById(anyLong())).thenReturn(river);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
 		when(mockRiverDropDao.findForm(anyLong(), anyLong())).thenReturn(form);
@@ -780,7 +780,7 @@ public class RiverServiceTest {
 		List<RiverDrop> mockReadRiverDrops = (List<RiverDrop>) mock(List.class);
 
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
-		when(mockAccountDao.findByUsername(anyString()))
+		when(mockAccountDao.findByUsernameOrEmail(anyString()))
 				.thenReturn(mockAccount);
 		when(mockRiver.getRiverPublic()).thenReturn(true);
 		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);

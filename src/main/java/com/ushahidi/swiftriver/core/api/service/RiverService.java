@@ -227,7 +227,7 @@ public class RiverService {
 	 */
 	@Transactional(readOnly = false)
 	public GetRiverDTO createRiver(CreateRiverDTO riverTO, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!(account.getRiverQuotaRemaining() > 0))
 			throw new ForbiddenException("River quota exceeded");
@@ -265,7 +265,7 @@ public class RiverService {
 	public GetRiverDTO modifyRiver(Long riverId, ModifyRiverDTO modifyRiverTO,
 			String authUser) {
 		River river = getRiver(riverId);
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(river, account))
 			throw new ForbiddenException(
@@ -390,7 +390,7 @@ public class RiverService {
 			throw new NotFoundException(
 					"The given river does not countain the given channel.");
 
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(river, account))
 			throw new ForbiddenException(
@@ -418,7 +418,7 @@ public class RiverService {
 			throw new NotFoundException(String.format("River %d does not exist", id));
 		}
 
-		Account queryingAccount = accountDao.findByUsername(username);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(username);
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
@@ -467,7 +467,7 @@ public class RiverService {
 	public boolean deleteRiver(Long id, String authUser) {
 		River river = getRiver(id);
 		
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		// Only the creator can delete the river
 		if (!river.getAccount().equals(account)) {
@@ -516,7 +516,7 @@ public class RiverService {
 		River river = getRiver(riverId);
 
 		// Check if the authenticating user has permission to add a collaborator
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 		if (!isOwner(river, authAccount))
 			throw new ForbiddenException("Permission denied.");
 
@@ -554,7 +554,7 @@ public class RiverService {
 
 		River river = getRiver(riverId);
 
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(river, authAccount))
 			throw new ForbiddenException("Permission denied.");
@@ -595,7 +595,7 @@ public class RiverService {
 
 		River river = getRiver(riverId);
 
-		Account authAccount = accountDao.findByUsername(authUser);
+		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(river, authAccount))
 			throw new ForbiddenException("Permission denied.");
@@ -742,7 +742,7 @@ public class RiverService {
 	}
 
 	public boolean isOwner(River river, String authUser) {
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		return isOwner(river, account);
 	}
 
@@ -1100,7 +1100,7 @@ public class RiverService {
 			throw new ForbiddenException("Permission Denied");
 
 		RiverDrop riverDrop = getRiverDrop(dropId, river);
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		RiverDropComment dropComment = riverDropDao.addComment(riverDrop,
 				account, createDTO.getCommentText());
 
@@ -1364,7 +1364,7 @@ public class RiverService {
 	@Transactional(readOnly = false)
 	public void markDropAsRead(Long riverId, Long dropId, String authUser) {
 		River river = getRiver(riverId);
-		Account account = accountDao.findByUsername(authUser);
+		Account account = accountDao.findByUsernameOrEmail(authUser);
 		if (!river.getRiverPublic() && !this.isOwner(river, account)) {
 			throw new ForbiddenException("Access denied");
 		}
@@ -1411,7 +1411,7 @@ public class RiverService {
 	public List<GetTagTrend> getTrendingTags(Long riverId, TrendFilter trendFilter, String authUser) {
 		
 		River river = getRiver(riverId);
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!hasAccess(river, queryingAccount)) {
 			throw new ForbiddenException("Permission denied");
@@ -1454,7 +1454,7 @@ public class RiverService {
 	public List<GetPlaceTrend> getTredingPlaces(Long riverId, TrendFilter trendFilter,
 			String authUser) {
 		River river = getRiver(riverId);
-		Account queryingAccount = accountDao.findByUsername(authUser);
+		Account queryingAccount = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!hasAccess(river, queryingAccount)) {
 			throw new ForbiddenException("Permission denied");

@@ -14,31 +14,36 @@
  * 
  * Copyright (C) Ushahidi Inc. All Rights Reserved.
  */
-package com.ushahidi.swiftriver.core.api.dao.impl;
+package com.ushahidi.swiftriver.core.mail;
 
-import javax.persistence.NoResultException;
+public enum EmailType {
 
-import org.springframework.stereotype.Repository;
-
-import com.ushahidi.swiftriver.core.api.dao.RoleDao;
-import com.ushahidi.swiftriver.core.model.Role;
-
-@Repository
-public class JpaRoleDao extends AbstractJpaDao<Role> implements RoleDao {
-
-	@Override
-	public Role findByName(String name) {
-		String query = "SELECT r FROM Role r WHERE r.name = :name";
-
-		Role role = null;
-		try {
-			role = (Role) em.createQuery(query)
-					.setParameter("name", name).getSingleResult();
-		} catch (NoResultException e) {
-			// Do nothing
-		}
-		return role;
-	}
-
+	/**
+	 * Account activation email - for newly created accounts 
+	 */
+	ACTIVATE_ACCOUNT,
 	
+	/**
+	 * Reset password email - where a user has forgotten
+	 * their password
+	 */
+	RESET_PASSWORD; 
+	
+	/**
+	 * Returns the path for the Velocity template to be used
+	 * for the {@link EmailType} specified in <code>emailType</code>
+	 *  
+	 * @param emailType
+	 * @return
+	 */
+	public static String getTemplateLocation(EmailType emailType) {
+		switch(emailType) {
+		case ACTIVATE_ACCOUNT:
+			return "templates/velocity/activate-account.vm";
+
+		case RESET_PASSWORD:
+			return "templates/velocity/reset-password.vm";
+		}
+		return null;
+	}
 }
