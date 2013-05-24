@@ -35,6 +35,7 @@ import com.ushahidi.swiftriver.core.api.dao.BucketCommentDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropDao;
 import com.ushahidi.swiftriver.core.api.dao.BucketDropFormDao;
+import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dao.LinkDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.RiverDropDao;
@@ -45,7 +46,6 @@ import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
-import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
@@ -72,7 +72,6 @@ import com.ushahidi.swiftriver.core.model.BucketDropForm;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.Place;
-import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
@@ -127,6 +126,9 @@ public class BucketService {
 
 	@Autowired
 	private AccountService accountService;
+
+	@Autowired
+	private DropDao dropDao;
 
 	/* Logger */
 	final static Logger logger = LoggerFactory.getLogger(BucketService.class);
@@ -194,6 +196,10 @@ public class BucketService {
 
 	public void setAccountService(AccountService accountService) {
 		this.accountService = accountService;
+	}
+
+	public void setDropDao(DropDao dropDao) {
+		this.dropDao = dropDao;
 	}
 
 	/**
@@ -694,7 +700,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 
 		// Delete the drop and decrease bucket drop count
 		bucketDropDao.delete(bucketDrop);
@@ -709,62 +715,35 @@ public class BucketService {
 	 * 
 	 * @param bucketId
 	 * @param dropId
-	 * @param dropSourceTO
 	 * @param username
 	 */
 	@Transactional
-	public void addDrop(Long bucketId, Long dropId, DropSourceDTO dropSourceTO,
-			String username) {
-		// Validate the source
-		if (!(dropSourceTO.getSource().equals("river") || dropSourceTO
-				.getSource().equals("bucket"))) {
-			throw new BadRequestException(String.format(
-					"Invalid drop source %s", dropSourceTO.getSource()));
-		}
-
+	public void addDrop(Long bucketId, Long dropId, String username) {
 		Bucket bucket = getBucket(bucketId);
 		Account account = accountDao.findByUsernameOrEmail(username);
 
 		if (!isOwner(bucket, account))
 			throw new ForbiddenException("Permission denied.");
 
-		BucketDrop bucketDrop = null;
-
-		if (dropSourceTO.getSource().equals("river")) {
-			RiverDrop riverDrop = riverDropDao.findById(dropId);
-			if (riverDrop == null) {
-				throw new NotFoundException(String.format(
-						"Drop %d is not a river drop", dropId));
-			}
-			Drop drop = riverDrop.getDrop();
-			bucketDrop = bucketDao.findDrop(bucketId, drop.getId());
-
-			if (bucketDrop != null) {
-				bucketDropDao.increaseVeracity(bucketDrop);
-			} else {
-				bucketDropDao.createFromRiverDrop(riverDrop, bucket);
-				bucketDao.increaseDropCount(bucket);
-			}
-		} else if (dropSourceTO.getSource().equals("bucket")) {
-			bucketDrop = bucketDropDao.findById(dropId);
-			if (bucketDrop == null) {
-				throw new NotFoundException(String.format(
-						"Drop %d is not a bucket drop", dropId));
-			}
-
-			if (bucketDrop.getBucket().equals(bucket)) {
-				throw new BadRequestException(
-						String.format("Drop %d already exists in bucket %d",
-								dropId, bucketId));
-			}
-
-			// Create a new bucket drop from an existing
-			bucketDropDao.createFromExisting(bucketDrop, bucket);
-
-			// Update the drop count
-			bucketDao.increaseDropCount(bucket);
+		Drop drop = dropDao.findById(dropId);
+		if (dropId == null) {
+			throw new NotFoundException(String.format("Drop %d does not exist", dropId));
+		}
+		BucketDrop bucketDrop = bucketDao.findBucketDrop(bucketId, dropId);
+		if (bucketDrop != null) {
+			// Increase the veracity
+			bucketDropDao.increaseVeracity(bucketDrop);
+			return; 
 		}
 
+		// Create the bucket drop
+		bucketDrop = new BucketDrop();
+		bucketDrop.setBucket(bucket);
+		bucketDrop.setDrop(drop);
+
+		bucketDropDao.create(bucketDrop);
+		
+		bucketDao.increaseDropCount(bucket);
 	}
 
 	/**
@@ -840,7 +819,7 @@ public class BucketService {
 			throw new ForbiddenException("Permission denied");
 
 		// Get the bucket drop
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 
 		String hash = MD5Util.md5Hex(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
@@ -885,7 +864,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 
 		Tag tag = tagDao.findById(tagId);
 
@@ -922,7 +901,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 
 		String hash = MD5Util.md5Hex(createDTO.getUrl());
 		Link link = linkDao.findByHash(hash);
@@ -966,7 +945,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 		Link link = linkDao.findById(linkId);
 
 		if (link == null) {
@@ -1002,7 +981,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 
 		String hashInput = createDTO.getName();
 		hashInput += Float.toString(createDTO.getLongitude());
@@ -1056,7 +1035,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 		Place place = placeDao.findById(placeId);
 
 		if (place == null) {
@@ -1075,18 +1054,16 @@ public class BucketService {
 	 * and verify that the retrieved entity belongs to the {@link Bucket}
 	 * specified in <code>bucket</code>
 	 * 
+	 * @param bucketId
 	 * @param dropId
-	 * @param bucket
 	 * @return
 	 */
-	private BucketDrop getBucketDrop(Long dropId, Bucket bucket) {
-		BucketDrop bucketDrop = bucketDropDao.findById(dropId);
+	private BucketDrop getBucketDrop(Long bucketId, Long dropId) {
+		BucketDrop bucketDrop = bucketDao.findBucketDrop(bucketId, dropId);
 
-		if (bucketDrop == null
-				|| (bucketDrop != null && !bucketDrop.getBucket()
-						.equals(bucket))) {
+		if (bucketDrop == null) {
 			throw new NotFoundException(String.format(
-					"Drop %d does is not in bucket %d", dropId, bucket.getId()));
+					"Drop %d does is not in bucket %d", dropId, bucketId));
 		}
 
 		return bucketDrop;
@@ -1139,7 +1116,7 @@ public class BucketService {
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 		Account account = accountDao.findByUsernameOrEmail(authUser);
 		BucketDropComment dropComment = bucketDropDao.addComment(bucketDrop,
 				account, createDTO.getCommentText());
@@ -1164,7 +1141,7 @@ public class BucketService {
 		if (!bucket.isPublished() && !isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 		List<GetCommentDTO> commentsList = new ArrayList<GetCommentDTO>();
 		for (BucketDropComment dropComment : bucketDrop.getComments()) {
 			GetCommentDTO commentDTO = mapper.map(dropComment,
@@ -1193,7 +1170,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		getBucketDrop(dropId, bucket);
+		getBucketDrop(bucketId, dropId);
 
 		if (!bucketDropDao.deleteComment(commentId)) {
 			throw new NotFoundException(String.format(
@@ -1303,7 +1280,7 @@ public class BucketService {
 		if (!isOwner(bucket, authUser))
 			throw new ForbiddenException("Permission denied");
 		
-		BucketDrop drop = getBucketDrop(dropId, bucket);
+		BucketDrop drop = getBucketDrop(bucketId, dropId);
 		
 		BucketDropForm dropForm = mapper.map(createDTO, BucketDropForm.class);
 		dropForm.setDrop(drop);
@@ -1385,7 +1362,7 @@ public class BucketService {
 		}
 		
 		// Only add a drop to the list if it doesn't exist
-		BucketDrop bucketDrop = getBucketDrop(dropId, bucket);
+		BucketDrop bucketDrop = getBucketDrop(bucketId, dropId);
 		if (!bucketDropDao.isRead(bucketDrop, account)) {
 			account.getReadBucketDrops().add(bucketDrop);
 			accountDao.update(account);

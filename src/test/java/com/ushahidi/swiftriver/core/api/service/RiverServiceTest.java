@@ -500,7 +500,7 @@ public class RiverServiceTest {
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockTagDao.findByHash(anyString())).thenReturn(mockTag);
@@ -508,7 +508,7 @@ public class RiverServiceTest {
 		riverService.addDropTag(1L, 3L, createTag, "user1");
 
 		verify(mockRiverDao).findById(1L);
-		verify(mockRiverDropDao).findById(3L);
+		verify(mockRiverDao).findRiverDrop(1L, 3L);
 		verify(mockRiverDropDao).findTag(mockRiverDrop, mockTag);
 		verify(mockRiverDropDao).addTag(mockRiverDrop, mockTag);
 	}
@@ -523,7 +523,7 @@ public class RiverServiceTest {
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockTagDao.findById(anyLong())).thenReturn(mockTag);
@@ -532,6 +532,7 @@ public class RiverServiceTest {
 
 		riverService.deleteDropTag(2L, 3L, 100L, "user1");
 		verify(mockTagDao).findById(100L);
+		verify(mockRiverDao).findRiverDrop(2L, 3L);
 		verify(mockRiverDropDao).deleteTag(mockRiverDrop, mockTag);
 
 	}
@@ -549,13 +550,13 @@ public class RiverServiceTest {
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockLinkDao.findByHash(anyString())).thenReturn(mockLink);
 
 		riverService.addDropLink(1L, 3L, dto, "user3");
-		verify(mockRiverDropDao).findById(3L);
+		verify(mockRiverDao).findRiverDrop(1L, 3L);
 		verify(mockRiverDropDao).addLink(mockRiverDrop, mockLink);
 
 	}
@@ -570,7 +571,7 @@ public class RiverServiceTest {
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockLinkDao.findById(anyLong())).thenReturn(mockLink);
@@ -579,7 +580,7 @@ public class RiverServiceTest {
 
 		riverService.deleteDropLink(1L, 22L, 55L, "admin");
 
-		verify(mockRiverDropDao).findById(22L);
+		verify(mockRiverDao).findRiverDrop(1L, 22L);
 		verify(mockLinkDao).findById(55L);
 		verify(mockRiverDropDao).deleteLink(mockRiverDrop, mockLink);
 
@@ -597,13 +598,13 @@ public class RiverServiceTest {
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockPlaceDao.findByHash(anyString())).thenReturn(mockPlace);
 
 		riverService.addDropPlace(2L, 33L, createPlace, "user1");
-		verify(mockRiverDropDao).findById(33L);
+		verify(mockRiverDao).findRiverDrop(2L, 33L);
 		verify(mockAccountDao).findByUsernameOrEmail("user1");
 		verify(mockRiverDropDao).findPlace(mockRiverDrop, mockPlace);
 		verify(mockRiverDropDao).addPlace(mockRiverDrop, mockPlace);
@@ -620,7 +621,7 @@ public class RiverServiceTest {
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockPlaceDao.findById(anyLong())).thenReturn(mockPlace);
@@ -628,7 +629,7 @@ public class RiverServiceTest {
 				.thenReturn(true);
 
 		riverService.deleteDropPlace(2L, 90L, 78L, "admin");
-		verify(mockRiverDropDao).findById(90L);
+		verify(mockRiverDao).findRiverDrop(2L, 90L);
 		verify(mockPlaceDao).findById(78L);
 		verify(mockRiverDropDao).deletePlace(mockRiverDrop, mockPlace);
 	}
@@ -671,7 +672,7 @@ public class RiverServiceTest {
 
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
 		when(mockRiverDao.findById(anyLong())).thenReturn(river);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(drop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(drop);
 
 		FormValueDTO dto = new FormValueDTO();
 		dto.setId("1");
@@ -783,7 +784,7 @@ public class RiverServiceTest {
 		when(mockAccountDao.findByUsernameOrEmail(anyString()))
 				.thenReturn(mockAccount);
 		when(mockRiver.getRiverPublic()).thenReturn(true);
-		when(mockRiverDropDao.findById(anyLong())).thenReturn(mockRiverDrop);
+		when(mockRiverDao.findRiverDrop(anyLong(), anyLong())).thenReturn(mockRiverDrop);
 		when(mockRiverDrop.getRiver()).thenReturn(mockRiver);
 		when(mockRiverDropDao.isRead(mockRiverDrop, mockAccount)).thenReturn(
 				false);
