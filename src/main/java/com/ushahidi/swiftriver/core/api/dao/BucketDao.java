@@ -167,4 +167,13 @@ public interface BucketDao extends GenericDao<Bucket> {
 	 */
 	public List<Bucket> findAll(String searchTerm, int count, int page);
 
+	/**
+	 * Finds and returns the drop with the specified <code>dropId</code>
+	 * in the bucket with the specified <code>bucketId</code>
+	 * @param bucketId
+	 * @param dropId
+	 * @return
+	 */
+	public BucketDrop findBucketDrop(Long bucketId, Long dropId);
+
 }

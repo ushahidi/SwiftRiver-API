@@ -260,21 +260,6 @@
 	</mapping>
 	
 	<mapping map-null="false">
-		<class-a>com.ushahidi.swiftriver.core.model.BucketDrop</class-a>
-		<class-b>com.ushahidi.swiftriver.core.api.dto.GetDropDTO.GetBucketDropDTO</class-b>
-		
-		<field>
-			<a>bucket.id</a>
-			<b>bucketId</b>
-		</field>
-
-		<field>
-			<a>bucket.name</a>
-			<b>bucketName</b>
-		</field>
-	</mapping>
-	
-	<mapping map-null="false">
 		<class-a>com.ushahidi.swiftriver.core.model.RiverActivity</class-a>
 		<class-b>com.ushahidi.swiftriver.core.api.dto.GetActivityDTO</class-b>
 		

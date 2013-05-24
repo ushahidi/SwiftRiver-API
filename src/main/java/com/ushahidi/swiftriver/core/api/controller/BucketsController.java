@@ -41,7 +41,6 @@ import com.ushahidi.swiftriver.core.api.dto.CreateCommentDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
-import com.ushahidi.swiftriver.core.api.dto.DropSourceDTO;
 import com.ushahidi.swiftriver.core.api.dto.FollowerDTO;
 import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetBucketDTO;
@@ -414,19 +413,17 @@ public class BucketsController extends AbstractController {
 
 	/**
 	 * Handler for adding a drop to a bucket
-	 * 
 	 * @param id
 	 * @param dropId
-	 * @param sourceDTO
 	 * @param principal
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/{id}/drops/{dropId}", method = RequestMethod.PUT)
 	@ResponseBody
-	public void addDrop(@RequestBody DropSourceDTO sourceDTO,
-			@PathVariable long id, @PathVariable long dropId,
-			Principal principal) {
-		bucketService.addDrop(id, dropId, sourceDTO, principal.getName());
+	public void addDrop(@PathVariable long id,
+			@PathVariable long dropId, Principal principal) {
+		bucketService.addDrop(id, dropId, principal.getName());
 	}
 
 	/**

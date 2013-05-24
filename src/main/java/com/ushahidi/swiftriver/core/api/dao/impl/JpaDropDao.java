@@ -48,6 +48,7 @@ import com.ushahidi.swiftriver.core.api.dao.MediaDao;
 import com.ushahidi.swiftriver.core.api.dao.PlaceDao;
 import com.ushahidi.swiftriver.core.api.dao.SequenceDao;
 import com.ushahidi.swiftriver.core.api.dao.TagDao;
+import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.BucketDrop;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.Place;
@@ -739,10 +740,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		for (BucketDrop bucketDrop: bucketDropQuery.getResultList()) {
 			int dropIndex = dropsIndex.get(bucketDrop.getDrop().getId());
 			Drop drop =  drops.get(dropIndex);
-			if (drop.getBucketDrops() == null) {
-				drop.setBucketDrops(new ArrayList<BucketDrop>());
+			if (drop.getBuckets() == null) {
+				drop.setBuckets(new ArrayList<Bucket>());
 			}
-			drop.getBucketDrops().add(bucketDrop);
+			drop.getBuckets().add(bucketDrop.getBucket());
 		}
 
 		// Get the list of buckets
