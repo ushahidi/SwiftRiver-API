@@ -195,7 +195,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	@Override
 	public List<Drop> getDrops(Long bucketId, DropFilter filter, int page,
 			int dropCount, Account queryingAccount) {
-		String sql = "SELECT droplets.id, droplet_title, ";
+		String sql = "SELECT droplets.id, buckets_droplets.id AS tracking_id, droplet_title, ";
 		sql += "droplet_content, droplets.channel, identities.id AS identity_id, identity_name, ";
 		sql += "identity_avatar, droplets.droplet_date_pub, droplet_orig_id, ";
 		sql += "user_scores.score AS user_score, links.id AS original_url_id, ";
@@ -296,6 +296,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 			// Set the drop properties
 			drop.setId(((Number) result.get("id")).longValue());
+			drop.setTrackingId(((Number) result.get("tracking_id")).longValue());
 			drop.setTitle((String) result.get("droplet_title"));
 			drop.setContent((String) result.get("droplet_content"));
 			drop.setChannel((String) result.get("channel"));

@@ -128,6 +128,9 @@ public class Drop {
 	
 	@Transient
 	private List<Long> channelIds;
+	
+	@Transient
+	private Long trackingId;
 
 	public Drop() {
 
@@ -333,6 +336,14 @@ public class Drop {
 
 	public void setChannelIds(List<Long> channelIds) {
 		this.channelIds = channelIds;
+	}
+
+	public Long getTrackingId() {
+		return trackingId;
+	}
+
+	public void setTrackingId(Long trackingId) {
+		this.trackingId = trackingId;
 	}
 
 }

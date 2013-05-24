@@ -124,9 +124,12 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	public List<Drop> getDrops(Long riverId, DropFilter filter, int page,
 			int dropCount, Account queryingAccount) {
 		
-		String sql = "SELECT droplets.id, droplet_title, droplet_content, droplets.channel, ";
-		sql += "identities.id AS identity_id, identity_name, identity_avatar, rivers_droplets.droplet_date_pub, droplet_orig_id, ";
-		sql += "user_scores.score AS user_score, links.id as original_url_id, links.url AS original_url, comment_count, river_droplets_read.rivers_droplets_id AS drop_read ";
+		String sql = "SELECT droplets.id, rivers_droplets.id AS tracking_id, ";
+		sql += "droplet_title, droplet_content, droplets.channel, ";
+		sql += "identities.id AS identity_id, identity_name, identity_avatar, ";
+		sql += "rivers_droplets.droplet_date_pub, droplet_orig_id, ";
+		sql += "user_scores.score AS user_score, links.id as original_url_id, ";
+		sql += "links.url AS original_url, comment_count, river_droplets_read.rivers_droplets_id AS drop_read ";
 		sql += "FROM rivers_droplets ";
 		sql += "INNER JOIN droplets ON (rivers_droplets.droplet_id = droplets.id) ";
 		sql += "INNER JOIN identities ON (droplets.identity_id = identities.id) ";
@@ -246,6 +249,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 
 			// Set drop details
 			drop.setId(((Number) result.get("id")).longValue());
+			drop.setTrackingId(((Number) result.get("tracking_id")).longValue());
 			drop.setChannel((String) result.get("channel"));
 			drop.setTitle((String) result.get("droplet_title"));
 			drop.setContent((String) result.get("droplet_content"));

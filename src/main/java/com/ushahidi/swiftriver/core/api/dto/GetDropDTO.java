@@ -64,6 +64,9 @@ public class GetDropDTO {
 	
 	private List<FormValueDTO> forms;
 	
+	@JsonProperty("tracking_id")
+	private Long trackingId;
+	
 	public static class Identity {
 		
 		private long id;
@@ -452,5 +455,13 @@ public class GetDropDTO {
 
 	public void setForms(List<FormValueDTO> forms) {
 		this.forms = forms;
+	}
+
+	public Long getTrackingId() {
+		return trackingId;
+	}
+
+	public void setTrackingId(Long trackingId) {
+		this.trackingId = trackingId;
 	}
 }
