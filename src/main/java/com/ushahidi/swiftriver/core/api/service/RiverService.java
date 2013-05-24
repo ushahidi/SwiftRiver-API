@@ -726,7 +726,7 @@ public class RiverService {
 			throw new ForbiddenException("Permission denied");
 		}
 		
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(id, dropId);
 
 		// Update the river drop count
 		river.setDropCount(river.getDropCount() - 1);
@@ -804,7 +804,7 @@ public class RiverService {
 			throw new ForbiddenException("Permission denied");
 
 		// Get the bucket drop
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 
 		String hash = MD5Util.md5Hex(createDTO.getTag() + createDTO.getTagType());
 		Tag tag = tagDao.findByHash(hash);
@@ -847,7 +847,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 
 		Tag tag = tagDao.findById(tagId);
 
@@ -885,7 +885,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 
 		String hash = MD5Util.md5Hex(createDTO.getUrl());
 		Link link = linkDao.findByHash(hash);
@@ -929,7 +929,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 		Link link = linkDao.findById(linkId);
 
 		if (link == null) {
@@ -965,7 +965,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 
 		String hashInput = createDTO.getName();
 		hashInput += Float.toString(createDTO.getLongitude());
@@ -1017,7 +1017,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 		Place place = placeDao.findById(placeId);
 
 		if (place == null) {
@@ -1037,18 +1037,17 @@ public class RiverService {
 	 * and verify that the retrieved entity belongs to the {@link River}
 	 * specified in <code>river</code>
 	 * 
+	 * @param riverId
 	 * @param dropId
-	 * @param river
 	 * @return
 	 */
-	private RiverDrop getRiverDrop(Long dropId, River river) {
-		RiverDrop riverDrop = riverDropDao.findById(dropId);
+	private RiverDrop getRiverDrop(Long riverId, Long dropId) {
+		RiverDrop riverDrop = riverDao.findRiverDrop(riverId, dropId);
 		
-		if (riverDrop == null
-				|| !riverDrop.getRiver().equals(river)) {
+		if (riverDrop == null) {
 			throw new NotFoundException(
 					String.format("Drop %d does not exist in river %d", dropId,
-							river.getId()));
+							riverId));
 		}
 		
 		return riverDrop;
@@ -1099,7 +1098,7 @@ public class RiverService {
 		if (!river.getRiverPublic() && !isOwner(river, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 		Account account = accountDao.findByUsernameOrEmail(authUser);
 		RiverDropComment dropComment = riverDropDao.addComment(riverDrop,
 				account, createDTO.getCommentText());
@@ -1123,7 +1122,7 @@ public class RiverService {
 		if (!river.getRiverPublic() && !isOwner(river, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 		List<GetCommentDTO> commentsList = new ArrayList<GetCommentDTO>();
 		for (RiverDropComment dropComment : riverDrop.getComments()) {
 			GetCommentDTO commentDTO = mapper.map(dropComment,
@@ -1151,7 +1150,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission Denied");
 
-		getRiverDrop(dropId, river);
+		getRiverDrop(riverId, dropId);
 
 		if (!riverDropDao.deleteComment(commentId)) {
 			throw new NotFoundException(String.format(
@@ -1177,7 +1176,7 @@ public class RiverService {
 		if (!isOwner(river, authUser))
 			throw new ForbiddenException("Permission denied");
 		
-		RiverDrop drop = getRiverDrop(dropId, river);
+		RiverDrop drop = getRiverDrop(riverId, dropId);
 		
 		RiverDropForm dropForm = mapper.map(createDTO, RiverDropForm.class);
 		dropForm.setDrop(drop);
@@ -1369,7 +1368,7 @@ public class RiverService {
 			throw new ForbiddenException("Access denied");
 		}
 
-		RiverDrop riverDrop = getRiverDrop(dropId, river);
+		RiverDrop riverDrop = getRiverDrop(riverId, dropId);
 		// Only add drop to the list if it doesn't exist
 		if (!riverDropDao.isRead(riverDrop, account)) {
 			account.getReadRiverDrops().add(riverDrop);

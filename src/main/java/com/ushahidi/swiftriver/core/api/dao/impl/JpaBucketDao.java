@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.sql.DataSource;
@@ -194,7 +195,7 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 	@Override
 	public List<Drop> getDrops(Long bucketId, DropFilter filter, int page,
 			int dropCount, Account queryingAccount) {
-		String sql = "SELECT buckets_droplets.id AS id, droplet_title, ";
+		String sql = "SELECT droplets.id, droplet_title, ";
 		sql += "droplet_content, droplets.channel, identities.id AS identity_id, identity_name, ";
 		sql += "identity_avatar, droplets.droplet_date_pub, droplet_orig_id, ";
 		sql += "user_scores.score AS user_score, links.id AS original_url_id, ";
@@ -447,6 +448,25 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 		query.setFirstResult(count * (page - 1));
 
 		return query.getResultList();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.BucketDao#findBucketDrop(java.lang.Long, java.lang.Long)
+	 */
+	public BucketDrop findBucketDrop(Long bucketId, Long dropId) {
+		String qlString = "FROM BucketDrop WHERE bucket.id = :bucketId AND drop.id = :dropId";
+		BucketDrop bucketDrop = null;
+		try {
+			TypedQuery<BucketDrop> query = em.createQuery(qlString, BucketDrop.class);
+			query.setParameter("bucketId", bucketId);
+			query.setParameter("dropId", dropId);
+			bucketDrop = query.getSingleResult();
+		} catch (NoResultException e) {
+			
+		}
+
+		return bucketDrop;
 	}
 
 }

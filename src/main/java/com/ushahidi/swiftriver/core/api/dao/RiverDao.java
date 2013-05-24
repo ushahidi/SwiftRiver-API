@@ -24,6 +24,7 @@ import com.ushahidi.swiftriver.core.model.Account;
 import com.ushahidi.swiftriver.core.model.Drop;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverTagTrend;
 
 public interface RiverDao extends GenericDao<River> {
@@ -128,4 +129,14 @@ public interface RiverDao extends GenericDao<River> {
 	 * @return
 	 */
 	public List<RiverTagTrend> getTrendingPlaces(Long riverId, TrendFilter trendFilter);
+
+	/**
+	 * Finds and returns the drop with the specified <code>dropId</code>
+	 * in the river specified by <code>id</code>
+	 * 
+	 * @param id
+	 * @param dropId
+	 */
+	public RiverDrop findRiverDrop(Long id, Long dropId);
+
 }

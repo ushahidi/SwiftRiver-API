@@ -43,6 +43,7 @@ import com.ushahidi.swiftriver.core.model.Identity;
 import com.ushahidi.swiftriver.core.model.Link;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.model.RiverCollaborator;
+import com.ushahidi.swiftriver.core.model.RiverDrop;
 import com.ushahidi.swiftriver.core.model.RiverTagTrend;
 import com.ushahidi.swiftriver.core.util.TextUtil;
 
@@ -123,7 +124,7 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 	public List<Drop> getDrops(Long riverId, DropFilter filter, int page,
 			int dropCount, Account queryingAccount) {
 		
-		String sql = "SELECT rivers_droplets.id AS id, droplet_title, droplet_content, droplets.channel, ";
+		String sql = "SELECT droplets.id, droplet_title, droplet_content, droplets.channel, ";
 		sql += "identities.id AS identity_id, identity_name, identity_avatar, rivers_droplets.droplet_date_pub, droplet_orig_id, ";
 		sql += "user_scores.score AS user_score, links.id as original_url_id, links.url AS original_url, comment_count, river_droplets_read.rivers_droplets_id AS drop_read ";
 		sql += "FROM rivers_droplets ";
@@ -481,6 +482,26 @@ public class JpaRiverDao extends AbstractJpaDao<River> implements RiverDao {
 		}
 
 		return placeTrends;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.RiverDao#findRiverDrop(java.lang.Long, java.lang.Long)
+	 */
+	public RiverDrop findRiverDrop(Long id, Long dropId) {
+		String qlString = "FROM RiverDrop WHERE river.id = :riverId AND drop.id = :dropId";
+		RiverDrop riverDrop = null;
+
+		try {
+			TypedQuery<RiverDrop> query = em.createQuery(qlString, RiverDrop.class);
+			query.setParameter("riverId", id);
+			query.setParameter("dropId", dropId);
+			riverDrop = query.getSingleResult();
+		} catch (NoResultException e) {
+			logger.debug("Drop {} does not exist in river {}", dropId, id);
+		}
+
+		return riverDrop;
 	}
 
 }
