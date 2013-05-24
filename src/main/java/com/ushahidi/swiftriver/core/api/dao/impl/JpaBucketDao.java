@@ -249,9 +249,9 @@ public class JpaBucketDao extends AbstractJpaDao<Bucket> implements BucketDao {
 
 		boolean newer = filter.getSinceId() != null;
 		if (newer) {
-			sql += "ORDER BY droplets.droplet_date_pub ASC ";
+			sql += "ORDER BY buckets_droplets.droplet_date_added ASC ";
 		} else {
-			sql += "ORDER BY droplets.droplet_date_pub DESC ";
+			sql += "ORDER BY buckets_droplets.droplet_date_added DESC ";
 		}
 
 		sql += "LIMIT " + dropCount + " OFFSET " + dropCount * (page - 1);
