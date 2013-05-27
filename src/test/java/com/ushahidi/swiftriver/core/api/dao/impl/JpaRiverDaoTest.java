@@ -99,8 +99,8 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		assertEquals(5, drop.getId());
 		assertEquals(false, drop.getRead());
 		assertEquals("rss", drop.getChannel());
-		assertEquals("droplet_5_title", drop.getTitle());
-		assertEquals("droplet_5_content", drop.getContent());
+		assertEquals("droplet 5 title", drop.getTitle());
+		assertEquals("droplet 5 content", drop.getContent());
 		assertEquals("5", drop.getOriginalId());
 		assertEquals(30, drop.getCommentCount());
 		assertEquals(1, drop.getIdentity().getId());
@@ -191,8 +191,8 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 		assertTrue(drop.getId() > 3);
 		assertEquals(false, drop.getRead());
 		assertEquals("twitter", drop.getChannel());
-		assertEquals("droplet_4_title", drop.getTitle());
-		assertEquals("droplet_4_content", drop.getContent());
+		assertEquals("droplet 4 title", drop.getTitle());
+		assertEquals("droplet 4 content", drop.getContent());
 		assertEquals("4", drop.getOriginalId());
 		assertEquals(25, drop.getCommentCount());
 		assertEquals(2, drop.getIdentity().getId());

@@ -24,7 +24,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -50,16 +49,5 @@ public class DropDocumentRepositoryTest {
 		List<String> documentIds = Arrays.asList(new String[]{"2", "3", "4", "9"});
 		List<DropDocument> documents = repository.findAll(documentIds);
 		assertEquals(4, documents.size());
-	}
-	
-	@Test
-	public void find() {
-		String keyword = "droplet";
-
-		// Sample page request 
-		PageRequest pageRequest = new PageRequest(0, 50);
-		repository.find(keyword, pageRequest);
-		
-		assertEquals(10, repository.count());
-	}
+	}	
 }

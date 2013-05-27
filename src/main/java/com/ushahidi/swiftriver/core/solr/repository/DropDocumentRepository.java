@@ -18,31 +18,12 @@ package com.ushahidi.swiftriver.core.solr.repository;
 
 import java.util.List;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.repository.Query;
 import org.springframework.data.solr.repository.SolrCrudRepository;
-import org.springframework.data.web.PageableDefaults;
 
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 
-public interface DropDocumentRepository extends SolrCrudRepository<DropDocument, String> {
-	
-	/**
-	 * Finds and returns a {@link List} of {@link DropDocument} entities
-	 * that contain the phrase specified in <code>searchTerm</code> in their
-	 * title or content.
-	 * 
-	 * <b>NOTE:</b> Pages are zero-indexed, thus providing 0 for 
-	 * <code>page</code> - in the {@link Pageable} instance for the 
-	 * <code>pageable</code> parameter-  will return the first page
-	 * 
-	 * @param searchTerm
-	 * @param pageable
-	 * @return
-	 */
-	@Query(value = "title:*?0* OR content:*?0*")
-	public List<DropDocument> find(String searchTerm,
-			@PageableDefaults(pageNumber = 0, value = 50) Pageable pageable);
+public interface DropDocumentRepository extends SolrCrudRepository<DropDocument, String>, DropSearchRepository {
 	
 	/**
 	 * Returns all {@link DropDocument} entities with the IDs
@@ -53,31 +34,5 @@ public interface DropDocumentRepository extends SolrCrudRepository<DropDocument,
 	 */
 	@Query(value = "id:(?0)")
 	public List<DropDocument> findAll(List<String> ids);
-
-	/**
-	 * Returns all {@link DropDocument} entities in the {@link River} with the
-	 * ID specified in <code>riverId</code> and contain <code>searchTerm</code>
-	 * in their title or content
-	 * 
-	 * @param riverId
-	 * @param searchTerm
-	 * @param pageable
-	 * @return
-	 */
-	@Query(value = "riverId:(?0) AND ?1")
-	public List<DropDocument> findInRiver(Long riverId, String searchTerm, Pageable pageable);
-	
-	/**
-	 * Returns all {@link DropDocument} entities in the {@link Bucket} with the
-	 * ID specified in <code>bucket</code> and contain <code>searchTerm</code>
-	 * in their title or content
-	 * 
-	 * @param bucketId
-	 * @param searchTerm
-	 * @param pageable
-	 * @return
-	 */
-	@Query(value = "bucketId:(?0) AND ?1")
-	public List<DropDocument> findInBucket(Long bucketId, String searchTerm, Pageable pageable);
-		
+			
 }

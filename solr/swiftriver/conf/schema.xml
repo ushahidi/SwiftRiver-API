@@ -113,11 +113,12 @@
     <!-- SwiftRiver Drop fields -->
     <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false" />
     <field name="channel" type="text_general" indexed="true" stored="false"/>
-    <field name="title" type="text_general" indexed="true" stored="false"/>
-    <field name="content" type="text_general" indexed="true" stored="false"/>
+    <field name="title" type="text_general" indexed="true" stored="true" termVectors="true"/>
+    <field name="content" type="text_general" indexed="true" stored="true" termVectors="true"/>
     <field name="datePublished" type="date" indexed="true" stored="true"/>
     <field name="riverId" type="long" indexed="true" stored="false" multiValued="true"/>
     <field name="bucketId" type="long" indexed="true" stored="false" multiValued="true"/>
+    <field name="signature" type="text_general" stored="true" indexed="true"/>
 
    <!-- Dynamic field definitions allow using convention over configuration
        for fields via the specification of patterns to match field names. 

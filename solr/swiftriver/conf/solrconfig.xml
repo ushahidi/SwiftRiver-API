@@ -61,6 +61,22 @@
 
 	</updateHandler>
 
+	<!-- TermVectorComponent -->
+	<searchComponent name="tvComponent" class="org.apache.solr.handler.component.TermVectorComponent" />
+	
+	<!-- Document duplication detection -->
+	<updateRequestProcessorChain name="dedupe">
+		<processor class="org.apache.solr.update.processor.SignatureUpdateProcessorFactory">
+			<bool name="enabled">true</bool>
+			<bool name="overwriteDupes">false</bool>
+			<str name="fields">title,content</str>
+			<str name="signatureField">signature</str>
+			<str name="signatureClass">org.apache.solr.update.processor.TextProfileSignature</str>
+		</processor>
+		<processor class="solr.LogUpdateProcessorFactory"/>
+		<processor class="solr.RunUpdateProcessorFactory"/>
+	</updateRequestProcessorChain>
+
 	<!-- realtime get handler, guaranteed to return the latest stored fields 
     of any document, without the need to commit or open a new searcher. The current 
     implementation relies on the updateLog feature being enabled. -->
@@ -78,7 +94,11 @@
   
 	<requestHandler name="standard" class="solr.StandardRequestHandler" default="true" />
 	<requestHandler name="/analysis/field" startup="lazy" class="solr.FieldAnalysisRequestHandler" />
-	<requestHandler name="/update" class="solr.UpdateRequestHandler"  />
+	<requestHandler name="/update" class="solr.UpdateRequestHandler">
+		<lst name="defaults">
+			<str name="update.chain">dedupe</str>
+		</lst>
+	</requestHandler>
 	<requestHandler name="/admin/" class="org.apache.solr.handler.admin.AdminHandlers" />
 
 	<requestHandler name="/admin/ping" class="solr.PingRequestHandler">
@@ -98,7 +118,11 @@
 			<str name="echoParams">explicit</str>
 			<int name="rows">20</int>
 			<str name="df">text</str>
+			<bool name="tv">false</bool>
 		</lst>
+		<arr name="last-components">
+			<str>tvComponent</str>
+		</arr>
 	</requestHandler>
 
 	<!-- config for the admin interface --> 
