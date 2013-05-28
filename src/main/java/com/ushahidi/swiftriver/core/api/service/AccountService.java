@@ -1012,6 +1012,7 @@ public class AccountService {
 	 * 
 	 * @param activateAccountDTO
 	 */
+	@Transactional(readOnly = false)
 	public void activateAccount(ActivateAccountDTO activateAccountDTO) {
 		String email = activateAccountDTO.getEmail();
 		Account account = accountDao.findByEmail(email);
@@ -1020,26 +1021,29 @@ public class AccountService {
 			throw new NotFoundException(String.format("Account %s does not exist", email));
 		}
 		
+		// If the user is active, return early
+		User user = account.getOwner();
+		if (user.getActive()) {
+			logger.info("Ignoring account activation request. '{}' is already active.", email);
+			return;
+		}
+
 		// Validate the token
-		if (!isValidToken(activateAccountDTO.getToken(), account.getOwner())) {
+		if (!isValidToken(activateAccountDTO.getToken(), user)) {
 			logger.debug("Invalid token {}", activateAccountDTO.getToken());
 			throw new BadRequestException(String.format(
 					"Invalid activation token specified - %s", activateAccountDTO.getToken()));
 		}
 		
-		// Activate account if inactive
-		if (!account.getOwner().getActive()) {
-			account.setActive(true);
-			User user = account.getOwner();
-			user.setActive(true);
-			user.setExpired(false);
-			user.setLocked(false);
-			user.setRoles(new HashSet<Role>());
-			user.getRoles().add(roleDao.findByName("user"));
-			
-			accountDao.update(account);
-			userDao.update(user);
-		}
+		account.setActive(true);
+		user.setActive(true);
+		user.setExpired(false);
+		user.setLocked(false);
+		user.setRoles(new HashSet<Role>());
+		user.getRoles().add(roleDao.findByName("user"));
+
+		accountDao.update(account);
+		userDao.update(user);
 	}
 
 	/**

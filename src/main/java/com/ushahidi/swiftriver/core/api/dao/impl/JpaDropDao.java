@@ -376,8 +376,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		// A map to hold the new max_drop_id and drop_count per river
 		final Map<Long, long[]> riverDropsMap = new HashMap<Long, long[]>();
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-			public void setValues(PreparedStatement ps, int i)
-					throws SQLException {
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
 				Map<String, Long> dropEntry = riverDropChannelList.get(i);
 				long id = startKey + i;
 
@@ -419,25 +418,26 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		sql = "UPDATE rivers SET max_drop_id = ?, drop_count = drop_count + ? WHERE id = ?";
 		final List<Entry<Long, long[]>> riverUpdate = new ArrayList<Entry<Long, long[]>>();
 		riverUpdate.addAll(riverDropsMap.entrySet());		
-		this.jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-            	Entry<Long, long[]> entry = riverUpdate.get(i);
-                ps.setLong(1, entry.getValue()[0]);
-                ps.setLong(2, entry.getValue()[1]);
-                ps.setLong(3, entry.getKey());
-            }
 
-            public int getBatchSize() {
-                return riverUpdate.size();
-            }
-        } );
+		this.jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+			public void setValues(PreparedStatement ps, int i) throws SQLException {
+				Entry<Long, long[]> entry = riverUpdate.get(i);
+				ps.setLong(1, entry.getValue()[0]);
+				ps.setLong(2, entry.getValue()[1]);
+				ps.setLong(3, entry.getKey());
+			}
+
+			public int getBatchSize() {
+				return riverUpdate.size();
+			}
+		});
 		
 		// Update the drop_count in TABLE `river_channels`
 		sql = "UPDATE river_channels SET drop_count = drop_count + ? WHERE id = ?";
 		final List<Entry<Long, Long>> riverChannelUpdate = new ArrayList<Entry<Long,Long>>();
 		riverChannelUpdate.addAll(channelDropCountMap.entrySet());
+
 		this.jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-			
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
 				Entry<Long, Long> entry = riverChannelUpdate.get(i);
 				ps.setLong(1, entry.getValue());
@@ -586,7 +586,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		tagTrendsList.addAll(trendsData.entrySet());
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
-			
 			public void setValues(PreparedStatement ps, int i) throws SQLException {
 				long id = startKey + i;
 
