@@ -500,7 +500,6 @@ public class AccountService {
 				|| token.getExpires().getTime() < (new Date()).getTime())
 			return false;
 
-		userTokenDao.delete(token);
 		return true;
 	}
 
@@ -1015,6 +1014,7 @@ public class AccountService {
 	@Transactional(readOnly = false)
 	public void activateAccount(ActivateAccountDTO activateAccountDTO) {
 		String email = activateAccountDTO.getEmail();
+		String tokenString = activateAccountDTO.getToken();
 		Account account = accountDao.findByEmail(email);
 
 		if (account == null) {
@@ -1029,8 +1029,8 @@ public class AccountService {
 		}
 
 		// Validate the token
-		if (!isValidToken(activateAccountDTO.getToken(), user)) {
-			logger.debug("Invalid token {}", activateAccountDTO.getToken());
+		if (!isValidToken(tokenString, user)) {
+			logger.debug("Invalid token {}", tokenString);
 			throw new BadRequestException(String.format(
 					"Invalid activation token specified - %s", activateAccountDTO.getToken()));
 		}
@@ -1044,6 +1044,8 @@ public class AccountService {
 
 		accountDao.update(account);
 		userDao.update(user);
+
+		userTokenDao.delete(tokenString);
 	}
 
 	/**
@@ -1078,7 +1080,11 @@ public class AccountService {
 			User user = account.getOwner();
 			user.setPassword(passwordEncoder.encode(password));
 			userDao.update(user);
+			
+			// Delete the token
+			userTokenDao.delete(resetToken);
 		}
+
 	}
 
 	/**

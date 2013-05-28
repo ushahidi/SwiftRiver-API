@@ -27,4 +27,13 @@ public interface UserTokenDao extends GenericDao<UserToken> {
 	 * @return
 	 */
 	public UserToken findByToken(String token);
+	
+	/**
+	 * Delete a {@link UserToken} using its value. This is
+	 * based on the premise that token values are always
+	 * unique
+	 * 
+	 * @param token
+	 */
+	public void delete(String token);
 }
