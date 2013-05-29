@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.model.Drop;
-import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 
@@ -107,7 +106,7 @@ public class DropIndexService {
 	@Transactional(readOnly = false)
 	public void addAllToIndex(List<Drop> drops) {
 		// Set the places, bucket and river ids
-		populatePlaces(drops);
+		Map<Long, List<String>> dropPlaces = getDropPlaces(drops);
 		populateRiverIds(drops);
 		populateBucketIds(drops);
 
@@ -118,12 +117,7 @@ public class DropIndexService {
 			DropDocument document = mapper.map(drop, DropDocument.class);
 
 			// Set the places
-			List<String> geo = new ArrayList<String>();
-			for (Place place: drop.getPlaces()) {
-				String coordinates = String.format("%s,%s", place.getLatitude(), place.getLongitude());
-				geo.add(coordinates);
-			}
-			document.setGeo(geo);
+			document.setGeo(dropPlaces.get(drop.getId()));
 			documents.add(document);
 		}
 		
@@ -230,25 +224,25 @@ public class DropIndexService {
 
 
 	/**
-	 * Sets the <code>places</code> property for each of the 
-	 * {@link Drop} entities in the <code>drops</code> parameter
-	 * 
+	 * Returns a <code>java.util.Map</code> that contains a list of
+	 * all [latitude, longitude] pairs for the place entities associated
+	 * with each of the {@link Drop} entities in the <code>drops</code>
+	 * parameter
+	 *  
 	 * @param drops
+	 * @return
 	 */
-	private void populatePlaces(List<Drop> drops) {
-		// Store the drop index
-		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+	private Map<Long, List<String>> getDropPlaces(List<Drop> drops) {
+		Map<Long, List<String>> dropPlaces = new HashMap<Long, List<String>>();
+
+		// Fetch the drop ids
 		List<Long> dropIds = new ArrayList<Long>();
-		int index = 0;
 		for (Drop drop: drops) {
-			drop.setPlaces(new ArrayList<Place>());
 			dropIds.add(drop.getId());
-			dropIndex.put(drop.getId(), index);
-			index++;
 		}
 		
 		// Query to fetch the places associated with the drops 
-		String sql = "SELECT droplets_places.droplet_id, " +
+		String sql = "SELECT droplets_places.droplet_id, " + 
 				"places.longitude, places.latitude " +
 				"FROM places " +
 				"INNER JOIN droplets_places ON (droplets_places.place_id = places.id) " +
@@ -260,13 +254,19 @@ public class DropIndexService {
 		for (Map<String, Object> row: namedJdbcTemplate.queryForList(sql, paramMap)) {
 			Long dropId = ((Number) row.get("droplet_id")).longValue();
 
-			Drop drop = drops.get(dropIndex.get(dropId));
-			Place place = new Place();
-			place.setLongitude(((Number)row.get("longitude")).floatValue());
-			place.setLatitude(((Number)row.get("latitude")).floatValue());
+			Float longitude = ((Number)row.get("longitude")).floatValue();
+			Float latitude = ((Number)row.get("latitude")).floatValue();
 			
-			drop.getPlaces().add(place);
+			List<String> places = dropPlaces.get(dropId);
+			if (places == null) {
+				places = new ArrayList<String>();
+			}
+			
+			places.add(String.format("%s,%s", latitude, longitude));
+			dropPlaces.put(dropId, places);
 		}
+		
+		return dropPlaces;
 	}
 
 	/**

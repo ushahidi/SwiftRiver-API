@@ -9,7 +9,7 @@
  	All paths are relative to the Solr Home directory 
  -->
 <solr persistent="true">
-	<cores defaultCoreName="swiftriver" host="${host:}" hostPort="${jetty.port:}">
+	<cores adminPath="/admin/cores" defaultCoreName="swiftriver" host="${host:}" hostPort="${jetty.port:}">
 		<core name="swiftriver" instanceDir="swiftriver" dataDir="data" loadOnStartup="true"/>
 	</cores>
 </solr>
