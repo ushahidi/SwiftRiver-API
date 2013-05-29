@@ -18,9 +18,6 @@ package com.ushahidi.swiftriver.core.solr;
 
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -49,9 +46,6 @@ public class InitSolrSearchIndex {
 	@Autowired
 	private DropIndexService dropIndexService;
 
-	@PersistenceContext
-	private EntityManager entityManager;
-	
 	@Autowired
 	private DropDao dropDao;
 
@@ -60,12 +54,8 @@ public class InitSolrSearchIndex {
 		dropIndexService.deleteAllFromIndex();
 
 		// Fetch the drops and them to the index 
-		List<Drop> drops = entityManager.createQuery("FROM Drop", 
-				Drop.class).getResultList();
+		List<Drop> drops = dropDao.findAll(0, 1000);
 
-		dropDao.populateBucketIds(drops);
-		dropDao.populateRiverIds(drops);
-		
 		dropIndexService.addAllToIndex(drops);
 	}
 }

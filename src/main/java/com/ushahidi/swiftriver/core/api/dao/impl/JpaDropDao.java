@@ -754,78 +754,11 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#findAll(long, int)
 	 */
 	public List<Drop> findAll(long sinceId, int batchSize) {
-		TypedQuery<Drop> query = em.createQuery("FROM Drop d WHERE d.id > :sinceId ORDER BY d.id ASC", 
-				Drop.class);
+		String qlString = "FROM Drop d WHERE d.id > :sinceId ORDER BY d.id ASC";
+		TypedQuery<Drop> query = em.createQuery(qlString, Drop.class);
 		query.setParameter("sinceId", sinceId);
 		query.setMaxResults(batchSize);
 
 		return query.getResultList();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#populateRiverIds(java.util.List)
-	 */
-	public void populateRiverIds(List<Drop> drops) {
-		// Store the drop index
-		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
-		List<Long> dropIds = new ArrayList<Long>();
-		int index = 0;
-		for (Drop drop: drops) {
-			dropIds.add(drop.getId());
-			dropIndex.put(drop.getId(), index);
-			index++;
-		}
-
-		String sql = "SELECT `droplet_id`, `river_id` " +
-				"FROM `rivers_droplets` WHERE `droplet_id` IN (:dropIds)";
-		
-		MapSqlParameterSource paramMap = new MapSqlParameterSource();
-		paramMap.addValue("dropIds", dropIds);
-
-		for(Map<String, Object> row: namedJdbcTemplate.queryForList(sql, paramMap)) {
-			Long dropId = ((Number) row.get("droplet_id")).longValue();
-			Long riverId = ((Number) row.get("river_id")).longValue();
-			
-			Drop drop = drops.get(dropIndex.get(dropId));
-			if (drop.getRiverIds() == null) {
-				drop.setRiverIds(new ArrayList<Long>());
-			}
-			drop.getRiverIds().add(riverId);
-		}
-		
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.DropDao#populateBucketIds(java.util.List)
-	 */
-	public void populateBucketIds(List<Drop> drops) {
-		// Store the drop index
-		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
-		List<Long> dropIds = new ArrayList<Long>();
-		int index = 0;
-		for (Drop drop: drops) {
-			dropIds.add(drop.getId());
-			dropIndex.put(drop.getId(), index);
-			index++;
-		}
-		
-		String sql = "SELECT `droplet_id`, `bucket_id` " +
-				"FROM `buckets_droplets` WHERE `droplet_id` IN (:dropIds)";
-
-		MapSqlParameterSource paramMap = new MapSqlParameterSource();
-		paramMap.addValue("dropIds", dropIds);
-
-		for(Map<String, Object> row: namedJdbcTemplate.queryForList(sql, paramMap)) {
-			Long dropId = ((Number) row.get("droplet_id")).longValue();
-			Long bucketId = ((Number) row.get("bucket_id")).longValue();
-			
-			Drop drop = drops.get(dropIndex.get(dropId));
-			if (drop.getBucketIds() == null) {
-				drop.setBucketIds(new ArrayList<Long>());
-			}
-			drop.getBucketIds().add(bucketId);
-		}
 	}
 }

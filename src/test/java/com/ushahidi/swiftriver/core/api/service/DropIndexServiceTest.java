@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.dozer.DozerBeanMapper;
 import org.dozer.Mapper;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.model.Drop;
@@ -54,26 +56,35 @@ public class DropIndexServiceTest {
 	private Mapper mapper = new DozerBeanMapper();
 	
 	private DropDao mockDropDao;
+
+	private NamedParameterJdbcTemplate mockNamedJdbcTempalate;
 	
 	@Before
 	public void setUp() {
 		mockRepository = mock(DropDocumentRepository.class);
 		mockDropDao = mock(DropDao.class);
+		mockNamedJdbcTempalate = mock(NamedParameterJdbcTemplate.class);
 
 		dropIndexService = new DropIndexService();
 		dropIndexService.setRepository(mockRepository);
 		dropIndexService.setMapper(mapper);
 		dropIndexService.setDropDao(mockDropDao);
+		dropIndexService.setNamedJdbcTemplate(mockNamedJdbcTempalate);
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
 	public void addToIndex() {
 		Drop mockDrop = mock(Drop.class);
 		
+		List<Map<String, Object>> testResultList = new ArrayList<Map<String,Object>>();
+		when(mockNamedJdbcTempalate.queryForList(anyString(),
+				any(Map.class))).thenReturn(testResultList);
+
 		dropIndexService.addToIndex(mockDrop);
 
-		ArgumentCaptor<DropDocument> dropDocumentArgument = ArgumentCaptor.forClass(DropDocument.class);
-		verify(mockRepository).save(dropDocumentArgument .capture());
+		ArgumentCaptor<List> dropDocumentListArgument = ArgumentCaptor.forClass(List.class);
+		verify(mockRepository).save(dropDocumentListArgument.capture());
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -82,7 +93,14 @@ public class DropIndexServiceTest {
 		List<Drop> drops = new ArrayList<Drop>();
 		drops.add(mock(Drop.class));
 		drops.add(mock(Drop.class));
+
+		List<Map<String, Object>> testResultList = new ArrayList<Map<String,Object>>();
+
+		when(mockNamedJdbcTempalate.queryForList(anyString(), 
+				any(Map.class))).thenReturn(testResultList);
+
 		dropIndexService.addAllToIndex(drops);
+
 		ArgumentCaptor<List> dropDocumentListArgument = ArgumentCaptor
 				.forClass(List.class);
 		verify(mockRepository).save(dropDocumentListArgument.capture());

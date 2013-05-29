@@ -116,6 +116,7 @@
     <field name="title" type="text_general" indexed="true" stored="true" termVectors="true"/>
     <field name="content" type="text_general" indexed="true" stored="true" termVectors="true"/>
     <field name="datePublished" type="date" indexed="true" stored="true"/>
+    <field name="geo" type="location_rpt" indexed="true" stored="true" multiValued="true"/>
     <field name="riverId" type="long" indexed="true" stored="false" multiValued="true"/>
     <field name="bucketId" type="long" indexed="true" stored="false" multiValued="true"/>
     <field name="signature" type="text_general" stored="true" indexed="true"/>

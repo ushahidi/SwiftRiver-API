@@ -17,9 +17,12 @@
 package com.ushahidi.swiftriver.core.api.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 
 import org.dozer.Mapper;
 import org.slf4j.Logger;
@@ -27,12 +30,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.dto.GetDropDTO;
 import com.ushahidi.swiftriver.core.model.Drop;
+import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
 
@@ -47,8 +53,10 @@ public class DropIndexService {
 
 	@Autowired
 	private DropDao dropDao;
+
+	private NamedParameterJdbcTemplate namedJdbcTemplate;
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(DropIndexService.class);
+	final Logger logger = LoggerFactory.getLogger(DropIndexService.class);
 	
 	public void setRepository(DropDocumentRepository repository) {
 		this.repository = repository;
@@ -61,6 +69,16 @@ public class DropIndexService {
 	public void setDropDao(DropDao dropDao) {
 		this.dropDao = dropDao;
 	}
+	
+	@Autowired
+	public void setDataSource(DataSource dataSource) {
+		this.namedJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+	}
+	
+	/** Convenience method for testing purposes */
+	public void setNamedJdbcTemplate(NamedParameterJdbcTemplate template) {
+		this.namedJdbcTemplate = template;
+	}
 
 	/**
 	 * Creates a {@link DropDocument} from the {@link Drop} specified
@@ -71,9 +89,10 @@ public class DropIndexService {
 	 */
 	@Transactional(readOnly = false)
 	public void addToIndex(Drop drop) {
-		DropDocument dropDocument = mapper.map(drop, DropDocument.class);
+		List<Drop> drops = new ArrayList<Drop>();
+		drops.add(drop);
 
-		repository.save(dropDocument);
+		this.addAllToIndex(drops);
 	}
 	
 	/**
@@ -87,16 +106,30 @@ public class DropIndexService {
 	 */
 	@Transactional(readOnly = false)
 	public void addAllToIndex(List<Drop> drops) {
-		LOGGER.debug("Performing batch add of drop entities");
+		// Set the places, bucket and river ids
+		populatePlaces(drops);
+		populateRiverIds(drops);
+		populateBucketIds(drops);
+
+		logger.debug("Performing batch add of drop entities");
 
 		List<DropDocument> documents = new ArrayList<DropDocument>();
 		for (Drop drop: drops) {
-			documents.add(mapper.map(drop, DropDocument.class));
+			DropDocument document = mapper.map(drop, DropDocument.class);
+
+			// Set the places
+			List<String> geo = new ArrayList<String>();
+			for (Place place: drop.getPlaces()) {
+				String coordinates = String.format("%s,%s", place.getLatitude(), place.getLongitude());
+				geo.add(coordinates);
+			}
+			document.setGeo(geo);
+			documents.add(document);
 		}
 		
 		repository.save(documents);
 		
-		LOGGER.debug("Successfully added {} drops to the search index", drops.size());
+		logger.debug("Successfully added {} drops to the search index", drops.size());
 	}
 
 	/**
@@ -107,7 +140,7 @@ public class DropIndexService {
 	 */
 	@Transactional(readOnly = false)
 	public void deleteFromIndex(Long dropId) {
-		LOGGER.debug("Removing drop {} from the search index", dropId);
+		logger.debug("Removing drop {} from the search index", dropId);
 		repository.delete(dropId.toString());
 	}
 	
@@ -119,7 +152,7 @@ public class DropIndexService {
 	 */
 	@Transactional(readOnly = false)
 	public void deleteAllFromIndex(List<Long> dropIds) {
-		LOGGER.debug("Deleting documents with IDs {} from the search index", dropIds);
+		logger.debug("Deleting documents with IDs {} from the search index", dropIds);
 
 		List<String> documentIds = new ArrayList<String>();
 		for (Long dropId: dropIds) {
@@ -129,13 +162,13 @@ public class DropIndexService {
 		// Find all drop documents with the specified IDs
 		List<DropDocument> dropDocuments = repository.findAll(documentIds);
 		if (dropDocuments.isEmpty()) {
-			LOGGER.debug("No documents found in the search index");
+			logger.debug("No documents found in the search index");
 			return;
 		}
 
 		repository.delete(dropDocuments);
 		
-		LOGGER.debug("Successfully deleted {} documents from the search index",
+		logger.debug("Successfully deleted {} documents from the search index",
 				dropDocuments.size());
 	}
 
@@ -166,7 +199,7 @@ public class DropIndexService {
 		// Anything from the search?
 		if (dropDocuments.isEmpty()) {
 			// Log
-			LOGGER.debug(String.format("No documents found containing \"%s\" on page %d",
+			logger.debug(String.format("No documents found containing \"%s\" on page %d",
 					searchTerm, count));
 
 			// Return empty list
@@ -191,8 +224,119 @@ public class DropIndexService {
 	 */
 	@Transactional(readOnly = false)
 	public void deleteAllFromIndex() {
-		LOGGER.debug("Flushing search index");
+		logger.debug("Flushing search index");
 		repository.deleteAll();
+	}
+
+
+	/**
+	 * Sets the <code>places</code> property for each of the 
+	 * {@link Drop} entities in the <code>drops</code> parameter
+	 * 
+	 * @param drops
+	 */
+	private void populatePlaces(List<Drop> drops) {
+		// Store the drop index
+		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+		List<Long> dropIds = new ArrayList<Long>();
+		int index = 0;
+		for (Drop drop: drops) {
+			drop.setPlaces(new ArrayList<Place>());
+			dropIds.add(drop.getId());
+			dropIndex.put(drop.getId(), index);
+			index++;
+		}
+		
+		// Query to fetch the places associated with the drops 
+		String sql = "SELECT droplets_places.droplet_id, " +
+				"places.longitude, places.latitude " +
+				"FROM places " +
+				"INNER JOIN droplets_places ON (droplets_places.place_id = places.id) " +
+				"WHERE droplets_places.droplet_id IN (:dropIds)";
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("dropIds", dropIds);
+
+		for (Map<String, Object> row: namedJdbcTemplate.queryForList(sql, paramMap)) {
+			Long dropId = ((Number) row.get("droplet_id")).longValue();
+
+			Drop drop = drops.get(dropIndex.get(dropId));
+			Place place = new Place();
+			place.setLongitude(((Number)row.get("longitude")).floatValue());
+			place.setLatitude(((Number)row.get("latitude")).floatValue());
+			
+			drop.getPlaces().add(place);
+		}
+	}
+
+	/**
+	 * Sets the <code>riverIds</code> property for each {@link Drop}
+	 * in <code>drops</code>
+	 * 
+	 * @param drops
+	 */
+	private void populateRiverIds(List<Drop> drops) {
+		// Store the drop index
+		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+		List<Long> dropIds = new ArrayList<Long>();
+		int index = 0;
+		for (Drop drop: drops) {
+			dropIds.add(drop.getId());
+			dropIndex.put(drop.getId(), index);
+			index++;
+		}
+
+		String sql = "SELECT `droplet_id`, `river_id` " +
+				"FROM `rivers_droplets` WHERE `droplet_id` IN (:dropIds)";
+		
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("dropIds", dropIds);
+
+		for(Map<String, Object> row: namedJdbcTemplate.queryForList(sql, paramMap)) {
+			Long dropId = ((Number) row.get("droplet_id")).longValue();
+			Long riverId = ((Number) row.get("river_id")).longValue();
+			
+			Drop drop = drops.get(dropIndex.get(dropId));
+			if (drop.getRiverIds() == null) {
+				drop.setRiverIds(new ArrayList<Long>());
+			}
+			drop.getRiverIds().add(riverId);
+		}
+		
+	}
+
+	/**
+	 * Sets the <code>bucketIds</code> property for each {@link Drop}
+	 * in <code>drops</code>
+	 * @param drops
+	 */
+	private void populateBucketIds(List<Drop> drops) {
+		// Store the drop index
+		Map<Long, Integer> dropIndex = new HashMap<Long, Integer>();
+		List<Long> dropIds = new ArrayList<Long>();
+		int index = 0;
+		for (Drop drop: drops) {
+			dropIds.add(drop.getId());
+			dropIndex.put(drop.getId(), index);
+			index++;
+		}
+		
+		String sql = "SELECT `droplet_id`, `bucket_id` " +
+				"FROM `buckets_droplets` WHERE `droplet_id` IN (:dropIds)";
+
+		MapSqlParameterSource paramMap = new MapSqlParameterSource();
+		paramMap.addValue("dropIds", dropIds);
+
+		for(Map<String, Object> row: namedJdbcTemplate.queryForList(sql, paramMap)) {
+			Long dropId = ((Number) row.get("droplet_id")).longValue();
+			Long bucketId = ((Number) row.get("bucket_id")).longValue();
+			
+			Drop drop = drops.get(dropIndex.get(dropId));
+			if (drop.getBucketIds() == null) {
+				drop.setBucketIds(new ArrayList<Long>());
+			}
+			drop.getBucketIds().add(bucketId);
+		}
 	}
 
 }
