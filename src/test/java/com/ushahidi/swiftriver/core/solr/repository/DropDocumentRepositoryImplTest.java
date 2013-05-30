@@ -32,8 +32,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.SolrTemplate;
 
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 
 public class DropDocumentRepositoryImplTest {
@@ -70,4 +72,68 @@ public class DropDocumentRepositoryImplTest {
 		assertEquals(searchTerm, solrQuery.getQuery());
 		assertEquals("edismax", solrQuery.get("defType"));
 	}
+	
+	@Test
+	public void findInRiverWithBoundingBox() throws Exception {
+		QueryResponse mockQueryResponse = mock(QueryResponse.class);
+		List<DropDocument> foundDocuments = new ArrayList<DropDocument>();
+
+		when(mockSolrServer.query(any(SolrQuery.class))).thenReturn(mockQueryResponse);
+		when(mockQueryResponse.getBeans(DropDocument.class)).thenReturn(foundDocuments);
+
+		Pageable pageRequest = new PageRequest(0, 20);
+		DropFilter dropFilter = new DropFilter();
+		dropFilter.setBoundingBox("36.8,-122.75,37.8,-121.75");
+
+		dropSearchRepository.findInRiver(1L, dropFilter, pageRequest);
+		ArgumentCaptor<SolrQuery> solrQueryArgument = ArgumentCaptor.forClass(SolrQuery.class);
+		
+		verify(mockSolrServer).query(solrQueryArgument.capture());
+		SolrQuery solrQuery = solrQueryArgument.getValue();
+		
+		String[] expectedFilterQuery = new String[]{
+				"riverId:(1)",
+				"geo:[36.8,-122.75 TO 37.8,-121.75]"
+				};
+		
+		String[] actualFilterQuery = solrQuery.getFilterQueries();
+		
+		assertEquals("*:*", solrQuery.getQuery());
+		assertEquals(2, actualFilterQuery.length);
+		assertEquals(expectedFilterQuery[0], actualFilterQuery[0]);
+		assertEquals(expectedFilterQuery[1], actualFilterQuery[1]);
+	}
+
+	@Test
+	public void findInBucketWithBoundingBox() throws Exception {
+		QueryResponse mockQueryResponse = mock(QueryResponse.class);
+		List<DropDocument> foundDocuments = new ArrayList<DropDocument>();
+
+		when(mockSolrServer.query(any(SolrQuery.class))).thenReturn(mockQueryResponse);
+		when(mockQueryResponse.getBeans(DropDocument.class)).thenReturn(foundDocuments);
+
+		Pageable pageRequest = new PageRequest(0, 20);
+		DropFilter dropFilter = new DropFilter();
+		dropFilter.setBoundingBox("40,-74,-73,41");
+
+		dropSearchRepository.findInBucket(20L, dropFilter, pageRequest);
+		ArgumentCaptor<SolrQuery> solrQueryArgument = ArgumentCaptor.forClass(SolrQuery.class);
+		
+		verify(mockSolrServer).query(solrQueryArgument.capture());
+		SolrQuery solrQuery = solrQueryArgument.getValue();
+		
+		String[] expectedFilterQuery = new String[]{
+				"bucketId:(20)",
+				"geo:[40.0,-74.0 TO -73.0,41.0]"
+				};
+		
+		String[] actualFilterQuery = solrQuery.getFilterQueries();
+		
+		assertEquals("*:*", solrQuery.getQuery());
+		assertEquals(2, actualFilterQuery.length);
+		assertEquals(expectedFilterQuery[0], actualFilterQuery[0]);
+		assertEquals(expectedFilterQuery[1], actualFilterQuery[1]);
+		
+	}
+
 }

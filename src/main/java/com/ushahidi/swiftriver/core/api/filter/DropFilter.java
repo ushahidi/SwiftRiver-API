@@ -22,6 +22,13 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.api.exception.InvalidFilterException;
 
+/**
+ * This is a wrapper class for the parameters used
+ * for querying drops  
+ * 
+ * @author ekala
+ *
+ */
 public class DropFilter {
 
 	private List<String> channels;
@@ -43,6 +50,8 @@ public class DropFilter {
 	private List<Long> dropIds;
 
 	private String keywords;
+
+	private BoundingBox boundingBox;
 
 	/**
 	 * @return the channels
@@ -190,6 +199,79 @@ public class DropFilter {
 		this.keywords = keywords;
 	}
 	
+	public BoundingBox getBoundingBox() {
+		return boundingBox;
+	}
+
+	/**
+	 * Creates a {@link BoundingBox} from the latitude,longitude
+	 * pairs specified in the <code>locations</code> parameter
+	 * 
+	 * @param boundingBoxStr
+	 * @throws InvalidFilterException
+	 */
+	public void setBoundingBox(String boundingBoxStr) throws InvalidFilterException {
+		if (boundingBoxStr == null)
+			return;
+
+		// Validate the location bounds
+		String[] bounds = boundingBoxStr.split(",");
+		if (bounds.length != 4) {
+			throw new InvalidFilterException(String.format(
+					"Invalid bounding box '[%s]'", boundingBoxStr));
+		}
+		
+		// Get the bounding box values
+		float latFrom = Float.parseFloat(bounds[0]);
+		float lonFrom = Float.parseFloat(bounds[1]);
+		float latTo = Float.parseFloat(bounds[2]);
+		float lonTo = Float.parseFloat(bounds[3]);
+		
+		// Validate each value
+		if (!isValidLatitude(latFrom)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid latitude in bounding box: %f", latFrom));
+		}
+
+		if (!isValidLongitude(lonFrom)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid longitude in bounding box %f", lonFrom));
+		}
+		
+		if (!isValidLatitude(latTo)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid latitude in bounding box: %f", latTo));
+		}
+		
+		if (!isValidLongitude(lonTo)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid longitude in bounding box %f", lonTo));
+		}
+
+		// Create and set the bounding box
+		this.boundingBox = new BoundingBox(latFrom, lonFrom, latTo, lonTo);
+	}
+
+	/**
+	 * Validates the specified <code>latitude</code> value
+	 * 
+	 * @param latitude
+	 * @return
+	 */
+	private boolean isValidLatitude(float latitude) {
+		return latitude <= 90 && latitude >= -90;
+	}
+
+	/**
+	 * Validates the specified <code>longitude</code> value
+	 * 
+	 * @param longitude
+	 * @return
+	 */
+	private boolean isValidLongitude(float longitude) {
+		return longitude <= 180 && longitude >= -180;
+	}
+
 	/**
 	 * Checks if dateFrom = dateTo. If they are equal,
 	 * dateTo = dateFrom + 24 hrs
@@ -199,9 +281,74 @@ public class DropFilter {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(dateTo);
 			calendar.add(Calendar.HOUR, 24);
-
+	
 			this.dateTo = calendar.getTime(); 
 		}
 	}
 
+	/**
+	 * Helper class for representing a bounding box
+	 * for use in spatial queries
+	 * 
+	 * @author ekala
+	 */
+	public static class BoundingBox {
+		
+		private Float latFrom;
+
+		private Float lonFrom;
+
+		private Float latTo;
+
+		private Float lonTo;
+
+		/**
+		 * Initializes the bounding box
+		 * 
+		 * @param latFrom
+		 * @param lonFrom
+		 * @param latTo
+		 * @param lonTo
+		 */
+		public BoundingBox(Float latFrom, Float lonFrom, Float latTo, Float lonTo) {
+			setLatFrom(latFrom);
+			setLonFrom(lonFrom);
+			setLatTo(latTo);
+			setLonTo(lonTo);
+		}
+
+		public Float getLatFrom() {
+			return latFrom;
+		}
+
+		public void setLatFrom(Float latFrom) {
+			this.latFrom = latFrom;
+		}
+
+		public Float getLonFrom() {
+			return lonFrom;
+		}
+
+		public void setLonFrom(Float lonFrom) {
+			this.lonFrom = lonFrom;
+		}
+
+		public Float getLatTo() {
+			return latTo;
+		}
+
+		public void setLatTo(Float latTo) {
+			this.latTo = latTo;
+		}
+
+		public Float getLonTo() {
+			return lonTo;
+		}
+
+		public void setLonTo(Float lonTo) {
+			this.lonTo = lonTo;
+		}
+		
+		
+	}
 }
