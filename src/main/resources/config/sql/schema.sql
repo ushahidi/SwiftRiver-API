@@ -438,16 +438,6 @@ CREATE INDEX droplets_idx_processing_status ON droplets (processing_status);
 CREATE INDEX droplets_idx_parent_id ON droplets (parent_id);
 CREATE INDEX droplets_idx_droplet_image ON droplets (droplet_image);
 
--- -----------------------------------------------------
--- Table settings
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS settings (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-  key VARCHAR(100) NOT NULL ,
-  value VARCHAR(2000),
-  UNIQUE (key)
-);
-
 
 -- -----------------------------------------------------
 -- Table accounts
