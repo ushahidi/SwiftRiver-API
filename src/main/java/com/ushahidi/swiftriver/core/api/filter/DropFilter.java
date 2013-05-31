@@ -22,6 +22,13 @@ import java.util.List;
 
 import com.ushahidi.swiftriver.core.api.exception.InvalidFilterException;
 
+/**
+ * This is a wrapper class for the parameters used
+ * for querying drops  
+ * 
+ * @author ekala
+ *
+ */
 public class DropFilter {
 
 	private List<String> channels;
@@ -43,6 +50,8 @@ public class DropFilter {
 	private List<Long> dropIds;
 
 	private String keywords;
+
+	private BoundingBox boundingBox;
 
 	/**
 	 * @return the channels
@@ -190,6 +199,90 @@ public class DropFilter {
 		this.keywords = keywords;
 	}
 	
+	public BoundingBox getBoundingBox() {
+		return boundingBox;
+	}
+
+	/**
+	 * Creates a {@link BoundingBox} from the latitude,longitude
+	 * pairs specified in the <code>locations</code> parameter.
+	 * 
+	 * The SouthWest corner of the bounding box should always
+	 * come first
+	 * 
+	 * @param boundingBoxStr
+	 * @throws InvalidFilterException
+	 */
+	public void setBoundingBox(String boundingBoxStr) throws InvalidFilterException {
+		if (boundingBoxStr == null)
+			return;
+
+		// Validate the location bounds
+		String[] bounds = boundingBoxStr.split(",");
+		if (bounds.length != 4) {
+			throw new InvalidFilterException(String.format(
+					"Invalid bounding box '[%s]'", boundingBoxStr));
+		}
+		
+		// Get the bounding box values
+		float latFrom = Float.parseFloat(bounds[0]);
+		float lngFrom = Float.parseFloat(bounds[1]);
+		float latTo = Float.parseFloat(bounds[2]);
+		float lngTo = Float.parseFloat(bounds[3]);
+		
+		// Validate each value
+		if (!isValidLatitude(latFrom)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid latitude in bounding box: %f", latFrom));
+		}
+
+		if (!isValidLongitude(lngFrom)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid longitude in bounding box %f", lngFrom));
+		}
+		
+		if (!isValidLatitude(latTo)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid latitude in bounding box: %f", latTo));
+		}
+		
+		if (!isValidLongitude(lngTo)) {
+			throw new InvalidFilterException(String.format(
+					"Invalid longitude in bounding box %f", lngTo));
+		}
+		
+		// Verify that the SouthWest corner is the first pair
+		// in the bounding box
+		if ((latFrom > latTo) || (lngFrom > lngTo) ) {
+			throw new InvalidFilterException(String.format(
+					"Invalid bounding box: '%s'. The SouthWest corner should be specified first",
+					boundingBoxStr));
+		}
+		
+		// Create and set the bounding box
+		this.boundingBox = new BoundingBox(latFrom, lngFrom, latTo, lngTo);
+	}
+
+	/**
+	 * Validates the specified <code>latitude</code> value
+	 * 
+	 * @param latitude
+	 * @return
+	 */
+	private boolean isValidLatitude(float latitude) {
+		return latitude <= 90 && latitude >= -90;
+	}
+
+	/**
+	 * Validates the specified <code>longitude</code> value
+	 * 
+	 * @param longitude
+	 * @return
+	 */
+	private boolean isValidLongitude(float longitude) {
+		return longitude <= 180 && longitude >= -180;
+	}
+
 	/**
 	 * Checks if dateFrom = dateTo. If they are equal,
 	 * dateTo = dateFrom + 24 hrs
@@ -199,9 +292,114 @@ public class DropFilter {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(dateTo);
 			calendar.add(Calendar.HOUR, 24);
-
+	
 			this.dateTo = calendar.getTime(); 
 		}
 	}
 
+	/**
+	 * This is a class for representing a rectangular geographical area
+	 * (bounding box) to be used in performing spatial queries via
+	 * Solr
+	 * 
+	 * @author ekala
+	 */
+	public static class BoundingBox {
+		
+		private Float latFrom;
+
+		private Float lngFrom;
+
+		private Float latTo;
+
+		private Float lngTo;
+
+		/**
+		 * Initializes the bounding box
+		 * 
+		 * @param latFrom
+		 * @param lngFrom
+		 * @param latTo
+		 * @param lngTo
+		 */
+		public BoundingBox(Float latFrom, Float lngFrom, Float latTo, Float lngTo) {
+			setLatFrom(latFrom);
+			setLngFrom(lngFrom);
+			setLatTo(latTo);
+			setLngTo(lngTo);
+		}
+
+		/**
+		 * Returns the latitude for the SouthWest corner of the bounding box
+		 * 
+		 * @return
+		 */
+		public Float getLatFrom() {
+			return latFrom;
+		}
+
+		/**
+		 * Sets the latitude of the SouthWest corner of the bounding box
+		 * @param latFrom
+		 */
+		public void setLatFrom(Float latFrom) {
+			this.latFrom = latFrom;
+		}
+
+		/**
+		 * Returns the longitude of the SouthWest corner of the bounding box
+		 * 
+		 * @return
+		 */
+		public Float getLngFrom() {
+			return lngFrom;
+		}
+
+		/**
+		 * Sets the longitude for the SouthWest corner of the bounding box
+		 * 
+		 * @param lngFrom
+		 */
+		public void setLngFrom(Float lngFrom) {
+			this.lngFrom = lngFrom;
+		}
+
+		/**
+		 * Returns the latitude of the NorthEast corner of the bounding box
+		 * 
+		 * @return
+		 */
+		public Float getLatTo() {
+			return latTo;
+		}
+
+		/**
+		 * Sets the latitude for the NorthEast corner of the bounding box
+		 * 
+		 * @param latTo
+		 */
+		public void setLatTo(Float latTo) {
+			this.latTo = latTo;
+		}
+
+		/**
+		 * Gets the longitude of the NorthEast corner of the bounding box
+		 * 
+		 * @return
+		 */
+		public Float getLngTo() {
+			return lngTo;
+		}
+
+		/**
+		 * Sets the longigude of the NorthEast corner of the bounding box
+		 * 
+		 * @param lngTo
+		 */
+		public void setLngTo(Float lngTo) {
+			this.lngTo = lngTo;
+		}
+		
+		
+	}
 }

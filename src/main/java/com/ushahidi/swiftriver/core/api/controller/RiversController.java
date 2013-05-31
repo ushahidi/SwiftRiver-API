@@ -361,7 +361,8 @@ public class RiversController extends AbstractController {
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "channel_ids", required = false) String cIds,
 			@RequestParam(value = "state", required = false) String state,
-			@RequestParam(value = "photos", required = false) Boolean photos)
+			@RequestParam(value = "photos", required = false) Boolean photos,
+			@RequestParam(value = "locations", required = false) String locations)
 			throws NotFoundException {
 
 		if (maxId == null) {
@@ -443,6 +444,7 @@ public class RiversController extends AbstractController {
 		dropFilter.setRead(isRead);
 		dropFilter.setPhotos(photos);
 		dropFilter.setKeywords(keywords);
+		dropFilter.setBoundingBox(locations);
 
 		// Check for errors
 		if (!errors.isEmpty()) {

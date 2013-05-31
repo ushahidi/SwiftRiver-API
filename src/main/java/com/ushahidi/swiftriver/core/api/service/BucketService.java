@@ -75,7 +75,6 @@ import com.ushahidi.swiftriver.core.model.Place;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
-import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
 /**
@@ -631,19 +630,15 @@ public class BucketService {
 		
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
-		if (dropFilter.getKeywords() != null) {
-			String searchTerm = QueryUtil.getQueryString(dropFilter.getKeywords());
+		if (dropFilter.getKeywords() != null || dropFilter.getBoundingBox() != null) {
 
 			PageRequest pageRequest = new PageRequest(page - 1, dropCount);
 			List<DropDocument> dropDocuments = repository.findInBucket(id, 
-					searchTerm, pageRequest);
+					dropFilter, pageRequest);
 			
 			if (dropDocuments.isEmpty()) {
 				return getDropDTOs;
 			}
-			// Logger
-			logger.info("Found {} matches for '{}' in bucket" + id, 
-					dropDocuments.size(), searchTerm);
 
 			List<Long> dropIds = new ArrayList<Long>();
 			for (DropDocument document: dropDocuments) {

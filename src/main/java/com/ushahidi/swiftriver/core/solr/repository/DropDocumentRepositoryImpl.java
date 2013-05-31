@@ -28,7 +28,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.SolrTemplate;
 
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
+import com.ushahidi.swiftriver.core.api.filter.DropFilter.BoundingBox;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
+import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
 
 public class DropDocumentRepositoryImpl implements DropSearchRepository {
 
@@ -49,8 +52,8 @@ public class DropDocumentRepositoryImpl implements DropSearchRepository {
 	 * (java.lang.String, org.springframework.data.domain.Pageable)
 	 */
 	public List<DropDocument> find(String searchTerm, Pageable pageable) {
-
-		SolrQuery solrQuery = getPreparedSolrQuery(searchTerm, pageable);
+		SolrQuery solrQuery = getPreparedSolrQuery(QueryUtil.getQueryString(searchTerm),
+				pageable);
 		return getSearchResults(solrQuery);
 	}
 	
@@ -62,10 +65,22 @@ public class DropDocumentRepositoryImpl implements DropSearchRepository {
 	 * (java.lang.Long, java.lang.String,
 	 * org.springframework.data.domain.Pageable)
 	 */
-	public List<DropDocument> findInRiver(Long riverId, String searchTerm,
+	public List<DropDocument> findInRiver(Long riverId, DropFilter dropFilter,
 			Pageable pageable) {
-		searchTerm = String.format(searchTerm + " AND riverId:(%d)", riverId);
+		String searchTerm = QueryUtil.getQueryString(dropFilter.getKeywords());
 		SolrQuery solrQuery = getPreparedSolrQuery(searchTerm, pageable);
+		
+		// Add the filter query
+		String riverFilter = String.format("riverId:(%d)", riverId);
+		
+		// Do we have a bounding box filter?
+		if (dropFilter.getBoundingBox() == null) {
+			solrQuery.addFilterQuery(riverFilter);
+		} else {
+			String boundingBoxFilter = getBoundingBoxFilterQuery(
+					dropFilter.getBoundingBox());
+			solrQuery.addFilterQuery(riverFilter, boundingBoxFilter);
+		}
 		
 		return getSearchResults(solrQuery);
 	}
@@ -77,12 +92,38 @@ public class DropDocumentRepositoryImpl implements DropSearchRepository {
 	 * findInBucket(java.lang.Long, java.lang.String,
 	 * org.springframework.data.domain.Pageable)
 	 */
-	public List<DropDocument> findInBucket(Long bucketId, String searchTerm,
+	public List<DropDocument> findInBucket(Long bucketId, DropFilter dropFilter,
 			Pageable pageable) {
-		searchTerm = String.format(searchTerm + " AND bucketId:(%d)", bucketId);
+		String searchTerm = QueryUtil.getQueryString(dropFilter.getKeywords());
 		SolrQuery solrQuery = getPreparedSolrQuery(searchTerm, pageable);
+
+		// Add the filter query
+		String bucketFilter = String.format("bucketId:(%d)", bucketId);
+		
+		// Do we have a bounding box filter?
+		if (dropFilter.getBoundingBox() == null) {
+			solrQuery.addFilterQuery(bucketFilter);
+		} else {
+			String boundingBoxFilter = getBoundingBoxFilterQuery(
+					dropFilter.getBoundingBox());
+
+			solrQuery.addFilterQuery(bucketFilter, boundingBoxFilter);
+		}
 		
 		return getSearchResults(solrQuery);
+	}
+
+	/**
+	 * Builds and returns a Solr bounding filter query using
+	 * Solr's range query syntax
+	 *   
+	 * @param boundingBox
+	 * @return
+	 */
+	private String getBoundingBoxFilterQuery(BoundingBox boundingBox) {
+		return String.format("geo:[%s,%s TO %s,%s]", 
+				boundingBox.getLatFrom(), boundingBox.getLngFrom(), 
+				boundingBox.getLatTo(), boundingBox.getLngTo());
 	}
 
 	private List<DropDocument> getSearchResults(SolrQuery solrQuery) {
@@ -102,7 +143,6 @@ public class DropDocumentRepositoryImpl implements DropSearchRepository {
 		Integer start = pageable.getPageNumber() * pageable.getPageSize();
 
 		SolrQuery solrQuery = new SolrQuery();
-		
 		solrQuery.set("q", searchTerm);
 		solrQuery.set("defType", "edismax");
 		solrQuery.set("stopwords", true);
@@ -112,4 +152,5 @@ public class DropDocumentRepositoryImpl implements DropSearchRepository {
 
 		return solrQuery;
 	}
+	
 }

@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 
+import com.ushahidi.swiftriver.core.api.filter.DropFilter;
 import com.ushahidi.swiftriver.core.model.Bucket;
 import com.ushahidi.swiftriver.core.model.River;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
@@ -46,11 +47,12 @@ public interface DropSearchRepository {
 	 * in their title or content
 	 * 
 	 * @param riverId
-	 * @param searchTerm
+	 * @param dropFilter
 	 * @param pageable
 	 * @return
 	 */
-	public List<DropDocument> findInRiver(Long riverId, String searchTerm, Pageable pageable);
+	public List<DropDocument> findInRiver(Long riverId, DropFilter dropFilter, 
+			Pageable pageable);
 
 	/**
 	 * Returns all {@link DropDocument} entities in the {@link Bucket} with the
@@ -58,10 +60,11 @@ public interface DropSearchRepository {
 	 * in their title or content
 	 * 
 	 * @param bucketId
-	 * @param searchTerm
+	 * @param dropFilter
 	 * @param pageable
 	 * @return
 	 */
-	public List<DropDocument> findInBucket(Long bucketId, String searchTerm, Pageable pageable);
+	public List<DropDocument> findInBucket(Long bucketId, DropFilter dropFilter,
+			Pageable pageable);
 
 }
