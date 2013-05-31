@@ -114,7 +114,7 @@ public class DropDocumentRepositoryImplTest {
 
 		Pageable pageRequest = new PageRequest(0, 20);
 		DropFilter dropFilter = new DropFilter();
-		dropFilter.setBoundingBox("40,-74,-73,41");
+		dropFilter.setBoundingBox("40,-74,41,-73");
 
 		dropSearchRepository.findInBucket(20L, dropFilter, pageRequest);
 		ArgumentCaptor<SolrQuery> solrQueryArgument = ArgumentCaptor.forClass(SolrQuery.class);
@@ -124,7 +124,7 @@ public class DropDocumentRepositoryImplTest {
 		
 		String[] expectedFilterQuery = new String[]{
 				"bucketId:(20)",
-				"geo:[40.0,-74.0 TO -73.0,41.0]"
+				"geo:[40.0,-74.0 TO 41.0,-73.0]"
 				};
 		
 		String[] actualFilterQuery = solrQuery.getFilterQueries();

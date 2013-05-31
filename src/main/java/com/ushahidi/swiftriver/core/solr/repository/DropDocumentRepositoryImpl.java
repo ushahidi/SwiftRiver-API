@@ -122,8 +122,8 @@ public class DropDocumentRepositoryImpl implements DropSearchRepository {
 	 */
 	private String getBoundingBoxFilterQuery(BoundingBox boundingBox) {
 		return String.format("geo:[%s,%s TO %s,%s]", 
-				boundingBox.getLatFrom(), boundingBox.getLonFrom(), 
-				boundingBox.getLatTo(), boundingBox.getLonTo());
+				boundingBox.getLatFrom(), boundingBox.getLngFrom(), 
+				boundingBox.getLatTo(), boundingBox.getLngTo());
 	}
 
 	private List<DropDocument> getSearchResults(SolrQuery solrQuery) {

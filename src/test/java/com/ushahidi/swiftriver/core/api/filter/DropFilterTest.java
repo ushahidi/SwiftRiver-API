@@ -42,14 +42,20 @@ public class DropFilterTest {
 		BoundingBox boundingBox = dropFilter.getBoundingBox();
 
 		assertEquals("36.8", boundingBox.getLatFrom().toString());
-		assertEquals("-122.75", boundingBox.getLonFrom().toString());
+		assertEquals("-122.75", boundingBox.getLngFrom().toString());
 		assertEquals("37.8", boundingBox.getLatTo().toString());
-		assertEquals("-121.75", boundingBox.getLonTo().toString());
+		assertEquals("-121.75", boundingBox.getLngTo().toString());
 	}
 	
 	@Test(expected = InvalidFilterException.class)
 	public void setInvalidLocation() {
 		DropFilter dropFilter = new DropFilter();
 		dropFilter.setBoundingBox("-122.75,36.8,-121.75,37.8");
+	}
+	
+	@Test(expected = InvalidFilterException.class)
+	public void setInvalidBoundingBox() {
+		DropFilter dropFilter = new DropFilter();
+		dropFilter.setBoundingBox("37.8,-121.75,36.8,-122.75");
 	}
 }
