@@ -59,14 +59,6 @@ INSERT INTO account_followers (account_id, follower_id, follower_date_add) VALUE
 (5, 3, '2013-01-02 00:00:02');
 
 -- -----------------------------------------------------
--- Data for table plugins
--- -----------------------------------------------------
-INSERT INTO plugins (id, plugin_path, plugin_name, plugin_description, plugin_enabled, plugin_weight, plugin_installed)
-VALUES
-	(1,'rss','RSS','Adds an RSS/Atom channel to SwiftRiver to parse RSS and Atom Feeds.',1,1,0),
-	(2,'twitter','Twitter','Adds a Twitter channel to SwiftRiver.',1,1,0);
-	
--- -----------------------------------------------------
 -- Data for table rivers
 -- -----------------------------------------------------
 INSERT INTO rivers (id, account_id, river_name, river_name_canonical, description, river_active, river_public, drop_count, drop_quota, river_full, river_date_add, river_date_expiry, river_expired, extension_count, max_drop_id) VALUES 
