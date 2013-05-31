@@ -109,19 +109,6 @@ CREATE INDEX droplets_places_idx_place_id ON droplets_places (place_id);
 
 
 -- -----------------------------------------------------
--- Table account_droplet_media
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS  account_droplet_media (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  account_id int NOT NULL,
-  droplet_id bigint NOT NULL,
-  media_id bigint NOT NULL,
-  deleted boolean default false,
-  UNIQUE (account_id,droplet_id,media_id)
-);
-
-
--- -----------------------------------------------------
 -- Table rivers_droplets
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS rivers_droplets (
@@ -269,21 +256,6 @@ CREATE TABLE IF NOT EXISTS links (
   url varchar(2000) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE (hash)
-);
-
-
--- -----------------------------------------------------
--- Table plugins
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS plugins (
-  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-  plugin_path VARCHAR(100) NOT NULL ,
-  plugin_name VARCHAR(255) NOT NULL,
-  plugin_description VARCHAR(255) DEFAULT NULL,
-  plugin_enabled boolean default false,
-  plugin_weight boolean default true,
-  plugin_installed boolean default false,
-  UNIQUE (plugin_path)
 );
 
 
@@ -503,18 +475,6 @@ CREATE INDEX account_actions_idx_action_on ON account_actions (action_on);
 
 
 -- ----------------------------------------
--- TABLE 'account_collaborators'
--- ----------------------------------------
-CREATE TABLE IF NOT EXISTS account_collaborators (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  account_id bigint DEFAULT NULL,
-  user_id bigint DEFAULT NULL,
-  collaborator_active boolean default false,
-  UNIQUE (account_id,user_id)
-);
-
-
--- ----------------------------------------
 -- TABLE 'river_collaborators'
 -- ----------------------------------------
 CREATE TABLE IF NOT EXISTS river_collaborators (
@@ -548,7 +508,7 @@ CREATE TABLE IF NOT EXISTS bucket_collaborators (
 CREATE TABLE IF NOT EXISTS auth_tokens (
   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   token varchar(32) NOT NULL,
-  type varchar(20) DEFAULT NULL,
+  `type` varchar(20) DEFAULT NULL,
   data varchar(1000),
   created_date TIMESTAMP,
   expire_date TIMESTAMP,
@@ -620,32 +580,6 @@ CREATE TABLE IF NOT EXISTS bucket_comment_scores (
 );
 
 
--- -----------------------------------------------------
--- Table channel_quotas
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS channel_quotas (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  channel varchar(100) NOT NULL,
-  channel_option varchar(100) NOT NULL,
-  quota int DEFAULT 0,
-  UNIQUE (channel,channel_option)
-);
-
-
--- -----------------------------------------------------
--- Table account_channel_quotas
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS account_channel_quotas (
-  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  account_id bigint NOT NULL,
-  channel varchar(100) NOT NULL,
-  channel_option varchar(100) NOT NULL,
-  quota int DEFAULT '0',
-  quota_used int DEFAULT '0',
-  UNIQUE (account_id, channel,channel_option)
-);
-CREATE INDEX account_channel_quotas_idx_account_id ON account_channel_quotas (account_id);
-
 -- ----------------------------------------
 -- TABLE 'sequence'
 -- ----------------------------------------
@@ -653,16 +587,6 @@ CREATE TABLE IF NOT EXISTS seq (
   name varchar(30) NOT NULL,
   id bigint NOT NULL,
   PRIMARY KEY (name)
-);
-
-
--- ----------------------------------------
--- TABLE 'account_read_drops'
--- ----------------------------------------
-CREATE TABLE IF NOT EXISTS account_read_drops (
-  account_id bigint NOT NULL,
-  droplet_id bigint NOT NULL,
-  UNIQUE (droplet_id,account_id)
 );
 
 
@@ -694,7 +618,6 @@ CREATE INDEX bucket_droplet_comments_idx_buckets_droplets_id ON bucket_droplet_c
 CREATE INDEX bucket_droplet_comments_idx_account_id ON bucket_droplet_comments (account_id);
 
 
-
 -- ----------------------------------------
 -- TABLE 'clients'
 -- ----------------------------------------
@@ -710,7 +633,6 @@ CREATE TABLE IF NOT EXISTS clients (
   active boolean default true
 );
 CREATE INDEX clients_idx_client_id ON clients (client_id);
-
 
 
 -- -----------------------------------------------------
