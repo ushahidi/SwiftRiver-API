@@ -188,7 +188,7 @@ public class CrowdmapIDClient {
 	 * @return
 	 */
 	public boolean isRegistered(String email) {
-		logger.info("Checking if {} is registered", email);
+		logger.debug("Checking if {} is registered", email);
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new BasicNameValuePair("email", email));
 		
@@ -286,8 +286,6 @@ public class CrowdmapIDClient {
 				logger.error("The server returned status {} - {}", statusCode,  apiResponse);
 				return responseMap;
 			}
-
-			logger.debug("{} returned response: {}", this.serverURL, apiResponse);
 			
 		} catch (ClientProtocolException e) {
 			logger.error("An error occurred when processing request: {} - {}",

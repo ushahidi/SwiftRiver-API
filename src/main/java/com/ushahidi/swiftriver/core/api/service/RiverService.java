@@ -93,7 +93,6 @@ import com.ushahidi.swiftriver.core.model.Rule;
 import com.ushahidi.swiftriver.core.model.Tag;
 import com.ushahidi.swiftriver.core.solr.DropDocument;
 import com.ushahidi.swiftriver.core.solr.repository.DropDocumentRepository;
-import com.ushahidi.swiftriver.core.solr.util.QueryUtil;
 import com.ushahidi.swiftriver.core.util.ErrorUtil;
 import com.ushahidi.swiftriver.core.util.MD5Util;
 
@@ -422,13 +421,12 @@ public class RiverService {
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
-		// If keywords have been specified, perform search on Solr
-		if (dropFilter.getKeywords() != null) {
-			String searchTerm = QueryUtil.getQueryString(dropFilter.getKeywords());
+		// Farm fulltext and geospatial search to Solr
+		if (dropFilter.getKeywords() != null || dropFilter.getBoundingBox() != null) {
 
 			PageRequest pageRequest = new PageRequest(page - 1, dropCount);
 			List<DropDocument> dropDocuments = repository.findInRiver(id, 
-					searchTerm, pageRequest);
+					dropFilter, pageRequest);
 
 			if (dropDocuments.isEmpty()) {
 				return getDropDTOs;

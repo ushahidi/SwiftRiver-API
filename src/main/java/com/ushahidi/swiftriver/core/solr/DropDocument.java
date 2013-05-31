@@ -51,6 +51,9 @@ public class DropDocument {
 	@Field("bucketId")
 	private List<Long> bucketIds;
 	
+	@Field
+	private List<String> geo;
+	
 	public String getId() {
 		return id;
 	}
@@ -105,6 +108,14 @@ public class DropDocument {
 
 	public void setBucketIds(List<Long> bucketIds) {
 		this.bucketIds = bucketIds;
+	}
+
+	public List<String> getGeo() {
+		return geo;
+	}
+
+	public void setGeo(List<String> geo) {
+		this.geo = geo;
 	}
 
 }

@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ushahidi.swiftriver.core.api.dao.DropDao;
 import com.ushahidi.swiftriver.core.api.service.DropIndexService;
@@ -90,6 +91,7 @@ public class DropIndexingTask {
 	 * 
 	 * @throws IOException
 	 */
+	@Transactional
 	public void updateDropIndex() throws IOException {
 		int batchSize = Integer.parseInt(indexerProperties.getProperty(batchSizePropertyKey));
 		long lastDropId = Long.parseLong(indexerProperties.getProperty(lastDropIdPropertyKey));
@@ -101,11 +103,6 @@ public class DropIndexingTask {
 			return;
 		}
 		
-		// Set the riverId and bucketId properties
-		logger.info("Setting the riverId and bucketId properties");
-		dropDao.populateRiverIds(drops);
-		dropDao.populateBucketIds(drops);
-
 		// Add drops to search index
 		dropIndexService.addAllToIndex(drops);
 

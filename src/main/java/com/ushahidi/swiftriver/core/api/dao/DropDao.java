@@ -49,18 +49,4 @@ public interface DropDao extends GenericDao<Drop> {
 	 */
 	public List<Drop> findAll(long sinceId, int batchSize);
 
-	/**
-	 * Sets the <code>riverIds</code> property for each {@link Drop}
-	 * in <code>drops</code>
-	 * 
-	 * @param drops
-	 */
-	public void populateRiverIds(List<Drop> drops);
-
-	/**
-	 * Sets the <code>bucketIds</code> property for each {@link Drop}
-	 * in <code>drops</code>
-	 * @param drops
-	 */
-	public void populateBucketIds(List<Drop> drops);
 }

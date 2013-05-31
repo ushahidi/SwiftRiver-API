@@ -307,6 +307,7 @@ public class BucketsController extends AbstractController {
 			@RequestParam(value = "channels", required = false) String channels,
 			@RequestParam(value = "photos", required = false) Boolean photos,
 			@RequestParam(value = "state", required = false) String state,
+			@RequestParam(value = "locations", required = false) String locations,
 			Principal principal) {
 
 		if (maxId == null) {
@@ -373,6 +374,7 @@ public class BucketsController extends AbstractController {
 		dropFilter.setRead(isRead);
 		dropFilter.setPhotos(photos);
 		dropFilter.setKeywords(keywords);
+		dropFilter.setBoundingBox(locations);
 
 		// Check for errors
 		if (!errors.isEmpty()) {

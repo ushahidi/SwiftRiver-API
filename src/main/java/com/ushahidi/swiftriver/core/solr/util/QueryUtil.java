@@ -31,17 +31,18 @@ public class QueryUtil {
 	/**
 	 * Given a comma-separated list of search terms; 
 	 * <code>searchTerms</code>, converts the list to an array
-	 * and concatenates the elements using "AND". The final
-	 * {@link String} is encapsulated in parantheses "()"
-	 * before being returned for use in a Solr search query
+	 * and concatenates the elements using "AND".
 	 * 
-	 *  If <code>searchTerm</code> comprises of only one string,
-	 *  no modification takes place
+	 * If <code>searchTerm</code> comprises of only one string,
+	 * no modification takes place
 	 * 
 	 * @param searchTerms
 	 * @return
 	 */
 	public static String getQueryString(String searchTerms) {
+		if (searchTerms == null || searchTerms.trim().length() == 0)
+			return "*:*";
+
 		List<String> keywordsList = new ArrayList<String>();
 
 		// Sanitize the each keyword
@@ -53,7 +54,7 @@ public class QueryUtil {
 		String[] keywordsArray = keywordsList.toArray(new String[keywordsList.size()]);
 
 		return keywordsArray.length == 1 
-				? searchTerms : "(" + StringUtils.join(keywordsArray, " AND ") + ")";
+				? searchTerms : StringUtils.join(keywordsArray, " AND ");
 		
 	}
 }
