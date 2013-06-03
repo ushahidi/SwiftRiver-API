@@ -19,6 +19,7 @@ package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,6 +29,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 
@@ -41,9 +43,16 @@ import com.ushahidi.swiftriver.core.model.User;
 public class CrowdmapIDAuthenticationProvider implements AuthenticationProvider {
 
 	private CrowdmapIDClient crowdmapIDClient;
+	
+	private UserDao userDao;
 
 	public void setCrowdmapIDClient(CrowdmapIDClient crowdmapIDClient) {
 		this.crowdmapIDClient = crowdmapIDClient;
+	}
+
+	@Autowired
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
 	}
 
 	@Transactional(readOnly = true)
@@ -54,8 +63,9 @@ public class CrowdmapIDAuthenticationProvider implements AuthenticationProvider 
 		String username = authentication.getName();
 		String password = authentication.getCredentials().toString();
 		
-		User user = crowdmapIDClient.signIn(username, password);
-		if (user == null) {
+		User user = userDao.findByUsernameOrEmail(username);
+		
+		if (user == null || !crowdmapIDClient.signIn(username, password)) {
 			throw new BadCredentialsException(String.format(
 					"Invalid username/password pair for %s", username));
 		}
