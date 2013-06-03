@@ -42,9 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.ushahidi.swiftriver.core.api.dao.UserDao;
-import com.ushahidi.swiftriver.core.model.User;
-
 /**
  * This class handles interaction with the CrowdmapID 
  * identity management system
@@ -63,18 +60,15 @@ public class CrowdmapIDClient {
 	/** Name of the request parameter for specifying the API key */
 	private String apiKeyParamName;
 	
-	@Autowired
-	private UserDao userDao;
-
 	private HttpClient httpClient;
 
 	private final Logger logger = LoggerFactory.getLogger(CrowdmapIDClient.class);
 	
 	@Autowired
 	private ObjectMapper jacksonObjectMapper;
-
+	
 	/**
-	 * Default empty constructor
+	 * Default constructor
 	 */
 	public CrowdmapIDClient() {
 		
@@ -98,14 +92,6 @@ public class CrowdmapIDClient {
 		httpClient = new DefaultHttpClient();
 	}
 
-	public UserDao getUserDao() {
-		return userDao;
-	}
-
-	public void setUserDao(UserDao userDao) {
-		this.userDao = userDao;
-	}
-	
 	public String getServerURL() {
 		return serverURL;
 	}
@@ -144,20 +130,13 @@ public class CrowdmapIDClient {
 	 * @param password
 	 * @return
 	 */
-	public User signIn(String email, String password) {
-		User user = userDao.findByUsernameOrEmail(email);
-		if (user != null) {
-			List<NameValuePair> params = new ArrayList<NameValuePair>();
-			params.add(new BasicNameValuePair("email", email));
-			params.add(new BasicNameValuePair("password", password));
-			
-			Map<String, Object> apiResponse = executeApiRequest(CrowdmapIDRequestType.SIGNIN, params);
-			if (apiResponse.isEmpty()) {
-				return null;
-			}
-			
-		}
-		return user;
+	public boolean signIn(String email, String password) {
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("email", email));
+		params.add(new BasicNameValuePair("password", password));
+
+		Map<String, Object> apiResponse = executeApiRequest(CrowdmapIDRequestType.SIGNIN, params);
+		return !apiResponse.isEmpty();
 	}
 
 	/**

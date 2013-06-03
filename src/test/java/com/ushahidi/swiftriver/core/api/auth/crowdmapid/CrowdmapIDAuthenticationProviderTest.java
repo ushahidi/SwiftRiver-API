@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
+import com.ushahidi.swiftriver.core.api.dao.UserDao;
 import com.ushahidi.swiftriver.core.model.Role;
 import com.ushahidi.swiftriver.core.model.User;
 
@@ -46,11 +47,16 @@ public class CrowdmapIDAuthenticationProviderTest {
 	
 	private CrowdmapIDClient mockCrowdmapIDClient;
 
+	private UserDao mockUserDao;
+
 	@Before
 	public void setUp() {
 		mockCrowdmapIDClient = mock(CrowdmapIDClient.class);
+		mockUserDao = mock(UserDao.class);
+
 		authenticationProvider = new CrowdmapIDAuthenticationProvider();
 		authenticationProvider.setCrowdmapIDClient(mockCrowdmapIDClient);
+		authenticationProvider.setUserDao(mockUserDao);
 	}
 
 	/**
@@ -71,12 +77,14 @@ public class CrowdmapIDAuthenticationProviderTest {
 		when(mockAuthentication.getName()).thenReturn("test@swiftapp.com");
 		when(mockAuthentication.getCredentials()).thenReturn(mockCredentials);
 		when(mockCredentials.toString()).thenReturn("pa55w0rd");
-		when(mockCrowdmapIDClient.signIn(anyString(), anyString())).thenReturn(mockUser);
+		when(mockCrowdmapIDClient.signIn(anyString(), anyString())).thenReturn(true);
+		when(mockUserDao.findByUsernameOrEmail(anyString())).thenReturn(mockUser);
 		when(mockUser.getRoles()).thenReturn(userRoles);
 		
 		Authentication authentication = authenticationProvider.authenticate(mockAuthentication);
 		List<GrantedAuthority> authorities = (List<GrantedAuthority>) authentication.getAuthorities();
 
+		verify(mockUserDao).findByUsernameOrEmail("test@swiftapp.com");
 		verify(mockCrowdmapIDClient).signIn("test@swiftapp.com", "pa55w0rd");
 		assertEquals(1, authorities.size());
 		assertEquals("ROLE_USER", authorities.get(0).getAuthority());
