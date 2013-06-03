@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,9 +38,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.ushahidi.swiftriver.core.api.dao.UserDao;
-import com.ushahidi.swiftriver.core.model.User;
-
 /**
  * Unit tests for {@link CrowdmapID}
  * @author ekala
@@ -51,20 +47,16 @@ public class CrowdmapIDClientTest {
 
 	private CrowdmapIDClient crowdmapIDClient;
 	
-	private UserDao mockUserDao;
-	
 	private HttpClient mockHttpClient;
 	
 	@Before
 	public void setUp() {
-		mockUserDao = mock(UserDao.class);
 		mockHttpClient = mock(HttpClient.class);
 
 		crowdmapIDClient = new CrowdmapIDClient();
 		crowdmapIDClient.setServerURL("https://crowdmapid.com/api");
 		crowdmapIDClient.setApiKey("ABXMDJ04874LPD");
 		crowdmapIDClient.setApiKeyParamName("api_secret");
-		crowdmapIDClient.setUserDao(mockUserDao);
 		crowdmapIDClient.setHttpClient(mockHttpClient);
 		crowdmapIDClient.setObjectMapper(new ObjectMapper());
 	}
@@ -78,12 +70,10 @@ public class CrowdmapIDClientTest {
 		InputStream inputStream = new ByteArrayInputStream(apiResponse.getBytes());
 
 		// Mock objects for this test
-		User mockUser = mock(User.class);
 		HttpResponse mockResponse = mock(HttpResponse.class);
 		HttpEntity mockHttpEntity = mock(HttpEntity.class);
 		StatusLine mockStatusLine = mock(StatusLine.class);
 
-		when(mockUserDao.findByUsernameOrEmail(anyString())).thenReturn(mockUser);
 		when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
 		when(mockStatusLine.getStatusCode()).thenReturn(200);
 		when(mockResponse.getEntity()).thenReturn(mockHttpEntity);
@@ -91,7 +81,6 @@ public class CrowdmapIDClientTest {
 		when(mockHttpClient.execute(any(HttpUriRequest.class))).thenReturn(mockResponse);
 		
 		crowdmapIDClient.signIn(email, password);
-		verify(mockUserDao).findByUsernameOrEmail(email);
 
 		ArgumentCaptor<HttpPost> httpPostArgument = ArgumentCaptor.forClass(HttpPost.class);
 		verify(mockHttpClient).execute(httpPostArgument.capture());
