@@ -19,7 +19,6 @@ package com.ushahidi.swiftriver.core.api.auth;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,12 +32,7 @@ import com.ushahidi.swiftriver.core.model.User;
 @Transactional(readOnly = true)
 public class DbUserDetailsService implements UserDetailsService {
 
-	@Autowired
-	UserDao userDao;
-
-	public UserDao getUserDao() {
-		return userDao;
-	}
+	private UserDao userDao;
 
 	public void setUserDao(UserDao userDao) {
 		this.userDao = userDao;

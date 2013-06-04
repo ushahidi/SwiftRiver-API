@@ -31,6 +31,9 @@
 		<property name="emailHelper" ref="emailHelper" />
 	</bean>
 
+	<!-- User Dao -->
+	<bean id="userDao" class="com.ushahidi.swiftriver.core.api.dao.impl.JpaUserDao" />
+
 	<!-- Jackson Mapper -->
 	<bean id="jacksonObjectMapper" class="org.codehaus.jackson.map.ObjectMapper" />
 	<bean
