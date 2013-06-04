@@ -19,7 +19,6 @@ package com.ushahidi.swiftriver.core.api.auth.crowdmapid;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,20 +38,18 @@ import com.ushahidi.swiftriver.core.model.User;
  * @author ekala
  *
  */
-@Transactional
 public class CrowdmapIDAuthenticationProvider implements AuthenticationProvider {
+
+	private UserDao userDao;
 
 	private CrowdmapIDClient crowdmapIDClient;
 	
-	private UserDao userDao;
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
+	}
 
 	public void setCrowdmapIDClient(CrowdmapIDClient crowdmapIDClient) {
 		this.crowdmapIDClient = crowdmapIDClient;
-	}
-
-	@Autowired
-	public void setUserDao(UserDao userDao) {
-		this.userDao = userDao;
 	}
 
 	@Transactional(readOnly = true)

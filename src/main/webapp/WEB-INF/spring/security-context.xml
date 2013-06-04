@@ -60,7 +60,9 @@
 	</beans:bean>
 
 	<beans:bean id="dbUserDetailsService"
-		class="com.ushahidi.swiftriver.core.api.auth.DbUserDetailsService" />
+		class="com.ushahidi.swiftriver.core.api.auth.DbUserDetailsService">
+		<beans:property name="userDao" ref="userDao" />
+	</beans:bean>
 
 	<beans:bean id="clientDetails"
 		class="com.ushahidi.swiftriver.core.api.auth.DbClientDetailsService">
@@ -119,6 +121,7 @@
 	<!-- Configures CrowdmapID Authentication provider -->
 	<beans:bean id="crowdmapIDAuthenticationProvider" 
 		class="com.ushahidi.swiftriver.core.api.auth.crowdmapid.CrowdmapIDAuthenticationProvider">
+		<beans:property name="userDao" ref="userDao" />
 		<beans:property name="crowdmapIDClient" ref="crowdmapIDClient" />
 	</beans:bean>
 
