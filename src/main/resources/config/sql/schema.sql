@@ -272,6 +272,7 @@ CREATE TABLE IF NOT EXISTS river_channels (
   date_added TIMESTAMP ,
   date_modified TIMESTAMP
 );
+CREATE INDEX idx_river_channels_river_id ON `river_channels`(`river_id`);
 
 
 -- -----------------------------------------------------
