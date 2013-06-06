@@ -1,4 +1,4 @@
-DROP TABLE `account_read_drops`;
+DROP TABLE IF EXISTS `account_read_drops`;
 
 -- -----------------------------------------------------
 -- Table `river_droplets_read`
