@@ -35,12 +35,11 @@ import com.ushahidi.swiftriver.core.model.Drop;
  *
  */
 @WebAppConfiguration
-@ContextConfiguration(locations = {
+@ContextConfiguration(locations={
 		"file:src/main/webapp/WEB-INF/spring/root-context.xml",
 		"file:src/main/webapp/WEB-INF/spring/web-context.xml",
-		"file:src/main/webapp/WEB-INF/spring/solr-context.xml",
-})
-@ActiveProfiles(profiles = {"test"})
+		"file:src/main/webapp/WEB-INF/spring/solr-context.xml"})
+@ActiveProfiles(profiles={"test"})
 public class InitSolrSearchIndex {
 
 	@Autowired
