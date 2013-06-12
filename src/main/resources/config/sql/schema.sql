@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS links (
 -- Table river_channels
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS river_channels (
-  id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  id bigint NOT NULL AUTO_INCREMENT PRIMARY KEY,
   river_id int NOT NULL,
   channel varchar(100) NOT NULL,
   active boolean default true,
