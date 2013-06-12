@@ -62,11 +62,13 @@ public class DbClientDetailsService implements ClientDetailsService {
 		redirectUri.add(dbClient.getRedirectUri());
 
 		// All clients can use the authorization and refresh token grant types
+		logger.debug("Granting authorization_code and refresh_token grant types");
 		Set<String> grantTypes = new HashSet<String>();
 		grantTypes.add("authorization_code");
 		grantTypes.add("refresh_token");
 
 		List<SimpleGrantedAuthority> authorities = new ArrayList<SimpleGrantedAuthority>();
+		logger.info("Fetching client roles");
 		for (Role role : dbClient.getRoles()) {
 			authorities.add(new SimpleGrantedAuthority("ROLE_"
 					+ role.getName().toUpperCase()));
@@ -85,11 +87,13 @@ public class DbClientDetailsService implements ClientDetailsService {
 		details.setAuthorizedGrantTypes(grantTypes);
 
 		// Decrypt client secret
+		logger.debug("Decrypting client secret");
 		TextEncryptor encryptor = Encryptors.text(
 				TextUtil.convertStringToHex(key),
 				TextUtil.convertStringToHex(dbClient.getClientId()));
 		details.setClientSecret(encryptor.decrypt(dbClient.getClientSecret()));
 
+		logger.debug("Client secret successfully decrypted");
 		return details;
 	}
 
