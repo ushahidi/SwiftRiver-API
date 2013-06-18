@@ -37,7 +37,7 @@ public class GetActivityDTO {
 	@JsonProperty("action_on_obj")
 	private Object actionOnObj;
 	
-	private GetAccountDTO actionTo;
+	private Account actionTo;
 
 	public String getId() {
 		return id;
@@ -87,11 +87,11 @@ public class GetActivityDTO {
 		this.actionOnObj = actionOnObj;
 	}
 
-	public GetAccountDTO getActionTo() {
+	public Account getActionTo() {
 		return actionTo;
 	}
 
-	public void setActionTo(GetAccountDTO actionTo) {
+	public void setActionTo(Account actionTo) {
 		this.actionTo = actionTo;
 	}
 	

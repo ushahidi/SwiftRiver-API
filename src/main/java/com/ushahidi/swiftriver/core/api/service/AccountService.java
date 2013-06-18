@@ -460,24 +460,29 @@ public class AccountService {
 	public GetAccountDTO mapGetAccountDTO(Account account,
 			Account queryingAccount) {
 
-		// Filter out private rivers queryingAccount has no access to
-		account.setRivers(riverService.filterVisible(account.getRivers(),
-				queryingAccount));
-		account.setCollaboratingRivers(riverService.filterVisible(
-				account.getCollaboratingRivers(), queryingAccount));
-		account.setFollowingRivers(riverService.filterVisible(
-				account.getFollowingRivers(), queryingAccount));
+		if (!account.equals(queryingAccount)) {
+			logger.debug("Getting list of accessible rivers");
 
-		// Filter out private buckets queryingAccount has no access to
-		account.setBuckets(bucketService.filterVisible(account.getBuckets(),
-				queryingAccount));
-		account.setCollaboratingBuckets(bucketService.filterVisible(
-				account.getCollaboratingBuckets(), queryingAccount));
-		account.setFollowingBuckets(bucketService.filterVisible(
-				account.getFollowingBuckets(), queryingAccount));
+			account.setRivers(riverService.filterVisible(account.getRivers(),
+					queryingAccount));
+			account.setCollaboratingRivers(riverService.filterVisible(
+					account.getCollaboratingRivers(), queryingAccount));
+			account.setFollowingRivers(riverService.filterVisible(
+					account.getFollowingRivers(), queryingAccount));
+
+			// Filter out private buckets queryingAccount has no access to
+			logger.debug("Getting the list of accessible buckets");
+			account.setBuckets(bucketService.filterVisible(account.getBuckets(),
+					queryingAccount));
+			account.setCollaboratingBuckets(bucketService.filterVisible(
+					account.getCollaboratingBuckets(), queryingAccount));
+			account.setFollowingBuckets(bucketService.filterVisible(
+					account.getFollowingBuckets(), queryingAccount));
+		}
 
 		GetAccountDTO accountDTO = mapper.map(account, GetAccountDTO.class);
 
+		logger.debug("Setting the follow counts");
 		accountDTO.setFollowerCount(account.getFollowers().size());
 		accountDTO.setFollowingCount(account.getFollowing().size());
 
@@ -931,7 +936,7 @@ public class AccountService {
 	 * @return
 	 */
 	public List<GetActivityDTO> getActivities(Long accountId, Integer count,
-			Long lastId, Boolean newer, boolean followers, Account authAccount) {
+			Long lastId, Boolean newer, Boolean followers, Account authAccount) {
 	
 		List<Activity> activities = activityDao.find(accountId, count, lastId,
 				newer, followers);

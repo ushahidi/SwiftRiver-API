@@ -205,30 +205,40 @@ public class AccountServiceTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void mapGetAccountDTO() {
+		// Set up mock behaviour for filtering accessible rivers
 		List<River> filteredRivers = new ArrayList<River>();
 		filteredRivers.add(new River());
 		when(mockRiverService.filterVisible(anyList(), (Account) anyObject()))
 				.thenReturn(filteredRivers);
+
+		// Set up mock behaviour for filtering accessible buckets
 		List<Bucket> filteredBuckets = new ArrayList<Bucket>();
 		filteredBuckets.add(new Bucket());
 		when(mockBucketService.filterVisible(anyList(), (Account) anyObject()))
 				.thenReturn(filteredBuckets);
 
-		GetAccountDTO actualGetAccountDTO = accountService.mapGetAccountDTO(
-				account, account);
+		GetAccountDTO mockAccountDTO = mock(GetAccountDTO.class);
 
-		assertEquals(getAccountDTO, actualGetAccountDTO);
+		// Set up the mock account to be queried
+		Account mockAccount = mock(Account.class);
+		List<AccountFollower> followers = new ArrayList<AccountFollower>();
+		List<AccountFollower> following = new ArrayList<AccountFollower>();
+		following.add(new AccountFollower());
 
-		ArgumentCaptor<Account> argument = ArgumentCaptor
-				.forClass(Account.class);
-		verify(mockMapper).map(argument.capture(), any(Class.class));
-		Account modifiedAccount = argument.getValue();
-		assertEquals(filteredRivers, modifiedAccount.getRivers());
-		assertEquals(filteredRivers, modifiedAccount.getCollaboratingRivers());
-		assertEquals(filteredRivers, modifiedAccount.getFollowingRivers());
-		assertEquals(filteredBuckets, modifiedAccount.getBuckets());
-		assertEquals(filteredBuckets, modifiedAccount.getCollaboratingBuckets());
-		assertEquals(filteredBuckets, modifiedAccount.getFollowingBuckets());
+		when(mockAccount.getFollowers()).thenReturn(followers);
+		when(mockAccount.getFollowing()).thenReturn(following);
+		when(mockMapper.map((Account) anyObject(), any(Class.class))).thenReturn(mockAccountDTO);
+
+		accountService.mapGetAccountDTO(mockAccount, account);
+		
+		verify(mockAccount).getRivers();
+		verify(mockAccount).getCollaboratingRivers();
+		verify(mockAccount).getFollowingRivers();
+		verify(mockAccount).getBuckets();
+		verify(mockAccount).getCollaboratingBuckets();
+		verify(mockAccount).getFollowingBuckets();
+		verify(mockMapper).map(mockAccount, GetAccountDTO.class);
+
 	}
 
 	@Test
@@ -522,10 +532,10 @@ public class AccountServiceTest {
 		((FormActivity) activity).setActionOnObj(form);
 		activities.add(activity);
 
-		when(mockActivityDao.find(1L, 2, 3L, true, false)).thenReturn(activities);
+		when(mockActivityDao.find(1L, 2, 3L, true, null)).thenReturn(activities);
 
 		List<GetActivityDTO> ret = accountService.getActivities(1L, 2, 3L,
-				true, false, account);
+				true, null, account);
 		assertEquals(3, ret.size());
 		assertEquals("1", ret.get(0).getId());
 		assertEquals("3", ret.get(1).getId());
@@ -554,10 +564,10 @@ public class AccountServiceTest {
 		((RiverActivity) activity).setActionOnObj(river);
 		activities.add(activity);
 
-		when(mockActivityDao.find(1L, 2, 1L, true, false)).thenReturn(activities);
-		when(mockActivityDao.find(1L, 2, 2L, true, false)).thenReturn(null);
+		when(mockActivityDao.find(1L, 2, 1L, true, null)).thenReturn(activities);
+		when(mockActivityDao.find(1L, 2, 2L, true, null)).thenReturn(null);
 
-		accountService.getActivities(1L, 2, 1L, true, false, account);
+		accountService.getActivities(1L, 2, 1L, true, null, account);
 
 	}
 

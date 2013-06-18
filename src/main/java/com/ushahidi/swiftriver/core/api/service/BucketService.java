@@ -779,8 +779,8 @@ public class BucketService {
 	 * or a {@link BucketCollaborator} with edit privileges i.e. the
 	 * <code>readOnly</code> property is false
 	 * 
-	 * @param bucket
-	 * @param account
+	 * @param bucket the {@link Bucket} being accessed
+	 * @param account the {@link Account} accessing the <code>bucket</code>
 	 * @return
 	 */
 	public boolean isOwner(Bucket bucket, Account account) {
