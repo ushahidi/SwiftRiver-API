@@ -421,15 +421,15 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 
 	@Test
 	public void findCollaboratorByAccount() {
-		RiverCollaborator rc = riverDao.findCollaborator(1L, 3L);
+		RiverCollaborator rc = riverDao.findCollaborator(1L, 4L);
 
 		assertEquals(1L, (long) rc.getId());
-		assertEquals(3L, rc.getAccount().getId());
+		assertEquals(4L, rc.getAccount().getId());
 	}
 
 	@Test
 	public void findNonExistentCollaboratorByAccount() {
-		RiverCollaborator rc = riverDao.findCollaborator(1L, 5L);
+		RiverCollaborator rc = riverDao.findCollaborator(1L, 10L);
 
 		assertNull(rc);
 	}
@@ -437,14 +437,14 @@ public class JpaRiverDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void testAddCollaborator() {
 		River river = riverDao.findById(1L);
-		Account account = accountDao.findByUsernameOrEmail("user3");
+		Account account = accountDao.findByUsernameOrEmail("user4");
 
 		riverDao.addCollaborator(river, account, true);
 		em.flush();
 
 		String sql = "SELECT river_id, account_id, collaborator_active, read_only FROM river_collaborators WHERE river_id = ? AND account_id = ?";
 		Map<String, Object> results = this.jdbcTemplate
-				.queryForMap(sql, 1L, 5L);
+				.queryForMap(sql, 1L, 6L);
 
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));

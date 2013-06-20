@@ -151,6 +151,20 @@ public class BucketsControllerTest extends AbstractControllerTest {
 			.andExpect(jsonPath("$[3].forms.values[2].value").value("Kenyans"));;
 	}
 	
+	@Test
+	public void getDropsFromPrivateBucket_WithPermission() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/3/drops")
+				.principal(getAuthentication("user1")))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void getDropsFromPrivateBucket_WithoutPermission() throws Exception {
+		this.mockMvc.perform(get("/v1/buckets/3/drops")
+			.principal(getAuthentication("user4")))
+			.andExpect(status().isForbidden());
+	}
+	
 	/**
 	 * Test for {@link BucketsController#getDrops(Long, Integer, Long, Long, java.util.Date, java.util.Date, String, String, String)}
 	 * where the <code>max_id</code> parameter has been specified

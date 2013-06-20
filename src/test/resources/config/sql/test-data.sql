@@ -69,8 +69,9 @@ INSERT INTO rivers (id, account_id, river_name, river_name_canonical, descriptio
 -- Data for table river_collaborators
 -- -------------------------------------
 INSERT INTO river_collaborators(id, river_id, account_id, read_only, collaborator_active) VALUES
-(1, 1, 3, 0, 1),
-(2, 1, 4, 1, 1);
+(1, 1, 4, 0, 1),
+(2, 1, 5, 1, 1),
+(3, 2, 5, 0, 1);
 
 -- ------------------------------------
 -- Data for table river_followers

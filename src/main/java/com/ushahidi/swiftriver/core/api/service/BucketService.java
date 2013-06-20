@@ -268,7 +268,7 @@ public class BucketService {
 
 		Account queryingAccount = accountDao.findByUsernameOrEmail(username);
 
-		if (!bucket.isPublished() && !isOwner(bucket, queryingAccount))
+		if (!hasAccess(bucket, queryingAccount))
 			throw new ForbiddenException("Permission Denied");
 
 		return mapper.map(bucket, GetBucketDTO.class);
@@ -672,9 +672,10 @@ public class BucketService {
 	private boolean hasAccess(Bucket bucket, Account queryingAccount) {
 		if (bucket.isPublished())
 			return true;
-
-		return bucket.getAccount().equals(queryingAccount) || 
-			bucket.getCollaborators().contains(queryingAccount);
+		
+		return bucket.getAccount().equals(queryingAccount) 
+				|| (bucketDao.findCollaborator(bucket.getId(), 
+						queryingAccount.getId()) != null);
 	}
 
 	/**

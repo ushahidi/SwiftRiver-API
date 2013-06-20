@@ -402,22 +402,25 @@ public class RiverService {
 	 * Returns the drops for the river with the ID specified in <code>id</code>
 	 * using the {@link DropFilter} specified in <code>dropFilter</code>
 	 * 
-	 * @param id
-	 * @param dropFilter
-	 * @param page
-	 * @param dropCount
-	 * @param username
+	 * @param id the unique id of the river
+	 * @param dropFilter the filters to be used to fetch the drops
+	 * @param page the page number
+	 * @param dropCount the maximum no. of drops to return
+	 * @param username the login ID of the user accessing the river
 	 * @return
 	 * @throws NotFoundException
 	 */
 	public List<GetDropDTO> getDrops(Long id, DropFilter dropFilter, int page,
 			int dropCount, String username) throws NotFoundException {
 
-		if (riverDao.findById(id) == null) {
-			throw new NotFoundException(String.format("River %d does not exist", id));
-		}
+		// Get the river
+		River river = getRiver(id);
 
+		// Get the querying account
 		Account queryingAccount = accountDao.findByUsernameOrEmail(username);
+
+		if (!hasAccess(river, queryingAccount))
+			throw new ForbiddenException("Access denied");
 
 		List<GetDropDTO> getDropDTOs = new ArrayList<GetDropDTO>();
 
@@ -765,7 +768,8 @@ public class RiverService {
 			return true;
 		
 		return river.getAccount().equals(queryingAccount) || 
-				river.getCollaborators().contains(queryingAccount);
+				(riverDao.findCollaborator(river.getId(), 
+						queryingAccount.getId()) != null);
 	}
 
 	private River getRiver(Long id) {

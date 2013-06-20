@@ -134,12 +134,9 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[0].channel").exists())
 				.andExpect(jsonPath("$[0].original_id").exists())
 				.andExpect(jsonPath("$[0].original_url").exists())
-				// FIXME:.andExpect(jsonPath("$[0].original_place").exists())
 				.andExpect(jsonPath("$[0].source").exists())
 				.andExpect(jsonPath("$[0].date_published").exists())
-				// FIXME:.andExpect(jsonPath("$[0].user_score").exists())
 				.andExpect(jsonPath("$[0].comment_count").exists())
-				// FIXME: .andExpect(jsonPath("$[0].buckets").isArray())
 				.andExpect(jsonPath("$[0].tags").isArray())
 				.andExpect(jsonPath("$[0].links").isArray())
 				.andExpect(jsonPath("$[0].media").isArray())
@@ -148,6 +145,20 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[3].forms.id").value(hasItems("1", "2")))
 				.andExpect(jsonPath("$[3].forms.values[2].id").value("3"))
 				.andExpect(jsonPath("$[3].forms.values[2].value").value("Kenyans"));
+	}
+	
+	@Test
+	public void getDropsFromPrivateRiver_WithPermission() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/2/drops")
+			.principal(getAuthentication("user3")))
+			.andExpect(status().isOk());	
+	}
+	
+	@Test
+	public void getDropsFromPrivateRiver_WithoutPermission() throws Exception {
+		this.mockMvc.perform(get("/v1/rivers/2/drops")
+				.principal(getAuthentication("user4")))
+				.andExpect(status().isForbidden());	
 	}
 
 	@Test
@@ -278,12 +289,12 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(jsonPath("$[1].id").value(2))
 				.andExpect(jsonPath("$[1].active").value(true))
 				.andExpect(jsonPath("$[1].read_only").value(true))
-				.andExpect(jsonPath("$[1].account.id").value(4))
-				.andExpect(jsonPath("$[1].account.account_path").value("user2"))
-				.andExpect(jsonPath("$[1].account.owner.name").value("User 2"))
+				.andExpect(jsonPath("$[1].account.id").value(5))
+				.andExpect(jsonPath("$[1].account.account_path").value("user3"))
+				.andExpect(jsonPath("$[1].account.owner.name").value("User 3"))
 				.andExpect(
 						jsonPath("$[1].account.owner.avatar")
-								.value("https://secure.gravatar.com/avatar/ee8ce7cae1c9d064b9a2c049ce4a1071?s=80&d=mm&r=g"));
+								.value("https://secure.gravatar.com/avatar/a9902dcbf6185ac32079d358dcbdf148?s=80&d=mm&r=g"));
 	}
 
 	@Test
@@ -336,7 +347,7 @@ public class RiversControllerTest extends AbstractControllerTest {
 	@Test
 	public void addCollaborator() throws Exception {
 
-		String postBody = "{\"read_only\":true,\"account\":{\"id\": 5}}";
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 6}}";
 
 		this.mockMvc
 				.perform(
