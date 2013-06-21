@@ -248,6 +248,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				return hashes.size();
 			}
 		});
+		
+		logger.debug("Successfully saved {} drops in the database", hashes.size());
 
 	}
 
@@ -363,6 +365,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			}
 		}
 
+		logger.debug("Posting drops to rivers");
+
 		// Insert the remaining items in the set into the DB
 		sql = "INSERT INTO `rivers_droplets` (`id`, `droplet_id`, `river_id`, " +
 				"`river_channel_id`, `droplet_date_pub`) " +
@@ -413,8 +417,11 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				return riverDropChannelList.size();
 			}
 		});
+		logger.debug("Drops successfully posted to rivers");
+		
 		
 		// Update river max_drop_id and drop_count
+		logger.debug("Updating river drop counters");
 		sql = "UPDATE rivers SET max_drop_id = ?, drop_count = drop_count + ? WHERE id = ?";
 		final List<Entry<Long, long[]>> riverUpdate = new ArrayList<Entry<Long, long[]>>();
 		riverUpdate.addAll(riverDropsMap.entrySet());		
@@ -431,8 +438,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				return riverUpdate.size();
 			}
 		});
+		logger.debug("{} rivers successfully updated", riverUpdate.size());
 		
 		// Update the drop_count in TABLE `river_channels`
+		logger.debug("Updating river channel statistics");
 		sql = "UPDATE river_channels SET drop_count = drop_count + ? WHERE id = ?";
 		final List<Entry<Long, Long>> riverChannelUpdate = new ArrayList<Entry<Long,Long>>();
 		riverChannelUpdate.addAll(channelDropCountMap.entrySet());
@@ -449,8 +458,10 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				return riverChannelUpdate.size();
 			}
 		});
+		logger.debug("{} channels updated", riverChannelUpdate.size());
 
 		// Insert the trend data
+		logger.debug("Updating trend statistics");
 		try {
 			insertRiverTagTrends(drops, dropIndex, riverDropChannelList);
 		} catch (Exception e) {
