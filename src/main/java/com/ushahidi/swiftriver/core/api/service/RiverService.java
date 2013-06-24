@@ -317,13 +317,19 @@ public class RiverService {
 		channel.setActive(Boolean.TRUE);
 		channelDao.create(channel);
 
+		// Construct the routing key
+		String routingKey = String.format("web.channel.%s.add", 
+				channel.getChannel().toLowerCase());
+
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
 		notification.setId(channel.getId());
 		notification.setChannel(channel.getChannel());
 		notification.setRiverId(riverId);
 		notification.setParameters(channel.getParameters());
-		amqpTemplate.convertAndSend("web.channel." + notification.getChannel()
-				+ ".add", notification);
+		amqpTemplate.convertAndSend(routingKey, notification);
+
+		logger.debug("Sending {} message for new '{}' parameter", 
+				routingKey, channel.getParameters());
 
 		return mapper.map(channel, GetChannelDTO.class);
 	}
@@ -337,13 +343,19 @@ public class RiverService {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
 		channelDao.delete(channel);
 
+		// Construct the routing key
+		String routingKey = String.format("web.channel.%s.delete", 
+				channel.getChannel());
+
 		ChannelUpdateNotification notification = new ChannelUpdateNotification();
 		notification.setId(channelId);
 		notification.setChannel(channel.getChannel());
 		notification.setRiverId(riverId);
 		notification.setParameters(channel.getParameters());
-		amqpTemplate.convertAndSend("web.channel." + notification.getChannel()
-				+ ".delete", notification);
+		amqpTemplate.convertAndSend(routingKey, notification);
+		
+		logger.debug("Sending {} message for deleted '{}' parameter", 
+				routingKey, channel.getParameters());
 	}
 
 	@Transactional(readOnly = false)

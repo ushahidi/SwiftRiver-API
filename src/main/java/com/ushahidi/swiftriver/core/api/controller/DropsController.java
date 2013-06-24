@@ -49,6 +49,7 @@ public class DropsController extends AbstractController {
 
 		List<ErrorField> errors = new ArrayList<ErrorField>();
 
+		logger.debug("Received {} new drops. Validating...", drops.size());
 		// Validate each drop that has been submitted
 		for (int i=0; i < drops.size(); i++) {
 			CreateDropDTO drop = drops.get(i);
@@ -101,6 +102,7 @@ public class DropsController extends AbstractController {
 			throw e;
 		}
 
+		logger.debug("Validation passed. Creating drops..");
 		return dropService.createDrops(drops);
 	}
 
