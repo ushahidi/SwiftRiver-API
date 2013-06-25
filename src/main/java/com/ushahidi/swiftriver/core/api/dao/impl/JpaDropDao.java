@@ -329,8 +329,12 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 			return;
 		}
 
-		// Associate the channels with rivers
-		sql = "SELECT id, river_id FROM river_channels WHERE id IN (:channelIds)";
+		// Associate the channels with active rivers
+		sql = "SELECT rc.id, rc.river_id " +
+				"FROM river_channels rc " +
+				"INNER JOIN rivers r ON (rc.river_id = r.id) " +
+				"WHERE rc.id IN (:channelIds) " +
+				"AND r.river_active = 1";
 		MapSqlParameterSource channelParams = new MapSqlParameterSource();
 		channelParams.addValue("channelIds", allChannelIds);
 		
