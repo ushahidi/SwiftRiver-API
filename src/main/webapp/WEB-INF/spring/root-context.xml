@@ -29,6 +29,11 @@
 		<property name="crowdmapIDClient" ref="crowdmapIDClient" />
 		<property name="authenticationScheme" ref="authenticationScheme" />
 		<property name="emailHelper" ref="emailHelper" />
+		<property name="riverQuota" ref="riverQuota"/>
+	</bean>
+	
+	<bean id="riverService" class="com.ushahidi.swiftriver.core.api.service.RiverService">
+		<property name="dropQuota" ref="dropQuota"/>
 	</bean>
 
 	<!-- User Dao -->
@@ -167,7 +172,10 @@
 			expected-type="java.lang.String" />
 		<jee:jndi-lookup id="activateAccountUrl" jndi-name="mail/activateAccountUrl"
 			expected-type="java.lang.String" />
-			
+
+		<!-- Quota configuration -->			
+		<jee:jndi-lookup id="riverQuota" jndi-name="quota/rivers"/>
+		<jee:jndi-lookup id="dropQuota" jndi-name="quota/drops"/>
 
 		<bean id="mqProperties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 			<property name="ignoreUnresolvablePlaceholders" value="true" />
@@ -251,6 +259,13 @@
 			<constructor-arg index="0" value="https://crowdmapid.com/api" />
 			<constructor-arg index="1" value="AB1A72D3BE4576F259716C90494ECCE8109E080A5B7484E9CEA9B9E7310FAF01" />
 			<constructor-arg index="2" value="api_secret" />
+		</bean>
+		
+		<bean id="riverQuota" class="java.lang.String">
+			<constructor-arg value="100"/>
+		</bean>
+		<bean id="dropQuota" class="java.lang.String">
+			<constructor-arg value="50000"/>
 		</bean>
 	</beans>
 </beans>

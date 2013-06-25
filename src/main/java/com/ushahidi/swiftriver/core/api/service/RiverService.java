@@ -145,9 +145,7 @@ public class RiverService {
 	@Autowired
 	private DropDocumentRepository repository;
 
-	public RiverDao getRiverDao() {
-		return riverDao;
-	}
+	private int dropQuota;
 
 	public void setRiverDao(RiverDao riverDao) {
 		this.riverDao = riverDao;
@@ -155,10 +153,6 @@ public class RiverService {
 
 	public void setAccountService(AccountService accountService) {
 		this.accountService = accountService;
-	}
-
-	public AccountDao getAccountDao() {
-		return accountDao;
 	}
 
 	public void setAccountDao(AccountDao accountDao) {
@@ -173,17 +167,9 @@ public class RiverService {
 		this.channelDao = channelDao;
 	}
 
-	public RiverCollaboratorDao getRiverCollaboratorDao() {
-		return riverCollaboratorDao;
-	}
-
 	public void setRiverCollaboratorDao(
 			RiverCollaboratorDao riverCollaboratorDao) {
 		this.riverCollaboratorDao = riverCollaboratorDao;
-	}
-
-	public Mapper getMapper() {
-		return mapper;
 	}
 
 	public void setMapper(Mapper mapper) {
@@ -210,12 +196,12 @@ public class RiverService {
 		this.placeDao = placeDao;
 	}
 
-	public AmqpTemplate getAmqpTemplate() {
-		return amqpTemplate;
-	}
-
 	public void setAmqpTemplate(AmqpTemplate amqpTemplate) {
 		this.amqpTemplate = amqpTemplate;
+	}
+
+	public void setDropQuota(int dropQuota) {
+		this.dropQuota = dropQuota;
 	}
 
 	/**
@@ -243,6 +229,7 @@ public class RiverService {
 		River river = mapper.map(riverTO, River.class);
 		river.setAccount(account);
 		river.setActive(Boolean.TRUE);
+		river.setDropQuota(dropQuota);
 		riverDao.create(river);
 
 		accountDao.decreaseRiverQuota(account, 1);
@@ -489,6 +476,10 @@ public class RiverService {
 
 		// Delete the river
 		riverDao.delete(river);
+		
+		// Update the river remaining quota
+		accountDao.increaseRiverQuota(account, 1);
+
 		return true;
 	}
 

@@ -100,4 +100,13 @@ public interface AccountDao extends GenericDao<Account> {
 	 * @return
 	 */
 	public List<Account> search(String searchTerm, int count, int page);
+	
+	/**
+	 * Increases an account's river quota by the amount specified in
+	 * <code>increment</code>
+	 * 
+	 * @param account the {@link Account} who's river quota is to be increased
+	 * @param increment the river quota increment
+	 */
+	public void increaseRiverQuota(Account account, int increment);
 }

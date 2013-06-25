@@ -122,6 +122,8 @@ public class AccountService {
 	private CrowdmapIDClient crowdmapIDClient;
 
 	private EmailHelper emailHelper;
+	
+	private int riverQuota;
 
 	public void setRiverService(RiverService riverService) {
 		this.riverService = riverService;
@@ -185,6 +187,10 @@ public class AccountService {
 
 	public void setEmailHelper(EmailHelper emailHelper) {
 		this.emailHelper = emailHelper;
+	}
+	
+	public void setRiverQuota(int riverQuota) {
+		this.riverQuota = riverQuota;
 	}
 
 	/**
@@ -332,6 +338,7 @@ public class AccountService {
 		account.setAccountPath(createAccountTO.getAccountPath());
 		account.setAccountPrivate(createAccountTO.isAccountPrivate());
 		account.setOwner(user);
+		account.setRiverQuotaRemaining(riverQuota);
 		accountDao.create(account);
 
 		UserToken userToken = createUserToken(user);

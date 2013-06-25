@@ -110,30 +110,40 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 	 * .ushahidi.swiftriver.core.model.Account, int)
 	 */
 	public void decreaseRiverQuota(Account account, int decrement) {
-		account.setRiverQuotaRemaining(account.getRiverQuotaRemaining()
-				- decrement);
+		int updatedQuota = account.getRiverQuotaRemaining() - decrement;
+		account.setRiverQuotaRemaining(updatedQuota);
 		update(account);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#getFollower(com.ushahidi.swiftriver.core.model.Account, java.lang.Long)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#getFollower(com.ushahidi
+	 * .swiftriver.core.model.Account, java.lang.Long)
 	 */
-	@SuppressWarnings("unchecked")
 	public Account getFollower(Account account, Long accountId) {
-		String sql = "FROM AccountFollower WHERE account = :account AND follower.id = :follower";
-		Query query = this.em.createQuery(sql);
+		String qlString = "FROM AccountFollower " +
+				"WHERE account = :account " +
+				"AND follower.id = :follower";
+
+		TypedQuery<AccountFollower> query = this.em.createQuery(qlString, 
+				AccountFollower.class);
 		query.setParameter("account", account);
 		query.setParameter("follower", accountId);
 		
-		List<AccountFollower> followers = (List<AccountFollower>) query.getResultList();
+		List<AccountFollower> followers = query.getResultList();
 		
 		return followers.isEmpty() ? null : followers.get(0).getFollower();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#addFollower(com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Account)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#addFollower(com.ushahidi
+	 * .swiftriver.core.model.Account,
+	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
 	public void addFollower(Account account, Account follower) {
 		AccountFollower accountFollower = new AccountFollower();
@@ -147,10 +157,16 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 
 	/*
 	 * (non-Javadoc)
-	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#deleteFollower(com.ushahidi.swiftriver.core.model.Account, com.ushahidi.swiftriver.core.model.Account)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#deleteFollower(com.ushahidi
+	 * .swiftriver.core.model.Account,
+	 * com.ushahidi.swiftriver.core.model.Account)
 	 */
 	public boolean deleteFollower(Account account, Account follower) {
-		String sql = "DELETE FROM AccountFollower WHERE account = :account AND follower = :follower";
+		String sql = "DELETE FROM AccountFollower " +
+				"WHERE account = :account " +
+				"AND follower = :follower";
 
 		Query query = em.createQuery(sql);
 		query.setParameter("account", account);
@@ -196,5 +212,18 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 		}
 		return accounts;
 		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.ushahidi.swiftriver.core.api.dao.AccountDao#increaseRiverQuota(com
+	 * .ushahidi.swiftriver.core.model.Account, int)
+	 */
+	public void increaseRiverQuota(Account account, int increment) {
+		int updatedQuota = account.getRiverQuotaRemaining() + increment;
+		account.setRiverQuotaRemaining(updatedQuota);
+		update(account);
 	}
 }
