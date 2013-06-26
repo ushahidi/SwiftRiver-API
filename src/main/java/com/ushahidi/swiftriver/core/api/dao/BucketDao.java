@@ -62,11 +62,10 @@ public interface BucketDao extends GenericDao<Bucket> {
 
 	/**
 	 * Retrieves the {@link BucketCollaborator} record associated with the
-	 * {@link Account} in <code>account</code> for the {@link Bucket} specified
-	 * in <code>bucket</code>
+	 * associated <code>bucketId</code> and <code>accountId</code>
 	 * 
-	 * @param bucket
-	 * @param account
+	 * @param bucketId the database id of the bucket
+	 * @param accountId the database id of the account
 	 * @return {@link BucketCollaborator} on success, null otherwise
 	 */
 	public BucketCollaborator findCollaborator(Long bucketId, Long accountId);

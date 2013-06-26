@@ -164,10 +164,10 @@ public class BucketsController extends AbstractController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public GetCollaboratorDTO modifyCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId,
+			@PathVariable Long accountId,
 			@RequestBody ModifyCollaboratorDTO body, Principal principal) {
 
 		if (body.getReadOnly() == null && body.getActive() == null) {
@@ -180,7 +180,7 @@ public class BucketsController extends AbstractController {
 			throw e;
 		}
 
-		return bucketService.modifyCollaborator(id, collaboratorId, body,
+		return bucketService.modifyCollaborator(id, accountId, body,
 				principal.getName());
 	}
 
@@ -190,11 +190,11 @@ public class BucketsController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId, Principal principal) {
-		bucketService.deleteCollaborator(id, collaboratorId,
+			@PathVariable Long accountId, Principal principal) {
+		bucketService.deleteCollaborator(id, accountId,
 				principal.getName());
 	}
 
