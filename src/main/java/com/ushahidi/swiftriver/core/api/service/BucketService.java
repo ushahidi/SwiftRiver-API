@@ -423,15 +423,14 @@ public class BucketService {
 	/**
 	 * Modifies a collaborator
 	 * 
-	 * @param bucketId
-	 * @param accountId
+	 * @param bucketId the unique id of the bucket
+	 * @param accountId the unique id of the collaborating account
 	 * @param modifyCollaboratorTO
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public GetCollaboratorDTO modifyCollaborator(Long bucketId,
-			Long collaboratorId, ModifyCollaboratorDTO modifyCollaboratorTO,
-			String authUser) {
+	public GetCollaboratorDTO modifyCollaborator(Long bucketId,Long accountId, 
+			ModifyCollaboratorDTO modifyCollaboratorTO, String authUser) {
 
 		Bucket bucket = bucketDao.findById(bucketId);
 
@@ -443,8 +442,9 @@ public class BucketService {
 		if (!isOwner(bucket, authAccount))
 			throw new ForbiddenException("Permission denied.");
 
-		BucketCollaborator collaborator = bucketCollaboratorDao
-				.findById(collaboratorId);
+		// Find the collaborator
+		BucketCollaborator collaborator = bucketDao.findCollaborator(
+				bucketId, accountId);
 
 		// Collaborator exists?
 		if (collaborator == null) {
@@ -470,11 +470,11 @@ public class BucketService {
 	 * specified in <code>bucketId</code>. <code>accountId</code> is the
 	 * {@link Account} id of the collaborator
 	 * 
-	 * @param bucketId
-	 * @param accountId
+	 * @param bucketId the unique id of the bucket in the database
+	 * @param accountId the unique id of the collaborating account
 	 */
 	@Transactional
-	public void deleteCollaborator(Long bucketId, Long collaboratorId,
+	public void deleteCollaborator(Long bucketId, Long accountId,
 			String authUser) {
 
 		Bucket bucket = bucketDao.findById(bucketId);
@@ -484,14 +484,20 @@ public class BucketService {
 
 		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
-		if (!isOwner(bucket, authAccount))
-			throw new ForbiddenException("Permission denied.");
-
-		BucketCollaborator collaborator = bucketCollaboratorDao
-				.findById(collaboratorId);
+		// Find the collaborator entry associated with the collaborating
+		// accountId
+		BucketCollaborator collaborator = bucketDao.findCollaborator(
+				bucketId, accountId);
 
 		if (collaborator == null)
 			throw new NotFoundException("Collaborator not found.");
+
+		// If the authenticating user is not a collaborator,
+		// check for permissions
+		if (!collaborator.getAccount().equals(authAccount)) {
+			if (!isOwner(bucket, authAccount))
+				throw new ForbiddenException("Permission denied.");
+		}
 
 		bucketCollaboratorDao.delete(collaborator);
 	}

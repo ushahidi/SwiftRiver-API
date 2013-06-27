@@ -102,7 +102,7 @@ INSERT INTO buckets (id, account_id, bucket_name, bucket_name_canonical, bucket_
 -- Data for table bucket_collaborators
 -- -------------------------------------
 INSERT INTO bucket_collaborators(id, bucket_id, account_id, read_only, collaborator_active) VALUES
-(1, 1, 3, 0, 1),
+(1, 1, 5, 0, 1),
 (2, 1, 4, 1, 1),
 (3, 3, 3, 0, 1);
 

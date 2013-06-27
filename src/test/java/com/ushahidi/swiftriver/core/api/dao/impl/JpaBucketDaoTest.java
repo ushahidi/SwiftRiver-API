@@ -113,15 +113,15 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 
 	@Test
 	public void findCollaboratorByAccount() {
-		BucketCollaborator rc = bucketDao.findCollaborator(1L, 3L);
+		BucketCollaborator rc = bucketDao.findCollaborator(1L, 4L);
 
-		assertEquals(1L, (long) rc.getId());
-		assertEquals(3L, rc.getAccount().getId());
+		assertEquals(2L, (long) rc.getId());
+		assertEquals(4L, rc.getAccount().getId());
 	}
 
 	@Test
 	public void findNonExistentCollaboratorByAccount() {
-		BucketCollaborator rc = bucketDao.findCollaborator(1L, 5L);
+		BucketCollaborator rc = bucketDao.findCollaborator(1L, 6L);
 
 		assertNull(rc);
 	}
@@ -129,14 +129,14 @@ public class JpaBucketDaoTest extends AbstractJpaDaoTest {
 	@Test
 	public void testAddCollaborator() {
 		Bucket bucket = bucketDao.findById(1L);
-		Account account = accountDao.findByUsernameOrEmail("user3");
+		Account account = accountDao.findByUsernameOrEmail("user4");
 
 		bucketDao.addCollaborator(bucket, account, true);
 		em.flush();
 
 		String sql = "SELECT bucket_id, account_id, collaborator_active, read_only FROM bucket_collaborators WHERE bucket_id = ? AND account_id = ?";
 		Map<String, Object> results = this.jdbcTemplate
-				.queryForMap(sql, 1L, 5L);
+				.queryForMap(sql, 1L, 6L);
 
 		assertEquals(false, results.get("collaborator_active"));
 		assertEquals(true, results.get("read_only"));

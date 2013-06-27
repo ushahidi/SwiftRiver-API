@@ -221,10 +221,10 @@ public class RiversController extends AbstractController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.PUT)
 	@ResponseBody
 	public GetCollaboratorDTO modifyCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId,
+			@PathVariable Long accountId,
 			@RequestBody ModifyCollaboratorDTO body, Principal principal) {
 
 		if (body.getReadOnly() == null && body.getActive() == null) {
@@ -237,7 +237,7 @@ public class RiversController extends AbstractController {
 			throw e;
 		}
 
-		return riverService.modifyCollaborator(id, collaboratorId, body,
+		return riverService.modifyCollaborator(id, accountId, body,
 				principal.getName());
 	}
 
@@ -247,12 +247,12 @@ public class RiversController extends AbstractController {
 	 * @param body
 	 * @return
 	 */
-	@RequestMapping(value = "/{id}/collaborators/{collaboratorId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/{id}/collaborators/{accountId}", method = RequestMethod.DELETE)
 	@ResponseBody
 	public void deleteCollaborator(@PathVariable Long id,
-			@PathVariable Long collaboratorId, Principal principal) {
+			@PathVariable Long accountId, Principal principal) {
 		riverService
-				.deleteCollaborator(id, collaboratorId, principal.getName());
+				.deleteCollaborator(id, accountId, principal.getName());
 	}
 
 	/**

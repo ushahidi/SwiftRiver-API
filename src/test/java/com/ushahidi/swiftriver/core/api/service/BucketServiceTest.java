@@ -209,6 +209,8 @@ public class BucketServiceTest {
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
+		when(mockBucketDao.findCollaborator(anyLong(), 
+				anyLong())).thenReturn(collaborator);
 
 		bucketService.modifyCollaborator(1L, 2L, to, "admin");
 
@@ -221,6 +223,7 @@ public class BucketServiceTest {
 	public void deleteCollaborator() {
 		BucketCollaborator collaborator = mock(BucketCollaborator.class);
 		Account mockAuthAccount = mock(Account.class);
+		Account mockCollaboratorAccount = mock(Account.class);
 		Bucket mockBucket = mock(Bucket.class);
 
 		when(mockBucketCollaboratorDao.findById(anyLong())).thenReturn(
@@ -229,6 +232,8 @@ public class BucketServiceTest {
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
+		when(mockBucketDao.findCollaborator(anyLong(), anyLong())).thenReturn(collaborator);
+		when(collaborator.getAccount()).thenReturn(mockCollaboratorAccount);
 
 		bucketService.deleteCollaborator(1L, 2L, "admin");
 		verify(mockBucketCollaboratorDao).delete(collaborator);
