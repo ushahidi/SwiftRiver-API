@@ -377,6 +377,15 @@ public class RiverService {
 		return mapper.map(channel, GetChannelDTO.class);
 	}
 
+	/**
+	 * Gets and returns the {@link Channel} with the specified <code>channelId</code>
+	 * for the {@link River} with the specified <code>river</code>
+	 * 
+	 * @param riverId   the unique id of the river with the desired channel
+	 * @param channelId the unique id of the channel
+	 * @param authUser  the username of the authenticating user 
+	 * @return
+	 */
 	public Channel getRiverChannel(Long riverId, long channelId, String authUser) {
 		Channel channel = channelDao.findById(channelId);
 
@@ -385,14 +394,12 @@ public class RiverService {
 
 		River river = channel.getRiver();
 		if (!river.getId().equals(riverId))
-			throw new NotFoundException(
-					"The given river does not countain the given channel.");
+			throw new NotFoundException("The given river does not countain the given channel.");
 
 		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(river, account))
-			throw new ForbiddenException(
-					"Logged in user does not own the river.");
+			throw new ForbiddenException("Logged in user does not own the river.");
 
 		return channel;
 	}

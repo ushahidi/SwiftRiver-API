@@ -388,10 +388,11 @@ public class RiversControllerTest extends AbstractControllerTest {
 		String postBody = "{\"read_only\":true,\"account\":{\"id\": 4}}";
 
 		this.mockMvc.perform(
-				put("/v1/rivers/1/collaborators/2").content(postBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user3"))).andExpect(
-				status().isForbidden());
+			put("/v1/rivers/1/collaborators/2")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user3")))
+			.andExpect(status().isForbidden());
 	}
 
 	@Test
@@ -414,14 +415,14 @@ public class RiversControllerTest extends AbstractControllerTest {
 
 	@Test
 	public void modifyCollaborator() throws Exception {
-
 		String postBody = "{\"read_only\":false}";
 
 		this.mockMvc.perform(
-				put("/v1/rivers/1/collaborators/5").content(postBody)
-						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user1"))).andExpect(
-				status().isOk());
+				put("/v1/rivers/1/collaborators/5")
+				.content(postBody)
+				.contentType(MediaType.APPLICATION_JSON)
+				.principal(getAuthentication("user1")))
+				.andExpect(status().isOk());
 	}
 
 	/**
