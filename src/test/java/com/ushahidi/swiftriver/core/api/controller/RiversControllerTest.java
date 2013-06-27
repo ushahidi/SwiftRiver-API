@@ -286,14 +286,12 @@ public class RiversControllerTest extends AbstractControllerTest {
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$").value(hasSize(2)))
-				.andExpect(jsonPath("$[1].id").value(2))
+				.andExpect(jsonPath("$[1].id").value(5))
 				.andExpect(jsonPath("$[1].active").value(true))
 				.andExpect(jsonPath("$[1].read_only").value(true))
-				.andExpect(jsonPath("$[1].account.id").value(5))
-				.andExpect(jsonPath("$[1].account.account_path").value("user3"))
-				.andExpect(jsonPath("$[1].account.owner.name").value("User 3"))
-				.andExpect(
-						jsonPath("$[1].account.owner.avatar")
+				.andExpect(jsonPath("$[1].account_path").value("user3"))
+				.andExpect(jsonPath("$[1].owner.name").value("User 3"))
+				.andExpect(jsonPath("$[1].owner.avatar")
 								.value("https://secure.gravatar.com/avatar/a9902dcbf6185ac32079d358dcbdf148?s=80&d=mm&r=g"));
 	}
 

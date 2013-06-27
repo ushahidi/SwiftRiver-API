@@ -289,14 +289,12 @@ public class BucketsControllerTest extends AbstractControllerTest {
 				.andExpect(
 						content().contentType("application/json;charset=UTF-8"))
 				.andExpect(jsonPath("$").value(hasSize(2)))
-				.andExpect(jsonPath("$[1].id").value(2))
+				.andExpect(jsonPath("$[1].id").value(4))
 				.andExpect(jsonPath("$[1].active").value(true))
 				.andExpect(jsonPath("$[1].read_only").value(true))
-				.andExpect(jsonPath("$[1].account.id").value(4))
-				.andExpect(jsonPath("$[1].account.account_path").value("user2"))
-				.andExpect(jsonPath("$[1].account.owner.name").value("User 2"))
-				.andExpect(
-						jsonPath("$[1].account.owner.avatar")
+				.andExpect(jsonPath("$[1].account_path").value("user2"))
+				.andExpect(jsonPath("$[1].owner.name").value("User 2"))
+				.andExpect(jsonPath("$[1].owner.avatar")
 								.value("https://secure.gravatar.com/avatar/ee8ce7cae1c9d064b9a2c049ce4a1071?s=80&d=mm&r=g"));
 	}
 

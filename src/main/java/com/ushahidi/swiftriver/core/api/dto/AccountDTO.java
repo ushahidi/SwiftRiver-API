@@ -19,23 +19,21 @@ package com.ushahidi.swiftriver.core.api.dto;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * DTO mapping class for getting drop comments
+ * DTO mapping class that is a stripped down version
+ * of <code>com.ushahidi.swiftriver.core.api.GetAccountDTO</code>
  * 
  * @author ekala
  *
  */
-public class GetCommentDTO {
+public class AccountDTO {
 	
 	private long id;
 	
-	@JsonProperty("comment_text")
-	private String commentText;
+	@JsonProperty("account_path")
+	private String accountPath;
 	
-	@JsonProperty("date_added")
-	private String dateAdded;
+	private Owner owner;
 	
-	private AccountDTO account;
-
 	public long getId() {
 		return id;
 	}
@@ -44,28 +42,43 @@ public class GetCommentDTO {
 		this.id = id;
 	}
 
-	public String getCommentText() {
-		return commentText;
+	public String getAccountPath() {
+		return accountPath;
 	}
 
-	public void setCommentText(String commentText) {
-		this.commentText = commentText;
+	public void setAccountPath(String accountPath) {
+		this.accountPath = accountPath;
 	}
 
-	public String getDateAdded() {
-		return dateAdded;
+	public Owner getOwner() {
+		return owner;
 	}
 
-	public void setDateAdded(String dateAdded) {
-		this.dateAdded = dateAdded;
+	public void setOwner(Owner owner) {
+		this.owner = owner;
 	}
 
-	public AccountDTO getAccount() {
-		return account;
+	public static class Owner {
+		
+		private String avatar;
+		
+		private String name;
+
+		public String getAvatar() {
+			return avatar;
+		}
+
+		public void setAvatar(String avatar) {
+			this.avatar = avatar;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
 	}
 
-	public void setAccount(AccountDTO account) {
-		this.account = account;
-	}
-	
 }

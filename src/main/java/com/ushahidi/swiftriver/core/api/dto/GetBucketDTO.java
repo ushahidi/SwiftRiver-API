@@ -51,32 +51,8 @@ public class GetBucketDTO {
 	@JsonProperty("public")
 	private boolean published;
 
-	private Account account;
+	private AccountDTO account;
 	
-	public static class Account {
-		private long id;
-		
-		@JsonProperty("account_path")
-		private String accountPath;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-		
-	}
-
 	public long getId() {
 		return id;
 	}
@@ -157,11 +133,11 @@ public class GetBucketDTO {
 		this.published = published;
 	}
 
-	public Account getAccount() {
+	public AccountDTO getAccount() {
 		return account;
 	}
 
-	public void setAccount(Account account) {
+	public void setAccount(AccountDTO account) {
 		this.account = account;
 	}
 

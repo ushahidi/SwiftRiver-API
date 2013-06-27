@@ -33,7 +33,7 @@ public class GetRiverDTO {
 	
 	private String category;
 	
-	private Account account;
+	private AccountDTO account;
 	
 	@JsonProperty("follower_count")
 	private int followerCount;
@@ -64,30 +64,6 @@ public class GetRiverDTO {
 	private long maxDropId;
 	
 	private List<Channel> channels;
-	
-	public static class Account {
-		
-		private long id;
-		
-		@JsonProperty("account_path")
-		private String accountPath;
-
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-	}
 	
 	public static class Channel {
 		
@@ -176,11 +152,11 @@ public class GetRiverDTO {
 		this.category = category;
 	}
 
-	public Account getAccount() {
+	public AccountDTO getAccount() {
 		return account;
 	}
 
-	public void setAccount(Account account) {
+	public void setAccount(AccountDTO account) {
 		this.account = account;
 	}
 
