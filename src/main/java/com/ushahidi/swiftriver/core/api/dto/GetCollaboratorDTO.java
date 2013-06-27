@@ -20,9 +20,16 @@ import java.util.Date;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.ushahidi.swiftriver.core.api.dto.AccountDTO.Owner;
+
 public class GetCollaboratorDTO {
 	
 	private long id;
+	
+	@JsonProperty("account_path")
+	private String accountPath;
+	
+	private Owner owner;
 	
 	private boolean active;
 	
@@ -32,14 +39,29 @@ public class GetCollaboratorDTO {
 	@JsonProperty("date_added")
 	private Date dateAdded;
 	
-	private Account account;
-
 	public long getId() {
 		return id;
 	}
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public String getAccountPath() {
+		return accountPath;
+	}
+
+
+	public void setAccountPath(String accountPath) {
+		this.accountPath = accountPath;
+	}
+
+	public Owner getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Owner owner) {
+		this.owner = owner;
 	}
 
 	public boolean isActive() {
@@ -64,71 +86,5 @@ public class GetCollaboratorDTO {
 
 	public void setDateAdded(Date dateAdded) {
 		this.dateAdded = dateAdded;
-	}
-
-	public Account getAccount() {
-		return account;
-	}
-
-	public void setAccount(Account account) {
-		this.account = account;
-	}
-
-	public static class Account {
-		
-		private long id;
-		
-		@JsonProperty("account_path")
-		private String accountPath;
-		
-		private Owner owner;
-		
-		public long getId() {
-			return id;
-		}
-
-		public void setId(long id) {
-			this.id = id;
-		}
-
-		public String getAccountPath() {
-			return accountPath;
-		}
-
-		public void setAccountPath(String accountPath) {
-			this.accountPath = accountPath;
-		}
-
-		public Owner getOwner() {
-			return owner;
-		}
-
-		public void setOwner(Owner owner) {
-			this.owner = owner;
-		}
-
-		public static class Owner {
-			
-			private String name;
-			
-			private String avatar;
-
-			public String getName() {
-				return name;
-			}
-
-			public void setName(String name) {
-				this.name = name;
-			}
-
-			public String getAvatar() {
-				return avatar;
-			}
-
-			public void setAvatar(String avatar) {
-				this.avatar = avatar;
-			}
-		}
-
 	}
 }

@@ -956,11 +956,8 @@ public class AccountService {
 	
 			// Update last id
 			if (lastId != null) {
-				if (newer != null && newer) {
-					lastId = Math.max(lastId, activity.getId());
-				} else {
-					lastId = Math.min(lastId, activity.getId());
-				}
+				lastId = (newer != null && newer) 
+						? Math.max(lastId, activity.getId()) : Math.min(lastId, activity.getId());
 			} else {
 				lastId = activity.getId();
 			}

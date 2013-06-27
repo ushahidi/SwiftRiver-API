@@ -504,8 +504,7 @@ public class RiverService {
 		List<GetCollaboratorDTO> collaborators = new ArrayList<GetCollaboratorDTO>();
 
 		for (RiverCollaborator collaborator : river.getCollaborators()) {
-			collaborators.add(mapper
-					.map(collaborator, GetCollaboratorDTO.class));
+			collaborators.add(mapCollaboratorDTO(collaborator));
 		}
 
 		return collaborators;
@@ -547,7 +546,7 @@ public class RiverService {
 		
 		accountService.logActivity(authAccount, ActivityType.INVITE, collaborator);
 
-		return mapper.map(collaborator, GetCollaboratorDTO.class);
+		return mapCollaboratorDTO(collaborator);
 	}
 
 	/**
@@ -589,7 +588,7 @@ public class RiverService {
 		// Post changes to the DB
 		riverDao.updateCollaborator(collaborator);
 
-		return mapper.map(collaborator, GetCollaboratorDTO.class);
+		return mapCollaboratorDTO(collaborator);
 	}
 
 	/**
@@ -621,6 +620,15 @@ public class RiverService {
 		}
 
 		riverCollaboratorDao.delete(collaborator);
+	}
+
+	private GetCollaboratorDTO mapCollaboratorDTO(RiverCollaborator collaborator) {
+		GetCollaboratorDTO collaboratorDTO = mapper.map(
+				collaborator.getAccount(), GetCollaboratorDTO.class);
+		collaboratorDTO.setActive(collaborator.isActive());
+		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
+	
+		return collaboratorDTO;
 	}
 
 	/**
