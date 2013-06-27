@@ -21,10 +21,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -152,22 +155,34 @@ public class BucketServiceTest {
 				bucket);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getCollaborators() {
 		Bucket mockBucket = mock(Bucket.class);
+
 		BucketCollaborator bucketCollaborator = new BucketCollaborator();
+		bucketCollaborator.setBucket(mockBucket);
+		bucketCollaborator.setAccount(new Account());
+		bucketCollaborator.setActive(false);
+		bucketCollaborator.setReadOnly(true);
+		
 		List<BucketCollaborator> collaborators = new ArrayList<BucketCollaborator>();
 		collaborators.add(bucketCollaborator);
 
+		GetCollaboratorDTO mockCollaboratorDTO = mock(GetCollaboratorDTO.class);
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockBucket.getCollaborators()).thenReturn(collaborators);
+		when(mockMapper.map((Account) anyObject(), 
+				any(Class.class))).thenReturn(mockCollaboratorDTO);
 
 		List<GetCollaboratorDTO> actual = bucketService.getCollaborators(1L);
+		ArgumentCaptor<Account> accountArgument = ArgumentCaptor.forClass(Account.class);
 
-		verify(mockMapper).map(bucketCollaborator, GetCollaboratorDTO.class);
+		verify(mockMapper, times(1)).map(accountArgument.capture(), eq(GetCollaboratorDTO.class));
 		assertEquals(1, actual.size());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void addCollaborator() {
 		CreateCollaboratorDTO createCollaborator = new CreateCollaboratorDTO();
@@ -178,6 +193,9 @@ public class BucketServiceTest {
 		Account mockAuthAccount = mock(Account.class);
 		Account mockAccount = mock(Account.class);
 
+		GetCollaboratorDTO mockCollaboratorDTO = mock(GetCollaboratorDTO.class);
+		BucketCollaborator mockCollaborator = mock(BucketCollaborator.class);
+
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
@@ -185,14 +203,22 @@ public class BucketServiceTest {
 		when(mockBucketDao.findCollaborator(anyLong(), anyLong())).thenReturn(
 				null);
 		when(mockAccountDao.findById(anyLong())).thenReturn(mockAccount);
+		when(mockBucketDao.addCollaborator((Bucket) anyObject(), 
+				(Account) anyObject(), anyBoolean())).thenReturn(mockCollaborator);
+		when(mockMapper.map((Account) anyObject(), 
+				any(Class.class))).thenReturn(mockCollaboratorDTO);
 
 		bucketService.addCollaborator(1L, createCollaborator, "admin");
 
 		verify(mockBucketDao).addCollaborator(mockBucket, mockAccount, true);
-		
-		verify(mockAccountService).logActivity(eq(mockAuthAccount), eq(ActivityType.INVITE), any(BucketCollaborator.class));
+		verify(mockAccountService).logActivity(eq(mockAuthAccount), 
+				eq(ActivityType.INVITE), any(BucketCollaborator.class));
+
+		ArgumentCaptor<Account> accountArgument = ArgumentCaptor.forClass(Account.class);
+		verify(mockMapper).map(accountArgument.capture(), eq(GetCollaboratorDTO.class));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void modifyCollaborator() {
 		ModifyCollaboratorDTO to = new ModifyCollaboratorDTO();
@@ -203,6 +229,8 @@ public class BucketServiceTest {
 		Account mockAuthAccount = mock(Account.class);
 		Bucket mockBucket = mock(Bucket.class);
 
+		GetCollaboratorDTO mockCollaboratorDTO = mock(GetCollaboratorDTO.class);
+
 		when(mockBucketCollaboratorDao.findById(anyLong())).thenReturn(
 				collaborator);
 		when(mockBucketDao.findById(anyLong())).thenReturn(mockBucket);
@@ -211,6 +239,8 @@ public class BucketServiceTest {
 		when(mockBucket.getAccount()).thenReturn(mockAuthAccount);
 		when(mockBucketDao.findCollaborator(anyLong(), 
 				anyLong())).thenReturn(collaborator);
+		when(mockMapper.map((Account) anyObject(), 
+				any(Class.class))).thenReturn(mockCollaboratorDTO);
 
 		bucketService.modifyCollaborator(1L, 2L, to, "admin");
 

@@ -16,9 +16,20 @@
  */
 package com.ushahidi.swiftriver.core.api.service;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,11 +53,11 @@ import com.ushahidi.swiftriver.core.api.dao.TagDao;
 import com.ushahidi.swiftriver.core.api.dto.ChannelUpdateNotification;
 import com.ushahidi.swiftriver.core.api.dto.CreateChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateCollaboratorDTO;
-import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateLinkDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreatePlaceDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateRiverDTO;
 import com.ushahidi.swiftriver.core.api.dto.CreateTagDTO;
+import com.ushahidi.swiftriver.core.api.dto.FormValueDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetChannelDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetCollaboratorDTO;
 import com.ushahidi.swiftriver.core.api.dto.GetRiverDTO;
@@ -405,6 +416,7 @@ public class RiverServiceTest {
 		assertEquals(expectedGetRiverDTO, actualGetRiverDTO);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void getCollaborators() {
 		River mockRiver = mock(River.class);
@@ -412,15 +424,21 @@ public class RiverServiceTest {
 		List<RiverCollaborator> collaborators = new ArrayList<RiverCollaborator>();
 		collaborators.add(riverCollaborator);
 
+		GetCollaboratorDTO mockCollaboratorDTO = mock(GetCollaboratorDTO.class);
+
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockRiver.getCollaborators()).thenReturn(collaborators);
+		when(mockMapper.map((Account) anyObject(), 
+				any(Class.class))).thenReturn(mockCollaboratorDTO);
 
 		List<GetCollaboratorDTO> actual = riverService.getCollaborators(1L);
 
-		verify(mockMapper).map(riverCollaborator, GetCollaboratorDTO.class);
+		ArgumentCaptor<Account> accountArgument = ArgumentCaptor.forClass(Account.class);
+		verify(mockMapper, times(1)).map(accountArgument.capture(), eq(GetCollaboratorDTO.class));
 		assertEquals(1, actual.size());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void addCollaborator() {
 		CreateCollaboratorDTO createCollaborator = new CreateCollaboratorDTO();
@@ -430,7 +448,10 @@ public class RiverServiceTest {
 		River mockRiver = mock(River.class);
 		Account mockAuthAccount = mock(Account.class);
 		Account mockAccount = mock(Account.class);
-
+		
+		RiverCollaborator mockCollaborator = mock(RiverCollaborator.class);
+		GetCollaboratorDTO mockCollaboratorDTO = mock(GetCollaboratorDTO.class);
+		
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
@@ -438,15 +459,19 @@ public class RiverServiceTest {
 		when(mockRiverDao.findCollaborator(anyLong(), anyLong())).thenReturn(
 				null);
 		when(mockAccountDao.findById(anyLong())).thenReturn(mockAccount);
+		when(mockRiverDao.addCollaborator((River) anyObject(), 
+				(Account)anyObject(), anyBoolean())).thenReturn(mockCollaborator);
+		when(mockMapper.map((Account) anyObject(), 
+				any(Class.class))).thenReturn(mockCollaboratorDTO);
 
 		riverService.addCollaborator(1L, createCollaborator, "admin");
 
 		verify(mockRiverDao).addCollaborator(mockRiver, mockAccount, true);
-
 		verify(mockAccountService).logActivity(eq(mockAuthAccount),
 				eq(ActivityType.INVITE), any(RiverCollaborator.class));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void modifyCollaborator() {
 		ModifyCollaboratorDTO to = new ModifyCollaboratorDTO();
@@ -457,12 +482,16 @@ public class RiverServiceTest {
 		Account mockAuthAccount = mock(Account.class);
 		River mockRiver = mock(River.class);
 
+		GetCollaboratorDTO mockCollaboratorDTO = mock(GetCollaboratorDTO.class);
+
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
 		when(mockRiverDao.findCollaborator(anyLong(), 
 				anyLong())).thenReturn(collaborator);
+		when(mockMapper.map((Account) anyObject(), 
+				any(Class.class))).thenReturn(mockCollaboratorDTO);
 
 		riverService.modifyCollaborator(1L, 5L, to, "admin");
 

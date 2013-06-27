@@ -374,8 +374,7 @@ public class BucketService {
 		List<GetCollaboratorDTO> collaborators = new ArrayList<GetCollaboratorDTO>();
 
 		for (BucketCollaborator collaborator : bucket.getCollaborators()) {
-			collaborators.add(mapper
-					.map(collaborator, GetCollaboratorDTO.class));
+			collaborators.add(mapCollaboratorDTO(collaborator));
 		}
 
 		return collaborators;
@@ -417,7 +416,7 @@ public class BucketService {
 		
 		accountService.logActivity(authAccount, ActivityType.INVITE, collaborator);
 
-		return mapper.map(collaborator, GetCollaboratorDTO.class);
+		return mapCollaboratorDTO(collaborator);
 	}
 
 	/**
@@ -462,7 +461,7 @@ public class BucketService {
 		// Post changes to the DB
 		bucketDao.updateCollaborator(collaborator);
 
-		return mapper.map(collaborator, GetCollaboratorDTO.class);
+		return mapCollaboratorDTO(collaborator);
 	}
 
 	/**
@@ -500,6 +499,22 @@ public class BucketService {
 		}
 
 		bucketCollaboratorDao.delete(collaborator);
+	}
+
+	/**
+	 * Utility method for mapping a {@link BucketCollaborator} object
+	 * to its DTO - {@link GetCollaboratorDTO}
+	 *  
+	 * @param collaborator
+	 * @return
+	 */
+	private GetCollaboratorDTO mapCollaboratorDTO(BucketCollaborator collaborator) {
+		GetCollaboratorDTO collaboratorDTO = mapper.map(
+				collaborator.getAccount(), GetCollaboratorDTO.class);
+		
+		collaboratorDTO.setActive(collaborator.isActive());
+		collaboratorDTO.setReadOnly(collaborator.isReadOnly());
+		return collaboratorDTO;
 	}
 
 	/**
