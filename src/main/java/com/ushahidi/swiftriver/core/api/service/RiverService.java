@@ -377,6 +377,15 @@ public class RiverService {
 		return mapper.map(channel, GetChannelDTO.class);
 	}
 
+	/**
+	 * Gets and returns the {@link Channel} with the specified <code>channelId</code>
+	 * for the {@link River} with the specified <code>river</code>
+	 * 
+	 * @param riverId   the unique id of the river with the desired channel
+	 * @param channelId the unique id of the channel
+	 * @param authUser  the username of the authenticating user 
+	 * @return
+	 */
 	public Channel getRiverChannel(Long riverId, long channelId, String authUser) {
 		Channel channel = channelDao.findById(channelId);
 
@@ -385,14 +394,12 @@ public class RiverService {
 
 		River river = channel.getRiver();
 		if (!river.getId().equals(riverId))
-			throw new NotFoundException(
-					"The given river does not countain the given channel.");
+			throw new NotFoundException("The given river does not countain the given channel.");
 
 		Account account = accountDao.findByUsernameOrEmail(authUser);
 
 		if (!isOwner(river, account))
-			throw new ForbiddenException(
-					"Logged in user does not own the river.");
+			throw new ForbiddenException("Logged in user does not own the river.");
 
 		return channel;
 	}
@@ -553,7 +560,7 @@ public class RiverService {
 	 */
 	@Transactional(readOnly = false)
 	public GetCollaboratorDTO modifyCollaborator(Long riverId,
-			Long collaboratorId, ModifyCollaboratorDTO modifyCollaboratorTO,
+			Long accountId, ModifyCollaboratorDTO modifyCollaboratorTO,
 			String authUser) {
 
 		River river = getRiver(riverId);
@@ -563,8 +570,8 @@ public class RiverService {
 		if (!isOwner(river, authAccount))
 			throw new ForbiddenException("Permission denied.");
 
-		RiverCollaborator collaborator = riverCollaboratorDao
-				.findById(collaboratorId);
+		RiverCollaborator collaborator = riverDao.findCollaborator(riverId,
+				accountId);
 
 		// Collaborator exists?
 		if (collaborator == null) {
@@ -590,25 +597,28 @@ public class RiverService {
 	 * in <code>riverId</code>. <code>accountId</code> is the {@link Account} id
 	 * of the collaborator
 	 * 
-	 * @param riverId
-	 * @param accountId
+	 * @param riverId the unique id of the <code>River</code>
+	 * @param accountId the unique id of the collaborating <code>Account</code>
+	 * @param authUser the username of the authenticated user
 	 */
 	@Transactional
-	public void deleteCollaborator(Long riverId, Long collaboratorId,
+	public void deleteCollaborator(Long riverId, Long accountId,
 			String authUser) {
 
 		River river = getRiver(riverId);
 
 		Account authAccount = accountDao.findByUsernameOrEmail(authUser);
 
-		if (!isOwner(river, authAccount))
-			throw new ForbiddenException("Permission denied.");
-
-		RiverCollaborator collaborator = riverCollaboratorDao
-				.findById(collaboratorId);
-
+		RiverCollaborator collaborator = riverDao.findCollaborator(riverId, accountId);
 		if (collaborator == null)
 			throw new NotFoundException("Collaborator not found.");
+
+		// Check if the collaborator's account is the same as
+		// the authenticating account
+		if (!collaborator.getAccount().equals(authAccount)) {
+			if (!isOwner(river, authAccount))
+				throw new ForbiddenException("Permission denied.");
+		}
 
 		riverCollaboratorDao.delete(collaborator);
 	}

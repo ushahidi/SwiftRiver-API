@@ -87,13 +87,11 @@ public class DbClientDetailsService implements ClientDetailsService {
 		details.setAuthorizedGrantTypes(grantTypes);
 
 		// Decrypt client secret
-		logger.debug("Decrypting client secret");
 		TextEncryptor encryptor = Encryptors.text(
 				TextUtil.convertStringToHex(key),
 				TextUtil.convertStringToHex(dbClient.getClientId()));
 		details.setClientSecret(encryptor.decrypt(dbClient.getClientSecret()));
 
-		logger.debug("Client secret successfully decrypted");
 		return details;
 	}
 

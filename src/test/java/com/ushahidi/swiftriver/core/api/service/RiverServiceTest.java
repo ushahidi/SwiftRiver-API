@@ -457,15 +457,16 @@ public class RiverServiceTest {
 		Account mockAuthAccount = mock(Account.class);
 		River mockRiver = mock(River.class);
 
-		when(mockRiverCollaboratorDao.findById(anyLong())).thenReturn(
-				collaborator);
 		when(mockRiverDao.findById(anyLong())).thenReturn(mockRiver);
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDao.findCollaborator(anyLong(), 
+				anyLong())).thenReturn(collaborator);
 
-		riverService.modifyCollaborator(1L, 2L, to, "admin");
+		riverService.modifyCollaborator(1L, 5L, to, "admin");
 
+		verify(mockRiverDao).findCollaborator(1L, 5L);
 		verify(collaborator).setActive(true);
 		verify(collaborator).setReadOnly(false);
 		verify(mockRiverDao).updateCollaborator(collaborator);
@@ -475,6 +476,7 @@ public class RiverServiceTest {
 	public void deleteCollaborator() {
 		RiverCollaborator collaborator = mock(RiverCollaborator.class);
 		Account mockAuthAccount = mock(Account.class);
+		Account mockCollaboratorAccount = mock(Account.class);
 		River mockRiver = mock(River.class);
 
 		when(mockRiverCollaboratorDao.findById(anyLong())).thenReturn(
@@ -483,8 +485,11 @@ public class RiverServiceTest {
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(
 				mockAuthAccount);
 		when(mockRiver.getAccount()).thenReturn(mockAuthAccount);
+		when(mockRiverDao.findCollaborator(anyLong(), 
+				anyLong())).thenReturn(collaborator);
+		when(collaborator.getAccount()).thenReturn(mockCollaboratorAccount);
 
-		riverService.deleteCollaborator(1L, 2L, "admin");
+		riverService.deleteCollaborator(1L, 4L, "admin");
 		verify(mockRiverCollaboratorDao).delete(collaborator);
 	}
 

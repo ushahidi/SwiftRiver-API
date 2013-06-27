@@ -326,7 +326,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(
 				post("/v1/buckets/1/collaborators").content(postBody)
 						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user3"))).andExpect(
+						.principal(getAuthentication("user2"))).andExpect(
 				status().isForbidden());
 	}
 
@@ -350,7 +350,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void addCollaborator() throws Exception {
 
-		String postBody = "{\"read_only\":true,\"account\":{\"id\": 5}}";
+		String postBody = "{\"read_only\":true,\"account\":{\"id\": 6}}";
 
 		this.mockMvc
 				.perform(
@@ -393,7 +393,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(
 				put("/v1/buckets/1/collaborators/2").content(postBody)
 						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user3"))).andExpect(
+						.principal(getAuthentication("user4"))).andExpect(
 				status().isForbidden());
 	}
 
@@ -418,10 +418,10 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void modifyCollaborator() throws Exception {
 
-		String postBody = "{\"read_only\":true}";
+		String postBody = "{\"read_only\":false}";
 
 		this.mockMvc.perform(
-				put("/v1/buckets/1/collaborators/2").content(postBody)
+				put("/v1/buckets/1/collaborators/4").content(postBody)
 						.contentType(MediaType.APPLICATION_JSON)
 						.principal(getAuthentication("user1"))).andExpect(
 				status().isOk());
@@ -435,12 +435,12 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void deleteCollaborator() throws Exception {
 		this.mockMvc.perform(
-				delete("/v1/buckets/1/collaborators/2").principal(
+				delete("/v1/buckets/1/collaborators/4").principal(
 						getAuthentication("user1"))).andExpect(status().isOk());
 	}
 
 	@Test
-	public void deleteCollaboratorInNonExistentRiver() throws Exception {
+	public void deleteCollaboratorInNonExistentBucket() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/buckets/1234/collaborators/2").principal(
 						getAuthentication("user1"))).andExpect(
@@ -458,9 +458,17 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	@Test
 	public void deleteCollaboratorWithoutPermission() throws Exception {
 		this.mockMvc.perform(
-				delete("/v1/buckets/1/collaborators/1").principal(
-						getAuthentication("user3"))).andExpect(
+				delete("/v1/buckets/1/collaborators/5").principal(
+						getAuthentication("user4")))
+						.andExpect(
 				status().isForbidden());
+	}
+	
+	@Test
+	public void leaveAsCollaborator() throws Exception {
+		this.mockMvc.perform(delete("/v1/buckets/1/collaborators/5")
+			.principal(getAuthentication("user3")))
+			.andExpect(status().isOk());
 	}
 	
 	/**
@@ -643,7 +651,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(
 				post("/v1/buckets/1/drops/1/forms").content(postBody)
 						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user3"))).andExpect(
+						.principal(getAuthentication("user2"))).andExpect(
 				status().isForbidden());
 	}
 
@@ -689,7 +697,7 @@ public class BucketsControllerTest extends AbstractControllerTest {
 		this.mockMvc.perform(
 				put("/v1/buckets/1/drops/2/forms/1").content(body)
 						.contentType(MediaType.APPLICATION_JSON)
-						.principal(getAuthentication("user3"))).andExpect(
+						.principal(getAuthentication("user2"))).andExpect(
 				status().isForbidden());
 	}
 
@@ -735,11 +743,11 @@ public class BucketsControllerTest extends AbstractControllerTest {
 	}
 
 	@Test
-	public void deleteDropFormWithoutPermsion() throws Exception {
+	public void deleteDropFormWithoutPermission() throws Exception {
 		this.mockMvc.perform(
 				delete("/v1/buckets/1/drops/2/forms/1").contentType(
 						MediaType.APPLICATION_JSON).principal(
-						getAuthentication("user3"))).andExpect(
+						getAuthentication("user2"))).andExpect(
 				status().isForbidden());
 	}
 	
