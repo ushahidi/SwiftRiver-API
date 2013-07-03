@@ -63,7 +63,12 @@ public class JpaUserDao extends AbstractJpaDao<User> implements UserDao {
 	 * @see com.ushahidi.swiftriver.core.api.dao.UserDao#updateLastLogin(com.ushahidi.swiftriver.core.model.User)
 	 */
 	public void updateLastLogin(User user) {
+		// Set the last login date to the current date
 		user.setLastLoginDate(new Date());
+		
+		// Increment the no. of user logins
+		int logins = user.getLogins() + 1;
+		user.setLogins(logins);
 		this.update(user);
 	}
 
