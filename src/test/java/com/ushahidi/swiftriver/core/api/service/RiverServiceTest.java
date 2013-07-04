@@ -307,9 +307,11 @@ public class RiverServiceTest {
 		River river = new River();
 		river.setId(1L);
 		river.setAccount(account);
+		river.setDropCount(800);
 		Channel channel = new Channel();
 		channel.setChannel("the channel");
 		channel.setParameters("the parameters");
+		channel.setDropCount(300);
 		channel.setRiver(river);
 
 		when(mockAccountDao.findByUsernameOrEmail(anyString())).thenReturn(account);
@@ -324,7 +326,7 @@ public class RiverServiceTest {
 		verify(mockAmqpTemplate).convertAndSend(routingKeyArgument.capture(),
 				notificationArgument.capture());
 		ChannelUpdateNotification notification = notificationArgument
-				.getValue();
+				.getValue();		
 		assertEquals("the channel", notification.getChannel());
 		assertEquals("the parameters", notification.getParameters());
 		assertEquals(1L, notification.getRiverId());
@@ -332,6 +334,8 @@ public class RiverServiceTest {
 				routingKeyArgument.getValue());
 
 		verify(mockChannelDao).delete(channel);
+		verify(mockRiverDao).update(river);
+		assertEquals(500, river.getDropCount().intValue());
 	}
 
 	@Test

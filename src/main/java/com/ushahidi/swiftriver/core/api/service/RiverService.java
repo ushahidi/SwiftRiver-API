@@ -328,7 +328,18 @@ public class RiverService {
 	@Transactional(readOnly = false)
 	public void deleteChannel(Long riverId, Long channelId, String authUser) {
 		Channel channel = getRiverChannel(riverId, channelId, authUser);
+
+		int channelDropCount = channel.getDropCount();
+		River river = channel.getRiver();
+
 		channelDao.delete(channel);
+		
+		// Update the river drop count
+		logger.debug("Reducing the drop count of river {} by {} drops",
+				riverId, channelDropCount);
+
+		river.setDropCount(river.getDropCount() - channelDropCount);
+		riverDao.update(river);
 
 		// Construct the routing key
 		String routingKey = String.format("web.channel.%s.delete", 
