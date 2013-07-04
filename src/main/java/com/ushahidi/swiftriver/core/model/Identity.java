@@ -67,6 +67,7 @@ public class Identity implements Serializable {
 	@Column(name="identity_name")
 	private String name;
 	
+	@Lob
 	@Column(name="identity_avatar")
 	private String avatar;
 	

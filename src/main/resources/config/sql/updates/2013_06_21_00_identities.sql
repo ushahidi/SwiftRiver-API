@@ -1,1 +1,1 @@
-ALTER TABLE identities CHANGE `identity_orig_id` `identity_orig_id` TEXT NOT NULL;
+ALTER TABLE identities CHANGE `identity_orig_id` `identity_orig_id` LONGTEXT NOT NULL;
