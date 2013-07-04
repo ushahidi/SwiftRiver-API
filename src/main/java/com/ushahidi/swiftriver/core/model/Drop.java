@@ -53,6 +53,7 @@ public class Drop {
 	@Column(name = "channel", nullable = false)
 	private String channel;
 	
+	@Lob
 	@Column(name = "droplet_title", nullable = false)
 	private String title;
 
