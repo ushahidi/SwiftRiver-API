@@ -307,6 +307,8 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		List<Map<String, Object>> results = this.namedJdbcTemplate
 				.queryForList(sql, params);
 
+		logger.debug("Skipping {} entries from rivers_droplets", results.size());
+
 		// Remove existing rivers_droplets entries from our Set
 		for (Map<String, Object> row : results) {
 			Long dropletId = ((Number) row.get("droplet_id")).longValue();
@@ -352,10 +354,19 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		// During the association, we verify that the river is in the drop's
 		// destination river list
 		final List<Map<String, Long>> riverDropChannelList = new ArrayList<Map<String,Long>>();
+		Set<RiverDropKey> riverDropKeySet = new HashSet<JpaDropDao.RiverDropKey>();
 		for (Long dropletId: dropChannelsMap.keySet()) {
 			for (Long channelId: dropChannelsMap.get(dropletId)) {
 				if (riverChannelsMap.containsKey(channelId)) {
 					Long riverId = riverChannelsMap.get(channelId);
+
+					// Does the river drop key already exist? 
+					RiverDropKey riverDropKey = new RiverDropKey(riverId, dropletId);
+					if (riverDropKeySet.contains(riverDropKey))
+						continue;
+
+					// Does not exist. Add to the in-memory registry
+					riverDropKeySet.add(riverDropKey);
 
 					if (dropRiversMap.containsKey(dropletId) && 
 							dropRiversMap.get(dropletId).contains(riverId)) {
@@ -775,5 +786,57 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		query.setMaxResults(batchSize);
 
 		return query.getResultList();
+	}
+	
+	/**
+	 * Static inner class to represent a unique entry in
+	 * the rivers_droplets table
+	 * 
+	 * @author ekala
+	 *
+	 */
+	private static class RiverDropKey {
+		private Long riverId;
+		
+		private Long dropId;
+		
+		public RiverDropKey(Long riverId, Long dropId) {
+			this.riverId = riverId;
+			this.dropId = dropId;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((dropId == null) ? 0 : dropId.hashCode());
+			result = prime * result
+					+ ((riverId == null) ? 0 : riverId.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			RiverDropKey other = (RiverDropKey) obj;
+			if (dropId == null) {
+				if (other.dropId != null)
+					return false;
+			} else if (!dropId.equals(other.dropId))
+				return false;
+			if (riverId == null) {
+				if (other.riverId != null)
+					return false;
+			} else if (!riverId.equals(other.riverId))
+				return false;
+			return true;
+		}
+		
 	}
 }
