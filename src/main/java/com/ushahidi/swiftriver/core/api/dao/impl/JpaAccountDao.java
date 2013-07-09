@@ -100,7 +100,7 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 					.setParameter("email", email)
 					.getSingleResult();
 		} catch (NoResultException e) {
-			// Do nothing;
+			logger.debug("No account has been registered to {}", email);
 		}
 		return account;
 	}

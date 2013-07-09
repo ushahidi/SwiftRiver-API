@@ -425,9 +425,9 @@ CREATE TABLE IF NOT EXISTS accounts (
   account_active boolean default true,
   river_quota_remaining INT DEFAULT '1',
   version bigint  DEFAULT '1',
-  UNIQUE (account_path)
+  UNIQUE (account_path),
+  UNIQUE(user_id)
 );
-CREATE INDEX accounts_idx_user_id ON accounts (user_id);
 
 -- -----------------------------------------------------
 -- Table droplets_media
