@@ -490,9 +490,13 @@ public class AccountService {
 		GetAccountDTO accountDTO = mapper.map(account, GetAccountDTO.class);
 
 		logger.debug("Setting the follow counts");
-		accountDTO.setFollowerCount(account.getFollowers().size());
-		accountDTO.setFollowingCount(account.getFollowing().size());
+		int followerCount = account.getFollowers() == null ? 0 : account.getFollowers().size();
+		accountDTO.setFollowerCount(followerCount);
 
+		int followingCount = account.getFollowing() == null ? 0 : account.getFollowing().size();
+		accountDTO.setFollowingCount(followingCount);
+
+		logger.debug("Completed mapping Account POJO to DTO");
 		return accountDTO;
 	}
 

@@ -87,13 +87,16 @@ public class JpaAccountDao extends AbstractJpaDao<Account> implements AccountDao
 		return account;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * @see com.ushahidi.swiftriver.core.api.dao.AccountDao#findByEmail(java.lang.String)
+	 */
 	public Account findByEmail(String email) {
-		String query = "SELECT a FROM Account a WHERE a.owner.email = :email";
+		String query = "FROM Account WHERE owner.email = :email";
 
 		Account account = null;
 		try {
-			account = (Account) em.createQuery(query)
+			account = em.createQuery(query, Account.class)
 					.setParameter("email", email)
 					.getSingleResult();
 		} catch (NoResultException e) {
