@@ -219,7 +219,7 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 		String sql = "INSERT INTO droplets (id, channel, droplet_hash, "
 				+ "droplet_orig_id, droplet_title, "
 				+ "droplet_content, droplet_date_pub, droplet_date_add, "
-				+ "identity_id, original_url) VALUES (?,?,?,?,?,?,?,?,?,?)";
+				+ "identity_id) VALUES (?,?,?,?,?,?,?,?,?)";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 			public void setValues(PreparedStatement ps, int i)
@@ -243,13 +243,6 @@ public class JpaDropDao extends AbstractJpaDao<Drop> implements DropDao {
 				ps.setTimestamp(8,
 						new java.sql.Timestamp((new Date()).getTime()));
 				ps.setLong(9, drop.getIdentity().getId());
-
-				// Set the original url
-				if (drop.getOriginalUrl() != null) {
-					ps.setLong(10, drop.getOriginalUrl().getId());
-				} else {
-					ps.setNull(10, Types.BIGINT);
-				}
 			}
 
 			public int getBatchSize() {
