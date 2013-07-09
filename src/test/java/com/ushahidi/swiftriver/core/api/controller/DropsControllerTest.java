@@ -45,7 +45,9 @@ public class DropsControllerTest extends AbstractControllerTest {
 								.contentType(MediaType.APPLICATION_JSON)
 								.principal(getAuthentication("admin")))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$[0].id").value(11));
+				.andExpect(jsonPath("$[0].id").value(11))
+				.andExpect(jsonPath("$.[0].original_url")
+						.value("http://gizmodo.com/5995191/is-anyone-actually-going-to-buy-an-ibeetle"));
 	}
 	
 	@Test
