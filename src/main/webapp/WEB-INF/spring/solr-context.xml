@@ -18,7 +18,7 @@
 	<!-- Configures Solr template -->
 	<bean id="solrTemplate" class="org.springframework.data.solr.core.SolrTemplate">
 		<constructor-arg ref="solrServer"/>
-	</bean>	
+	</bean>
 
 	<!-- Prod environment configuration -->
 	<beans profile="prod">
@@ -36,7 +36,7 @@
 								<jee:jndi-lookup jndi-name="solr/serverURL" />
 							</entry>
 							<entry key="solr.indexer.properties" value-ref="indexerPropertiesFile" />
-							
+
 							<!-- Property keys in the indexer properties file  -->
 							<entry key="solr.indexer.lastDropIdPropKey">
 								<jee:jndi-lookup jndi-name="indexer/lastDropIdPropKey" />
@@ -52,16 +52,16 @@
 				</bean>
 			</property>
 		</bean>
-		
-		<jee:jndi-lookup id="indexerPropertiesFile" 
+
+		<jee:jndi-lookup id="indexerPropertiesFile"
 			jndi-name="solr/indexerProperties" expected-type="java.lang.String"/>
-		
-		<util:properties id="indexerProperties" location="file://${solr.indexer.properties}" />
+
+		<util:properties id="indexerProperties" location="file:///${solr.indexer.properties}" />
 
 		<bean id="classPathResource" class="org.springframework.core.io.FileSystemResource">
 			<constructor-arg value="/${solr.indexer.properties}" />
 		</bean>
-		
+
 		<bean id="indexerConfigFile" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 			<property name="targetObject" ref="classPathResource" />
 			<property name="targetMethod" value="getFile" />
@@ -74,20 +74,20 @@
 			<property name="batchSizePropertyKey" value="${solr.indexer.batchSizePropKey}" />
 			<property name="lastDropIdPropertyKey" value="${solr.indexer.lastDropIdPropKey}" />
 		</bean>
-		
+
 		<!-- Configures the JobDetailBean -->
  		<bean name="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
  			<property name="targetObject" ref="dropIndexingTask" />
  			<property name="targetMethod" value="updateDropIndex" />
 		</bean>
-		
+
 		<!-- Configures the trigger for the scheduler -->
-		<bean id="dropIndexingTrigger" 
+		<bean id="dropIndexingTrigger"
 			class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
 			<property name="jobDetail" ref="jobDetail" />
 			<property name="repeatInterval" value="${solr.indexer.interval}"/>
 		</bean>
-		
+
 		<!-- Configures the scheduler of the dropIndexingTrigger -->
 		<bean id="dropIndexingScheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 			<property name="triggers">
@@ -95,17 +95,17 @@
 			</property>
 		</bean>
  	</beans>
-	
+
 	<!-- Dev environment configuration -->
 	<beans profile="test">
 		<!--  Configures the location of the solr properties -->
 		<context:property-placeholder location="classpath:solr.properties" />
-		
+
 		<!-- Configures embedded solr server -->
 		<solr:embedded-solr-server id="solrServer" solrHome="${solr.solr.home}"/>
-		
+
 		<!-- Solr search index initialization bean -->
-		<bean id="initSearchIndex" 
+		<bean id="initSearchIndex"
 			class="com.ushahidi.swiftriver.core.solr.InitSolrSearchIndex" init-method="init" />
 
 	</beans>
