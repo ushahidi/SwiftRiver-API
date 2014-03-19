@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tags (
   PRIMARY KEY (id),
   UNIQUE  (hash)
 );
-CREATE INDEX tags_idx_tag_canonical ON tags (tag_canonical);  
+CREATE INDEX tags_idx_tag_canonical ON tags (tag_canonical);
 
 
 -- -----------------------------------------------------
@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS droplets_links (
   link_id bigint NOT NULL,
   UNIQUE (droplet_id,link_id)
 );
-CREATE INDEX droplets_links_idx_link_id ON droplets_links (link_id);  
-CREATE INDEX droplets_links_idx_droplet_id ON droplets_links (droplet_id);  
+CREATE INDEX droplets_links_idx_link_id ON droplets_links (link_id);
+CREATE INDEX droplets_links_idx_droplet_id ON droplets_links (droplet_id);
 
 
 -- -----------------------------------------------------
@@ -498,7 +498,7 @@ CREATE TABLE IF NOT EXISTS bucket_collaborators (
   bucket_id bigint NOT NULL,
   collaborator_active boolean default false,
   read_only boolean default true,
-  date_added TIMESTAMP,  
+  date_added TIMESTAMP,
   UNIQUE (account_id,bucket_id)
 );
 
@@ -752,3 +752,29 @@ CREATE TABLE IF NOT EXISTS bucket_droplets_read (
   UNIQUE (account_id,buckets_droplets_id)
 );
 
+
+
+-- -----------------------------------------------------
+-- Basic data for clean deployment
+-- -----------------------------------------------------
+INSERT INTO `swiftriver`.`clients`
+VALUES
+    ('1', '1', 'trusted-client', '8b22f281afd911c3dfc59270af43db1995d5968a3447c780ba3e152e603fd9a0', 'http://localhost:8080/oauth/redirect', 'my app', 'my app\'s description', 'my app\'s homepage', '1');
+ 
+INSERT INTO `swiftriver`.`roles_clients`
+VALUES
+    (1,3), (1,4);
+ 
+INSERT INTO `swiftriver`.`roles` (`id`,`name`,`description`)
+VALUES
+    (1, 'user', 'Login privileges, granted after account confirmation'),
+    (2, 'admin', 'Super Administrator'),
+    (3, 'client', 'Client application'),
+    (4, 'trusted_client', 'Truested client application');
+INSERT INTO `swiftriver`.`accounts`
+VALUES
+    ('1', '1', 'default', '0', '2013-01-01 00:00:00', '2013-01-02 00:00:00', '1', '10', '1');
+ 
+INSERT INTO `swiftriver`.`users`
+VALUES
+    ('1', 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', '$2a$05$f0I9XjamKm4LEaF8av1Zy.tzBrzFM0smLMKvMAqUWicGAcEnkCdQe', '0', '1', '10', '2014-03-08 13:21:15', '2013-01-01 00:00:00', '0', '0');
