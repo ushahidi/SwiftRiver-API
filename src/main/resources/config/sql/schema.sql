@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS tags (
   PRIMARY KEY (id),
   UNIQUE  (hash)
 );
-CREATE INDEX tags_idx_tag_canonical ON tags (tag_canonical);  
+CREATE INDEX tags_idx_tag_canonical ON tags (tag_canonical);
 
 
 -- -----------------------------------------------------
@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS droplets_links (
   link_id bigint NOT NULL,
   UNIQUE (droplet_id,link_id)
 );
-CREATE INDEX droplets_links_idx_link_id ON droplets_links (link_id);  
-CREATE INDEX droplets_links_idx_droplet_id ON droplets_links (droplet_id);  
+CREATE INDEX droplets_links_idx_link_id ON droplets_links (link_id);
+CREATE INDEX droplets_links_idx_droplet_id ON droplets_links (droplet_id);
 
 
 -- -----------------------------------------------------
@@ -316,7 +316,7 @@ CREATE INDEX user_tokens_idx_user_id ON user_tokens (user_id);
 CREATE TABLE IF NOT EXISTS roles_users (
   user_id int NOT NULL,
   role_id int NOT NULL,
-  account_id int NOT NULL,
+  account_id int DEFAULT NULL,
   PRIMARY KEY (user_id,role_id)
 );
 CREATE INDEX roles_users_idx_account_id ON roles_users (account_id);
@@ -498,7 +498,7 @@ CREATE TABLE IF NOT EXISTS bucket_collaborators (
   bucket_id bigint NOT NULL,
   collaborator_active boolean default false,
   read_only boolean default true,
-  date_added TIMESTAMP,  
+  date_added TIMESTAMP,
   UNIQUE (account_id,bucket_id)
 );
 
