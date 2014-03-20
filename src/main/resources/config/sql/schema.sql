@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS roles (
 -- Table identities
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS identities (
-  id bigint NOT NULL,
+  id bigint UNSIGNED NOT NULL,
   hash char(32) NOT NULL,
   channel varchar(20) NOT NULL,
   identity_orig_id LONGTEXT DEFAULT NULL,
