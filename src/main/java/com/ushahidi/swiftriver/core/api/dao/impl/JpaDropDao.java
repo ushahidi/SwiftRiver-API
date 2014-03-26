@@ -18,7 +18,6 @@ package com.ushahidi.swiftriver.core.api.dao.impl;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
