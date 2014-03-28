@@ -21,7 +21,7 @@ VALUES ('1', '1', 'default', '0', '2013-01-01 00:00:00', '2013-01-02 00:00:00', 
 INSERT INTO `users`
 VALUES ('1', 'myswiftriver@myswiftriver.com', 'Administrator', 'admin', '$2a$05$f0I9XjamKm4LEaF8av1Zy.tzBrzFM0smLMKvMAqUWicGAcEnkCdQe', '0', '1', '10', '2014-03-08 13:21:15', '2013-01-01 00:00:00', '0', '0');
 
-INSERT INOT `roles_users`
+INSERT INTO `roles_users`
 VALUES
 	(1,1,1),
 	(1,2,1);
