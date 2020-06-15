@@ -15,7 +15,7 @@
 		<org.hamcrest.version>1.3</org.hamcrest.version>
 		<spring.data.solr.version>1.0.0.RC1</spring.data.solr.version>
 		<solr.version>4.1.0</solr.version>
-		<org.springframework.security.version>3.1.4.RELEASE</org.springframework.security.version>
+		<org.springframework.security.version>4.2.17.RELEASE</org.springframework.security.version>
 	</properties>
 
 	<!-- Repositories -->
