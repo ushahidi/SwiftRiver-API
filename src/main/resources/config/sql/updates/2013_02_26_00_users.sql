@@ -1,3 +1,0 @@
-ALTER TABLE `users` ADD `active` TINYINT(1)  NULL  DEFAULT '1';
-ALTER TABLE `users` ADD `expired` TINYINT(1)  NULL  DEFAULT '0';
-ALTER TABLE `users` ADD `locked` TINYINT(1)  NULL  DEFAULT '0';

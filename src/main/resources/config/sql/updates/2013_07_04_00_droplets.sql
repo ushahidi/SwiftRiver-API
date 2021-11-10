@@ -1,1 +1,0 @@
-ALTER TABLE `droplets` CHANGE `droplet_title` `droplet_title` LONGTEXT NOT NULL;

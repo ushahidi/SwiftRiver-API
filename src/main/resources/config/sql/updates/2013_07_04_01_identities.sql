@@ -1,1 +1,0 @@
-ALTER TABLE `identities` CHANGE `identity_avatar` `identity_avatar` LONGTEXT NULL;
